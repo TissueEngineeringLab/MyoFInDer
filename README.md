@@ -9,28 +9,19 @@ Hello and welcome to the GitHub repository of CellenTellen! This repo contains a
 * [General info](#general-info)
 * [install](#How-to-install)
 * [Use](#How-to-use)
+* [GPU usage](#GPU-usage-with-nvidea-graphicx-card)
 
 ## General info
-The program takes in a *.tif immunofluorecent image and indicates the possible location of nuclei. The prediction model used is based on Deepcell. %citeer
-It is implemented inside of a user-friendly graphical interface. In the interface, it will be possible to process multiple images at once.
+Hello and welcome to the GitHub repository of Cellen Tellen! This repo contains all the necessary files and the source code for the installation of Cellen Tellen. Cellen Tellen is an open source platform for nuclei segmentation. It has tools to segment, count , indicate nuclei. \\
+Cellen Tellen was developed by Kulak university students. The program is fully written in python and uses Deepcell as the prediction model.
+The program has been tested in windows 10/11 and is not supported in linux or macos. 
 
 ## How to install
 
-You can install the program by clicking this link, or by downloading the zip file from this repo. 
-The program uses *tensorflow which only supports `nvidea cards`. If you posses a nvidea card, you may read further. First of all, you need to install the right *Cuda version. As we use `tensorflow version 2.5.1`, you'll need to install `Cuda version 11.2` which can be found at the official nvidea website. You can click the link 
-<a href="https://developer.download.nvidia.com/compute/cuda/11.2.2/local_installers/cuda_11.2.2_461.33_win10.exe">
-here 
-</a> to install directly. This version of Cuda which is only intended for `windows 10`, also works for `windows 11`. 
+There are two installations that need to be done, the first one is the C++ buildtools from Microsoft Visual Studio which you can install by pressing this link <a href="https://visualstudio.microsoft.com/visual-cpp-build-tools///link"> here </a>. Once downloaded you'll need to restart your pc this is needed for activating the buildtools. If you prefer you can read the rest of the download section and lastly restart your pc before executing the program.
+You can install the main program by downloading the zip file from this repo. Once downloaded unpack the zip file and everything should work right now. There are two ways to start the program: you can always type 'CellenTellen.exe' in your windows search bar or just make a shortcut for it on your Dekstop
+ so you can always easily acces the program plus you can rename the program to 'Cellen Tellen'. After restarting your pc for the buildtools you can execute the program, it's possible it gives a firewall error which you need to ignore by pressing 'more information' and accepting the program. 
 
-After the (hopefully) succesfull installation of Cuda, we need to install *cudnn. 
-Unfortunalty, to install cudnn you do need to log into the official website of nvidea. You can click
-<a href=https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.1.1.33/11.2_20210301/cudnn-11.2-windows-x64-v8.1.1.33.zip>
-here </a> to do so.
-After logging in or registering, it should have automatically downloaded the zip-folder. If not, click 
-<a href=https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.1.1.33/11.2_20210301/cudnn-11.2-windows-x64-v8.1.1.33.zip>
-here
-</a> again.
-If dowloaded, follow the next steps below. 
 
 
 ## How to use
@@ -55,3 +46,21 @@ All projects are saved in one folder which was automatically created by the prog
 ### Settings
 
 In the Settings menu, available in the menu bar, there are a number of options. Firstly, it is possible to indicate which channels are occupied by the nuclei and the fibres. The automatic nuclei and fibre detection is based on these selections. Secondly, the user can indicate how long the autosave interval is, this is the interval between automatically saving the current project to the automatic save folder. Lastly, it is possible to choose to save the altered images when saving projects. These altered images are the original images with the indicated nuclei and fibres drawn on them.
+
+## GPU usage with nvidea graphicx card
+Our program supports GPU usage if you have a nvidea graphicx card, you can see if you own a GPU by searching device manager in the windows search bar, go to display adapter and you'll find your processors.
+. First of all, you need to install the right *Cuda version. As we use `tensorflow version 2.5.1`, you'll need to install `Cuda version 11.2` which can be found at the official nvidea website. You can click the link 
+<a href="https://developer.download.nvidia.com/compute/cuda/11.2.2/local_installers/cuda_11.2.2_461.33_win10.exe">
+here 
+</a> to install directly. This version of Cuda which is only intended for `windows 10` and `windows 11`. 
+
+After the (hopefully) succesfull installation of Cuda, we need to install *cudnn. 
+Unfortunalty, to install cudnn you do need to log into the official website of nvidea. You can click
+<a href=https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.1.1.33/11.2_20210301/cudnn-11.2-windows-x64-v8.1.1.33.zip>
+here </a> to do so.
+After logging in or registering, it should have automatically downloaded the zip-folder. If not, click 
+<a href=https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.1.1.33/11.2_20210301/cudnn-11.2-windows-x64-v8.1.1.33.zip>
+here
+</a> again.
+If dowloaded, follow the next steps below. 
+//Hier nog uitleggen wat nodig is voor de gpu te gebruiken
