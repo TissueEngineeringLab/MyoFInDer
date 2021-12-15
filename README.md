@@ -19,7 +19,8 @@ The program has been tested in windows 10/11 and is not supported in linux or ma
 ## How to install
 
 There are two installations that need to be done, the first one is the C++ buildtools from Microsoft Visual Studio which you can install by pressing this link <a href="https://visualstudio.microsoft.com/visual-cpp-build-tools/"> here </a>. Once downloaded you'll need to restart your pc this is needed for activating the buildtools. If you prefer you can read the rest of the download section and lastly restart your pc before executing the program.
-You can install the main program by downloading the zip file from this repo. Once downloaded unpack the zip file and everything should work right now. There are two ways to start the program: you can always type 'CellenTellen.exe' in your windows search bar or just make a shortcut for it on your Dekstop
+You can install the main program by clicking this <a href="https://gitlab.kuleuven.be/u0143112/graaftel/-/raw/master/Code/Graphical%20Interface/Version1.1.zip
+"> link </a> which should download the zip file. Once downloaded unpack the zip file and everything should work right now. There are two ways to start the program: you can always type 'CellenTellen.exe' in your windows search bar or just make a shortcut for it on your Dekstop
  so you can always easily acces the program plus you can rename the program to 'Cellen Tellen'. After restarting your pc for the buildtools you can execute the program, it's possible it gives a firewall error which you need to ignore by pressing 'more information' and accepting the program. 
 
 
