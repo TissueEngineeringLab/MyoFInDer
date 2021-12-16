@@ -64,12 +64,34 @@ After logging in or registering, it should have automatically downloaded the zip
 here
 </a> again.
 If dowloaded, follow the next steps below. 
-Click on the downloaded cuda executable
-![alt text](Assets/image0.png)
+Click on the cuda executable which you have downloaded.
+<img align="right" width="100" height="100" src="Assets/image0.png">
+Follow the installation instruction as seen in the images below. 
+<p align="center">
+  <img width="460" height="300" src="Assets/image1.png">
+</p>
+<p align="center">
+  <img width="460" height="300" src="Assets/image2.png">
+</p>
+<p align="center">
+  <img width="460" height="300" src="Assets/image3.png">
+</p>
+<p align="center">
+  <img width="460" height="300" src="Assets/image4.png">
+</p>
+<p align="center">
+  <img width="460" height="300" src="Assets/image5.png">
+</p>
+<p align="center">
+  <img width="460" height="300" src="Assets/image6.png">
+</p>
 
-
-
-
+<p align="center">
+  <img width="460" height="300" src="Assets/image7.png">
+</p>
+<p align="center">
+  <img width="460" height="300" src="Assets/image8.png">
+</p>
 
 
 
