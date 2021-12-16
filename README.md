@@ -76,7 +76,7 @@ Follow the installation instruction as seen in the images below.
 When The installaton is complete, you can open the folder ´NVIDEA GPU computing toolkit´ which you can find by going to ´This PC´ and then ´C:\Program Files´. 
 When open, you'll see a folder named ´CUDA´, which you need to open, Thereafter you'll find a folder called ´v11.2´ which you need to open as well. In this folder you will need to paste all the contents that are in the cudnn folder which you have downloaded earlier. This is shown in the images below.
 
- | |
+| | | |
 |:-------------------------:|:-------------------------:|
 |<img width="300" src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/image7.png">  |  <img width="300" src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/image8.png">
  
