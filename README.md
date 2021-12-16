@@ -67,24 +67,12 @@ If dowloaded, follow the next steps below.
 Click on the cuda executable which you have downloaded.
 <img align="right" width="100" height="100" src="Assets/image0.png">
 Follow the installation instruction as seen in the images below. 
-<p align="center">
-  <img width="200" height="200" src="Assets/image1.png">
-</p>
-<p align="center">
-  <img width="200" height="200" src="Assets/image2.png">
-</p>
-<p align="center">
-  <img width="200" height="200" src="Assets/image3.png">
-</p>
-<p align="center">
-  <img width="200" height="200" src="Assets/image4.png">
-</p>
-<p align="center">
-  <img width="200" height="200" src="Assets/image5.png">
-</p>
-<p align="center">
-  <img width="200" height="200" src="Assets/image6.png">
-</p>
+
+/<img width="400" src="Assets/image0">  blah |  <img width="400" src="Assets/image1">
+/<img width="400" src="Assets/image2">  blah |  <img width="400" src="Assets/image3">
+/<img width="400" src="Assets/image4">  blah |  <img width="400" src="Assets/image5">
+/<img width="400" src="Assets/image6">  blah
+
 When The installaton is complete, you can open the folder ´NVIDEA GPU computing toolkit´ which you can find by going to ´This PC´ and then ´C:\Program Files´. 
 When open, you'll see a folder named ´CUDA´, which you need to open, Thereafter you'll find a folder called ´v11.2´ which you need to open as well. In this folder you will need to paste all the contents that are in the cudnn folder which you have downloaded earlier. This is shown in the images below. 
 <p align="right">
@@ -93,6 +81,5 @@ When open, you'll see a folder named ´CUDA´, which you need to open, Thereafte
 <p align="right">
   <img width="200" height="200" src="Assets/image8.png">
 </p>
-
-
+/<img width="400" src="Assets/image7">  blah |  <img width="400" src="Assets/image8">
 
