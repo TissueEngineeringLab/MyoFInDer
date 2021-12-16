@@ -49,8 +49,8 @@ All projects are saved in one folder which was automatically created by the prog
 In the Settings menu, available in the menu bar, there are a number of options. Firstly, it is possible to indicate which channels are occupied by the nuclei and the fibres. The automatic nuclei and fibre detection is based on these selections. Secondly, the user can indicate how long the autosave interval is, this is the interval between automatically saving the current project to the automatic save folder. Lastly, it is possible to choose to save the altered images when saving projects. These altered images are the original images with the indicated nuclei and fibres drawn on them.
 
 ## GPU usage with nvidea graphicx card
-Our program supports GPU usage if you have a nvidea graphicx card, you can see if you own a GPU by searching device manager in the windows search bar, go to display adapter and you'll find your processors.
-. First of all, you need to install the right *Cuda version. As we use `tensorflow version 2.5.1`, you'll need to install `Cuda version 11.2` which can be found at the official nvidea website. You can click the link 
+Our program supports GPU usage. In order to know check if you have a nvidea graphicx card, you can search for ´device manager´ in the windows search bar. Thereafter, go to display adapter and you'll find your processors.
+First of all, you need to install the right *Cuda version. As we use `tensorflow version 2.5.1`, you'll need to install `Cuda version 11.2` which can be found at the official nvidea website. You can click the link 
 <a href="https://developer.download.nvidia.com/compute/cuda/11.2.2/local_installers/cuda_11.2.2_461.33_win10.exe">
 here 
 </a> to install directly. This version of Cuda which is only intended for `windows 10` and `windows 11`. 
@@ -64,4 +64,12 @@ After logging in or registering, it should have automatically downloaded the zip
 here
 </a> again.
 If dowloaded, follow the next steps below. 
-//Hier nog uitleggen wat nodig is voor de gpu te gebruiken
+Click on the downloaded cuda executable
+![alt text](Assets/image0.png)
+
+
+
+
+
+
+
