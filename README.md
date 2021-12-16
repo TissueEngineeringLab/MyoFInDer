@@ -68,10 +68,10 @@ Click on the cuda executable which you have downloaded.
 <img align="right" width="100" height="100" src="Assets/image0.png">
 Follow the installation instruction as seen in the images below. 
 
-|<img width="400" src="Assets/image0">  blah |  <img width="400" src="Assets/image1">
-|<img width="400" src="Assets/image2">  blah |  <img width="400" src="Assets/image3">
-|<img width="400" src="Assets/image4">  blah |  <img width="400" src="Assets/image5">
-|<img width="400" src="Assets/image6">  blah
+|<img width="400" src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/image0.png">  blah |  <img width="400" src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/image0.png">
+|<img width="400" src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/image0.png">  blah |  <img width="400" src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/image0.png">
+|<img width="400" src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/image0.png">  blah |  <img width="400" src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/image0.png">
+|<img width="400" src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/image0.png">  blah
 
 When The installaton is complete, you can open the folder ´NVIDEA GPU computing toolkit´ which you can find by going to ´This PC´ and then ´C:\Program Files´. 
 When open, you'll see a folder named ´CUDA´, which you need to open, Thereafter you'll find a folder called ´v11.2´ which you need to open as well. In this folder you will need to paste all the contents that are in the cudnn folder which you have downloaded earlier. This is shown in the images below. 
