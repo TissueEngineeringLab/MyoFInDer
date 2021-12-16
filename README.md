@@ -70,7 +70,7 @@ here
 </a> again.
 If dowloaded, follow the next steps below. 
 Click on the cuda executable which you have downloaded.
-<img align="right" width="200" height="200" src="Assets/image0.png">
+<p align="right" width="200" height="200" src="Assets/image0.png">Click on the cuda executable which you have downloaded.</p>
 Follow the installation instruction as seen in the images below. 
 
 | | | |
