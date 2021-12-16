@@ -70,7 +70,10 @@ here
 </a> again.
 If dowloaded, follow the next steps below. 
 Click on the cuda executable which you have downloaded.
-<p align="right" width="200" height="200" src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/image0.png"> Click on the cuda executable which you have downloaded. </p>
+<p align="right">
+  <img src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/image0.png" width="350" title="hover text">
+Click on the cuda executable which you have downloaded. 
+</p>
 Follow the installation instruction as seen in the images below. 
 
 | | | |
