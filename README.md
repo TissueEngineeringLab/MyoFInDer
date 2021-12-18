@@ -3,7 +3,7 @@
 >
 > Count von Count, Sesame Street
 
-Hello and welcome to the GitHub repository of CellenTellen! This repo contains all the necessary files and the source code for the installation of CellenTellen. CellenTellen is an open source platform for nuclei segmentation. It was developed by university students of Kuleuven campus Kulak to help the research group Tissue Engineering Lab at the Department of Development and Regeneration. We hope this code could be of use to other people who are interested in segmenting cells. 
+Welcome to the GitHub repository of CellenTellen! This repo contains the source code of the program as well as all the necessary files for the installation of CellenTellen. CellenTellen is an open source platform for nuclei segmentation. It was developed by university students of Kuleuven campus Kulak to aid the Tissue Engineering Lab at the Department of Development and Regeneration with their research. We hope this code could be of use to other people who are interested in segmenting cells. 
 
 ## Table of contents
 * [General info](#general-info)
@@ -12,16 +12,16 @@ Hello and welcome to the GitHub repository of CellenTellen! This repo contains a
 * [GPU usage](#GPU-usage-with-nvidea-graphicx-card)
 
 ## General info
-Hello and welcome to the GitHub repository of Cellen Tellen! This repo contains all the necessary files and the source code for the installation of Cellen Tellen. Cellen Tellen is an open source platform for nuclei segmentation. It has tools to segment, count , indicate nuclei. \\
-Cellen Tellen was developed by Kulak university students. The program is fully written in python and uses Deepcell as the prediction model.
-The program has been tested in windows 10/11 and is not supported in linux or macos. 
+This repo contains the source code of the program as well as all the necessary files for the installation of CellenTellen. CellenTellen is an open source platform for nuclei segmentation. It was developed by university students of Kuleuven campus Kulak to aid the Tissue Engineering Lab at the Department of Development and Regeneration with their research. The program is fully written in Python and uses Deepcell as the prediction model.
+The program has been tested on windows 10/11 and is not supported in linux or macos. 
 
 ## How to install
 
-There are two installations that need to be done, the first one is the C++ buildtools from Microsoft Visual Studio which you can install by pressing this link <a href="https://visualstudio.microsoft.com/visual-cpp-build-tools/"> here </a>. Once downloaded you'll need to restart your pc this is needed for activating the buildtools. If you prefer you can read the rest of the download section and lastly restart your pc before executing the program.
+There are two installations that need to be done, the first one is C++ buildtools from Microsoft Visual Studio which you can install by pressing this link <a href="https://visualstudio.microsoft.com/visual-cpp-build-tools/"> here </a>. Once downloaded you'll need to restart your pc, this is needed for activating the buildtools. If you prefer you can read the rest of the download section and restart your pc at the end before executing the program.
 You can install the main program by clicking this <a href="https://gitlab.kuleuven.be/u0143112/graaftel/-/raw/master/Code/Graphical%20Interface/Cellen_Tellen.zip
-"> link </a> which should download the zip file. Once downloaded unpack the zip file and everything should work right now. There are two ways to start the program: you can always type 'CellenTellen.exe' in your windows search bar or just make a shortcut for it on your Dekstop
- so you can always easily acces the program plus you can rename the program to 'Cellen Tellen'. After restarting your pc for the buildtools you can execute the program, it's possible it gives a firewall error which you need to ignore by pressing 'more information' and accepting the program. 
+"> link </a> which should start downloading the zip file. Once downloaded, unpack the zip file and place the folder somewhere on your computer. 
+
+There are two ways to start the program: you can always type 'CellenTellen.exe' in your windows search bar or just make a shortcut for it on your Dekstop. After restarting your pc for the buildtools you can execute the program, it's possible it gives a firewall error which you need to ignore by pressing 'more information' and accepting the program. 
 
 
 
@@ -53,23 +53,23 @@ In the Settings menu, available in the menu bar, there are a number of options.
 * It is not always desired to count and indicate the fibres, this functionality can be switched off.
 
 
-## GPU usage with nvidea graphicx card
-Our program supports GPU usage. In order to know check if you have a nvidea graphicx card, you can search for ´device manager´ in the windows search bar. Thereafter, go to display adapter and you'll find your processors.
-First of all, you need to install the right *Cuda version. As we use `tensorflow version 2.5.1`, you'll need to install `Cuda version 11.2` which can be found at the official nvidea website. You can click the link 
+## GPU usage with NVIDIA graphicx card
+Our program supports NVIDIA GPU usage for speeding up the algorithms. In order to check if you have a NVIDIA graphics card, you can search for ´device manager´ in the windows search bar. Thereafter, go to display adapter and you'll find your processors. If your computer doesn't have a NVIDIA graphics card, you will not be able to make use of this feature.
+
+Firstly, you need to install the right *Cuda version. As we use `tensorflow version 2.5.1`, you'll need to install `Cuda version 11.2` which can be found at the official NVIDIA website. for `windows 10` and `windows 11`, you can click the link 
 <a href="https://developer.download.nvidia.com/compute/cuda/11.2.2/local_installers/cuda_11.2.2_461.33_win10.exe">
 here 
-</a> to install directly. This version of Cuda which is only intended for `windows 10` and `windows 11`. 
+</a> to install directly.
 
 After the (hopefully) succesfull installation of Cuda, we need to install *cudnn. 
-Unfortunalty, to install cudnn you do need to log into the official website of nvidea. You can click
+Unfortunalty, to install cudnn you do need to log into the official website of NVIDIA. You can click
 <a href=https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.1.1.33/11.2_20210301/cudnn-11.2-windows-x64-v8.1.1.33.zip>
 here </a> to do so.
 After logging in or registering, it should have automatically downloaded the zip-folder. If not, click 
 <a href=https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.1.1.33/11.2_20210301/cudnn-11.2-windows-x64-v8.1.1.33.zip>
 here
 </a> again.
-If dowloaded, follow the next steps below. 
-Click on the cuda executable which you have downloaded.
+After dowloadeding, start the cuda executable.
 <p align="left">
 <img src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/image0.png" width="100">
 Click on the cuda executable which you have downloaded. 
