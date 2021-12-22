@@ -15,7 +15,7 @@ Welcome to the GitHub repository of CellenTellen! This repo contains the source 
 This repo contains the source code of the program as well as all the necessary files for the installation of CellenTellen. The program is fully written in Python and uses Deepcell as the prediction model.
 The program has been tested on `Windows 10` and `Windows 11` but is not supported for `Linux` or `macOS`. 
 
-This application uses the library DeepCell (https://github.com/vanvalenlab/deepcell-tf) which is available under the Apache 2.0 license, which can be obtained from http://www.apache.org/licenses/LICENSE-2.0.
+This application uses the library DeepCell (https://github.com/vanvalenlab/deepcell-tf) that is available under the Apache 2.0 license, which can be obtained from http://www.apache.org/licenses/LICENSE-2.0.
 
 ## How to install
 
