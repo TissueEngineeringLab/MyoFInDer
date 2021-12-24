@@ -1,15 +1,20 @@
+# coding: utf-8
+
 import os
-import errno, sys
+import errno
+import sys
 
 # Sadly, Python fails to provide the following magic number for us.
 ERROR_INVALID_NAME = 123
 
+
 def is_pathname_valid(pathname: str) -> bool:
-    '''
-    `True` if the passed pathname is a valid pathname for the current OS;
-    `False` otherwise.
-    '''
-    # If this pathname is either not a string or is but is empty, this pathname
+    """
+    Returns :obj:`True` if the passed pathname is a valid pathname for the
+    current OS, :obj:`False` otherwise.
+    """
+
+    # If this pathname is either not a string or is empty, this pathname
     # is invalid.
     try:
         if not isinstance(pathname, str) or not pathname:
