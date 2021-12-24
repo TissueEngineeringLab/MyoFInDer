@@ -52,7 +52,7 @@ def str_to_number_color(color_1, color_2):
                      ("Red", "Blue"): [2, 0]}
     else:
         raise ValueError("input needs to be of type str, got" +
-                         type(color_1) + "and" + type(color_2))
+                         str(type(color_1)) + "and" + str(type(color_2)))
     return colordict.get((color_1, color_2), [2, 1])  # default returns [2, 1]
 
 

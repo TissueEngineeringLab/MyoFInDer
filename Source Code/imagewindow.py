@@ -4,13 +4,11 @@
 # constant memory and not crams it with a huge resized image for the large
 # zooms.
 
-import tkinter as tk
+from tkinter import UNITS, Canvas
 from PIL import Image, ImageTk
-import table
-import cv2
-import PIL.Image
-import PIL.ImageTk
-import numpy as np
+from table import ImageCanvasSize
+from cv2 import cvtColor, imread, COLOR_BGR2RGB
+from numpy import zeros
 
 fibreNucleiColour = 'yellow'  # green
 nonFibreNucleiColour = 'red'  # 2A7DDE
@@ -24,11 +22,11 @@ class Zoom_Advanced:
         self.master = mainframe
 
         # Create canvas and put image on it
-        self.canvas = tk.Canvas(self.master, width=table.ImageCanvasSize[0],
-                                height=table.ImageCanvasSize[1],
-                                highlightthickness=3,
-                                highlightbackground="black")
-        self.canvas.grid(column=0, row=0, sticky=(tk.N, tk.W))
+        self.canvas = Canvas(self.master, width=ImageCanvasSize[0],
+                             height=ImageCanvasSize[1],
+                             highlightthickness=3,
+                             highlightbackground="black")
+        self.canvas.grid(column=0, row=0, sticky='NW')
         self.canvas.update()  # wait till canvas is create
         # Bind events to the Canvas
         self.canvas.bind('<Configure>', self.show_image)  # canvas is resized
@@ -41,7 +39,7 @@ class Zoom_Advanced:
         self.channelsRGB = (False, False, False)
         self.indicatorsNF = (False, False)
         self.indicatingNuclei = True
-        self.width, self.height = table.ImageCanvasSize
+        self.width, self.height = ImageCanvasSize
         self.imscale = 1.0  # scale for the canvas image
         self.delta = 1.3  # zoom delta
         self.nuclei = []
@@ -66,8 +64,8 @@ class Zoom_Advanced:
 
         eventx = window_x - 1
         eventy = window_y - frm_start
-        if self.image is not None and eventy < table.ImageCanvasSize[1] and \
-                eventx < table.ImageCanvasSize[0]:
+        if self.image is not None and eventy < ImageCanvasSize[1] and \
+                eventx < ImageCanvasSize[0]:
 
             # put white nucleus or set from blue to green
             radius = int(3.0 * self.imscale)
@@ -144,8 +142,8 @@ class Zoom_Advanced:
 
         eventx = window_x - 1
         eventy = window_y - frm_start
-        if self.image is not None and eventy < table.ImageCanvasSize[1] \
-                and eventx < table.ImageCanvasSize[0]:
+        if self.image is not None and eventy < ImageCanvasSize[1] \
+                and eventx < ImageCanvasSize[0]:
 
             # delete nucleus
             # coordinaten van linkerbovenhoek van de foto tov de window
@@ -240,18 +238,17 @@ class Zoom_Advanced:
     def _set_image(self):
         # load the image with the correct channels
         if self.imagePath != '':
-            cv_img = cv2.cvtColor(cv2.imread(self.imagePath),
-                                  cv2.COLOR_BGR2RGB)
+            cv_img = cvtColor(imread(self.imagePath), COLOR_BGR2RGB)
             if not self.channelsRGB[0]:
-                cv_img[:, :, 0] = np.zeros([cv_img.shape[0], cv_img.shape[1]])
+                cv_img[:, :, 0] = zeros([cv_img.shape[0], cv_img.shape[1]])
             if not self.channelsRGB[1]:
-                cv_img[:, :, 1] = np.zeros([cv_img.shape[0], cv_img.shape[1]])
+                cv_img[:, :, 1] = zeros([cv_img.shape[0], cv_img.shape[1]])
             if not self.channelsRGB[2]:
-                cv_img[:, :, 2] = np.zeros([cv_img.shape[0], cv_img.shape[1]])
-            image_in = PIL.Image.fromarray(cv_img)
+                cv_img[:, :, 2] = zeros([cv_img.shape[0], cv_img.shape[1]])
+            image_in = Image.fromarray(cv_img)
 
-            self.image = image_in.resize(table.ImageCanvasSize)  # open image
-            self.width, self.height = table.ImageCanvasSize
+            self.image = image_in.resize(ImageCanvasSize)  # open image
+            self.width, self.height = ImageCanvasSize
             self.show_image()
 
     def set_indicators(self, nuclei, fibres):
@@ -394,14 +391,14 @@ class Zoom_Advanced:
 
         # show the image
         self.show_image()
-        self.canvas.yview_moveto('0.0')
-        self.canvas.xview_moveto('0.0')
+        self.canvas.yview_moveto(0.0)
+        self.canvas.xview_moveto(0.0)
         self.show_image()
 
     def reset(self):
         # reset the canvas
         self.image = None  # open image
-        self.width, self.height = table.ImageCanvasSize
+        self.width, self.height = ImageCanvasSize
         self.imscale = 1.0  # scale for the canvas image
         self.delta = 1.3  # zoom delta
         for nuc in self.nuclei:
@@ -426,18 +423,18 @@ class Zoom_Advanced:
         self.canvas.configure(yscrollincrement='110')
         self.canvas.configure(xscrollincrement='160')
 
-        self.canvas.xview_scroll(1, tk.UNITS)
-        self.canvas.yview_scroll(1, tk.UNITS)
+        self.canvas.xview_scroll(1, UNITS)
+        self.canvas.yview_scroll(1, UNITS)
         if arrow_index == 2:
-            self.canvas.yview_scroll(-1, tk.UNITS)
+            self.canvas.yview_scroll(-1, UNITS)
         elif arrow_index == 3:
-            self.canvas.xview_scroll(-1, tk.UNITS)
+            self.canvas.xview_scroll(-1, UNITS)
         elif arrow_index == 0:
-            self.canvas.xview_scroll(-2, tk.UNITS)
-            self.canvas.yview_scroll(-1, tk.UNITS)
+            self.canvas.xview_scroll(-2, UNITS)
+            self.canvas.yview_scroll(-1, UNITS)
         elif arrow_index == 1:
-            self.canvas.xview_scroll(-1, tk.UNITS)
-            self.canvas.yview_scroll(-2, tk.UNITS)
+            self.canvas.xview_scroll(-1, UNITS)
+            self.canvas.yview_scroll(-2, UNITS)
 
         self.show_image()  # redraw the image
 

@@ -1,8 +1,8 @@
 # coding: utf-8
 
-import os
-import errno
-import sys
+from os import path, environ, lstat
+from errno import ENAMETOOLONG, ERANGE
+from sys import platform
 
 # Sadly, Python fails to provide the following magic number for us.
 ERROR_INVALID_NAME = 123
@@ -24,23 +24,23 @@ def is_pathname_valid(pathname: str) -> bool:
         # if any. Since Windows prohibits path components from containing `:`
         # characters, failing to strip this `:`-suffixed prefix would
         # erroneously invalidate all valid absolute Windows pathnames.
-        _, pathname = os.path.splitdrive(pathname)
+        _, pathname = path.splitdrive(pathname)
 
         # Directory guaranteed to exist. If the current OS is Windows, this is
         # the drive to which Windows was installed (e.g., the "%HOMEDRIVE%"
         # environment variable); else, the typical root directory.
-        root_dirname = os.environ.get('HOMEDRIVE', 'C:') \
-            if sys.platform == 'win32' else os.path.sep
-        assert os.path.isdir(root_dirname)   # ...Murphy and her ironclad Law
+        root_dirname = environ.get('HOMEDRIVE', 'C:') \
+            if platform == 'win32' else path.sep
+        assert path.isdir(root_dirname)   # ...Murphy and her ironclad Law
 
         # Append a path separator to this directory if needed.
-        root_dirname = root_dirname.rstrip(os.path.sep) + os.path.sep
+        root_dirname = root_dirname.rstrip(path.sep) + path.sep
 
         # Test whether each path component split from this pathname is valid or
         # not, ignoring non-existent and non-readable path components.
-        for pathname_part in pathname.split(os.path.sep):
+        for pathname_part in pathname.split(path.sep):
             try:
-                os.lstat(root_dirname + pathname_part)
+                lstat(root_dirname + pathname_part)
             # If an OS-specific exception is raised, its error code
             # indicates whether this pathname is valid or not. Unless this
             # is the case, this exception implies an ignorable kernel or
@@ -63,7 +63,7 @@ def is_pathname_valid(pathname: str) -> bool:
                 if hasattr(exc, 'winerror'):
                     if exc.winerror == ERROR_INVALID_NAME:
                         return False
-                elif exc.errno in {errno.ENAMETOOLONG, errno.ERANGE}:
+                elif exc.errno in {ENAMETOOLONG, ERANGE}:
                     return False
     # If a "TypeError" exception was raised, it almost certainly has the
     # error message "embedded NUL character" indicating an invalid pathname.

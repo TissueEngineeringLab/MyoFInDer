@@ -1,14 +1,14 @@
 # coding: utf-8
 
-from tkinter import *
-import xlsxwriter
-import shutil
-import numpy as np
-import cv2
-import os
+from tkinter import Scrollbar, VERTICAL, Frame, Canvas, RIGHT, Y, LEFT, BOTH
+from xlsxwriter import Workbook
+from shutil import copyfile, rmtree
+from numpy import load, asarray, save
+from cv2 import imread, line, ellipse, imwrite
+from os import path, mkdir
 
 # get the absolute path of the exe
-BASE_PATH = os.path.abspath('')  # [:-7]
+BASE_PATH = path.abspath('')  # [:-7]
 BASE_PATH += "/"
 
 # define the image canvas size
@@ -64,8 +64,8 @@ class Table:
     def save_table(self, directory):
 
         # save to an Excel
-        workbook = xlsxwriter.Workbook(BASE_PATH + 'Projects/' + directory +
-                                       '/' + directory + '.xlsx')
+        workbook = Workbook(BASE_PATH + 'Projects/' + directory +
+                            '/' + directory + '.xlsx')
         worksheet = workbook.add_worksheet()
         bold = workbook.add_format({'bold': True, 'align': 'center'})
 
@@ -73,7 +73,7 @@ class Table:
         worksheet.write(0, 0, "Image names", bold)
         max_size = 11
         for i, name in enumerate(self.filenames):
-            name = os.path.basename(self.filenames[i])
+            name = path.basename(self.filenames[i])
             worksheet.write(i+2, 0, name)
             max_size = max(len(name), max_size)
         worksheet.set_column(0, 0, width=max_size)
@@ -116,14 +116,14 @@ class Table:
         self.reset()
 
         # load the data
-        if os.path.isfile(directory + '/data.npy') and \
-                os.path.isdir(directory + '/Original Images'):
-            data = np.load(directory + '/data.npy', allow_pickle=True).tolist()
+        if path.isfile(directory + '/data.npy') and \
+                path.isdir(directory + '/Original Images'):
+            data = load(directory + '/data.npy', allow_pickle=True).tolist()
             for item in data:
                 if len(item) == 4:
                     if type(item[0]) == str and type(item[1]) == list and \
                             type(item[2]) == list and type(item[3]) == list:
-                        if os.path.isfile(item[0]):
+                        if path.isfile(item[0]):
                             self.filenames.append(BASE_PATH + item[0])
                             self.nucleiPositions.append([item[1], item[2]])
                             self.fibrePositions.append(item[3])
@@ -140,38 +140,37 @@ class Table:
         to_save = []
         for i, filename in enumerate(self.filenames):
             to_save.append(["Projects/" + directory + '/Original Images/' +
-                            os.path.basename(filename),
+                            path.basename(filename),
                             self.nucleiPositions[i][0],
                             self.nucleiPositions[i][1],
                             self.fibrePositions[i]])
 
         # convert to numpy
-        arr = np.asarray(to_save)
-        np.save(BASE_PATH + 'Projects/' + directory + '/data', arr)
+        arr = asarray(to_save)
+        save(BASE_PATH + 'Projects/' + directory + '/data', arr)
 
     def save_originals(self, directory):
 
         # create a directory with the original images
-        if not os.path.isdir(BASE_PATH + 'Projects/' + directory +
-                             '/Original Images'):
-            os.mkdir(BASE_PATH + 'Projects/' + directory + '/Original Images')
+        if not path.isdir(BASE_PATH + 'Projects/' + directory +
+                          '/Original Images'):
+            mkdir(BASE_PATH + 'Projects/' + directory + '/Original Images')
 
         # save the images
         for filename in self.filenames:
-            basename = os.path.basename(filename)
+            basename = path.basename(filename)
             if filename != BASE_PATH + 'Projects/' + directory + \
                     '/Original Images/' + basename:
-                shutil.copyfile(filename, BASE_PATH + 'Projects/' + directory
-                                + '/Original Images/' + basename)
+                copyfile(filename, BASE_PATH + 'Projects/' + directory
+                         + '/Original Images/' + basename)
 
     def save_altered_images(self, directory):
 
         # create a directory with the altered images
-        if os.path.isdir(BASE_PATH + 'Projects/' + directory +
-                         '/Altered Images'):
-            shutil.rmtree(BASE_PATH + 'Projects/' + directory +
-                          '/Altered Images')
-        os.mkdir(BASE_PATH + 'Projects/' + directory + '/Altered Images')
+        if path.isdir(BASE_PATH + 'Projects/' + directory +
+                      '/Altered Images'):
+            rmtree(BASE_PATH + 'Projects/' + directory + '/Altered Images')
+        mkdir(BASE_PATH + 'Projects/' + directory + '/Altered Images')
 
         # read the images and then save them
         for i, filename in enumerate(self.filenames):
@@ -180,17 +179,17 @@ class Table:
     def _draw_nuclei_save(self, index, project_name):
 
         # loop through the fibres
-        cv_img = cv2.imread(BASE_PATH + "Projects/" + project_name +
-                            "/Original Images/" +
-                            os.path.basename(self.filenames[index]))
+        cv_img = imread(BASE_PATH + "Projects/" + project_name +
+                        "/Original Images/" +
+                        path.basename(self.filenames[index]))
         square_size = 9
         for i in range(len(self.fibrePositions[index])):
             centre = (int(self.fibrePositions[index][i][0] * cv_img.shape[1]),
                       int(self.fibrePositions[index][i][1] * cv_img.shape[0]))
-            cv2.line(cv_img, (centre[0] + square_size, centre[1]),
-                     (centre[0] - square_size, centre[1]), (0, 0, 255), 2)
-            cv2.line(cv_img, (centre[0], centre[1] + square_size),
-                     (centre[0], centre[1] - square_size), (0, 0, 255), 2)
+            line(cv_img, (centre[0] + square_size, centre[1]),
+                 (centre[0] - square_size, centre[1]), (0, 0, 255), 2)
+            line(cv_img, (centre[0], centre[1] + square_size),
+                 (centre[0], centre[1] - square_size), (0, 0, 255), 2)
 
         # loop through the nuclei
         for i in range(len(self.nucleiPositions[index][0]) +
@@ -202,10 +201,10 @@ class Table:
                               cv_img.shape[1]),
                           int(self.nucleiPositions[index][0][i][1] *
                               cv_img.shape[0]))
-                cv2.ellipse(cv_img, centre, (3, 3), 0, 0, 360,
-                            (0, 0, 255), -1)
-                cv2.ellipse(cv_img, centre, (4, 4), 0, 0, 360,
-                            (255, 255, 255), 1)
+                ellipse(cv_img, centre, (3, 3), 0, 0, 360,
+                        (0, 0, 255), -1)
+                ellipse(cv_img, centre, (4, 4), 0, 0, 360,
+                        (255, 255, 255), 1)
             else:
                 # yellow (positive)
                 centre = (int(self.nucleiPositions[index][1]
@@ -214,15 +213,15 @@ class Table:
                           int(self.nucleiPositions[index][1]
                               [i - len(self.nucleiPositions[index][0])][1] *
                               cv_img.shape[0]))
-                cv2.ellipse(cv_img, centre, (3, 3), 0, 0, 360,
-                            (0, 255, 255), -1)
-                cv2.ellipse(cv_img, centre, (4, 4), 0, 0, 360,
-                            (255, 255, 255), 1)
+                ellipse(cv_img, centre, (3, 3), 0, 0, 360,
+                        (0, 255, 255), -1)
+                ellipse(cv_img, centre, (4, 4), 0, 0, 360,
+                        (255, 255, 255), 1)
 
         # save it
-        cv2.imwrite(BASE_PATH + "Projects/" + project_name + "/Altered Images/"
-                    + os.path.basename(self.filenames[index])[:-4] + ".png",
-                    cv_img)
+        imwrite(BASE_PATH + "Projects/" + project_name + "/Altered Images/"
+                + path.basename(self.filenames[index])[:-4] + ".png",
+                cv_img)
 
     def onwheel(self, delta, x, y, frm_start):
 
@@ -493,7 +492,7 @@ class Table:
                                                  width=1, fill=labelLineColour)
 
             # set the filename
-            file_name = os.path.basename(self.filenames[i])
+            file_name = path.basename(self.filenames[i])
             if len(file_name) >= 59:
                 file_name = '...' + file_name[-59:]
 

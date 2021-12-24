@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from tkinter import ttk, filedialog, N, E, S, W, Canvas, Tk, IntVar, \
+from tkinter import ttk, filedialog, Canvas, Tk, IntVar, \
     Toplevel, Scale, HORIZONTAL, DISABLED, NORMAL, PhotoImage, Menu, \
     StringVar, BooleanVar
 from PIL import ImageTk, Image
@@ -10,7 +10,7 @@ from os import path, mkdir
 from table import ImageCanvasSize, ImageCanvasStandardFactor, Table
 from ctypes import pythonapi, py_object, windll
 from platform import release
-from imagewindow import table, Zoom_Advanced
+from imagewindow import Zoom_Advanced
 from validateFileName import is_pathname_valid
 from shutil import rmtree
 from webbrowser import open_new
@@ -69,7 +69,7 @@ splashCanvas.create_image(SCREEN_WIDTH * SPLASH_SIZE_FACTOR / 2,
                           SCREEN_HEIGHT * SPLASH_SIZE_FACTOR / 2,
                           image=photoImg)
 splashCanvas.create_text(20, int((fadeEnd - 0.05) * splashImage.size[1]),
-                         anchor=W,
+                         anchor='w',
                          text="Cellen Tellen - A P&O project by Quentin De "
                               "Rore, Ibrahim El Kaddouri, \nEmiel "
                               "Vanspranghels and Henri Vermeersch, assisted "
@@ -78,7 +78,7 @@ splashCanvas.create_text(20, int((fadeEnd - 0.05) * splashImage.size[1]),
                          font='Helvetica 7 bold')
 splashLoadingLabel = splashCanvas.create_text(20, int((0.7 - 0.05) *
                                                       splashImage.size[1]),
-                                              anchor=W,
+                                              anchor="w",
                                               text='Importing dependencies...',
                                               fill="white",
                                               font='Helvetica 7 bold')
@@ -417,8 +417,8 @@ def settings_changed(setting_index=0):
                 smallObjectsThreshold.get(), recentProjects,
                 blueChannelBool.get(), greenChannelBool.get(),
                 redChannelBool.get(), showNucleiBool.get(),
-                showFibresBool.get(), table.ImageCanvasSize[0],
-                table.ImageCanvasSize[1]]
+                showFibresBool.get(), ImageCanvasSize[0],
+                ImageCanvasSize[1]]
 
     # convert to numpy and save
     arr = asarray(settings)
@@ -982,23 +982,21 @@ def change_indications():
 def change_window_size(event):
     factor = 100
     if event.char == 'a':  # make smaller (but same ratio)
-        table.ImageCanvasSize = (int(table.ImageCanvasSize[0] -
-                                     table.ImageCanvasSize[0]/factor),
-                                 int((table.ImageCanvasSize[0] -
-                                      table.ImageCanvasSize[0]/factor) *
-                                     ImageCanvasStandardFactor))
+        size = (int(ImageCanvasSize[0] - ImageCanvasSize[0]/factor),
+                int((ImageCanvasSize[0] - ImageCanvasSize[0]/factor) *
+                ImageCanvasStandardFactor))
     elif event.char == 'z':  # make bigger (but same ratio)
-        table.ImageCanvasSize = (int(table.ImageCanvasSize[0] +
-                                     table.ImageCanvasSize[0]/factor),
-                                 int((table.ImageCanvasSize[0] +
-                                      table.ImageCanvasSize[0]/factor) *
-                                     ImageCanvasStandardFactor))
+        size = (int(ImageCanvasSize[0] + ImageCanvasSize[0]/factor),
+                int((ImageCanvasSize[0] + ImageCanvasSize[0]/factor) *
+                ImageCanvasStandardFactor))
+    else:
+      size = ImageCanvasSize
 
     # update button gridpositions
-    frm.grid_columnconfigure(0, minsize=table.ImageCanvasSize[0] + 4)
+    frm.grid_columnconfigure(0, minsize=size[0] + 4)
 
     # update canvas
-    ImageCanvas.update_size(table.ImageCanvasSize)
+    ImageCanvas.update_size(size)
 
 
 # initialised the ajdustment of the window size, the first time you boot up
@@ -1273,7 +1271,7 @@ if path.isfile(BASE_PATH + 'general.npy'):
     redChannelBool.set(settingsarr[10])
     showNucleiBool.set(settingsarr[11])
     showFibresBool.set(settingsarr[12])
-    table.ImageCanvasSize = (settingsarr[13], settingsarr[14])
+    ImageCanvasSize = (settingsarr[13], settingsarr[14])
 
     # set the table and canvas
     ImageCanvas = Zoom_Advanced(root, nucleiTable)
@@ -1310,7 +1308,7 @@ set_indicators()
 
 
 # set grid sizes
-frm.grid_columnconfigure(0, minsize=table.ImageCanvasSize[0]+4)
+frm.grid_columnconfigure(0, minsize=ImageCanvasSize[0]+4)
 frm.grid_columnconfigure(1, minsize=ButtonRowWidth)
 frm.grid_columnconfigure(2, minsize=ButtonRowWidth)
 frm.grid_columnconfigure(3, minsize=ButtonRowWidth)
