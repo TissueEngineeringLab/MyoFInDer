@@ -73,18 +73,18 @@ here
 </a> again.
 After downloading, follow the steps below.
 <p align="left">
-<img src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/download_icon.png" width="100">
+<img src="Assets/download_icon.png" width="100">
 Click on the downloaded cuda executable. 
 </p>
 Follow the installation instruction as seen in the images below. 
 
-|                                                                                                             |                                                                                                             |                                                                                                             |
-|:-----------------------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------------------:|
-| <img width="300" src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/cuda_install_1.png"> | <img width="300" src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/cuda_install_2.png"> | <img width="300" src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/cuda_install_3.png"> |
-| <img width="300" src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/cuda_install_4.png"> | <img width="300" src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/cuda_install_5.png"> | <img width="300" src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/cuda_install_6.png"> |
+|                                                   |                                                   |                                                   |
+|:-------------------------------------------------:|:-------------------------------------------------:|:-------------------------------------------------:|
+| <img width="300" src="Assets/cuda_install_1.png"> | <img width="300" src="Assets/cuda_install_2.png"> | <img width="300" src="Assets/cuda_install_3.png"> |
+| <img width="300" src="Assets/cuda_install_4.png"> | <img width="300" src="Assets/cuda_install_5.png"> | <img width="300" src="Assets/cuda_install_6.png"> |
 
 When the installation is complete, you have to copy all the contents from the cudnn folder to the folder `C:\Program Files\NVIDIA GPU computing toolkit\CUDA\v11.2`. This is shown in the images below.
 
-|                                                                                                           |                                                                                                           |     |
-|:---------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------:|:---:|
-| <img width="300" src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/copy_files_1.png"> | <img width="300" src="https://github.com/Quentinderore2/Cellen-Tellen/blob/main/Assets/copy_files_2.png"> |     |
+|                                                 |                                                 |     |
+|:-----------------------------------------------:|:-----------------------------------------------:|:---:|
+| <img width="300" src="Assets/copy_files_1.png"> | <img width="300" src="Assets/copy_files_2.png"> |     |
