@@ -19,12 +19,12 @@ app = None
 
 
 # initialise the mesmer app (happens while loading)
-def initializeMesmer():
+def initialize_mesmer():
     global app
     app = Mesmer()
 
 
-def StrToNumberColor(color_1, color_2):
+def str_to_number_color(color_1, color_2):
     """
     Convert "r","g","b" into integers    
 
@@ -56,7 +56,7 @@ def StrToNumberColor(color_1, color_2):
     return colordict.get((color_1, color_2), [2, 1])  # default returns [2, 1]
 
 
-def cellenHerkennen(image, wholeColor, parameters):
+def cellen_herkennen(image, whole_color, parameters):
     """
     Returns an image with labels of the nuclei that it counted.
     Each nucleus has its own unique number.
@@ -68,7 +68,7 @@ def cellenHerkennen(image, wholeColor, parameters):
     image : nd.array
         of shape (N,x,y,3) where N is amount of images. xy the height and width
         and 3 the rgb values of each pixel. (output readAllFiles)
-    wholeColor : List
+    whole_color : List
         List of 2 integers (integers from 0 to 2). (output StrToNumberColor)
     parameters : List
         List of parameters for the prediction of the cells. 
@@ -86,7 +86,7 @@ def cellenHerkennen(image, wholeColor, parameters):
     # extract the desired colour from the image.
     # the predict function requires image with only 2 colors,
     # one for nuclei and other for cytoplasm(muliplex tissue)
-    image_color = np.array([image[:, :, wholeColor]])
+    image_color = np.array([image[:, :, whole_color]])
         
     labeled_image = app.predict(image_color, batch_size=parameters[7],
                                 image_mpp=parameters[8],
@@ -105,34 +105,35 @@ def cellenHerkennen(image, wholeColor, parameters):
                        labeled_image.shape[2])).astype(np.uint16)
 
 
-def FiberDetectionThresholdandErode(greenChannel, deepcell, doFibreCounting):
+def fiber_detection_threshold_and_erode(green_channel, deepcell,
+                                        do_fibre_counting):
 
     # apply first base threshold
     kernel = np.ones((5, 5), np.uint8)
-    eerste_threshold = cv2.threshold(greenChannel, 20, 255,
+    eerste_threshold = cv2.threshold(green_channel, 20, 255,
                                      cv2.THRESH_BINARY)[1]
 
-    toegepast = cv2.bitwise_and(eerste_threshold, greenChannel)
+    toegepast = cv2.bitwise_and(eerste_threshold, green_channel)
     gemiddelde_intensiteit_groen = cv2.mean(toegepast, eerste_threshold)[0]
     threshold = int(np.floor(0.7 * np.mean([gemiddelde_intensiteit_groen,
-                                            cv2.mean(greenChannel)[0]])))
-    green_fibers_manual = cv2.threshold(greenChannel, threshold, 255,
+                                            cv2.mean(green_channel)[0]])))
+    green_fibers_manual = cv2.threshold(green_channel, threshold, 255,
                                         cv2.THRESH_BINARY)[1]
 
     # apply an adaptive threshold
     test3 = cv2.countNonZero(green_fibers_manual)
-    r3 = test3/(greenChannel.shape[0]*greenChannel.shape[1])
+    r3 = test3/(green_channel.shape[0] * green_channel.shape[1])
 
     threshold = int(np.floor((1.58 * r3) *
                              np.mean([gemiddelde_intensiteit_groen,
-                                      cv2.mean(greenChannel)[0]])))
+                                      cv2.mean(green_channel)[0]])))
     minimumthreshold = 20
     maximumthreshold = 36
     if threshold < minimumthreshold:
         threshold = minimumthreshold
     if threshold > maximumthreshold:
         threshold = maximumthreshold
-    green_fibers_manual = cv2.threshold(greenChannel, threshold, 255,
+    green_fibers_manual = cv2.threshold(green_channel, threshold, 255,
                                         cv2.THRESH_BINARY)[1]
     open_ = green_fibers_manual
 
@@ -178,7 +179,7 @@ def FiberDetectionThresholdandErode(greenChannel, deepcell, doFibreCounting):
 
     # find contours of the fibers
     fibre_centres = []
-    if doFibreCounting:
+    if do_fibre_counting:
         new = cv2.resize(new, None, fx=1/2, fy=1/2)  # for speed
         contours = cv2.findContours(new, cv2.RETR_CCOMP,
                                     cv2.CHAIN_APPROX_SIMPLE)
@@ -190,9 +191,9 @@ def FiberDetectionThresholdandErode(greenChannel, deepcell, doFibreCounting):
             if hierarchy[0][i][3] == -1:
 
                 # get geometrical centre
-                M = cv2.moments(c)
-                cx = int(M['m10']/M['m00'])
-                cy = int(M['m01']/M['m00'])
+                m = cv2.moments(c)
+                cx = int(m['m10'] / m['m00'])
+                cy = int(m['m01'] / m['m00'])
 
                 # cut out the contour
                 black_im = np.zeros((new.shape[0] + 1, new.shape[1] + 1, 1),
@@ -226,24 +227,24 @@ def FiberDetectionThresholdandErode(greenChannel, deepcell, doFibreCounting):
                     (cy - above_percentile[0]) ** 2 - \
                     (dist_transform[above_percentile[0],
                                     above_percentile[1]] * max_dis / 255) ** 3
-                minIndex = np.argmin(function)
-                fibre_centres.append([above_percentile[1][minIndex] * 2,
-                                      above_percentile[0][minIndex] * 2])
+                min_index = np.argmin(function)
+                fibre_centres.append([above_percentile[1][min_index] * 2,
+                                      above_percentile[0][min_index] * 2])
 
     return applied_deepcell, fibre_centres
 
 
-def FibreDetection_NucleiPositions(original,
-                                   labeledImage,
-                                   doFibrePositions,
-                                   fibreThreshold=0.85):
+def fibre_detection__nuclei_positions(original,
+                                      labeled_image,
+                                      do_fibre_positions,
+                                      fibre_threshold=0.85):
 
     list_tuple_location = []
     list_tuple_location_fibre = []
 
     # get the fibre detection
-    applied, list_tuple_fibre_centres = FiberDetectionThresholdandErode(
-        original, labeledImage, doFibrePositions)
+    applied, list_tuple_fibre_centres = fiber_detection_threshold_and_erode(
+        original, labeled_image, do_fibre_positions)
 
     i = 1
     y_half_scan_range = 25
@@ -254,7 +255,7 @@ def FibreDetection_NucleiPositions(original,
 
         # get lowest and highest ypixel scan
         lowest_y = max(0, prev_y - y_half_scan_range)
-        highest_y = min(labeledImage.shape[0], prev_y + y_half_scan_range + 1)
+        highest_y = min(labeled_image.shape[0], prev_y + y_half_scan_range + 1)
 
         max_y = 0
         min_y = 0
@@ -262,18 +263,18 @@ def FibreDetection_NucleiPositions(original,
 
         while True:
             # scan for the nucleus inside this band
-            alle_pixels = np.where(labeledImage[lowest_y:highest_y, :] == i)
+            alle_pixels = np.where(labeled_image[lowest_y:highest_y, :] == i)
 
             x_cos = alle_pixels[1]
             y_cos = alle_pixels[0]
 
             # check if we lost the nucleus
             if x_cos.shape[0] == 0:
-                if lowest_y == 0 and highest_y == labeledImage.shape[0]:
+                if lowest_y == 0 and highest_y == labeled_image.shape[0]:
                     done = True
                     break
                 lowest_y = 0
-                highest_y = labeledImage.shape[0]
+                highest_y = labeled_image.shape[0]
                 continue
 
             # get min and max
@@ -283,7 +284,7 @@ def FibreDetection_NucleiPositions(original,
             # break if we found it fully
             if (min_y != lowest_y or min_y == 0) and \
                     (max_y != highest_y - 1 or max_y ==
-                     labeledImage.shape[0] - 1):
+                     labeled_image.shape[0] - 1):
                 break
 
             # if we did not completely detect the nucleus
@@ -313,7 +314,7 @@ def FibreDetection_NucleiPositions(original,
                                                   min_x:max_x + 1] == i)
 
         # append to correct list
-        if number_of_fibre_pixels / number_of_pixels >= fibreThreshold:
+        if number_of_fibre_pixels / number_of_pixels >= fibre_threshold:
             list_tuple_location_fibre.append(loc)
         else:
             list_tuple_location.append(loc)
@@ -326,12 +327,15 @@ def FibreDetection_NucleiPositions(original,
 def deepcell_functie(filename,
                      kleurcellen,
                      kleurcyto,
-                     doFibreCounting,
-                     smallObjectsThresh):
+                     do_fibre_counting,
+                     small_objects_thresh):
     """
-    :param path: the path from which to extract the .tif or .tiff image
     :param filename: the name of the file to extract
     (filename.tif/filename.tiff -> without extension)
+    :param kleurcellen:
+    :param kleurcyto:
+    :param do_fibre_counting:
+    :param small_objects_thresh:
     :return: Two lists, one with centers of pixels outside of fibre, one with
     centers of pixels inside
     """
@@ -344,22 +348,22 @@ def deepcell_functie(filename,
     t2 = time.time()
 
     amount_of_files = 8
-    whole_color = StrToNumberColor(kleurcellen, kleurcyto)
+    whole_color = str_to_number_color(kleurcellen, kleurcyto)
     print(whole_color)
     
     # deepclel post process parameters
-    parameters = [0.05, 0, 0.3, 2, smallObjectsThresh, 15, 2,
+    parameters = [0.05, 0, 0.3, 2, small_objects_thresh, 15, 2,
                   amount_of_files, None]  # veel sneller als mpp = None
     # parameters = [0.1, 0, 0.3, 2, 414, 15, 2, amount_of_files, None]
 
     # get the deepcell prediction segmentation mask
-    labeled_image = cellenHerkennen(image, whole_color, parameters)
+    labeled_image = cellen_herkennen(image, whole_color, parameters)
 
     t3 = time.time()
     # get the lists of fibre and nuclei centres
     list_tuple_location, list_tuple_location_fibre, \
-        list_tuple_fibre_centres = FibreDetection_NucleiPositions(
-            image[:, :, whole_color[1]], labeled_image, doFibreCounting)
+        list_tuple_fibre_centres = fibre_detection__nuclei_positions(
+            image[:, :, whole_color[1]], labeled_image, do_fibre_counting)
 
     t10 = time.time()
     print(t2 - t1, t3 - t2, (t10 - t3), t10 - t1)

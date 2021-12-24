@@ -61,9 +61,9 @@ class Table:
         self.labels = []
         self.rectangles = []
 
-    def saveTable(self, directory):
+    def save_table(self, directory):
 
-        # save to an excel
+        # save to an Excel
         workbook = xlsxwriter.Workbook(BASE_PATH + 'Projects/' + directory +
                                        '/' + directory + '.xlsx')
         worksheet = workbook.add_worksheet()
@@ -110,7 +110,7 @@ class Table:
 
         workbook.close()
 
-    def loadProject(self, directory):
+    def load_project(self, directory):
 
         # reset
         self.reset()
@@ -129,12 +129,12 @@ class Table:
                             self.fibrePositions.append(item[3])
 
         # make the table
-        self.makeTable()
+        self._make_table()
 
-    def imagesAvailable(self):
+    def images_available(self):
         return len(self.filenames) != 0
 
-    def saveData(self, directory):
+    def save_data(self, directory):
 
         # make array
         to_save = []
@@ -149,7 +149,7 @@ class Table:
         arr = np.asarray(to_save)
         np.save(BASE_PATH + 'Projects/' + directory + '/data', arr)
 
-    def saveOriginals(self, directory):
+    def save_originals(self, directory):
 
         # create a directory with the original images
         if not os.path.isdir(BASE_PATH + 'Projects/' + directory +
@@ -164,7 +164,7 @@ class Table:
                 shutil.copyfile(filename, BASE_PATH + 'Projects/' + directory
                                 + '/Original Images/' + basename)
 
-    def saveAlteredImages(self, directory):
+    def save_altered_images(self, directory):
 
         # create a directory with the altered images
         if os.path.isdir(BASE_PATH + 'Projects/' + directory +
@@ -175,12 +175,12 @@ class Table:
 
         # read the images and then save them
         for i, filename in enumerate(self.filenames):
-            self.drawNuclei_Save(i, directory)
+            self._draw_nuclei_save(i, directory)
 
-    def drawNuclei_Save(self, index, projectName):
+    def _draw_nuclei_save(self, index, project_name):
 
         # loop through the fibres
-        cv_img = cv2.imread(BASE_PATH + "Projects/" + projectName +
+        cv_img = cv2.imread(BASE_PATH + "Projects/" + project_name +
                             "/Original Images/" +
                             os.path.basename(self.filenames[index]))
         square_size = 9
@@ -220,25 +220,24 @@ class Table:
                             (255, 255, 255), 1)
 
         # save it
-        cv2.imwrite(BASE_PATH + "Projects/" + projectName + "/Altered Images/"
+        cv2.imwrite(BASE_PATH + "Projects/" + project_name + "/Altered Images/"
                     + os.path.basename(self.filenames[index])[:-4] + ".png",
                     cv_img)
 
-    def onwheel(self, delta, x, y, frmStart):
+    def onwheel(self, delta, x, y, frm_start):
 
         # scroll down the canvas if we are inside the canvas
         relx = x - self.topLeftX
-        rely = y - self.topLeftY - frmStart  # frmStart is menubar height
-        if len(self.filenames) != 0 and rely <= len(self.filenames) * \
-                self.rowHeight * 2 - 1 and rely >= 0 and relx >= 0 \
-                and relx <= self.width:
+        rely = y - self.topLeftY - frm_start  # frmStart is menubar height
+        if self.filenames and 0 <= rely <= len(self.filenames) * \
+                self.rowHeight * 2 - 1 and 0 <= relx <= self.width:
             self.canvas.yview_scroll(int(-1 * (delta / 120)), "units")
 
        # update the imagecanvas handle
-    def setImageCanvas(self, imageCanvas):
-        self.imageCanvas = imageCanvas
+    def set_image_canvas(self, image_canvas):
+        self.imageCanvas = image_canvas
 
-    def updateData(self, index):
+    def update_data(self, index):
         # set the variables labels for the image
         total_nuclei = len(self.nucleiPositions[index][0]) + \
                        len(self.nucleiPositions[index][1])
@@ -260,44 +259,43 @@ class Table:
         # these functions are called by imagewindow to update the lists
         # in the table
 
-    def addFibre(self, position):
+    def add_fibre(self, position):
         self.fibrePositions[self.currentImageIndex].append(position)
-        self.updateData(self.currentImageIndex)
+        self.update_data(self.currentImageIndex)
 
-    def removeFibre(self, position):
+    def remove_fibre(self, position):
         self.fibrePositions[self.currentImageIndex].remove(position)
-        self.updateData(self.currentImageIndex)
+        self.update_data(self.currentImageIndex)
 
-    def toBlue(self, position):
+    def to_blue(self, position):
         self.nucleiPositions[self.currentImageIndex][0].append(position)
         self.nucleiPositions[self.currentImageIndex][1].remove(position)
-        self.updateData(self.currentImageIndex)
+        self.update_data(self.currentImageIndex)
 
-    def addBlue(self, position):
+    def add_blue(self, position):
         self.nucleiPositions[self.currentImageIndex][0].append(position)
-        self.updateData(self.currentImageIndex)
+        self.update_data(self.currentImageIndex)
 
-    def removeBlue(self, position):
+    def remove_blue(self, position):
         self.nucleiPositions[self.currentImageIndex][0].remove(position)
-        self.updateData(self.currentImageIndex)
+        self.update_data(self.currentImageIndex)
 
-    def removeGreen(self, position):
+    def remove_green(self, position):
         self.nucleiPositions[self.currentImageIndex][1].remove(position)
-        self.updateData(self.currentImageIndex)
+        self.update_data(self.currentImageIndex)
 
-    def toGreen(self, position):
+    def to_green(self, position):
         self.nucleiPositions[self.currentImageIndex][1].append(position)
         self.nucleiPositions[self.currentImageIndex][0].remove(position)
-        self.updateData(self.currentImageIndex)
+        self.update_data(self.currentImageIndex)
 
-    def motion(self, x, y, frmStart):
+    def motion(self, x, y, frm_start):
 
         # only if there are items and we are in the bounds
         relx = x - self.topLeftX
-        rely = y - self.topLeftY - frmStart  # frmStart is menubar height
-        if len(self.filenames) != 0 and rely <= len(self.filenames) * \
-                self.rowHeight*2-1 and rely >= 0 and relx >= 0 \
-                and relx <= self.width:
+        rely = y - self.topLeftY - frm_start  # frmStart is menubar height
+        if self.filenames and 0 <= rely <= len(self.filenames) * \
+                self.rowHeight * 2 - 1 and 0 <= relx <= self.width:
             # unhover previous
             if self.hoveringIndex != -1:
                 self.unhover(self.hoveringIndex)
@@ -353,7 +351,7 @@ class Table:
             self.canvas.itemconfig(self.labels[index][4], fill=labelLineColour)
             self.canvas.itemconfig(self.labels[index][5], fill=labelLineColour)
 
-    def unselectImage(self, index):
+    def _unselect_image(self, index):
         # set the esthetics of selectibg a table entry (like making the text
         # more black)
         if index != 0:
@@ -371,11 +369,11 @@ class Table:
         self.canvas.itemconfig(self.labels[index][4], fill=labelLineColour)
         self.canvas.itemconfig(self.labels[index][5], fill=labelLineColour)
 
-    def selectImage(self, index):
+    def _select_image(self, index):
         # reset the esthetics of selecting a table entry
-        self.imageCanvas.loadImage(self.filenames[index],
-                                   self.nucleiPositions[index],
-                                   self.fibrePositions[index])
+        self.imageCanvas.load_image(self.filenames[index],
+                                    self.nucleiPositions[index],
+                                    self.fibrePositions[index])
         self.currentImageIndex = index
         if index != 0:
             self.canvas.itemconfig(self.itemLines[index-1][1],
@@ -401,20 +399,19 @@ class Table:
         self.canvas.itemconfig(self.labels[index][5],
                                fill=labelLineColour_Selected)
 
-    def leftClick(self, x, y, frmStart):
+    def left_click(self, x, y, frm_start):
 
         # only if there are items, and we are in the bounds
         relx = x - self.topLeftX
-        rely = y - self.topLeftY - frmStart  # frmStart is menubar height enal
-        if len(self.filenames) != 0 and rely <= len(self.filenames) * \
-                self.rowHeight*2-1 and rely >= 0 and relx >= 0 \
-                and relx <= self.width:
+        rely = y - self.topLeftY - frm_start  # frmStart is menubar height enal
+        if self.filenames and 0 <= rely <= len(self.filenames) * \
+                self.rowHeight * 2 - 1 and 0 <= relx <= self.width:
             # unselect previous
-            self.unselectImage(self.currentImageIndex)
+            self._unselect_image(self.currentImageIndex)
 
             # select new image
-            self.selectImage(int(self.canvas.canvasy(rely) /
-                                 (self.rowHeight*2)))
+            self._select_image(int(self.canvas.canvasy(rely) /
+                                   (self.rowHeight * 2)))
 
     def reset(self):
         # remove everything previous
@@ -436,7 +433,7 @@ class Table:
         self.fibrePositions = []
         self.filenames = []
 
-    def addImages(self, filenames):
+    def add_images(self, filenames):
 
         # remove everything previous
         for item in self.labels:
@@ -457,9 +454,9 @@ class Table:
         self.fibrePositions += [[] for _ in self.filenames]
 
         # make the table
-        self.makeTable()
+        self._make_table()
 
-    def makeTable(self):
+    def _make_table(self):
 
         # make the table
         for i in range(len(self.filenames)):
@@ -533,7 +530,7 @@ class Table:
             self.rectangles.append(rect)
 
             # update the text
-            self.updateData(i)
+            self.update_data(i)
 
         # set scrollregion
         self.canvas.config(scrollregion=(0, 0, self.width,
@@ -542,29 +539,30 @@ class Table:
 
         # create hightlighted parts
         if not len(self.filenames) == 0:
-            self.selectImage(self.currentImageIndex)
+            self._select_image(self.currentImageIndex)
         else:
             self.imageCanvas.reset()
 
-    def getFileNames(self):
+    def get_file_names(self):
         return self.filenames
 
-    def getCurrentImageIndex(self):
+    def get_current_image_index(self):
         return self.currentImageIndex
 
-    def inputProcessedData(self, nucleiNegativePositions,
-                           nucleiPositivePositins, fibreCentres, index):
+    def input_processed_data(self, nuclei_negative_positions,
+                             nuclei_positive_positions, fibre_centres, index):
 
         # update the data
-        self.nucleiPositions[index] = [nucleiNegativePositions,
-                                       nucleiPositivePositins]
-        if len(fibreCentres) > 0:
-            self.fibrePositions[index] = fibreCentres
-        self.updateData(index)
+        self.nucleiPositions[index] = [nuclei_negative_positions,
+                                       nuclei_positive_positions]
+        if len(fibre_centres) > 0:
+            self.fibrePositions[index] = fibre_centres
+        self.update_data(index)
 
         # load the new image if necessary
         if index == self.currentImageIndex:
-            self.imageCanvas.loadImage(
-                self.filenames[self.currentImageIndex],
-                self.nucleiPositions[self.currentImageIndex],
-                self.fibrePositions[self.currentImageIndex])
+            self.imageCanvas.load_image(self.filenames[self.currentImageIndex],
+                                        self.nucleiPositions[
+                                            self.currentImageIndex],
+                                        self.fibrePositions[
+                                            self.currentImageIndex])

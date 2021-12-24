@@ -18,9 +18,9 @@ nonFibreNucleiColour = 'red'  # 2A7DDE
 
 class Zoom_Advanced:
     """ Advanced zoom of the image """
-    def __init__(self, mainframe, nucleiTable):
+    def __init__(self, mainframe, nuclei_table):
         """ Initialize the main Frame """
-        self.nucleiTable = nucleiTable
+        self.nucleiTable = nuclei_table
         self.master = mainframe
 
         # Create canvas and put image on it
@@ -52,20 +52,20 @@ class Zoom_Advanced:
         self.container = self.canvas.create_rectangle(0, 0, self.width,
                                                       self.height, width=0)
 
-    def updateSize(self, size):
+    def update_size(self, size):
         self.canvas.config(width=size[0], height=size[1])
         self.width, self.height = size
 
-    def setTable(self, table):
-        self.nucleiTable = table
+    def set_table(self, table_):
+        self.nucleiTable = table_
 
-    def setWhichIndcation(self, isNuclei):
-        self.indicatingNuclei = isNuclei
+    def set_which_indcation(self, is_nuclei):
+        self.indicatingNuclei = is_nuclei
 
-    def leftClick(self, windowX, windowY, frmStart):
+    def left_click(self, window_x, window_y, frm_start):
 
-        eventx = windowX - 1
-        eventy = windowY - frmStart
+        eventx = window_x - 1
+        eventy = window_y - frm_start
         if self.image is not None and eventy < table.ImageCanvasSize[1] and \
                 eventx < table.ImageCanvasSize[0]:
 
@@ -88,28 +88,28 @@ class Zoom_Advanced:
             if self.indicatingNuclei and self.indicatorsNF[0]:
                 # find a close nuclei
                 closest_nuclei_index, closest_nuclei_id = \
-                    self.findClosestNuclei(photo_x, photo_y)
+                    self._find_closest_nuclei(photo_x, photo_y)
                 if closest_nuclei_index != -1:
                     # convert the nucleus from blue to green
                     if not self.nuclei[closest_nuclei_index][3]:
                         self.canvas.itemconfig(closest_nuclei_id,
                                                fill=fibreNucleiColour)
                         self.nuclei[closest_nuclei_index][3] = True
-                        self.nucleiTable.toGreen(
+                        self.nucleiTable.to_green(
                             [self.nuclei[closest_nuclei_index][0],
                              self.nuclei[closest_nuclei_index][1]])
                     else:
                         self.canvas.itemconfig(closest_nuclei_id,
                                                fill=nonFibreNucleiColour)
                         self.nuclei[closest_nuclei_index][3] = False
-                        self.nucleiTable.toBlue(
+                        self.nucleiTable.to_blue(
                             [self.nuclei[closest_nuclei_index][0],
                              self.nuclei[closest_nuclei_index][1]])
                     return True
 
                 # otherwise, add a new nucleus
                 elif photo_y >= 0 and photo_x >= 0:
-                    self.nucleiTable.addBlue([photo_x, photo_y])
+                    self.nucleiTable.add_blue([photo_x, photo_y])
                     new_oval = self.canvas.create_oval(
                         x - radius, y - radius, x + radius, y + radius,
                         fill=nonFibreNucleiColour, outline='#fff', width=0)
@@ -121,7 +121,7 @@ class Zoom_Advanced:
             elif self.indicatorsNF[1]:
                 # find a close fibre
                 closest_fiber_index, closest_fiber_id = \
-                    self.findClosestFibre(photo_x, photo_y)
+                    self._find_closest_fibre(photo_x, photo_y)
                 if closest_fiber_index == -1 and photo_y >= 0 and photo_x >= 0:
                     # newRect = self.canvas.create_rectangle(x - square_size,
                     # y - square_size,x + square_size, y + square_size,
@@ -135,15 +135,15 @@ class Zoom_Advanced:
                                                        width=2, fill='red')
                     self.fibres.append([photo_x, photo_y,
                                         (hor_line, ver_line)])
-                    self.nucleiTable.addFibre([photo_x, photo_y])
+                    self.nucleiTable.add_fibre([photo_x, photo_y])
                     return True
 
         return False
 
-    def rightClick(self, windowX, windowY, frmStart):
+    def right_click(self, window_x, window_y, frm_start):
 
-        eventx = windowX - 1
-        eventy = windowY - frmStart
+        eventx = window_x - 1
+        eventy = window_y - frm_start
         if self.image is not None and eventy < table.ImageCanvasSize[1] \
                 and eventx < table.ImageCanvasSize[0]:
 
@@ -161,16 +161,16 @@ class Zoom_Advanced:
             # find a close nuclei
             if self.indicatingNuclei and self.indicatorsNF[0]:
                 closest_nuclei_index, closest_nuclei_id = \
-                    self.findClosestNuclei(photo_x, photo_y)
+                    self._find_closest_nuclei(photo_x, photo_y)
                 if closest_nuclei_index != -1:
 
                     # delete it
                     if self.nuclei[closest_nuclei_index][3]:
-                        self.nucleiTable.removeGreen(
+                        self.nucleiTable.remove_green(
                             [self.nuclei[closest_nuclei_index][0],
                              self.nuclei[closest_nuclei_index][1]])
                     else:
-                        self.nucleiTable.removeBlue(
+                        self.nucleiTable.remove_blue(
                             [self.nuclei[closest_nuclei_index][0],
                              self.nuclei[closest_nuclei_index][1]])
 
@@ -182,12 +182,12 @@ class Zoom_Advanced:
 
                 # find closest fibre
                 closest_fibre_index, closest_fibre_id = \
-                    self.findClosestFibre(photo_x, photo_y)
+                    self._find_closest_fibre(photo_x, photo_y)
                 print(closest_fibre_index, closest_fibre_id)
                 if closest_fibre_index != -1:
 
                     # delete it
-                    self.nucleiTable.removeFibre(
+                    self.nucleiTable.remove_fibre(
                         [self.fibres[closest_fibre_index][0],
                          self.fibres[closest_fibre_index][1]])
                     del self.fibres[closest_fibre_index]
@@ -197,16 +197,16 @@ class Zoom_Advanced:
 
         return False
 
-    def findClosestFibre(self, x, y):
+    def _find_closest_fibre(self, x, y):
         # find the closest fiber
         radius = 20.0
         closest_index = -1
         closest_distance_sq = -1
         for i, fiber in enumerate(self.fibres):
-            if fiber[0] - radius / self.width < x and \
-                    fiber[0] + radius / self.width > x and \
-                    fiber[1] - radius / self.height < y and \
-                    fiber[1] + radius / self.height > y:
+            if fiber[0] - radius / self.width < x < \
+                    fiber[0] + radius / self.width and \
+                    fiber[1] - radius / self.height < y < \
+                    fiber[1] + radius / self.height:
                 dis_sq = (fiber[0] - x) ** 2 + (fiber[1] - y) ** 2
                 if dis_sq < closest_distance_sq or closest_distance_sq < 0:
                     closest_index = i
@@ -215,16 +215,16 @@ class Zoom_Advanced:
             return closest_index, self.fibres[closest_index][2]
         return -1, -1
 
-    def findClosestNuclei(self, x, y):
+    def _find_closest_nuclei(self, x, y):
         # find the closest nucleus
         radius = 4.0
         closest_index = -1
         closest_distance_sq = -1
         for i, nucleus in enumerate(self.nuclei):
-            if nucleus[0] - radius / self.width < x and \
-                    nucleus[0] + radius / self.width > x and \
-                    nucleus[1] - radius / self.height < y and \
-                    nucleus[1] + radius / self.height > y:
+            if nucleus[0] - radius / self.width < x < \
+                    nucleus[0] + radius / self.width and \
+                    nucleus[1] - radius / self.height < y < \
+                    nucleus[1] + radius / self.height:
                 dis_sq = (nucleus[0] - x) ** 2 + (nucleus[1] - y) ** 2
                 if dis_sq < closest_distance_sq or closest_distance_sq < 0:
                     closest_index = i
@@ -233,11 +233,11 @@ class Zoom_Advanced:
             return closest_index, self.nuclei[closest_index][2]
         return -1, -1
 
-    def setChannels(self, b, g, r):
+    def set_channels(self, b, g, r):
         self.channelsRGB = (r, g, b)
-        self.setImage()
+        self._set_image()
 
-    def setImage(self):
+    def _set_image(self):
         # load the image with the correct channels
         if self.imagePath != '':
             cv_img = cv2.cvtColor(cv2.imread(self.imagePath),
@@ -254,7 +254,7 @@ class Zoom_Advanced:
             self.width, self.height = table.ImageCanvasSize
             self.show_image()
 
-    def setIndicators(self, nuclei, fibres):
+    def set_indicators(self, nuclei, fibres):
 
         # nuclei
         if not nuclei:
@@ -304,20 +304,20 @@ class Zoom_Advanced:
                                         + top_left_x)
                 y = self.canvas.canvasy(fibre[1] * (self.height * self.imscale)
                                         + top_left_y)
-                horLine = self.canvas.create_line(x + square_size, y,
-                                                  x - square_size, y, width=2,
-                                                  fill='red')
-                verLine = self.canvas.create_line(x, y + square_size, x,
-                                                  y - square_size, width=2,
-                                                  fill='red')
-                self.fibres[i][2] = (horLine, verLine)
+                hor_line = self.canvas.create_line(x + square_size, y,
+                                                   x - square_size, y, width=2,
+                                                   fill='red')
+                ver_line = self.canvas.create_line(x, y + square_size, x,
+                                                   y - square_size, width=2,
+                                                   fill='red')
+                self.fibres[i][2] = (hor_line, ver_line)
 
         self.indicatorsNF = (nuclei, fibres)
 
-    def getIndicators(self):
+    def get_indicators(self):
         return self.indicatorsNF
 
-    def loadImage(self, path, nucleiPositions, fibrepositions):
+    def load_image(self, path, nuclei_positions, fibre_positions):
 
         # reset image
         self.reset()
@@ -333,7 +333,7 @@ class Zoom_Advanced:
 
         # load the image
         self.imagePath = path
-        self.setImage()
+        self._set_image()
 
         # draw the nuclei on the screen
         radius = int(3.0 * self.imscale)
@@ -345,7 +345,7 @@ class Zoom_Advanced:
             self.canvas.canvasy(0)
 
         # blue nuclei
-        for position in nucleiPositions[0]:
+        for position in nuclei_positions[0]:
             x = self.canvas.canvasx(position[0] * (self.width * self.imscale)
                                     + top_left_x)
             y = self.canvas.canvasy(position[1] * (self.height * self.imscale)
@@ -358,7 +358,7 @@ class Zoom_Advanced:
                 # #2A7DDE (blue) #2B8915 (green)
             self.nuclei.append([position[0], position[1], new_oval, False])
         # green nuclei
-        for position in nucleiPositions[1]:
+        for position in nuclei_positions[1]:
             x = self.canvas.canvasx(position[0] * (self.width * self.imscale)
                                     + top_left_x)
             y = self.canvas.canvasy(position[1] * (self.height * self.imscale)
@@ -372,7 +372,7 @@ class Zoom_Advanced:
             self.nuclei.append([position[0], position[1], new_oval, True])
 
         # fibres
-        for position in fibrepositions:
+        for position in fibre_positions:
             x = self.canvas.canvasx(position[0] * (self.width * self.imscale)
                                     + top_left_x)
             y = self.canvas.canvasy(position[1] * (self.height * self.imscale)
@@ -420,7 +420,7 @@ class Zoom_Advanced:
         # show
         self.show_image()
 
-    def arrows(self, arrowIndex):
+    def arrows(self, arrow_index):
 
         # use the arrow keys to scroll around the image
         self.canvas.configure(yscrollincrement='110')
@@ -428,14 +428,14 @@ class Zoom_Advanced:
 
         self.canvas.xview_scroll(1, tk.UNITS)
         self.canvas.yview_scroll(1, tk.UNITS)
-        if arrowIndex == 2:
+        if arrow_index == 2:
             self.canvas.yview_scroll(-1, tk.UNITS)
-        elif arrowIndex == 3:
+        elif arrow_index == 3:
             self.canvas.xview_scroll(-1, tk.UNITS)
-        elif arrowIndex == 0:
+        elif arrow_index == 0:
             self.canvas.xview_scroll(-2, tk.UNITS)
             self.canvas.yview_scroll(-1, tk.UNITS)
-        elif arrowIndex == 1:
+        elif arrow_index == 1:
             self.canvas.xview_scroll(-1, tk.UNITS)
             self.canvas.yview_scroll(-2, tk.UNITS)
 
@@ -488,7 +488,7 @@ class Zoom_Advanced:
         """ Zoom with mouse wheel """
         self.zoom(event.x, event.y, event.delta)
 
-    def show_image(self, event=None):
+    def show_image(self):
         """ Show image on the Canvas """
         if self.image is not None:
             bbox1 = self.canvas.bbox(self.container)  # get image area

@@ -1,8 +1,24 @@
+# coding: utf-8
 
-from tkinter import *
-from tkinter import ttk
+from tkinter import ttk, filedialog, N, E, S, W, Canvas, Tk, IntVar, \
+    Toplevel, Scale, HORIZONTAL, DISABLED, NORMAL, PhotoImage, Menu, \
+    StringVar, BooleanVar
 from PIL import ImageTk, Image
+from numpy import asarray, save, load
+from os import path, mkdir
 
+from table import ImageCanvasSize, ImageCanvasStandardFactor, Table
+from ctypes import pythonapi, py_object, windll
+from platform import release
+from imagewindow import table, Zoom_Advanced
+from validateFileName import is_pathname_valid
+from shutil import rmtree
+from webbrowser import open_new
+
+from nucleiFibreSegmentation import deepcell_functie, initialize_mesmer
+
+from threading import get_ident, active_count, Thread
+from time import time
 
 # show splash screen
 root = Tk()
@@ -69,32 +85,21 @@ splashLoadingLabel = splashCanvas.create_text(20, int((0.7 - 0.05) *
 splashCanvas.pack()
 root.update()
 
-# import the rest of the dependencies, update the splash screen
-from tkinter import filedialog
-from table import *
-import ctypes
-import platform
-from imagewindow import *
-import validateFileName
-import shutil
-import webbrowser
 # update splash screen
 splashCanvas.itemconfig(splashLoadingLabel, text="Importing DeepCell...")
 root.update()
-from nucleiFibreSegmentation import deepcell_functie, initializeMesmer
+
 # update splash screen
 splashCanvas.itemconfig(splashLoadingLabel, text="Initialising Mesmer...")
 root.update()
-initializeMesmer()
+initialize_mesmer()
 # update splash screen
 splashCanvas.itemconfig(splashLoadingLabel, text="Starting program...")
 root.update()
-import threading
-import time
 
 
 # get the absolute path to the exe file
-BASE_PATH = os.path.abspath('')  # [:-7]
+BASE_PATH = path.abspath('')  # [:-7]
 BASE_PATH += "/"
 
 # set default numbers
@@ -118,34 +123,32 @@ setViewSizeWindow = None
 
 
 # link to gitHub
-def openGithub():
-    webbrowser.open_new("https://github.com/Quentinderore2/Cellen-Tellen")
+def open_github():
+    open_new("https://github.com/Quentinderore2/Cellen-Tellen")
 
 
 # this function gets called when changing the nuclei or fibre channels
-def NucleiColourSel(previousNucleiColourVar,
-                    nucleiColourVar,
-                    previousFibreColourVar,
-                    fibreColourVar,
-                    nucleiColourButtons,
-                    fibreColourButtons):
+def nuclei_colour_sel(previous_nuclei_colour_var,
+                      nuclei_colour_var,
+                      previous_fibre_colour_var,
+                      fibre_colour_var):
 
     # if the two are the same, reset one
-    if nucleiColourVar.get() == fibreColourVar.get():
-        if previousNucleiColourVar.get() != nucleiColourVar.get():
-            fibreColourVar.set(previousNucleiColourVar.get())
-        elif previousFibreColourVar.get() != fibreColourVar.get():
-            nucleiColourVar.set(previousFibreColourVar.get())
+    if nuclei_colour_var.get() == fibre_colour_var.get():
+        if previous_nuclei_colour_var.get() != nuclei_colour_var.get():
+            fibre_colour_var.set(previous_nuclei_colour_var.get())
+        elif previous_fibre_colour_var.get() != fibre_colour_var.get():
+            nuclei_colour_var.set(previous_fibre_colour_var.get())
 
     # set the previous ones to the current one
-    previousNucleiColourVar.set(nucleiColourVar.get())
-    previousFibreColourVar.set(fibreColourVar.get())
+    previous_nuclei_colour_var.set(nuclei_colour_var.get())
+    previous_fibre_colour_var.set(fibre_colour_var.get())
 
     # save
-    settingsChanged()
+    settings_changed()
 
 
-def createProjectnameWindow(newProject=False):
+def create_project_name_window(new_project=False):
 
     # windowsize
     projectname_window_size = [505, 200]
@@ -161,13 +164,13 @@ def createProjectnameWindow(newProject=False):
                                         projectname_window_size[0] / 2)) + "+"
                                 + str(int(screen_height / 4 -
                                           projectname_window_size[1] / 2)))
-    if newProject:
+    if new_project:
         projectname_window.title("Creating a New Empty Project")
     else:
         projectname_window.title("Saving the Current Project")
 
     # set label
-    if newProject:
+    if new_project:
         ask_label = ttk.Label(projectname_window,
                               text='Choose a name for your NEW EMPTY Project')
         ask_label.place(x=projectname_window_size[0] / 2,
@@ -185,7 +188,7 @@ def createProjectnameWindow(newProject=False):
                               foreground='red')
     warning_label.place(x=projectname_window_size[0] / 2, y=75,
                         anchor='center')
-    validate_command = warning_label.register(checkProjectnameEntry)
+    validate_command = warning_label.register(check_project_name_entry)
 
     # set the entry box to input the name
     global nameEntry
@@ -200,36 +203,36 @@ def createProjectnameWindow(newProject=False):
     global foldernameWindowSaveButton
     foldernameWindowSaveButton = ttk.Button(projectname_window, text='Save',
                                             width=30,
-                                            command=lambda: saveProject(
-                                                nameEntry.get(), True))
+                                            command=lambda: save_project(
+                                              nameEntry.get(), True))
     foldernameWindowSaveButton.place(x=projectname_window_size[0] / 2,
                                      y=150, anchor='center')
-    projectname_window.bind('<Return>', enterPressed)
-    checkProjectnameEntry(nameEntry.get())
+    projectname_window.bind('<Return>', enter_pressed)
+    check_project_name_entry(nameEntry.get())
 
 
 # you can press enter to be doen inputting the name of the project
-def enterPressed(event):
+def enter_pressed(event):
 
     # if the window exists and the save button is enabled
     if foldernameWindowSaveButton['state'] == 'enabled':
-        saveProject(nameEntry.get(), True)
+      save_project(nameEntry.get(), True)
 
 
 # this function checks if the given name is valid
-def checkProjectnameEntry(newEntry):
+def check_project_name_entry(new_entry):
 
     # check if it is a valid name
     global warningVar, foldernameWindowSaveButton
-    if (not validateFileName.is_pathname_valid(newEntry)) or '/' \
-            in newEntry or '.' in newEntry:
+    if not is_pathname_valid(new_entry) or '/' in new_entry \
+            or '.' in new_entry:
         foldernameWindowSaveButton['state'] = 'disabled'
-        if len(newEntry) != 0:
+        if len(new_entry) != 0:
             warningVar.set('This is not a valid projectname')
         return True
 
     # check if it already exists
-    if os.path.isdir(BASE_PATH + 'Projects/' + newEntry):
+    if path.isdir(BASE_PATH + 'Projects/' + new_entry):
         warningVar.set('This project already exists')
         foldernameWindowSaveButton['state'] = 'disabled'
         return True
@@ -240,7 +243,7 @@ def checkProjectnameEntry(newEntry):
     return True
 
 
-def createSettingsWindow(root):
+def create_settings_window(root):
 
     # create the window
     new_window = Toplevel(root)
@@ -249,77 +252,65 @@ def createSettingsWindow(root):
     new_window.title("Settings")
 
     frm = ttk.Frame(new_window, padding="10 10 150 150")
-    frm.grid(column=0, row=0, sticky=(N, W, E, S))
+    frm.grid(column=0, row=0, sticky='NESW')
 
     # nuclei colour
     nuclei_colour_buttons = []
     fibre_colour_buttons = []
     ttk.Label(frm, text="Nuclei Colour :    ").grid(column=0, row=0,
-                                                    sticky=(N, E))
+                                                    sticky='NE')
     nuclei_colour_r1 = ttk.Radiobutton(frm, text="Blue Channel",
                                        variable=nucleiColourVar, value="Blue",
-                                       command=lambda: NucleiColourSel(
+                                       command=lambda: nuclei_colour_sel(
                                          previousNucleiColourVar,
                                          nucleiColourVar,
                                          previousFibreColourVar,
-                                         fibreColourVar,
-                                         nuclei_colour_buttons,
-                                         fibre_colour_buttons))
-    nuclei_colour_r1.grid(column=1, row=0, sticky=(N, W))
+                                         fibreColourVar))
+    nuclei_colour_r1.grid(column=1, row=0, sticky='NW')
     nuclei_colour_r2 = ttk.Radiobutton(frm, text="Green Channel",
                                        variable=nucleiColourVar, value="Green",
-                                       command=lambda: NucleiColourSel(
+                                       command=lambda: nuclei_colour_sel(
                                          previousNucleiColourVar,
                                          nucleiColourVar,
                                          previousFibreColourVar,
-                                         fibreColourVar,
-                                         nuclei_colour_buttons,
-                                         fibre_colour_buttons))
-    nuclei_colour_r2.grid(column=1, row=1, sticky=(N, W))
+                                         fibreColourVar))
+    nuclei_colour_r2.grid(column=1, row=1, sticky='NW')
     nuclei_colour_r3 = ttk.Radiobutton(frm, text="Red Channel",
                                        variable=nucleiColourVar, value="Red",
-                                       command=lambda: NucleiColourSel(
+                                       command=lambda: nuclei_colour_sel(
                                          previousNucleiColourVar,
                                          nucleiColourVar,
                                          previousFibreColourVar,
-                                         fibreColourVar,
-                                         nuclei_colour_buttons,
-                                         fibre_colour_buttons))
-    nuclei_colour_r3.grid(column=1, row=2, sticky=(N, W))
+                                         fibreColourVar))
+    nuclei_colour_r3.grid(column=1, row=2, sticky='NW')
 
     # fibre colour
     ttk.Label(frm, text="Fibre Colour :    ").grid(column=0, row=5,
-                                                   sticky=(N, E))
+                                                   sticky='NE')
     fibre_colour_r1 = ttk.Radiobutton(frm, text="Blue Channel",
                                       variable=fibreColourVar, value="Blue",
-                                      command=lambda: NucleiColourSel(
+                                      command=lambda: nuclei_colour_sel(
                                         previousNucleiColourVar,
                                         nucleiColourVar,
                                         previousFibreColourVar,
-                                        fibreColourVar,
-                                        nuclei_colour_buttons,
-                                        fibre_colour_buttons))
-    fibre_colour_r1.grid(column=1, row=5, sticky=(N, W))
+                                        fibreColourVar))
+    fibre_colour_r1.grid(column=1, row=5, sticky='NW')
     fibre_colour_r2 = ttk.Radiobutton(frm, text="Green Channel",
                                       variable=fibreColourVar, value="Green",
-                                      command=lambda: NucleiColourSel(
+                                      command=lambda: nuclei_colour_sel(
                                         previousNucleiColourVar,
                                         nucleiColourVar,
                                         previousFibreColourVar,
-                                        fibreColourVar,
-                                        nuclei_colour_buttons,
-                                        fibre_colour_buttons))
-    fibre_colour_r2.grid(column=1, row=6, sticky=(N, W))
+                                        fibreColourVar))
+    fibre_colour_r2.grid(column=1, row=6, sticky='NW')
     fibre_colour_r3 = ttk.Radiobutton(frm, text="Red Channel",
                                       variable=fibreColourVar, value="Red",
-                                      command=lambda: NucleiColourSel(
+                                      command=lambda: nuclei_colour_sel(
                                         previousNucleiColourVar,
                                         nucleiColourVar,
                                         previousFibreColourVar,
-                                        fibreColourVar,
-                                        nuclei_colour_buttons,
-                                        fibre_colour_buttons))
-    fibre_colour_r3.grid(column=1, row=7, sticky=(N, W))
+                                        fibreColourVar))
+    fibre_colour_r3.grid(column=1, row=7, sticky='NW')
 
     nuclei_colour_buttons = [nuclei_colour_r1, nuclei_colour_r2,
                              nuclei_colour_r3]
@@ -327,64 +318,64 @@ def createSettingsWindow(root):
 
     # autosave timer
     ttk.Label(frm, text='Autosave Interval :    ').grid(column=0, row=10,
-                                                        sticky=(N, E))
+                                                        sticky='NE')
     ttk.Radiobutton(frm, text="5 Minutes", variable=autoSaveTime, value=5*60,
-                    command=lambda: settingsChanged(2)).grid(column=1, row=10,
-                                                             sticky=(N, W))
+                    command=lambda: settings_changed(2)).grid(column=1, row=10,
+                                                              sticky='NW')
     ttk.Radiobutton(frm, text="15 Minutes", variable=autoSaveTime, value=15*60,
-                    command=lambda: settingsChanged(2)).grid(column=1, row=11,
-                                                             sticky=(N, W))
+                    command=lambda: settings_changed(2)).grid(column=1, row=11,
+                                                              sticky='NW')
     ttk.Radiobutton(frm, text="30 Minutes", variable=autoSaveTime, value=30*60,
-                    command=lambda: settingsChanged(2)).grid(column=1, row=12,
-                                                             sticky=(N, W))
+                    command=lambda: settings_changed(2)).grid(column=1, row=12,
+                                                              sticky='NW')
     ttk.Radiobutton(frm, text="60 Minutes", variable=autoSaveTime, value=60*60,
-                    command=lambda: settingsChanged(2)).grid(column=1, row=13,
-                                                             sticky=(N, W))
+                    command=lambda: settings_changed(2)).grid(column=1, row=13,
+                                                              sticky='NW')
     ttk.Radiobutton(frm, text="Never", variable=autoSaveTime, value=-1,
-                    command=lambda: settingsChanged(2)).grid(column=1, row=14,
-                                                             sticky=(N, W))
+                    command=lambda: settings_changed(2)).grid(column=1, row=14,
+                                                              sticky='NW')
 
     # save altered images
     ttk.Label(frm, text='Save Altered Images :    ').grid(column=0, row=16,
-                                                          sticky=(N, E))
+                                                          sticky='NE')
     ttk.Radiobutton(frm, text="On", variable=saveAlteredImagesBoolean, value=1,
-                    command=lambda: settingsChanged(3)).grid(column=1, row=16,
-                                                             sticky=(N, W))
+                    command=lambda: settings_changed(3)).grid(column=1, row=16,
+                                                              sticky='NW')
     ttk.Radiobutton(frm, text="Off", variable=saveAlteredImagesBoolean,
                     value=0,
-                    command=lambda: settingsChanged(3)).grid(column=1, row=17,
-                                                             sticky=(N, W))
+                    command=lambda: settings_changed(3)).grid(column=1, row=17,
+                                                              sticky='NW')
 
     # fibre counting
     ttk.Label(frm, text='Count Fibres :    ').grid(column=0, row=19,
-                                                   sticky=(N, E))
+                                                   sticky='NE')
     ttk.Radiobutton(frm, text="On", variable=doFibreCounting, value=1,
-                    command=lambda: settingsChanged(4)).grid(column=1, row=19,
-                                                             sticky=(N, W))
+                    command=lambda: settings_changed(4)).grid(column=1, row=19,
+                                                              sticky='NW')
     ttk.Radiobutton(frm, text="Off", variable=doFibreCounting, value=0,
-                    command=lambda: settingsChanged(4)).grid(column=1, row=20,
-                                                             sticky=(N, W))
+                    command=lambda: settings_changed(4)).grid(column=1, row=20,
+                                                              sticky='NW')
 
     # multithreading
     ttk.Label(frm, text='Number of Threads :    ').grid(column=0, row=22,
-                                                        sticky=(N, E))
+                                                        sticky='NE')
     global threadSlider
     threadSlider = Scale(frm, from_=0, to=5, orient=HORIZONTAL, label='Off',
-                         command=ThreadSlider, showvalue=0, length=150)
+                         command=thread_slider, showvalue=False, length=150)
     threadSlider.set(int(nThreads.get()))
-    threadSlider.grid(column=1, row=22, sticky=(N, W))
+    threadSlider.grid(column=1, row=22, sticky='NW')
 
     # small objects threshold
     ttk.Label(frm, text='Dead cells size Threshold :    ').grid(column=0,
                                                                 row=23,
-                                                                sticky=(N, E))
+                                                                sticky='NE')
     global SmallObjectsSlider
     SmallObjectsSlider = Scale(frm, from_=10, to=1000,
                                label=str(int(smallObjectsThreshold.get())),
-                               orient=HORIZONTAL, command=smallObjectsSlider,
-                               showvalue=0, length=150)
+                               orient=HORIZONTAL, command=small_objects_slider,
+                               showvalue=False, length=150)
     SmallObjectsSlider.set(int(smallObjectsThreshold.get()))
-    SmallObjectsSlider.grid(column=1, row=23, sticky=(N, W))
+    SmallObjectsSlider.grid(column=1, row=23, sticky='NW')
 
     # set row heights
     frm.grid_rowconfigure(4, minsize=20)
@@ -397,26 +388,26 @@ def createSettingsWindow(root):
 
 
 # set the number of threads and threadslider label when moving the slider
-def ThreadSlider(n):
+def thread_slider(n):
     global threadSlider
     if int(n) == 0:
         threadSlider.configure(label='Off')
     else:
         threadSlider.configure(label=str(n))
     nThreads.set(int(n))
-    settingsChanged()
+    settings_changed()
 
 
 # this function gets called when changing the small objects slider
-def smallObjectsSlider(n):
+def small_objects_slider(n):
     global smallObjectsThreshold
     SmallObjectsSlider.configure(label=str(n))
     smallObjectsThreshold.set(n)
-    settingsChanged()
+    settings_changed()
 
 
 # save the settings and update the autosave time
-def settingsChanged(settingIndex=0):
+def settings_changed(setting_index=0):
 
     # save the settings
     # create settings list
@@ -430,20 +421,20 @@ def settingsChanged(settingIndex=0):
                 table.ImageCanvasSize[1]]
 
     # convert to numpy and save
-    arr = np.asarray(settings)
-    np.save(BASE_PATH + 'general', arr)
+    arr = asarray(settings)
+    save(BASE_PATH + 'general', arr)
 
     # enable save button if needed
-    if settingIndex == 3:
+    if setting_index == 3:
         saveButton['state'] = 'enabled'
 
     # set the autosave timer
-    if settingIndex == 2:
-        updateAutosaveTime()
+    if setting_index == 2:
+      update_autosave_time()
 
 
 # update the autosave time
-def updateAutosaveTime():
+def update_autosave_time():
 
     # if a previous timer was set, cancel it
     global autoSaveJob
@@ -455,16 +446,16 @@ def updateAutosaveTime():
     if autoSaveTime.get() > 0:
         autoSaveJob = root.after(autoSaveTime.get() * 1000,
                                  lambda auto_save_name=autoSaveName:
-                                 saveProject(auto_save_name))
+                                 save_project(auto_save_name))
 
 
 # this window gets shown when attempting to close the program when the project
 # is still unsaved
-def createWarningWindow():
+def create_warning_window():
 
     # if unsaved, show the window
     if saveButton['state'] == 'enabled' and \
-            not len(nucleiTable.getFileNames()) == 0:
+            not len(nucleiTable.get_file_names()) == 0:
         # create
         global warningwindow
         warningwindow = Toplevel(root)
@@ -488,9 +479,9 @@ def createWarningWindow():
                    command=root.destroy, width=40).place(x=250, y=115,
                                                          anchor='center')
         ttk.Button(warningwindow, text='Save and Close',
-                   command=saveButtonPressed, width=40).place(x=250, y=75,
-                                                              anchor='center')
-        ttk.Button(warningwindow, text='Cancel', command=quitWarningWindow,
+                   command=save_button_pressed, width=40).\
+            place(x=250, y=75, anchor='center')
+        ttk.Button(warningwindow, text='Cancel', command=quit_warning_window,
                    width=40).place(x=250, y=155, anchor='center')
 
     else:
@@ -498,32 +489,32 @@ def createWarningWindow():
         root.destroy()
 
 
-def quitWarningWindow():
+def quit_warning_window():
     global close
     close = False
     warningwindow.destroy()
 
 
 # this function is the process that gets called for every thread
-def processThread(index, fileNames, isThread, smallObjectsThresh):
+def process_thread(index, file_names, is_thread, small_objects_thresh):
 
     # add the thread
-    if isThread:
+    if is_thread:
         global currentThreads
-        it = threading.get_ident()
-        if it not in currentThreads:
-            currentThreads.append(it)
+        id_ = get_ident()
+        if id_ not in currentThreads:
+            currentThreads.append(id_)
 
-    file = fileNames[index]
+    file = file_names[index]
 
-    start = time.time()
+    start = time()
 
     # get result
     nuclei, nuclei_in_fibre, fibre_positions, image_width, image_height = \
         deepcell_functie(file, nucleiColourVar.get(), fibreColourVar.get(),
-                         doFibreCounting.get(), smallObjectsThresh)
+                         doFibreCounting.get(), small_objects_thresh)
 
-    end1 = time.time()
+    end1 = time()
 
     # convert image coordinates to relative between 0 and 1
     for i in range(len(nuclei)):
@@ -543,84 +534,83 @@ def processThread(index, fileNames, isThread, smallObjectsThresh):
     print("file : ", end1 - start)
 
     # send the output to the table
-    nucleiTable.inputProcessedData(nuclei, nuclei_in_fibre, fibre_positions,
-                                   index)
+    nucleiTable.input_processed_data(nuclei, nuclei_in_fibre, fibre_positions,
+                                     index)
 
     # close if necessary
-    updateProcessedImages(fileNames)
-    setUnsavedStatus()
+    update_processed_images(file_names)
+    set_unsaved_status()
 
-    if isThread:
-        if index >= len(fileNames) - nThreadsRunning:
+    if is_thread:
+        if index >= len(file_names) - nThreadsRunning:
             # close the threshold
-            threadExitted(threading.get_ident())
+            thread_exitted(get_ident())
         else:
             # keep on processing more images
-            processThread(index + nThreadsRunning, fileNames, True,
-                          smallObjectsThresh)
+            process_thread(index + nThreadsRunning, file_names, True,
+                           small_objects_thresh)
     else:
-        if index + 1 < len(fileNames):
+        if index + 1 < len(file_names):
             # keep on processing more images
-            processThread(index + 1, fileNames, False, smallObjectsThresh)
+            process_thread(index + 1, file_names, False, small_objects_thresh)
         else:
             # all images are done
-            stopProcessing()
+            stop_processing()
 
 
-def updateProcessedImages(fileNames):
+def update_processed_images(file_names):
 
     # change the label
     global totalImagesProcessed
     totalImagesProcessed += 1
     processingLabel['text'] = str(totalImagesProcessed) + " of " + \
-        str(len(fileNames)) + " Images Processed"
+        str(len(file_names)) + " Images Processed"
 
 
 # this function gets called if a thread gets excited
-def threadExitted(id):
+def thread_exitted(id_):
     global currentThreads, totalImagesProcessed
-    currentThreads.remove(id)
+    currentThreads.remove(id_)
     if len(currentThreads) == 0:
-        stopProcessing()
+      stop_processing()
 
 
 # force ending the threads
-def stopProcessing():
+def stop_processing():
 
     # end the threads
     global currentThreads, totalImagesProcessed
     for it in currentThreads:
-        res = ctypes.pythonapi.\
-            PyThreadState_SetAsyncExc(it, ctypes.py_object(SystemExit))
+        res = pythonapi.PyThreadState_SetAsyncExc(it, py_object(SystemExit))
         if res > 1:
-            ctypes.pythonapi.PyThreadState_SetAsyncExc(it, 0)
+            pythonapi.PyThreadState_SetAsyncExc(it, 0)
             print('Exception raise failure')
 
-    print("Still running threads (should be 1) :", threading.active_count())
+    print("Still running threads (should be 1) :", active_count())
 
     # empty threads
     currentThreads = []
     totalImagesProcessed = 0
     processImagesbutton['text'] = "Process Images"
-    processImagesbutton.configure(command=processImages)
+    processImagesbutton.configure(command=process_images)
     processingLabel['text'] = ""
 
 
 # process images button is pressed
-def processImages():
+def process_images():
 
     # stop vorige threads
-    stopProcessing()
+    stop_processing()
 
     # get the file_names
-    file_names = nucleiTable.getFileNames()
-    setUnsavedStatus()
+    file_names = nucleiTable.get_file_names()
+    set_unsaved_status()
 
     # switch off process button
     global totalImagesProcessed
     totalImagesProcessed = 0
     processImagesbutton['text'] = 'Stop Processing'
-    processImagesbutton.configure(command=stopProcessing)
+    processImagesbutton.configure(command=stop_processing)
     processingLabel['text'] = "0 of " + str(len(file_names)) + \
         " Images Processed"
     root.update()
@@ -629,20 +619,20 @@ def processImages():
     global nThreadsRunning, threadSlider
     nThreadsRunning = nThreads.get()
     if int(nThreads.get()) == 0:
-        processThread(0, file_names, False, smallObjectsThreshold.get())
+      process_thread(0, file_names, False, smallObjectsThreshold.get())
     else:
         # loop over the total number of threads and start the first n images
         for i in range(nThreadsRunning):
             if i <= len(file_names) - 1:
-                t1 = threading.Thread(target=processThread,
-                                      args=(i, file_names,
-                                            True, smallObjectsThreshold.get()),
-                                      daemon=True)
+                t1 = Thread(target=process_thread,
+                            args=(i, file_names,
+                                  True, smallObjectsThreshold.get()),
+                            daemon=True)
                 t1.start()
                 print(t1)
 
 
-def selectImages(root):
+def select_images(root):
 
     # get the filenames with a dialogbox
     file_names = filedialog.askopenfilenames(filetypes=[('Image Files',
@@ -655,7 +645,7 @@ def selectImages(root):
     if len(file_names) != 0:
 
         # stop processing
-        stopProcessing()
+        stop_processing()
 
         # enable the process image buttons
         processImagesbutton["state"] = 'enabled'
@@ -663,26 +653,26 @@ def selectImages(root):
         # add them to the table
         global resaveImages
         resaveImages = True
-        nucleiTable.addImages(file_names)
-        setUnsavedStatus()
+        nucleiTable.add_images(file_names)
+        set_unsaved_status()
 
 
 # when leftclicking, the position of the cursor is sent to the table and
 # imagecanvas
-def leftClick(event):
-    nucleiTable.leftClick(root.winfo_pointerx(), root.winfo_pointery(),
-                          frm.winfo_rooty())
-    if ImageCanvas.leftClick(root.winfo_pointerx(), root.winfo_pointery(),
-                             frm.winfo_rooty()):
-        setUnsavedStatus()
+def left_click(event):
+    nucleiTable.left_click(root.winfo_pointerx(), root.winfo_pointery(),
+                           frm.winfo_rooty())
+    if ImageCanvas.left_click(root.winfo_pointerx(), root.winfo_pointery(),
+                              frm.winfo_rooty()):
+      set_unsaved_status()
 
 
 # when rightclicking, the position of the cursor is sent to the table and
 # imagecanvas
-def rightClick(event):
-    if ImageCanvas.rightClick(root.winfo_pointerx(), root.winfo_pointery(),
-                              frm.winfo_rooty()):
-        setUnsavedStatus()
+def right_click(event):
+    if ImageCanvas.right_click(root.winfo_pointerx(), root.winfo_pointery(),
+                               frm.winfo_rooty()):
+      set_unsaved_status()
 
 
 def onwheel(event):
@@ -697,35 +687,35 @@ def motion(evet):
 
 # pass through the keypressing of the arrows to the imagecanvas to scroll
 # around the imagecanvas
-def onLeftPress(event):
-    ImageCanvas.arrows(0)
+def on_left_press(event):
+  ImageCanvas.arrows(0)
 
 
-def onUpPress(event):
-    ImageCanvas.arrows(1)
+def on_up_press(event):
+  ImageCanvas.arrows(1)
 
 
-def onRightPress(event):
-    ImageCanvas.arrows(2)
+def on_right_press(event):
+  ImageCanvas.arrows(2)
 
 
-def onDownPress(event):
-    ImageCanvas.arrows(3)
+def on_down_press(event):
+  ImageCanvas.arrows(3)
 
 
-def onZoomInPress(event):
+def on_zoom_in_press(event):
     ImageCanvas.zoom(ImageCanvasSize[0] / 2, ImageCanvasSize[1] / 2, 120)
 
 
-def onZoomOutPress(event):
+def on_zoom_out_press(event):
     ImageCanvas.zoom(ImageCanvasSize[0] / 2, ImageCanvasSize[1] / 2, -120)
 
 
-def deleteCurrentProject(root):
+def delete_current_project(root):
 
     if currentProject != '':
         # delete the project
-        shutil.rmtree(BASE_PATH + 'Projects/' + currentProject)
+        rmtree(BASE_PATH + 'Projects/' + currentProject)
 
         # remove the load button
         recentProjectsMenu.delete(
@@ -734,19 +724,19 @@ def deleteCurrentProject(root):
         recentProjects.remove(currentProject)
         if len(recentProjects) == 0:
             fileMenu.entryconfig("Recent Projects", state='disabled')
-        settingsChanged()
+        settings_changed()
 
         # create empty project
-        createEmptyProject()
+        create_empty_project()
 
         if currentProject == autoSaveName:
             fileMenu.entryconfig("Load Automatic Save", state='disabled')
 
 
-def createEmptyProject():
+def create_empty_project():
 
     # reset everything
-    stopProcessing()
+    stop_processing()
     nucleiTable.reset()
     ImageCanvas.reset()
 
@@ -763,27 +753,27 @@ def createEmptyProject():
     currentProject = ''
 
     # call for project name
-    createProjectnameWindow(True)
+    create_project_name_window(True)
 
 
-def loadProjectFromExplorer():
+def load_project_from_explorer():
 
     # ask a folder
-    folder = filedialog.askdirectory(initialdir=os.path.normpath(BASE_PATH +
-                                                                 "Projects"),
+    folder = filedialog.askdirectory(initialdir=path.normpath(BASE_PATH +
+                                                              "Projects"),
                                      title="Choose a Project Folder")
 
     # load this shit
-    if (folder != '') and os.path.isdir(BASE_PATH + 'Projects/' +
-                                        os.path.basename(folder)):
-        loadProject(os.path.basename(folder))
+    if (folder != '') and path.isdir(BASE_PATH + 'Projects/' +
+                                     path.basename(folder)):
+      load_project(path.basename(folder))
 
 
 # this function loads a project, given a directory
-def loadProject(directory):
+def load_project(directory):
 
     # stop processing
-    stopProcessing()
+    stop_processing()
 
     # set the window title
     root.title("Cellen Tellen - Project '" + directory + "'")
@@ -797,7 +787,7 @@ def loadProject(directory):
                          state=NORMAL)
 
     # do the recent projects shit
-    if os.path.isdir(BASE_PATH + 'Projects/' + directory) \
+    if path.isdir(BASE_PATH + 'Projects/' + directory) \
             and not directory == autoSaveName:
         # remove it first
         if directory in recentProjects:
@@ -807,7 +797,7 @@ def loadProject(directory):
         recentProjectsMenu.insert_command(index=0, label="Load '" +
                                                          directory + "'",
                                           command=lambda direct=directory:
-                                          loadProject(direct))
+                                          load_project(direct))
         recentProjects.insert(0, directory)
         fileMenu.entryconfig("Recent Projects", state='normal')
         if len(recentProjects) > MAX_RECENT_PROJECTS:
@@ -815,31 +805,31 @@ def loadProject(directory):
             recentProjectsMenu.delete("Load '" + recentProjects[-1] + "'")
             recentProjects.pop(len(recentProjects) - 1)
 
-        settingsChanged()
+        settings_changed()
 
     # load the project
-    nucleiTable.loadProject(BASE_PATH + 'Projects/' + directory)
+    nucleiTable.load_project(BASE_PATH + 'Projects/' + directory)
     global resaveImages
     resaveImages = False
 
     # if there are images loaded
-    if nucleiTable.imagesAvailable():
+    if nucleiTable.images_available():
         processImagesbutton['state'] = 'enabled'
     else:
         processImagesbutton['state'] = 'disabled'
 
 
-def saveButtonPressed():
+def save_button_pressed():
 
     # save as if necessary
     if currentProject == '':
-        createProjectnameWindow()
+      create_project_name_window()
     else:
         # perform normal save
-        saveProject(currentProject)
+        save_project(currentProject)
 
 
-def saveProject(directory, saveas=False):
+def save_project(directory, saveas=False):
 
     # do we want to save the images
     global resaveImages
@@ -865,10 +855,10 @@ def saveProject(directory, saveas=False):
             root.title("Cellen Tellen - Project '" + currentProject + "'")
 
             # do the recent projects shit
-            if not os.path.isdir(BASE_PATH + 'Projects/' + directory):
+            if not path.isdir(BASE_PATH + 'Projects/' + directory):
                 recentProjectsMenu.insert_command(
                     index=0, label="Load '" + directory + "'",
-                    command=lambda direct=directory: loadProject(direct))
+                    command=lambda direct=directory: load_project(direct))
                 recentProjects.insert(0, directory)
                 fileMenu.entryconfig("Recent Projects", state='normal')
                 if len(recentProjects) > MAX_RECENT_PROJECTS:
@@ -877,17 +867,17 @@ def saveProject(directory, saveas=False):
                                               "'")
                     recentProjects.pop(len(recentProjects)-1)
 
-                settingsChanged()
+                settings_changed()
 
         else:
             # set the automatic save entry
             fileMenu.entryconfig("Load Automatic Save", state='normal')
             if autoSaveTime.get() > 0:  # recall the autosave
-                updateAutosaveTime()
+              update_autosave_time()
 
         # create the folder
-        if not os.path.isdir(BASE_PATH + 'Projects/' + directory):
-            os.mkdir(BASE_PATH + 'Projects/' + directory)
+        if not path.isdir(BASE_PATH + 'Projects/' + directory):
+            mkdir(BASE_PATH + 'Projects/' + directory)
 
         # create saving popup
         saving_popup = Toplevel(root)
@@ -907,19 +897,19 @@ def saveProject(directory, saveas=False):
         saving_popup.protocol("WM_DELETE_WINDOW", dontdoshit())
 
         # save the table
-        nucleiTable.saveTable(directory)
+        nucleiTable.save_table(directory)
 
         # save the originals
         if resaveImages or directory == autoSaveName:
-            nucleiTable.saveOriginals(directory)
+            nucleiTable.save_originals(directory)
         resaveImages = False
 
         # save the altered images
         if saveAlteredImagesBoolean.get() == 1 or directory == autoSaveName:
-            nucleiTable.saveAlteredImages(directory)
+            nucleiTable.save_altered_images(directory)
 
         # save the data
-        nucleiTable.saveData(directory)
+        nucleiTable.save_data(directory)
 
         # destroy the popup
         saving_popup.destroy()
@@ -933,7 +923,7 @@ def dontdoshit():
     pass
 
 
-def setUnsavedStatus():
+def set_unsaved_status():
 
     # set the unsaved status
     if currentProject != '':
@@ -944,17 +934,17 @@ def setUnsavedStatus():
 
 
 # change the displayed image channels
-def setImageChannels():
-    ImageCanvas.setChannels(blueChannelBool.get(), greenChannelBool.get(),
-                            redChannelBool.get())
-    settingsChanged(True)
+def set_image_channels():
+    ImageCanvas.set_channels(blueChannelBool.get(), greenChannelBool.get(),
+                             redChannelBool.get())
+    settings_changed(True)
 
 
 # change the third button
-def setIndicators():
+def set_indicators():
     # set the indicators
-    ImageCanvas.setIndicators(showNucleiBool.get(), showFibresBool.get())
-    settingsChanged(True)
+    ImageCanvas.set_indicators(showNucleiBool.get(), showFibresBool.get())
+    settings_changed(True)
 
     # set which indication
     global indicatingNuclei
@@ -972,11 +962,11 @@ def setIndicators():
         whichIndicatorButton['state'] = 'disabled'
 
     # pass through the indications to the imagecanvas
-    ImageCanvas.setWhichIndcation(indicatingNuclei)
+    ImageCanvas.set_which_indcation(indicatingNuclei)
 
 
 # change the indications
-def changeIndications():
+def change_indications():
     global indicatingNuclei
     if indicatingNuclei:
         indicatingNuclei = False
@@ -984,12 +974,12 @@ def changeIndications():
     else:
         indicatingNuclei = True
         whichIndicatorButton['text'] = 'Manual : Nuclei'
-    ImageCanvas.setWhichIndcation(indicatingNuclei)
+    ImageCanvas.set_which_indcation(indicatingNuclei)
 
 
 # this function is used while opening the program the first time, to adjust
 # the window size
-def changeWindowSize(event):
+def change_window_size(event):
     factor = 100
     if event.char == 'a':  # make smaller (but same ratio)
         table.ImageCanvasSize = (int(table.ImageCanvasSize[0] -
@@ -1008,12 +998,12 @@ def changeWindowSize(event):
     frm.grid_columnconfigure(0, minsize=table.ImageCanvasSize[0] + 4)
 
     # update canvas
-    ImageCanvas.updateSize(table.ImageCanvasSize)
+    ImageCanvas.update_size(table.ImageCanvasSize)
 
 
 # initialised the ajdustment of the window size, the first time you boot up
 # the program (if there is not general.npy)
-def startWindowView():
+def start_window_view():
     global setViewSizeWindow
 
     # initialize window, size and position
@@ -1033,24 +1023,24 @@ def startWindowView():
     setViewSizeWindow.focus_force()
 
     # set key strokes bindings, link to changeWindowSize
-    setViewSizeWindow.bind('a', changeWindowSize)
-    setViewSizeWindow.bind('z', changeWindowSize)
-    setViewSizeWindow.protocol("WM_DELETE_WINDOW", endWindowView)
+    setViewSizeWindow.bind('a', change_window_size)
+    setViewSizeWindow.bind('z', change_window_size)
+    setViewSizeWindow.protocol("WM_DELETE_WINDOW", end_window_view)
 
     # create 'done' button, link to endWindowView
     set_view_size_frame = ttk.Frame(setViewSizeWindow, padding="10 10 120 120")
-    set_view_size_frame.grid(column=0, row=0, sticky=(N, W, E, S))
+    set_view_size_frame.grid(column=0, row=0, sticky='NESW')
     ttk.Label(set_view_size_frame,
               text="Use 'a' and 'z' keys to adjust the window view.").\
         grid(column=0, row=0, pady=5)
     ttk.Button(set_view_size_frame,
-               text="Done", command=endWindowView, width=14).\
+               text="Done", command=end_window_view, width=14).\
         grid(column=0, row=1, pady=15)
     set_view_size_frame.grid_columnconfigure(
         0, minsize=set_window_view_window_size[0])
 
 
-def endWindowView():
+def end_window_view():
 
     # destroy the viewsizewindow
     if setViewSizeWindow is not None:
@@ -1059,16 +1049,16 @@ def endWindowView():
     # create the table
     global nucleiTable
     nucleiTable = Table(root)
-    nucleiTable.setImageCanvas(ImageCanvas)
-    ImageCanvas.setTable(nucleiTable)
+    nucleiTable.set_image_canvas(ImageCanvas)
+    ImageCanvas.set_table(nucleiTable)
 
     # save default settings
-    settingsChanged(2)
+    settings_changed(2)
 
 
 # set better resolution
-if int(platform.release()) >= 8:
-    ctypes.windll.shcore.SetProcessDpiAwareness(True)
+if int(release()) >= 8:
+    windll.shcore.SetProcessDpiAwareness(True)
 
 # set default values
 imagesChanged = False
@@ -1087,7 +1077,7 @@ root.iconphoto(False, photo)
 
 
 frm = ttk.Frame(root, padding="10 10 120 120")
-frm.grid(column=0, row=0, sticky=(N, W, E, S))
+frm.grid(column=0, row=0, sticky='NESW')
 
 
 # configure the menu
@@ -1096,13 +1086,14 @@ root.config(menu=menubar)
 
 menubar.config(font=("TKDefaultFont", 20))
 fileMenu = Menu(menubar, tearoff=0)
-fileMenu.add_command(label="New Empty Project", command=createEmptyProject)
-fileMenu.add_command(label="Save Project As", command=createProjectnameWindow)
-delButton = fileMenu.add_command(label="Delete Current Project",
-                                 command=lambda: deleteCurrentProject(root))
+fileMenu.add_command(label="New Empty Project", command=create_empty_project)
+fileMenu.add_command(label="Save Project As",
+                     command=create_project_name_window)
+fileMenu.add_command(label="Delete Current Project",
+                     command=lambda: delete_current_project(root))
 fileMenu.entryconfig(fileMenu.index("Delete Current Project"), state=DISABLED)
 fileMenu.add_command(label="Load From Explorer",
-                     command=loadProjectFromExplorer)
+                     command=load_project_from_explorer)
 fileMenu.add_separator()
 
 # automatic save
@@ -1118,10 +1109,10 @@ doFibreCounting.set(0)
 
 # add the automatic save command
 fileMenu.add_command(label='Load Automatic Save', state='disabled',
-                     command=lambda autoSaveName=autoSaveName:
-                     loadProject(autoSaveName))
+                     command=lambda name=autoSaveName:
+                     load_project(name))
 # if the automatic save already exists, link to it via the command
-if os.path.isdir(BASE_PATH + 'Projects/' + autoSaveName):
+if path.isdir(BASE_PATH + 'Projects/' + autoSaveName):
     fileMenu.entryconfig("Load Automatic Save", state='normal')
 fileMenu.add_separator()
 
@@ -1144,12 +1135,12 @@ currentProject = ''
 # settings menu
 settingsMenu = Menu(menubar, tearoff=0)
 settingsMenu.add_command(label="Settings",
-                         command=lambda: createSettingsWindow(root))
+                         command=lambda: create_settings_window(root))
 menubar.add_cascade(label="Settings", menu=settingsMenu)
 
 # help menu
 helpMenu = Menu(menubar, tearoff=0)
-helpMenu.add_command(label="Help", command=openGithub)
+helpMenu.add_command(label="Help", command=open_github)
 menubar.add_cascade(label="Help", menu=helpMenu)
 
 # Quit menu
@@ -1172,18 +1163,18 @@ nucleiTable = None
 
 # key bindings, zooming, clicking with mouse, as well as moving and zoom in
 # the image with the keyboard
-root.bind('<ButtonPress-1>', leftClick)
-root.bind('<ButtonPress-3>', rightClick)
+root.bind('<ButtonPress-1>', left_click)
+root.bind('<ButtonPress-3>', right_click)
 root.bind('<MouseWheel>', onwheel)
 root.bind('<Motion>', motion)
-root.bind('<Left>', onLeftPress)
-root.bind('<Right>', onRightPress)
-root.bind('<Up>', onUpPress)
-root.bind('<Down>', onDownPress)
-root.bind('=', onZoomInPress)
-root.bind('+', onZoomInPress)
-root.bind('-', onZoomOutPress)
-root.bind('_', onZoomOutPress)
+root.bind('<Left>', on_left_press)
+root.bind('<Right>', on_right_press)
+root.bind('<Up>', on_up_press)
+root.bind('<Down>', on_down_press)
+root.bind('=', on_zoom_in_press)
+root.bind('+', on_zoom_in_press)
+root.bind('-', on_zoom_out_press)
+root.bind('_', on_zoom_out_press)
 
 
 # load the settings
@@ -1206,10 +1197,10 @@ greenChannelBool.set(True)
 
 
 # general buttons
-ttk.Button(frm, text="Load Images", command=lambda: selectImages(root),
+ttk.Button(frm, text="Load Images", command=lambda: select_images(root),
            width=14).grid(column=1, row=0)
 processImagesbutton = ttk.Button(frm, text="Process Images",
-                                 command=processImages, width=14,
+                                 command=process_images, width=14,
                                  state='disabled')
 processImagesbutton.grid(column=2, row=0)
 
@@ -1218,17 +1209,17 @@ ttk.Label(frm, text="  Channels :   ").grid(column=1, row=2, sticky='w')
 blueChannelCheckButton = ttk.Checkbutton(frm, text="Blue Channel",
                                          onvalue=True, offvalue=False,
                                          variable=blueChannelBool,
-                                         command=setImageChannels)
+                                         command=set_image_channels)
 blueChannelCheckButton.grid(column=2, row=2, sticky='w')
 greenChannelCheckButton = ttk.Checkbutton(frm, text="Green Channel",
                                           onvalue=True, offvalue=False,
                                           variable=greenChannelBool,
-                                          command=setImageChannels)
+                                          command=set_image_channels)
 greenChannelCheckButton.grid(column=3, row=2, sticky='w')
 redChannelCheckButton = ttk.Checkbutton(frm, text="Red Channel", onvalue=True,
                                         offvalue=False,
                                         variable=redChannelBool,
-                                        command=setImageChannels)
+                                        command=set_image_channels)
 redChannelCheckButton.grid(column=4, row=2, sticky='w')
 
 # indicator selections (which indicators are shown)
@@ -1236,12 +1227,12 @@ ttk.Label(frm, text="  Indicators : ").grid(column=1, row=4, sticky='w')
 showNucleiCheckButton = ttk.Checkbutton(frm, text="Nuclei", onvalue=True,
                                         offvalue=False,
                                         variable=showNucleiBool,
-                                        command=setIndicators)
+                                        command=set_indicators)
 showNucleiCheckButton.grid(column=2, row=4, sticky='w')
 showFibresCheckButton = ttk.Checkbutton(frm, text="Fibres", onvalue=True,
                                         offvalue=False,
                                         variable=showFibresBool,
-                                        command=setIndicators)
+                                        command=set_indicators)
 showFibresCheckButton.grid(column=3, row=4, sticky='w')
 
 
@@ -1251,19 +1242,19 @@ processingLabel.grid(column=1, row=5, columnspan=4)
 
 # save altered images and table
 saveButton = ttk.Button(frm, text='Save As', width=14,
-                        command=saveButtonPressed, state='enabled')
+                        command=save_button_pressed, state='enabled')
 saveButton.grid(column=4, row=0)
 
 # set indicators
 whichIndicatorButton = ttk.Button(frm, width=14, text='Manual : Nuclei',
-                                  command=changeIndications, state='enabled')
+                                  command=change_indications, state='enabled')
 whichIndicatorButton.grid(column=3, row=0)
 
 # load the general save (save settings, window view, etc)
-if os.path.isfile(BASE_PATH + 'general.npy'):
+if path.isfile(BASE_PATH + 'general.npy'):
     # get the list
-    settingsarr = np.load(BASE_PATH + 'general.npy',
-                          allow_pickle=True).tolist()
+    settingsarr = load(BASE_PATH + 'general.npy',
+                       allow_pickle=True).tolist()
 
     # set the variables
     fibreColourVar.set(settingsarr[0])
@@ -1271,7 +1262,7 @@ if os.path.isfile(BASE_PATH + 'general.npy'):
     nucleiColourVar.set(settingsarr[1])
     previousNucleiColourVar.set(settingsarr[1])
     autoSaveTime.set(settingsarr[2])
-    updateAutosaveTime()
+    update_autosave_time()
     saveAlteredImagesBoolean.set(settingsarr[3])
     doFibreCounting.set(settingsarr[4])
     nThreads.set(settingsarr[5])
@@ -1286,27 +1277,27 @@ if os.path.isfile(BASE_PATH + 'general.npy'):
 
     # set the table and canvas
     ImageCanvas = Zoom_Advanced(root, nucleiTable)
-    endWindowView()
+    end_window_view()
 
 else:
     # start windowsize selection
     ImageCanvas = Zoom_Advanced(root, nucleiTable)
-    startWindowView()
+    start_window_view()
 
 
 # load the list of recent projects if these projects exist
-if os.path.isdir(BASE_PATH + 'Projects'):
+if path.isdir(BASE_PATH + 'Projects'):
     temp = list(recentProjects)
     for foldername in temp:
-        if os.path.isdir(BASE_PATH + 'Projects/' + foldername) \
+        if path.isdir(BASE_PATH + 'Projects/' + foldername) \
                 and foldername != '':
             recentProjectsMenu.add_command(
                 label="Load '" + foldername + "'",
-                command=lambda folder=foldername: loadProject(folder))
+                command=lambda folder=foldername: load_project(folder))
         else:
             recentProjects.remove(foldername)
 else:
-    os.mkdir(BASE_PATH + 'Projects')
+    mkdir(BASE_PATH + 'Projects')
 
 if len(recentProjects) == 0:
     fileMenu.entryconfig("Recent Projects", state='disabled')
@@ -1314,8 +1305,8 @@ if len(recentProjects) == 0:
 
 # set the channels and indicators for the imagecanvas
 indicatingNuclei = True
-setImageChannels()
-setIndicators()
+set_image_channels()
+set_indicators()
 
 
 # set grid sizes
@@ -1332,5 +1323,5 @@ root.update()
 
 # this protocol calls the createwarningwindow if we close the program
 # (instead of directly exiting)
-root.protocol("WM_DELETE_WINDOW", createWarningWindow)
+root.protocol("WM_DELETE_WINDOW", create_warning_window)
 root.mainloop()  # tkinter main loop
