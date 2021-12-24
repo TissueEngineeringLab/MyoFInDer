@@ -20,7 +20,7 @@ This application uses the library DeepCell (https://github.com/vanvalenlab/deepc
 ## How to install
 
 There are two installations that need to be done, the first one is C++ buildtools from Microsoft Visual Studio which you can install by pressing <a href="https://visualstudio.microsoft.com/visual-cpp-build-tools/"> this link </a>. Once downloaded you'll need to restart your pc, this is needed for activating the buildtools. If you prefer you can read the rest of the download section and restart your pc at the end before executing the program.
-You can install the main program by clicking <a href="https://gitlab.kuleuven.be/u0143112/graaftel/-/raw/master/Code/Graphical%20Interface/Cellen_Tellen.zip
+You can install the main program by clicking <a href="https://www.dropbox.com/s/o75forkzykbo9i8/Cellen%20Tellen.zip?dl=0
 "> this link </a>which should start downloading the zip file. Once downloaded, unpack the zip file and place the folder somewhere on your computer. 
 
 There are two ways to start the program: you can type 'CellenTellen.exe' in your windows search bar or make a shortcut for the exe on your Dekstop. After restarting your pc for activating the buildtools you can execute the program. It is possible that a firewall warnign appears which you need to ignore by pressing `More information` and accepting the program. 
