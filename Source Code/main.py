@@ -842,7 +842,7 @@ def endWindowView() :
 
     # create the table
     global nucleiTable
-    nucleiTable = Table(root, frm)
+    nucleiTable = Table(root)
     nucleiTable.setImageCanvas(ImageCanvas)
     ImageCanvas.setTable(nucleiTable)
 

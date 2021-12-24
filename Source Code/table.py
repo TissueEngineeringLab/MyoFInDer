@@ -25,7 +25,7 @@ labelLineColour_Selected = 'black'
 
 class Table :
 
-    def __init__(self, root, frm):
+    def __init__(self, root):
 
         # initialise the canvas and scrollbar
         padding = 10
