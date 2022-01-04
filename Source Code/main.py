@@ -972,10 +972,6 @@ def change_indications():
 
 def end_window_view():
 
-    # destroy the viewsizewindow
-    if setViewSizeWindow is not None:
-        setViewSizeWindow.destroy()
-
     # create the table
     global nucleiTable
     nucleiTable = Table(aux_frame)
