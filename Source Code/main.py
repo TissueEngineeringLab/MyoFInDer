@@ -1,15 +1,18 @@
 # coding: utf-8
 
 from tkinter import ttk, filedialog, Canvas, Tk, IntVar, \
-    Toplevel, Scale, HORIZONTAL, DISABLED, NORMAL, PhotoImage, Menu, \
-    StringVar, BooleanVar
+    Toplevel, Scale, PhotoImage, Menu, StringVar, BooleanVar
 from PIL import ImageTk, Image
 from numpy import asarray, save, load
 from os import path, mkdir
+from platform import system, release
 
-from table import ImageCanvasSize, ImageCanvasStandardFactor, Table
-from ctypes import pythonapi, py_object, windll
-from platform import release
+if system() == "Windows":
+  from ctypes import pythonapi, py_object, windll as dll
+else:
+  from ctypes import pythonapi, py_object, cdll as dll
+
+from table import Table
 from imagewindow import Zoom_Advanced
 from validateFileName import is_pathname_valid
 from shutil import rmtree
@@ -255,8 +258,6 @@ def create_settings_window(root):
     frm.grid(column=0, row=0, sticky='NESW')
 
     # nuclei colour
-    nuclei_colour_buttons = []
-    fibre_colour_buttons = []
     ttk.Label(frm, text="Nuclei Colour :    ").grid(column=0, row=0,
                                                     sticky='NE')
     nuclei_colour_r1 = ttk.Radiobutton(frm, text="Blue Channel",
@@ -312,10 +313,6 @@ def create_settings_window(root):
                                         fibreColourVar))
     fibre_colour_r3.grid(column=1, row=7, sticky='NW')
 
-    nuclei_colour_buttons = [nuclei_colour_r1, nuclei_colour_r2,
-                             nuclei_colour_r3]
-    fibre_colour_buttons = [fibre_colour_r1, fibre_colour_r2, fibre_colour_r3]
-
     # autosave timer
     ttk.Label(frm, text='Autosave Interval :    ').grid(column=0, row=10,
                                                         sticky='NE')
@@ -360,7 +357,7 @@ def create_settings_window(root):
     ttk.Label(frm, text='Number of Threads :    ').grid(column=0, row=22,
                                                         sticky='NE')
     global threadSlider
-    threadSlider = Scale(frm, from_=0, to=5, orient=HORIZONTAL, label='Off',
+    threadSlider = Scale(frm, from_=0, to=5, orient="horizontal", label='Off',
                          command=thread_slider, showvalue=False, length=150)
     threadSlider.set(int(nThreads.get()))
     threadSlider.grid(column=1, row=22, sticky='NW')
@@ -372,7 +369,8 @@ def create_settings_window(root):
     global SmallObjectsSlider
     SmallObjectsSlider = Scale(frm, from_=10, to=1000,
                                label=str(int(smallObjectsThreshold.get())),
-                               orient=HORIZONTAL, command=small_objects_slider,
+                               orient="horizontal",
+                               command=small_objects_slider,
                                showvalue=False, length=150)
     SmallObjectsSlider.set(int(smallObjectsThreshold.get()))
     SmallObjectsSlider.grid(column=1, row=23, sticky='NW')
@@ -417,8 +415,7 @@ def settings_changed(setting_index=0):
                 smallObjectsThreshold.get(), recentProjects,
                 blueChannelBool.get(), greenChannelBool.get(),
                 redChannelBool.get(), showNucleiBool.get(),
-                showFibresBool.get(), ImageCanvasSize[0],
-                ImageCanvasSize[1]]
+                showFibresBool.get()]
 
     # convert to numpy and save
     arr = asarray(settings)
@@ -639,7 +636,7 @@ def select_images(root):
                                                          ('.tif', '.png',
                                                           '.jpg', '.jpeg',
                                                           '.bmp', '.hdr'))],
-                                             parent=root, initialdir="/",
+                                             parent=root,
                                              title='Please select a directory')
 
     if len(file_names) != 0:
@@ -660,58 +657,54 @@ def select_images(root):
 # when leftclicking, the position of the cursor is sent to the table and
 # imagecanvas
 def left_click(event):
-    nucleiTable.left_click(root.winfo_pointerx(), root.winfo_pointery(),
-                           frm.winfo_rooty())
-    if ImageCanvas.left_click(root.winfo_pointerx(), root.winfo_pointery(),
-                              frm.winfo_rooty()):
+    nucleiTable.left_click(str(event.widget), event.y)
+    if ImageCanvas.left_click(str(event.widget), event.x, event.y):
       set_unsaved_status()
 
 
 # when rightclicking, the position of the cursor is sent to the table and
 # imagecanvas
 def right_click(event):
-    if ImageCanvas.right_click(root.winfo_pointerx(), root.winfo_pointery(),
-                               frm.winfo_rooty()):
+    if ImageCanvas.right_click(str(event.widget), event.x, event.y):
       set_unsaved_status()
 
 
 def onwheel(event):
-    nucleiTable.onwheel(event.delta, root.winfo_pointerx(),
-                        root.winfo_pointery(), frm.winfo_rooty())
+    nucleiTable.onwheel(str(event.widget),
+                        120 * event.delta / abs(event.delta))
 
 
-def motion(evet):
-    nucleiTable.motion(root.winfo_pointerx(), root.winfo_pointery(),
-                       frm.winfo_rooty())
+def motion(event):
+    nucleiTable.motion(str(event.widget), event.y)
 
 
 # pass through the keypressing of the arrows to the imagecanvas to scroll
 # around the imagecanvas
-def on_left_press(event):
+def on_left_press(*_, **__):
   ImageCanvas.arrows(0)
 
 
-def on_up_press(event):
+def on_up_press(*_, **__):
   ImageCanvas.arrows(1)
 
 
-def on_right_press(event):
+def on_right_press(*_, **__):
   ImageCanvas.arrows(2)
 
 
-def on_down_press(event):
+def on_down_press(*_, **__):
   ImageCanvas.arrows(3)
 
 
 def on_zoom_in_press(event):
-    ImageCanvas.zoom(ImageCanvasSize[0] / 2, ImageCanvasSize[1] / 2, 120)
+  ImageCanvas.zoom(str(event.widget), 120)
 
 
 def on_zoom_out_press(event):
-    ImageCanvas.zoom(ImageCanvasSize[0] / 2, ImageCanvasSize[1] / 2, -120)
+  ImageCanvas.zoom(str(event.widget), -120)
 
 
-def delete_current_project(root):
+def delete_current_project():
 
     if currentProject != '':
         # delete the project
@@ -745,7 +738,7 @@ def create_empty_project():
     saveButton['text'] = 'Save As'
     processImagesbutton['state'] = 'disabled'
     fileMenu.entryconfig(fileMenu.index("Delete Current Project"),
-                         state=DISABLED)
+                         state="disabled")
 
     # set window title
     root.title("Cellen Tellen - New Project (Unsaved)")
@@ -784,7 +777,7 @@ def load_project(directory):
     saveButton['state'] = 'disabled'
     saveButton['text'] = 'Save'
     fileMenu.entryconfig(fileMenu.index("Delete Current Project"),
-                         state=NORMAL)
+                         state="normal")
 
     # do the recent projects shit
     if path.isdir(BASE_PATH + 'Projects/' + directory) \
@@ -847,7 +840,7 @@ def save_project(directory, saveas=False):
             saveButton['state'] = 'disabled'
             saveButton['text'] = 'Save'
             fileMenu.entryconfig(fileMenu.index("Delete Current Project"),
-                                 state=NORMAL)
+                                 state="normal")
 
             # change the current project name
             global currentProject
@@ -977,67 +970,6 @@ def change_indications():
     ImageCanvas.set_which_indcation(indicatingNuclei)
 
 
-# this function is used while opening the program the first time, to adjust
-# the window size
-def change_window_size(event):
-    factor = 100
-    if event.char == 'a':  # make smaller (but same ratio)
-        size = (int(ImageCanvasSize[0] - ImageCanvasSize[0]/factor),
-                int((ImageCanvasSize[0] - ImageCanvasSize[0]/factor) *
-                ImageCanvasStandardFactor))
-    elif event.char == 'z':  # make bigger (but same ratio)
-        size = (int(ImageCanvasSize[0] + ImageCanvasSize[0]/factor),
-                int((ImageCanvasSize[0] + ImageCanvasSize[0]/factor) *
-                ImageCanvasStandardFactor))
-    else:
-      size = ImageCanvasSize
-
-    # update button gridpositions
-    frm.grid_columnconfigure(0, minsize=size[0] + 4)
-
-    # update canvas
-    ImageCanvas.update_size(size)
-
-
-# initialised the ajdustment of the window size, the first time you boot up
-# the program (if there is not general.npy)
-def start_window_view():
-    global setViewSizeWindow
-
-    # initialize window, size and position
-    set_window_view_window_size = (500, 130)
-    setViewSizeWindow = Toplevel(root)
-    setViewSizeWindow.grab_set()
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
-    setViewSizeWindow.geometry(str(set_window_view_window_size[0]) + 'x' +
-                               str(set_window_view_window_size[1]) + "+" +
-                               str(int(screen_width / 2 -
-                                       set_window_view_window_size[0] / 2))
-                               + "+" +
-                               str(int(screen_height / 2 -
-                                       set_window_view_window_size[1] / 2)))
-    setViewSizeWindow.title("Set Window Size")
-    setViewSizeWindow.focus_force()
-
-    # set key strokes bindings, link to changeWindowSize
-    setViewSizeWindow.bind('a', change_window_size)
-    setViewSizeWindow.bind('z', change_window_size)
-    setViewSizeWindow.protocol("WM_DELETE_WINDOW", end_window_view)
-
-    # create 'done' button, link to endWindowView
-    set_view_size_frame = ttk.Frame(setViewSizeWindow, padding="10 10 120 120")
-    set_view_size_frame.grid(column=0, row=0, sticky='NESW')
-    ttk.Label(set_view_size_frame,
-              text="Use 'a' and 'z' keys to adjust the window view.").\
-        grid(column=0, row=0, pady=5)
-    ttk.Button(set_view_size_frame,
-               text="Done", command=end_window_view, width=14).\
-        grid(column=0, row=1, pady=15)
-    set_view_size_frame.grid_columnconfigure(
-        0, minsize=set_window_view_window_size[0])
-
-
 def end_window_view():
 
     # destroy the viewsizewindow
@@ -1046,7 +978,7 @@ def end_window_view():
 
     # create the table
     global nucleiTable
-    nucleiTable = Table(root)
+    nucleiTable = Table(aux_frame)
     nucleiTable.set_image_canvas(ImageCanvas)
     ImageCanvas.set_table(nucleiTable)
 
@@ -1055,8 +987,8 @@ def end_window_view():
 
 
 # set better resolution
-if int(release()) >= 8:
-    windll.shcore.SetProcessDpiAwareness(True)
+if system() == "Windows" and int(release()) >= 8:
+    dll.shcore.SetProcessDpiAwareness(True)
 
 # set default values
 imagesChanged = False
@@ -1067,29 +999,45 @@ close = False
 root.destroy()
 root = Tk()
 root.title("Cellen Tellen - New Project (Unsaved)")
-root.state('zoomed')
+if system() == "Windows":
+  root.state('zoomed')
+else:
+  root.attributes('-zoomed', True)
 
 # set icon
 photo = PhotoImage(file=BASE_PATH + "icon.png")
 root.iconphoto(False, photo)
 
 
-frm = ttk.Frame(root, padding="10 10 120 120")
-frm.grid(column=0, row=0, sticky='NESW')
+frm = ttk.Frame()
+frm.pack(fill='both', expand=True)
+
+aux_frame = ttk.Frame(frm)
+aux_frame.pack(expand=False, fill="both", anchor="e", side='right')
+
+button_frame = ttk.Frame(aux_frame)
+button_frame.pack(expand=False, fill="x", anchor='n', side='top')
+
+tick_frame_1 = ttk.Frame(aux_frame)
+tick_frame_1.pack(expand=False, fill="x", anchor='n', side='top')
+
+tick_frame_2 = ttk.Frame(aux_frame)
+tick_frame_2.pack(expand=False, fill="x", anchor='n', side='top')
 
 
 # configure the menu
 menubar = Menu(root)
 root.config(menu=menubar)
 
-menubar.config(font=("TKDefaultFont", 20))
+menubar.config(font=("TKDefaultFont", 12))
 fileMenu = Menu(menubar, tearoff=0)
 fileMenu.add_command(label="New Empty Project", command=create_empty_project)
 fileMenu.add_command(label="Save Project As",
                      command=create_project_name_window)
 fileMenu.add_command(label="Delete Current Project",
-                     command=lambda: delete_current_project(root))
-fileMenu.entryconfig(fileMenu.index("Delete Current Project"), state=DISABLED)
+                     command=delete_current_project)
+fileMenu.entryconfig(fileMenu.index("Delete Current Project"),
+                     state="disabled")
 fileMenu.add_command(label="Load From Explorer",
                      command=load_project_from_explorer)
 fileMenu.add_separator()
@@ -1152,7 +1100,6 @@ screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 print("screensize : ", screen_width, screen_height)
 print("vroot : ", root.winfo_vrootwidth(), root.winfo_vrootheight())
-ButtonRowWidth = 150
 
 
 # initialised table, the object itself is not yet created until we have
@@ -1195,58 +1142,66 @@ greenChannelBool.set(True)
 
 
 # general buttons
-ttk.Button(frm, text="Load Images", command=lambda: select_images(root),
-           width=14).grid(column=1, row=0)
-processImagesbutton = ttk.Button(frm, text="Process Images",
-                                 command=process_images, width=14,
+load_button = ttk.Button(button_frame, text="Load Images",
+                         command=lambda: select_images(root))
+load_button.pack(fill="x", anchor="w", side='left', padx=3, pady=5)
+s = ttk.Style()
+s.configure('my.TButton', font=('TKDefaultFont', 11))
+processImagesbutton = ttk.Button(button_frame, text="Process Images",
+                                 command=process_images, style='my.TButton',
                                  state='disabled')
-processImagesbutton.grid(column=2, row=0)
+processImagesbutton.pack(fill="x", anchor="w", side='left', padx=3, pady=5)
 
 # image channel selection (which colour channels are displayed)
-ttk.Label(frm, text="  Channels :   ").grid(column=1, row=2, sticky='w')
-blueChannelCheckButton = ttk.Checkbutton(frm, text="Blue Channel",
+channels = ttk.Label(tick_frame_1, text="  Channels :   ")
+channels.pack(anchor="w", side="left", fill='x', padx=3, pady=5)
+blueChannelCheckButton = ttk.Checkbutton(tick_frame_1, text="Blue Channel",
                                          onvalue=True, offvalue=False,
                                          variable=blueChannelBool,
                                          command=set_image_channels)
-blueChannelCheckButton.grid(column=2, row=2, sticky='w')
-greenChannelCheckButton = ttk.Checkbutton(frm, text="Green Channel",
+blueChannelCheckButton.pack(anchor="w", side="left", fill='x', padx=3, pady=5)
+greenChannelCheckButton = ttk.Checkbutton(tick_frame_1, text="Green Channel",
                                           onvalue=True, offvalue=False,
                                           variable=greenChannelBool,
                                           command=set_image_channels)
-greenChannelCheckButton.grid(column=3, row=2, sticky='w')
-redChannelCheckButton = ttk.Checkbutton(frm, text="Red Channel", onvalue=True,
+greenChannelCheckButton.pack(anchor="w", side="left", fill='x', padx=3, pady=5)
+redChannelCheckButton = ttk.Checkbutton(tick_frame_1, text="Red Channel",
+                                        onvalue=True,
                                         offvalue=False,
                                         variable=redChannelBool,
                                         command=set_image_channels)
-redChannelCheckButton.grid(column=4, row=2, sticky='w')
+redChannelCheckButton.pack(anchor="w", side="left", fill='x', padx=3, pady=5)
 
 # indicator selections (which indicators are shown)
-ttk.Label(frm, text="  Indicators : ").grid(column=1, row=4, sticky='w')
-showNucleiCheckButton = ttk.Checkbutton(frm, text="Nuclei", onvalue=True,
+indicator = ttk.Label(tick_frame_2, text="  Indicators : ")
+indicator.pack(anchor="w", side="left", fill='x', padx=3, pady=5)
+showNucleiCheckButton = ttk.Checkbutton(tick_frame_2, text="Nuclei",
+                                        onvalue=True,
                                         offvalue=False,
                                         variable=showNucleiBool,
                                         command=set_indicators)
-showNucleiCheckButton.grid(column=2, row=4, sticky='w')
-showFibresCheckButton = ttk.Checkbutton(frm, text="Fibres", onvalue=True,
+showNucleiCheckButton.pack(anchor="w", side="left", fill='x', padx=3, pady=5)
+showFibresCheckButton = ttk.Checkbutton(tick_frame_2, text="Fibres",
+                                        onvalue=True,
                                         offvalue=False,
                                         variable=showFibresBool,
                                         command=set_indicators)
-showFibresCheckButton.grid(column=3, row=4, sticky='w')
+showFibresCheckButton.pack(anchor="w", side="left", fill='x', padx=3, pady=5)
 
 
-processingLabel = ttk.Label(frm, text="")
-processingLabel.grid(column=1, row=5, columnspan=4)
+processingLabel = ttk.Label(aux_frame, text="")
+processingLabel.pack(anchor="n", side="top", fill='x', padx=3, pady=5)
 
 
 # save altered images and table
-saveButton = ttk.Button(frm, text='Save As', width=14,
+saveButton = ttk.Button(button_frame, text='Save As',
                         command=save_button_pressed, state='enabled')
-saveButton.grid(column=4, row=0)
+saveButton.pack(fill="x", anchor="w", side='left', padx=3, pady=5)
 
 # set indicators
-whichIndicatorButton = ttk.Button(frm, width=14, text='Manual : Nuclei',
+whichIndicatorButton = ttk.Button(button_frame, text='Manual : Nuclei',
                                   command=change_indications, state='enabled')
-whichIndicatorButton.grid(column=3, row=0)
+whichIndicatorButton.pack(fill="x", anchor="w", side='left', padx=3, pady=5)
 
 # load the general save (save settings, window view, etc)
 if path.isfile(BASE_PATH + 'general.npy'):
@@ -1271,16 +1226,10 @@ if path.isfile(BASE_PATH + 'general.npy'):
     redChannelBool.set(settingsarr[10])
     showNucleiBool.set(settingsarr[11])
     showFibresBool.set(settingsarr[12])
-    ImageCanvasSize = (settingsarr[13], settingsarr[14])
 
-    # set the table and canvas
-    ImageCanvas = Zoom_Advanced(root, nucleiTable)
-    end_window_view()
-
-else:
-    # start windowsize selection
-    ImageCanvas = Zoom_Advanced(root, nucleiTable)
-    start_window_view()
+# set the table and canvas
+ImageCanvas = Zoom_Advanced(frm, nucleiTable)
+end_window_view()
 
 
 # load the list of recent projects if these projects exist
@@ -1305,16 +1254,6 @@ if len(recentProjects) == 0:
 indicatingNuclei = True
 set_image_channels()
 set_indicators()
-
-
-# set grid sizes
-frm.grid_columnconfigure(0, minsize=ImageCanvasSize[0]+4)
-frm.grid_columnconfigure(1, minsize=ButtonRowWidth)
-frm.grid_columnconfigure(2, minsize=ButtonRowWidth)
-frm.grid_columnconfigure(3, minsize=ButtonRowWidth)
-frm.grid_columnconfigure(4, minsize=ButtonRowWidth)
-frm.grid_rowconfigure(1, minsize=10)
-frm.grid_rowconfigure(3, minsize=1)
 
 
 root.update()

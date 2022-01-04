@@ -10,7 +10,7 @@ Created on Thu Oct 21 12:05:16 2021
 
 from deepcell.applications import Mesmer  # het model te gebruiken
 import numpy as np
-import time
+from time import time
 import cv2
 
 # --------------------------------------------------------------------------
@@ -340,12 +340,12 @@ def deepcell_functie(filename,
     centers of pixels inside
     """
 
-    t1 = time.time()
+    t1 = time()
 
     # load the image
     image = cv2.imread(filename)
 
-    t2 = time.time()
+    t2 = time()
 
     amount_of_files = 8
     whole_color = str_to_number_color(kleurcellen, kleurcyto)
@@ -359,13 +359,13 @@ def deepcell_functie(filename,
     # get the deepcell prediction segmentation mask
     labeled_image = cellen_herkennen(image, whole_color, parameters)
 
-    t3 = time.time()
+    t3 = time()
     # get the lists of fibre and nuclei centres
     list_tuple_location, list_tuple_location_fibre, \
         list_tuple_fibre_centres = fibre_detection__nuclei_positions(
             image[:, :, whole_color[1]], labeled_image, do_fibre_counting)
 
-    t10 = time.time()
+    t10 = time()
     print(t2 - t1, t3 - t2, (t10 - t3), t10 - t1)
 
     return list_tuple_location, list_tuple_location_fibre, \

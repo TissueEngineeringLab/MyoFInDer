@@ -4,9 +4,8 @@
 # constant memory and not crams it with a huge resized image for the large
 # zooms.
 
-from tkinter import UNITS, Canvas
+from tkinter import UNITS, Canvas, ttk, Scrollbar
 from PIL import Image, ImageTk
-from table import ImageCanvasSize
 from cv2 import cvtColor, imread, COLOR_BGR2RGB
 from numpy import zeros
 
@@ -21,12 +20,29 @@ class Zoom_Advanced:
         self.nucleiTable = nuclei_table
         self.master = mainframe
 
+        self.img_frame = ttk.Frame(self.master)
+        self.img_frame.pack(expand=True, fill="both", anchor="w", side="left",
+                            padx=5, pady=5)
+        self.hbar_frame = ttk.Frame(self.img_frame)
+        self.hbar_frame.pack(expand=False, fill="x", anchor="s", side="bottom")
+
         # Create canvas and put image on it
-        self.canvas = Canvas(self.master, width=ImageCanvasSize[0],
-                             height=ImageCanvasSize[1],
+        self.canvas = Canvas(self.img_frame,
                              highlightthickness=3,
                              highlightbackground="black")
-        self.canvas.grid(column=0, row=0, sticky='NW')
+        self.canvas.configure(scrollregion=self.canvas.bbox('all'))
+        self.canvas.pack(expand=True, fill="both", side='left')
+
+        self.vbar = Scrollbar(self.img_frame, orient="vertical")
+        self.vbar.pack(fill='y', side='right')
+        self.vbar.config(command=self.canvas.yview)
+        self.canvas.config(yscrollcommand=self.vbar.set)
+
+        self.hbar = Scrollbar(self.hbar_frame, orient="horizontal")
+        self.hbar.pack(fill='x')
+        self.hbar.config(command=self.canvas.xview)
+        self.canvas.config(xscrollcommand=self.hbar.set)
+
         self.canvas.update()  # wait till canvas is create
         # Bind events to the Canvas
         self.canvas.bind('<Configure>', self.show_image)  # canvas is resized
@@ -39,20 +55,19 @@ class Zoom_Advanced:
         self.channelsRGB = (False, False, False)
         self.indicatorsNF = (False, False)
         self.indicatingNuclei = True
-        self.width, self.height = ImageCanvasSize
         self.imscale = 1.0  # scale for the canvas image
+        self.canscale = 1.0
         self.delta = 1.3  # zoom delta
+        self._zoom = 0
         self.nuclei = []
         self.fibres = []
         self.imageId = None
         # Put image into container rectangle and use it to set proper
         # coordinates to the image
-        self.container = self.canvas.create_rectangle(0, 0, self.width,
-                                                      self.height, width=0)
 
     def update_size(self, size):
-        self.canvas.config(width=size[0], height=size[1])
-        self.width, self.height = size
+        self.img_frame.config(width=size[0] - self.vbar.winfo_reqwidth(),
+                              height=size[1] - self.hbar.winfo_reqheight())
 
     def set_table(self, table_):
         self.nucleiTable = table_
@@ -60,33 +75,31 @@ class Zoom_Advanced:
     def set_which_indcation(self, is_nuclei):
         self.indicatingNuclei = is_nuclei
 
-    def left_click(self, window_x, window_y, frm_start):
+    def left_click(self, widget, rel_x, rel_y):
 
-        eventx = window_x - 1
-        eventy = window_y - frm_start
-        if self.image is not None and eventy < ImageCanvasSize[1] and \
-                eventx < ImageCanvasSize[0]:
+        canvas_name = str(self.canvas.winfo_pathname(self.canvas.winfo_id()))
+
+        if self.image is not None and widget == canvas_name:
+
+            can_x = self.canvas.canvasx(rel_x)
+            can_y = self.canvas.canvasy(rel_y)
+
+            if can_x >= self.image.width * self.imscale or \
+                    can_y >= self.image.height * self.imscale:
+                return
 
             # put white nucleus or set from blue to green
-            radius = int(3.0 * self.imscale)
-            square_size = int(9.0 * self.imscale)
-            x = self.canvas.canvasx(eventx)
-            y = self.canvas.canvasy(eventy)
-
-            # coordinaten van linkerbovenhoek van de foto tov de window
-            top_left_x = self.canvas.coords(self.container)[0] - \
-                self.canvas.canvasx(0)
-            top_left_y = self.canvas.coords(self.container)[1] - \
-                self.canvas.canvasy(0)
+            radius = max(int(3.0 * self.canscale), 1)
+            square_size = max(int(9.0 * self.canscale), 1)
 
             # coordinaten tov de foto
-            photo_x = (eventx - top_left_x) / (self.width * self.imscale)
-            photo_y = (eventy - top_left_y) / (self.height * self.imscale)
+            rel_x_scale = can_x / self.imscale
+            rel_y_scale = can_y / self.imscale
 
             if self.indicatingNuclei and self.indicatorsNF[0]:
                 # find a close nuclei
                 closest_nuclei_index, closest_nuclei_id = \
-                    self._find_closest_nuclei(photo_x, photo_y)
+                    self._find_closest_nuclei(rel_x_scale, rel_y_scale)
                 if closest_nuclei_index != -1:
                     # convert the nucleus from blue to green
                     if not self.nuclei[closest_nuclei_index][3]:
@@ -106,60 +119,64 @@ class Zoom_Advanced:
                     return True
 
                 # otherwise, add a new nucleus
-                elif photo_y >= 0 and photo_x >= 0:
-                    self.nucleiTable.add_blue([photo_x, photo_y])
+                elif rel_y_scale >= 0 and rel_x_scale >= 0:
+                    self.nucleiTable.add_blue([rel_x_scale, rel_y_scale])
                     new_oval = self.canvas.create_oval(
-                        x - radius, y - radius, x + radius, y + radius,
+                        can_x - radius, can_y - radius, can_x + radius,
+                        can_y + radius,
                         fill=nonFibreNucleiColour, outline='#fff', width=0)
                     # #65ADF5#2A7DDE (blue) #2B8915 (green)
-                    self.nuclei.append([photo_x, photo_y, new_oval, False])
+                    self.nuclei.append([rel_x_scale, rel_y_scale,
+                                        new_oval, False])
                     return True
                 return False
 
             elif self.indicatorsNF[1]:
                 # find a close fibre
                 closest_fiber_index, closest_fiber_id = \
-                    self._find_closest_fibre(photo_x, photo_y)
-                if closest_fiber_index == -1 and photo_y >= 0 and photo_x >= 0:
-                    # newRect = self.canvas.create_rectangle(x - square_size,
-                    # y - square_size,x + square_size, y + square_size,
-                    # fill='red', outline='#fff', width=2) # #2A7DDE (blue)
+                    self._find_closest_fibre(rel_x_scale, rel_y_scale)
+                if closest_fiber_index == -1 and rel_y_scale >= 0 \
+                        and rel_x_scale >= 0:
+                    # newRect = self.canvas.create_rectangle(
+                    #     can_x - square_size,
+                    #     can_y - square_size,can_x + square_size,
+                    #     can_y + square_size,
+                    #     fill='red', outline='#fff', width=2) # #2A7DDE (blue)
                     # #2B8915 (green)
-                    hor_line = self.canvas.create_line(x + square_size, y,
-                                                       x - square_size, y,
-                                                       width=2, fill='red')
-                    ver_line = self.canvas.create_line(x, y + square_size,
-                                                       x, y - square_size,
-                                                       width=2, fill='red')
-                    self.fibres.append([photo_x, photo_y,
+                    hor_line = self.canvas.create_line(
+                        can_x + square_size, can_y, can_x - square_size, can_y,
+                        width=2, fill='red')
+                    ver_line = self.canvas.create_line(
+                        can_x, can_y + square_size, can_x, can_y - square_size,
+                        width=2, fill='red')
+                    self.fibres.append([rel_x_scale, rel_y_scale,
                                         (hor_line, ver_line)])
-                    self.nucleiTable.add_fibre([photo_x, photo_y])
+                    self.nucleiTable.add_fibre([rel_x_scale, rel_y_scale])
                     return True
 
         return False
 
-    def right_click(self, window_x, window_y, frm_start):
+    def right_click(self, widget, rel_x, rel_y):
 
-        eventx = window_x - 1
-        eventy = window_y - frm_start
-        if self.image is not None and eventy < ImageCanvasSize[1] \
-                and eventx < ImageCanvasSize[0]:
+        canvas_name = str(self.canvas.winfo_pathname(self.canvas.winfo_id()))
 
-            # delete nucleus
-            # coordinaten van linkerbovenhoek van de foto tov de window
-            top_left_x = self.canvas.coords(self.container)[0] - \
-                self.canvas.canvasx(0)
-            top_left_y = self.canvas.coords(self.container)[1] - \
-                self.canvas.canvasy(0)
+        if self.image is not None and widget == canvas_name:
+
+            can_x = self.canvas.canvasx(rel_x)
+            can_y = self.canvas.canvasy(rel_y)
+
+            if can_x >= self.image.width * self.imscale or \
+                    can_y >= self.image.height * self.imscale:
+                return
 
             # coordinaten tov de foto
-            photo_x = (eventx - top_left_x) / (self.width * self.imscale)
-            photo_y = (eventy - top_left_y) / (self.height * self.imscale)
+            rel_x_scale = can_x / self.imscale
+            rel_y_scale = can_y / self.imscale
 
             # find a close nuclei
             if self.indicatingNuclei and self.indicatorsNF[0]:
                 closest_nuclei_index, closest_nuclei_id = \
-                    self._find_closest_nuclei(photo_x, photo_y)
+                    self._find_closest_nuclei(rel_x_scale, rel_y_scale)
                 if closest_nuclei_index != -1:
 
                     # delete it
@@ -180,8 +197,7 @@ class Zoom_Advanced:
 
                 # find closest fibre
                 closest_fibre_index, closest_fibre_id = \
-                    self._find_closest_fibre(photo_x, photo_y)
-                print(closest_fibre_index, closest_fibre_id)
+                    self._find_closest_fibre(rel_x_scale, rel_y_scale)
                 if closest_fibre_index != -1:
 
                     # delete it
@@ -197,14 +213,12 @@ class Zoom_Advanced:
 
     def _find_closest_fibre(self, x, y):
         # find the closest fiber
-        radius = 20.0
+        radius = max(9.0 * self.canscale / self.imscale, 9.0)
         closest_index = -1
         closest_distance_sq = -1
         for i, fiber in enumerate(self.fibres):
-            if fiber[0] - radius / self.width < x < \
-                    fiber[0] + radius / self.width and \
-                    fiber[1] - radius / self.height < y < \
-                    fiber[1] + radius / self.height:
+            if abs(x - fiber[0]) <= radius and \
+                    abs(y - fiber[1]) <= radius:
                 dis_sq = (fiber[0] - x) ** 2 + (fiber[1] - y) ** 2
                 if dis_sq < closest_distance_sq or closest_distance_sq < 0:
                     closest_index = i
@@ -215,14 +229,12 @@ class Zoom_Advanced:
 
     def _find_closest_nuclei(self, x, y):
         # find the closest nucleus
-        radius = 4.0
+        radius = max(3.0 * self.canscale / self.imscale, 3.0)
         closest_index = -1
         closest_distance_sq = -1
         for i, nucleus in enumerate(self.nuclei):
-            if nucleus[0] - radius / self.width < x < \
-                    nucleus[0] + radius / self.width and \
-                    nucleus[1] - radius / self.height < y < \
-                    nucleus[1] + radius / self.height:
+            if abs(x - nucleus[0]) <= radius and \
+                    abs(y - nucleus[1]) <= radius:
                 dis_sq = (nucleus[0] - x) ** 2 + (nucleus[1] - y) ** 2
                 if dis_sq < closest_distance_sq or closest_distance_sq < 0:
                     closest_index = i
@@ -233,11 +245,12 @@ class Zoom_Advanced:
 
     def set_channels(self, b, g, r):
         self.channelsRGB = (r, g, b)
-        self._set_image()
+        self._set_image(rgb=True)
+        self.show_image()
 
-    def _set_image(self):
+    def _set_image(self, rgb=False):
         # load the image with the correct channels
-        if self.imagePath != '':
+        if self.imagePath:
             cv_img = cvtColor(imread(self.imagePath), COLOR_BGR2RGB)
             if not self.channelsRGB[0]:
                 cv_img[:, :, 0] = zeros([cv_img.shape[0], cv_img.shape[1]])
@@ -247,9 +260,18 @@ class Zoom_Advanced:
                 cv_img[:, :, 2] = zeros([cv_img.shape[0], cv_img.shape[1]])
             image_in = Image.fromarray(cv_img)
 
-            self.image = image_in.resize(ImageCanvasSize)  # open image
-            self.width, self.height = ImageCanvasSize
-            self.show_image()
+            can_width = self.canvas.winfo_width()
+            can_height = self.canvas.winfo_height()
+            can_ratio = can_width / can_height
+            img_ratio = image_in.width / image_in.height
+            if img_ratio >= can_ratio:
+                resize = (can_width, int(can_width / img_ratio))
+            else:
+                resize = (int(can_height * img_ratio), can_height)
+            # self.image = image_in.resize(resize)  # open image
+            self.image = image_in
+            if not rgb:
+                self.imscale = resize[0] / image_in.width
 
     def set_indicators(self, nuclei, fibres):
 
@@ -259,22 +281,16 @@ class Zoom_Advanced:
                 self.canvas.delete(nuc[2])
         elif not self.indicatorsNF[0]:
 
-            radius = int(3.0 * self.imscale)
+            radius = max(int(3.0 * self.canscale), 1)
             # coordinaten van linkerbovenhoek van de foto tov de window
-            top_left_x = self.canvas.coords(self.container)[0] - \
-                self.canvas.canvasx(0)
-            top_left_y = self.canvas.coords(self.container)[1] - \
-                self.canvas.canvasy(0)
 
             # draw
             for i, nuc in enumerate(self.nuclei):
                 color = nonFibreNucleiColour
                 if nuc[3]:
                     color = fibreNucleiColour
-                x = self.canvas.canvasx(nuc[0] * (self.width * self.imscale) +
-                                        top_left_x)
-                y = self.canvas.canvasy(nuc[1] * (self.height * self.imscale) +
-                                        top_left_y)
+                x = nuc[0] * self.imscale
+                y = nuc[1] * self.imscale
                 new_oval = self.canvas.create_oval(
                     x - radius, y - radius, x + radius, y + radius,
                     fill=color, outline='#fff', width=0)
@@ -288,19 +304,13 @@ class Zoom_Advanced:
                 self.canvas.delete(fib[2][1])
         elif not self.indicatorsNF[1]:
 
-            square_size = int(10.0 * self.imscale)
+            square_size = max(int(10.0 * self.canscale), 1)
             # coordinaten van linkerbovenhoek van de foto tov de window
-            top_left_x = self.canvas.coords(self.container)[0] - \
-                self.canvas.canvasx(0)
-            top_left_y = self.canvas.coords(self.container)[1] - \
-                self.canvas.canvasy(0)
 
             # draw
             for i, fibre in enumerate(self.fibres):
-                x = self.canvas.canvasx(fibre[0] * (self.width * self.imscale)
-                                        + top_left_x)
-                y = self.canvas.canvasy(fibre[1] * (self.height * self.imscale)
-                                        + top_left_y)
+                x = fibre[0] * self.imscale
+                y = fibre[1] * self.imscale
                 hor_line = self.canvas.create_line(x + square_size, y,
                                                    x - square_size, y, width=2,
                                                    fill='red')
@@ -333,20 +343,14 @@ class Zoom_Advanced:
         self._set_image()
 
         # draw the nuclei on the screen
-        radius = int(3.0 * self.imscale)
-        square_size = int(10.0 * self.imscale)
+        radius = max(int(3.0 * self.canscale), 1)
+        square_size = max(int(10.0 * self.canscale), 1)
         # coordinaten van linkerbovenhoek van de foto tov de window
-        top_left_x = self.canvas.coords(self.container)[0] - \
-            self.canvas.canvasx(0)
-        top_left_y = self.canvas.coords(self.container)[1] - \
-            self.canvas.canvasy(0)
 
         # blue nuclei
         for position in nuclei_positions[0]:
-            x = self.canvas.canvasx(position[0] * (self.width * self.imscale)
-                                    + top_left_x)
-            y = self.canvas.canvasy(position[1] * (self.height * self.imscale)
-                                    + top_left_y)
+            x = position[0] * self.imscale
+            y = position[1] * self.imscale
             new_oval = None
             if self.indicatorsNF[0]:
                 new_oval = self.canvas.create_oval(
@@ -356,10 +360,8 @@ class Zoom_Advanced:
             self.nuclei.append([position[0], position[1], new_oval, False])
         # green nuclei
         for position in nuclei_positions[1]:
-            x = self.canvas.canvasx(position[0] * (self.width * self.imscale)
-                                    + top_left_x)
-            y = self.canvas.canvasy(position[1] * (self.height * self.imscale)
-                                    + top_left_y)
+            x = position[0] * self.imscale
+            y = position[1] * self.imscale
             new_oval = None
             if self.indicatorsNF[0]:
                 new_oval = self.canvas.create_oval(
@@ -370,10 +372,8 @@ class Zoom_Advanced:
 
         # fibres
         for position in fibre_positions:
-            x = self.canvas.canvasx(position[0] * (self.width * self.imscale)
-                                    + top_left_x)
-            y = self.canvas.canvasy(position[1] * (self.height * self.imscale)
-                                    + top_left_y)
+            x = position[0] * self.imscale
+            y = position[1] * self.imscale
             hor_line = None
             ver_line = None
             if self.indicatorsNF[1]:
@@ -391,16 +391,14 @@ class Zoom_Advanced:
 
         # show the image
         self.show_image()
-        self.canvas.yview_moveto(0.0)
-        self.canvas.xview_moveto(0.0)
-        self.show_image()
 
     def reset(self):
         # reset the canvas
         self.image = None  # open image
-        self.width, self.height = ImageCanvasSize
         self.imscale = 1.0  # scale for the canvas image
+        self.canscale = 1.0
         self.delta = 1.3  # zoom delta
+        self._zoom = 0
         for nuc in self.nuclei:
             self.canvas.delete(nuc[2])
         for fibre in self.fibres:
@@ -411,8 +409,6 @@ class Zoom_Advanced:
         self.imageId = None
         # Put image into container rectangle and use it to set proper
         # coordinates to the image
-        self.container = self.canvas.create_rectangle(0, 0, self.width,
-                                                      self.height, width=0)
 
         # show
         self.show_image()
@@ -453,81 +449,45 @@ class Zoom_Advanced:
             self.canvas.scan_dragto(event.x, event.y, gain=1)
             self.show_image()  # redraw the image
 
-    def zoom(self, eventx, eventy, delta):
+    def zoom(self, widget, delta, wheel=False):
         if self.image is not None:
-            x = self.canvas.canvasx(eventx)
-            y = self.canvas.canvasy(eventy)
-
-            bbox = self.canvas.bbox(self.container)  # get image area
-            if bbox[0] < x < bbox[2] and bbox[1] < y < bbox[3]:
-                pass  # Ok! Inside the image
-            else:
+            canvas_name = str(
+                self.canvas.winfo_pathname(self.canvas.winfo_id()))
+            if wheel and canvas_name != widget:
                 return  # zoom only inside image area
+
             scale = 1.0
             # Respond to Linux (event.num) or Windows (event.delta) wheel event
-            if delta == -120:  # scroll down
-                i = min(self.width, self.height)
-                if int(i * self.imscale) < 30:
+            if delta < 0:  # scroll down
+                if self._zoom < -4:
                     return  # image is less than 30 pixels
                 self.imscale /= self.delta
+                self.canscale /= self.delta
                 scale /= self.delta
-            if delta == 120:  # scroll up
-                i = min(self.canvas.winfo_width(), self.canvas.winfo_height())
-                if i < self.imscale:
-                    return  # 1 pixel is bigger than the visible area
+                self._zoom -= 1
+            elif delta > 0:  # scroll up
+                if self._zoom > 4:
+                    return  # Arbitrary zoom limit
                 self.imscale *= self.delta
+                self.canscale *= self.delta
                 scale *= self.delta
-            self.canvas.scale('all', x, y, scale, scale)  # rescale all the
+                self._zoom += 1
+            self.canvas.scale('all', 0, 0, scale, scale)  # rescale all the
             # elements in the image
             self.show_image()
 
     def wheel(self, event):
         """ Zoom with mouse wheel """
-        self.zoom(event.x, event.y, event.delta)
+        self.zoom(event.widget, event.delta, wheel=True)
 
-    def show_image(self):
-        """ Show image on the Canvas """
+    def show_image(self, *_, **__):
         if self.image is not None:
-            bbox1 = self.canvas.bbox(self.container)  # get image area
-            # Remove 1 pixel shift at the sides of the bbox1
-            bbox1 = (bbox1[0] + 1, bbox1[1] + 1, bbox1[2] - 1, bbox1[3] - 1)
-            bbox2 = (self.canvas.canvasx(0),  # get visible area of the canvas
-                     self.canvas.canvasy(0),
-                     self.canvas.canvasx(self.canvas.winfo_width()),
-                     self.canvas.canvasy(self.canvas.winfo_height()))
-            bbox = [min(bbox1[0], bbox2[0]), min(bbox1[1], bbox2[1]),
-                    # get scroll region box
-                    max(bbox1[2], bbox2[2]), max(bbox1[3], bbox2[3])]
-            if bbox[0] == bbox2[0] and bbox[2] == bbox2[2]:
-                # whole image in the visible area
-                bbox[0] = bbox1[0]
-                bbox[2] = bbox1[2]
-            if bbox[1] == bbox2[1] and bbox[3] == bbox2[3]:
-                # whole image in the visible area
-                bbox[1] = bbox1[1]
-                bbox[3] = bbox1[3]
-            self.canvas.configure(scrollregion=bbox)  # set scroll region
-            x1 = max(bbox2[0] - bbox1[0], 0)  # get coordinates (x1,y1,x2,y2)
-            # of the image tile
-            y1 = max(bbox2[1] - bbox1[1], 0)
-            x2 = min(bbox2[2], bbox1[2]) - bbox1[0]
-            y2 = min(bbox2[3], bbox1[3]) - bbox1[1]
-            if int(x2 - x1) > 0 and int(y2 - y1) > 0:  # show image if it in
-                # the visible area
-                x = min(int(x2 / self.imscale), self.width)
-                # sometimes it is larger on 1 pixel...
-                y = min(int(y2 / self.imscale), self.height)
-                # ...and sometimes not
-                image = self.image.crop((int(x1 / self.imscale),
-                                         int(y1 / self.imscale), x, y))
-                imagetk = ImageTk.PhotoImage(image.resize((int(x2 - x1),
-                                                           int(y2 - y1))))
-                self.imageId = self.canvas.create_image(max(bbox2[0],
-                                                            bbox1[0]),
-                                                        max(bbox2[1],
-                                                            bbox1[1]),
-                                                        anchor='nw',
-                                                        image=imagetk)
-                self.canvas.lower(self.imageId)  # set image into background
-                self.canvas.imagetk = imagetk  # keep an extra reference to
-                # prevent garbage-collection
+            scaled_x = int(self.image.width * self.imscale)
+            scaled_y = int(self.image.height * self.imscale)
+            image = self.image.resize((scaled_x, scaled_y))
+            imagetk = ImageTk.PhotoImage(image)
+            self.imageId = self.canvas.create_image(0, 0, anchor='nw',
+                                                    image=imagetk)
+            self.canvas.lower(self.imageId)  # set image into background
+            self.canvas.imagetk = imagetk
+            self.canvas.configure(scrollregion=(0, 0, scaled_x, scaled_y))

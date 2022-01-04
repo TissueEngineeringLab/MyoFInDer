@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from tkinter import Scrollbar, VERTICAL, Frame, Canvas, RIGHT, Y, LEFT, BOTH
+from tkinter import Scrollbar, ttk, Canvas
 from xlsxwriter import Workbook
 from shutil import copyfile, rmtree
 from numpy import load, asarray, save
@@ -10,10 +10,6 @@ from os import path, mkdir
 # get the absolute path of the exe
 BASE_PATH = path.abspath('')  # [:-7]
 BASE_PATH += "/"
-
-# define the image canvas size
-ImageCanvasSize = (1266, 955)
-ImageCanvasStandardFactor = 955 / 1266
 
 # colorcodes
 backgroundColour = '#EAECEE'
@@ -27,28 +23,23 @@ class Table:
     def __init__(self, root):
 
         # initialise the canvas and scrollbar
-        padding = 10
-        scrollbar_width = 26
-        self.width = 1920 - ImageCanvasSize[0] - 2 * padding - scrollbar_width
-        self.height = 795
         self.rowHeight = 50
-        self.topLeftX = ImageCanvasSize[0] + padding
-        self.topLeftY = 150
 
-        self.frame = Frame(root, width=self.width, height=self.height)
-        self.frame.place(x=self.topLeftX, y=self.topLeftY)
-        self.canvas = Canvas(self.frame, bg='#FFFFFF', width=self.width,
-                             height=self.height, highlightbackground='black',
-                             highlightthickness=3,
-                             scrollregion=(0, 0, self.width, self.height))
+        self.frame = ttk.Frame(root)
+        self.frame.pack(expand=True, fill="both", anchor="n", side='top')
+
+        self.canvas = Canvas(self.frame, bg='#FFFFFF',
+                             highlightbackground='black',
+                             highlightthickness=3)
+        self.canvas.configure(scrollregion=self.canvas.bbox('all'))
+        self.canvas.pack(expand=True, fill="both", anchor="w", side='left',
+                         pady=5)
         self.imageCanvas = None
 
-        self.vbar = Scrollbar(self.frame, orient=VERTICAL)
-        self.vbar.pack(side=RIGHT, fill=Y)
+        self.vbar = Scrollbar(self.frame, orient="vertical")
+        self.vbar.pack(side='right', fill='y', pady=5)
         self.vbar.config(command=self.canvas.yview)
-        self.canvas.config(width=self.width, height=self.height)
         self.canvas.config(yscrollcommand=self.vbar.set)
-        self.canvas.pack(side=LEFT, expand=True, fill=BOTH)
         # data about the images
         self.nucleiPositions = []
         self.fibrePositions = []
@@ -223,14 +214,12 @@ class Table:
                 + path.basename(self.filenames[index])[:-4] + ".png",
                 cv_img)
 
-    def onwheel(self, delta, x, y, frm_start):
+    def onwheel(self, widget, delta):
 
         # scroll down the canvas if we are inside the canvas
-        relx = x - self.topLeftX
-        rely = y - self.topLeftY - frm_start  # frmStart is menubar height
-        if self.filenames and 0 <= rely <= len(self.filenames) * \
-                self.rowHeight * 2 - 1 and 0 <= relx <= self.width:
-            self.canvas.yview_scroll(int(-1 * (delta / 120)), "units")
+        canvas_name = str(self.canvas.winfo_pathname(self.canvas.winfo_id()))
+        if self.filenames and canvas_name == widget:
+            self.canvas.yview_scroll(int(-delta / 120), "units")
 
        # update the imagecanvas handle
     def set_image_canvas(self, image_canvas):
@@ -288,24 +277,24 @@ class Table:
         self.nucleiPositions[self.currentImageIndex][0].remove(position)
         self.update_data(self.currentImageIndex)
 
-    def motion(self, x, y, frm_start):
-
-        # only if there are items and we are in the bounds
-        relx = x - self.topLeftX
-        rely = y - self.topLeftY - frm_start  # frmStart is menubar height
-        if self.filenames and 0 <= rely <= len(self.filenames) * \
-                self.rowHeight * 2 - 1 and 0 <= relx <= self.width:
+    def motion(self, widget, rel_y):
+        # only if there are items, and we are in the bounds
+        canvas_name = str(self.canvas.winfo_pathname(self.canvas.winfo_id()))
+        if self.filenames and canvas_name == widget:
             # unhover previous
             if self.hoveringIndex != -1:
-                self.unhover(self.hoveringIndex)
+                self._unhover(self.hoveringIndex)
 
             # hover over new item
-            self.hover(int(self.canvas.canvasy(rely) / (self.rowHeight * 2)))
+            if self.canvas.canvasy(rel_y) >= self.rowHeight * 2 * \
+                    len(self.labels):
+                return
+            self._hover(int(self.canvas.canvasy(rel_y) / (self.rowHeight * 2)))
         elif self.hoveringIndex != -1:
-            self.unhover(self.hoveringIndex)
+            self._unhover(self.hoveringIndex)
             self.hoveringIndex = -1
 
-    def hover(self, index):
+    def _hover(self, index):
         # set the esthetics of hovering over a table entry (like making the
         # text more black)
         self.hoveringIndex = index
@@ -331,7 +320,7 @@ class Table:
         self.canvas.itemconfig(self.labels[index][5],
                                fill=labelLineColour_Selected)
 
-    def unhover(self, index):
+    def _unhover(self, index):
         # reset the esthetics of hovering over a table entry
         if index != self.currentImageIndex:
             if index > 0:
@@ -398,18 +387,16 @@ class Table:
         self.canvas.itemconfig(self.labels[index][5],
                                fill=labelLineColour_Selected)
 
-    def left_click(self, x, y, frm_start):
+    def left_click(self, widget, rel_y):
 
         # only if there are items, and we are in the bounds
-        relx = x - self.topLeftX
-        rely = y - self.topLeftY - frm_start  # frmStart is menubar height enal
-        if self.filenames and 0 <= rely <= len(self.filenames) * \
-                self.rowHeight * 2 - 1 and 0 <= relx <= self.width:
+        canvas_name = str(self.canvas.winfo_pathname(self.canvas.winfo_id()))
+        if self.filenames and canvas_name == widget:
             # unselect previous
             self._unselect_image(self.currentImageIndex)
 
             # select new image
-            self._select_image(int(self.canvas.canvasy(rely) /
+            self._select_image(int(self.canvas.canvasy(rel_y) /
                                    (self.rowHeight * 2)))
 
     def reset(self):
@@ -449,8 +436,8 @@ class Table:
 
         # add the filenames
         self.filenames += filenames
-        self.nucleiPositions += [[[], []] for _ in self.filenames]
-        self.fibrePositions += [[] for _ in self.filenames]
+        self.nucleiPositions += [[[], []] for _ in filenames]
+        self.fibrePositions += [[] for _ in filenames]
 
         # make the table
         self._make_table()
@@ -458,24 +445,25 @@ class Table:
     def _make_table(self):
 
         # make the table
-        for i in range(len(self.filenames)):
+        width = self.canvas.winfo_width()
+        for i, name in enumerate(self.filenames):
 
             # horizontal lines
             half_line = self.canvas.create_line(-1,
                                                 (2 * i + 1) * self.rowHeight,
-                                                self.width,
+                                                width,
                                                 (2 * i + 1) * self.rowHeight,
                                                 width=1, fill=labelLineColour)
             full_line = self.canvas.create_line(-1,
                                                 (2 * i + 2) * self.rowHeight,
-                                                self.width,
+                                                width,
                                                 (2 * i + 2) * self.rowHeight,
                                                 width=2, fill=labelLineColour)
 
             # rectangle
-            rect = self.canvas.create_rectangle(-1, self.rowHeight*2*i,
-                                                self.width,
-                                                self.rowHeight * (2*i+2),
+            rect = self.canvas.create_rectangle(-1, self.rowHeight * 2 * i,
+                                                width,
+                                                self.rowHeight * (2 * i + 2),
                                                 fill=backgroundColour)
             self.canvas.tag_lower(rect)  # lower it (background)
 
@@ -492,7 +480,7 @@ class Table:
                                                  width=1, fill=labelLineColour)
 
             # set the filename
-            file_name = path.basename(self.filenames[i])
+            file_name = path.basename(name)
             if len(file_name) >= 59:
                 file_name = '...' + file_name[-59:]
 
@@ -510,15 +498,15 @@ class Table:
                                                   anchor='nw',
                                                   fill=labelLineColour)
             positive_text = self.canvas.create_text(
-                padding + (self.width - 2 * padding) / 4,
+                padding + (width - 2 * padding) / 4,
                 (2 * i + 1) * self.rowHeight + int(self.rowHeight / 4),
                 text='error', anchor='nw', fill=labelLineColour)
             ratio_text = self.canvas.create_text(
-                padding + (self.width - 2 * padding) * 2 / 4,
+                padding + (width - 2 * padding) * 2 / 4,
                 (2 * i + 1) * self.rowHeight + int(self.rowHeight / 4),
                 text='error', anchor='nw', fill=labelLineColour)
             fiber_text = self.canvas.create_text(
-                padding * 3 + (self.width - 2 * padding) * 3 / 4,
+                padding * 3 + (width - 2 * padding) * 3 / 4,
                 (2 * i + 1) * self.rowHeight + int(self.rowHeight / 4),
                 text='error', anchor='nw', fill=labelLineColour)
 
@@ -532,12 +520,12 @@ class Table:
             self.update_data(i)
 
         # set scrollregion
-        self.canvas.config(scrollregion=(0, 0, self.width,
+        self.canvas.config(scrollregion=(0, 0, width,
                                          (2 * len(self.filenames)) *
                                          self.rowHeight))
 
-        # create hightlighted parts
-        if not len(self.filenames) == 0:
+        # create highlighted parts
+        if len(self.filenames) != 0:
             self._select_image(self.currentImageIndex)
         else:
             self.imageCanvas.reset()
