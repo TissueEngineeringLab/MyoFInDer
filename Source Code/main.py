@@ -21,108 +21,92 @@ from webbrowser import open_new
 from nucleiFibreSegmentation import deepcell_functie, initialize_mesmer
 
 from threading import get_ident, active_count, Thread
-from time import time
-
-# show splash screen
-root = Tk()
-root.overrideredirect(True)
-
-# set the window
-root.grab_set()
-SPLASH_SIZE_FACTOR = 0.35
-SCREEN_WIDTH = root.winfo_screenwidth()
-SCREEN_HEIGHT = root.winfo_screenheight()
-root.geometry('%dx%d+%d+%d' % (SCREEN_WIDTH * SPLASH_SIZE_FACTOR,
-                               SCREEN_HEIGHT * SPLASH_SIZE_FACTOR,
-                               SCREEN_WIDTH * (1 - SPLASH_SIZE_FACTOR) * 0.5,
-                               SCREEN_HEIGHT * (1 - SPLASH_SIZE_FACTOR) * 0.5))
-
-# set the image
-image_file = "movedim.png"
-splashImage = Image.open(image_file)
-maxFactor = SCREEN_WIDTH*SPLASH_SIZE_FACTOR / 1936
-if SCREEN_HEIGHT * SPLASH_SIZE_FACTOR / 1460 > maxFactor:
-    maxFactor = SCREEN_HEIGHT * SPLASH_SIZE_FACTOR / 1460
-splashImage = splashImage.resize((int(maxFactor * 1936),
-                                  int(maxFactor * 1460)), Image.ANTIALIAS)
-splashImage = splashImage.convert("RGBA")
-
-# start the fade
-fadeStart = 0.4
-fadeEnd = 0.6
-for y in range(int(splashImage.size[1] - splashImage.size[1]*(1 - fadeStart)),
-               splashImage.size[1]):
-    for x in range(splashImage.size[0]):
-
-        alpha = (- y / (splashImage.size[1]*(fadeEnd - fadeStart)) +
-                 fadeEnd / (fadeEnd - fadeStart))
-        alpha = min(alpha, 1)
-        alpha = max(alpha, 0)
-
-        rgba = list(splashImage.getpixel((x, y)))
-        rgba = [int(rgba[0] * alpha), int(rgba[1] * alpha),
-                int(rgba[2] * alpha), 255]
-        splashImage.putpixel((x, y), tuple(rgba))
-
-# draw the image and credits on the screen
-photoImg = ImageTk.PhotoImage(splashImage)
-splashCanvas = Canvas(root, height=SCREEN_HEIGHT * SPLASH_SIZE_FACTOR,
-                      width=SCREEN_WIDTH * SPLASH_SIZE_FACTOR, bg="brown")
-splashCanvas.create_image(SCREEN_WIDTH * SPLASH_SIZE_FACTOR / 2,
-                          SCREEN_HEIGHT * SPLASH_SIZE_FACTOR / 2,
-                          image=photoImg)
-splashCanvas.create_text(20, int((fadeEnd - 0.05) * splashImage.size[1]),
-                         anchor='w',
-                         text="Cellen Tellen - A P&O project by Quentin De "
-                              "Rore, Ibrahim El Kaddouri, \nEmiel "
-                              "Vanspranghels and Henri Vermeersch, assisted "
-                              "by Desmond Kabus, \nRebecca Wüst and "
-                              "Maria Olenic", fill="white",
-                         font='Helvetica 7 bold')
-splashLoadingLabel = splashCanvas.create_text(20, int((0.7 - 0.05) *
-                                                      splashImage.size[1]),
-                                              anchor="w",
-                                              text='Importing dependencies...',
-                                              fill="white",
-                                              font='Helvetica 7 bold')
-splashCanvas.pack()
-root.update()
-
-# update splash screen
-splashCanvas.itemconfig(splashLoadingLabel, text="Importing DeepCell...")
-root.update()
-
-# update splash screen
-splashCanvas.itemconfig(splashLoadingLabel, text="Initialising Mesmer...")
-root.update()
-initialize_mesmer()
-# update splash screen
-splashCanvas.itemconfig(splashLoadingLabel, text="Starting program...")
-root.update()
+from time import time, sleep
 
 
-# get the absolute path to the exe file
-BASE_PATH = path.abspath('')  # [:-7]
-BASE_PATH += "/"
+class splash(Tk):
 
-# set default numbers
-previousMousePosition = [-5, -5]
-ImageZoomFactor = 1.0
-ImagePannedPosition = [0, 0]
+    def __init__(self):
+        super().__init__()
+        self.overrideredirect(True)
+        self.grab_set()
 
-# threads
-currentThreads = []
-totalImagesProcessed = 0
-threadSlider = None
-nThreads = IntVar()
-nThreads.set(3)
-nThreadsRunning = 0
+        self._image = Image.open("movedim.png")
+        self._resize_image()
+        self._display()
 
-# small objects slider
-SmallObjectsSlider = None
-smallObjectsThreshold = IntVar()
-smallObjectsThreshold.set(400)
-setViewSizeWindow = None
+        self.destroy()
+
+    def _resize_image(self):
+        size_factor = 0.35
+
+        scr_width = self.winfo_screenwidth()
+        scr_height = self.winfo_screenheight()
+        img_ratio = self._image.width / self._image.height
+        scr_ratio = scr_width / scr_height
+
+        if img_ratio > scr_ratio:
+            self._image = self._image.resize(
+                (int(scr_width * size_factor),
+                 int(scr_width * size_factor / img_ratio)),
+                Image.ANTIALIAS)
+            self.geometry('%dx%d+%d+%d' % (
+                int(scr_width * size_factor),
+                int(scr_width * size_factor / img_ratio),
+                scr_width * (1 - size_factor) / 2,
+                (scr_height - int(scr_width * size_factor / img_ratio)) / 2))
+
+        else:
+            self._image = self._image.resize(
+                (int(scr_height * size_factor * img_ratio),
+                 int(scr_height * size_factor)),
+                Image.ANTIALIAS)
+            self.geometry('%dx%d+%d+%d' % (
+                int(scr_height * size_factor * img_ratio),
+                int(scr_height * size_factor),
+                (scr_width - int(scr_height * size_factor * img_ratio)) / 2,
+                scr_height * (1 - size_factor) / 2))
+
+    def _display(self):
+        image_tk = ImageTk.PhotoImage(self._image)
+        self._canvas = Canvas(self, bg="brown")
+        self._canvas.create_image(0, 0, image=image_tk, anchor="nw")
+        self._canvas.create_text(
+            20, int(0.70 * self._image.height),
+            anchor='w',
+            text="Cellen Tellen - A P&O project by Quentin De Rore, Ibrahim El"
+                 " Kaddouri, Emiel Vanspranghels and Henri Vermeersch, "
+                 "assisted by Desmond Kabus, Rebecca Wüst and Maria Olenic",
+            fill="white",
+            font='Helvetica 7 bold',
+            width=self._image.width - 40)
+
+        self._loading_label = self._canvas.create_text(
+            20, int(0.9 * self._image.height),
+            anchor="w",
+            text='Importing dependencies...',
+            fill="white",
+            font='Helvetica 7 bold',
+            width=self._image.width - 40)
+
+        self._canvas.pack(fill="both", expand=True)
+        self.update()
+
+        sleep(1)
+
+        self._canvas.itemconfig(self._loading_label,
+                                text="Initialising Mesmer...")
+        self.update()
+        initialize_mesmer()
+
+        self._canvas.itemconfig(self._loading_label,
+                                text="Starting program...")
+        self.update()
+
+        sleep(1)
+
+
+splash()
 
 
 # link to gitHub
@@ -992,13 +976,34 @@ warningwindow = None
 close = False
 
 # initialise the root
-root.destroy()
 root = Tk()
 root.title("Cellen Tellen - New Project (Unsaved)")
 if system() == "Windows":
   root.state('zoomed')
 else:
   root.attributes('-zoomed', True)
+
+# get the absolute path to the exe file
+BASE_PATH = path.abspath('')  # [:-7]
+BASE_PATH += "/"
+
+# set default numbers
+previousMousePosition = [-5, -5]
+ImageZoomFactor = 1.0
+ImagePannedPosition = [0, 0]
+
+# threads
+currentThreads = []
+totalImagesProcessed = 0
+threadSlider = None
+nThreads = IntVar()
+nThreads.set(3)
+nThreadsRunning = 0
+
+# small objects slider
+SmallObjectsSlider = None
+smallObjectsThreshold = IntVar()
+smallObjectsThreshold.set(400)
 
 # set icon
 photo = PhotoImage(file=BASE_PATH + "icon.png")
