@@ -654,8 +654,12 @@ def right_click(event):
 
 
 def onwheel(event):
-    nucleiTable.onwheel(str(event.widget),
-                        120 * event.delta / abs(event.delta))
+    if system() == "Linux":
+        nucleiTable.onwheel(str(event.widget),
+                            120 if event.num == 4 else -120)
+    else:
+        nucleiTable.onwheel(str(event.widget),
+                            120 * event.delta / abs(event.delta))
 
 
 def motion(event):
@@ -1112,7 +1116,11 @@ nucleiTable = None
 # the image with the keyboard
 root.bind('<ButtonPress-1>', left_click)
 root.bind('<ButtonPress-3>', right_click)
-root.bind('<MouseWheel>', onwheel)
+if system() == "Linux":
+    root.bind('<4>', onwheel)
+    root.bind('<5>', onwheel)
+else:
+    root.bind('<MouseWheel>', onwheel)
 root.bind('<Motion>', motion)
 root.bind('<Left>', on_left_press)
 root.bind('<Right>', on_right_press)

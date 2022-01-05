@@ -8,6 +8,7 @@ from tkinter import UNITS, Canvas, ttk, Scrollbar
 from PIL import Image, ImageTk
 from cv2 import cvtColor, imread, COLOR_BGR2RGB
 from numpy import zeros
+from platform import system
 
 fibreNucleiColour = 'yellow'  # green
 nonFibreNucleiColour = 'red'  # 2A7DDE
@@ -48,8 +49,11 @@ class Zoom_Advanced:
         self.canvas.bind('<Configure>', self.show_image)  # canvas is resized
         self.canvas.bind('<ButtonPress-2>', self.move_from)
         self.canvas.bind('<B2-Motion>',     self.move_to)
-        self.canvas.bind('<MouseWheel>', self.wheel)  # with Windows and
-        # MacOS, but not Linux
+        if system() == "Linux":
+            self.canvas.bind('<4>', self.wheel)
+            self.canvas.bind('<5>', self.wheel)
+        else:
+            self.canvas.bind('<MouseWheel>', self.wheel)
         self.image = None  # open image
         self.imagePath = ""
         self.channelsRGB = (False, False, False)
@@ -478,7 +482,11 @@ class Zoom_Advanced:
 
     def wheel(self, event):
         """ Zoom with mouse wheel """
-        self.zoom(event.widget, event.delta, wheel=True)
+        if system() == "Linux":
+            self.zoom(str(event.widget),
+                      1 if event.num == 4 else -1, wheel=True)
+        else:
+            self.zoom(str(event.widget), event.delta, wheel=True)
 
     def show_image(self, *_, **__):
         if self.image is not None:
