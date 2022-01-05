@@ -659,7 +659,8 @@ def onwheel(event):
 
 
 def motion(event):
-    nucleiTable.motion(str(event.widget), event.y)
+    if nucleiTable is not None:
+        nucleiTable.motion(str(event.widget), event.y)
 
 
 # pass through the keypressing of the arrows to the imagecanvas to scroll
