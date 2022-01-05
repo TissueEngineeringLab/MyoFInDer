@@ -219,7 +219,9 @@ class Table:
         # scroll down the canvas if we are inside the canvas
         canvas_name = str(self.canvas.winfo_pathname(self.canvas.winfo_id()))
         if self.filenames and canvas_name == widget:
-            self.canvas.yview_scroll(int(-delta / 120), "units")
+            if self.rowHeight * 2 * len(self.labels) > \
+                    self.canvas.winfo_height():
+                self.canvas.yview_scroll(int(-delta / 120), "units")
 
        # update the imagecanvas handle
     def set_image_canvas(self, image_canvas):
