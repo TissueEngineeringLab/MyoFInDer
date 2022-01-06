@@ -321,9 +321,6 @@ class Zoom_Advanced(ttk.Frame):
 
         self.indicatorsNF = (nuclei, fibres)
 
-    def get_indicators(self):
-        return self.indicatorsNF
-
     def load_image(self, path, nuclei_positions, fibre_positions):
 
         # reset image
