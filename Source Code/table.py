@@ -228,7 +228,7 @@ class Table(ttk.Frame):
     def set_image_canvas(self, image_canvas):
         self.imageCanvas = image_canvas
 
-    def update_data(self, index):
+    def _update_data(self, index):
         # set the variables labels for the image
         total_nuclei = len(self.nucleiPositions[index][0]) + \
                        len(self.nucleiPositions[index][1])
@@ -252,33 +252,33 @@ class Table(ttk.Frame):
 
     def add_fibre(self, position):
         self.fibrePositions[self.currentImageIndex].append(position)
-        self.update_data(self.currentImageIndex)
+        self._update_data(self.currentImageIndex)
 
     def remove_fibre(self, position):
         self.fibrePositions[self.currentImageIndex].remove(position)
-        self.update_data(self.currentImageIndex)
+        self._update_data(self.currentImageIndex)
 
     def to_blue(self, position):
         self.nucleiPositions[self.currentImageIndex][0].append(position)
         self.nucleiPositions[self.currentImageIndex][1].remove(position)
-        self.update_data(self.currentImageIndex)
+        self._update_data(self.currentImageIndex)
 
     def add_blue(self, position):
         self.nucleiPositions[self.currentImageIndex][0].append(position)
-        self.update_data(self.currentImageIndex)
+        self._update_data(self.currentImageIndex)
 
     def remove_blue(self, position):
         self.nucleiPositions[self.currentImageIndex][0].remove(position)
-        self.update_data(self.currentImageIndex)
+        self._update_data(self.currentImageIndex)
 
     def remove_green(self, position):
         self.nucleiPositions[self.currentImageIndex][1].remove(position)
-        self.update_data(self.currentImageIndex)
+        self._update_data(self.currentImageIndex)
 
     def to_green(self, position):
         self.nucleiPositions[self.currentImageIndex][1].append(position)
         self.nucleiPositions[self.currentImageIndex][0].remove(position)
-        self.update_data(self.currentImageIndex)
+        self._update_data(self.currentImageIndex)
 
     def motion(self, widget, rel_y):
         # only if there are items, and we are in the bounds
@@ -520,7 +520,7 @@ class Table(ttk.Frame):
             self.rectangles.append(rect)
 
             # update the text
-            self.update_data(i)
+            self._update_data(i)
 
         # set scrollregion
         self.canvas.config(scrollregion=(0, 0, width,
@@ -547,7 +547,7 @@ class Table(ttk.Frame):
                                        nuclei_positive_positions]
         if len(fibre_centres) > 0:
             self.fibrePositions[index] = fibre_centres
-        self.update_data(index)
+        self._update_data(index)
 
         # load the new image if necessary
         if index == self.currentImageIndex:
