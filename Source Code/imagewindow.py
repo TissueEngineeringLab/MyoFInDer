@@ -46,14 +46,14 @@ class Zoom_Advanced(ttk.Frame):
 
         self.canvas.update()  # wait till canvas is create
         # Bind events to the Canvas
-        self.canvas.bind('<Configure>', self.show_image)  # canvas is resized
+        self.canvas.bind('<Configure>', self._show_image)  # canvas is resized
         self.canvas.bind('<ButtonPress-2>', self.move_from)
         self.canvas.bind('<B2-Motion>',     self.move_to)
         if system() == "Linux":
-            self.canvas.bind('<4>', self.wheel)
-            self.canvas.bind('<5>', self.wheel)
+            self.canvas.bind('<4>', self._wheel)
+            self.canvas.bind('<5>', self._wheel)
         else:
-            self.canvas.bind('<MouseWheel>', self.wheel)
+            self.canvas.bind('<MouseWheel>', self._wheel)
         self.image = None  # open image
         self.imagePath = ""
         self.channelsRGB = (False, False, False)
@@ -246,7 +246,7 @@ class Zoom_Advanced(ttk.Frame):
     def set_channels(self, b, g, r):
         self.channelsRGB = (r, g, b)
         self._set_image(rgb=True)
-        self.show_image()
+        self._show_image()
 
     def _set_image(self, rgb=False):
         # load the image with the correct channels
@@ -387,7 +387,7 @@ class Zoom_Advanced(ttk.Frame):
                                 (hor_line, ver_line)])
 
         # show the image
-        self.show_image()
+        self._show_image()
 
     def reset(self):
         # reset the canvas
@@ -408,7 +408,7 @@ class Zoom_Advanced(ttk.Frame):
         # coordinates to the image
 
         # show
-        self.show_image()
+        self._show_image()
 
     def arrows(self, arrow_index):
 
@@ -429,7 +429,7 @@ class Zoom_Advanced(ttk.Frame):
             self.canvas.xview_scroll(-1, UNITS)
             self.canvas.yview_scroll(-2, UNITS)
 
-        self.show_image()  # redraw the image
+        self._show_image()  # redraw the image
 
         self.canvas.configure(yscrollincrement='0')
         self.canvas.configure(xscrollincrement='0')
@@ -438,13 +438,13 @@ class Zoom_Advanced(ttk.Frame):
         """ Remember previous coordinates for scrolling with the mouse """
         if self.image is not None:
             self.canvas.scan_mark(event.x, event.y)
-            self.show_image()  # redraw the image
+            self._show_image()  # redraw the image
 
     def move_to(self, event):
         """ Drag (move) canvas to the new position """
         if self.image is not None:
             self.canvas.scan_dragto(event.x, event.y, gain=1)
-            self.show_image()  # redraw the image
+            self._show_image()  # redraw the image
 
     def zoom(self, widget, delta, wheel=False):
         if self.image is not None:
@@ -471,9 +471,9 @@ class Zoom_Advanced(ttk.Frame):
                 self._zoom += 1
             self.canvas.scale('all', 0, 0, scale, scale)  # rescale all the
             # elements in the image
-            self.show_image()
+            self._show_image()
 
-    def wheel(self, event):
+    def _wheel(self, event):
         """ Zoom with mouse wheel """
         if system() == "Linux":
             self.zoom(str(event.widget),
@@ -481,7 +481,7 @@ class Zoom_Advanced(ttk.Frame):
         else:
             self.zoom(str(event.widget), event.delta, wheel=True)
 
-    def show_image(self, *_, **__):
+    def _show_image(self, *_, **__):
         if self.image is not None:
             scaled_x = int(self.image.width * self.imscale)
             scaled_y = int(self.image.height * self.imscale)
