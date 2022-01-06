@@ -69,10 +69,6 @@ class Zoom_Advanced:
         # Put image into container rectangle and use it to set proper
         # coordinates to the image
 
-    def update_size(self, size):
-        self.img_frame.config(width=size[0] - self.vbar.winfo_reqwidth(),
-                              height=size[1] - self.hbar.winfo_reqheight())
-
     def set_table(self, table_):
         self.nucleiTable = table_
 
