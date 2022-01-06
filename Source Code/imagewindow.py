@@ -14,27 +14,27 @@ fibreNucleiColour = 'yellow'  # green
 nonFibreNucleiColour = 'red'  # 2A7DDE
 
 
-class Zoom_Advanced:
+class Zoom_Advanced(ttk.Frame):
     """ Advanced zoom of the image """
     def __init__(self, mainframe, nuclei_table=None):
         """ Initialize the main Frame """
-        self.nucleiTable = nuclei_table
-        self.master = mainframe
+        super().__init__(mainframe)
 
-        self.img_frame = ttk.Frame(self.master)
-        self.img_frame.pack(expand=True, fill="both", anchor="w", side="left",
-                            padx=5, pady=5)
-        self.hbar_frame = ttk.Frame(self.img_frame)
+        self.nucleiTable = nuclei_table
+
+        self.pack(expand=True, fill="both", anchor="w", side="left",
+                  padx=5, pady=5)
+        self.hbar_frame = ttk.Frame(self)
         self.hbar_frame.pack(expand=False, fill="x", anchor="s", side="bottom")
 
         # Create canvas and put image on it
-        self.canvas = Canvas(self.img_frame,
+        self.canvas = Canvas(self,
                              highlightthickness=3,
                              highlightbackground="black")
         self.canvas.configure(scrollregion=self.canvas.bbox('all'))
         self.canvas.pack(expand=True, fill="both", side='left')
 
-        self.vbar = Scrollbar(self.img_frame, orient="vertical")
+        self.vbar = Scrollbar(self, orient="vertical")
         self.vbar.pack(fill='y', side='right')
         self.vbar.config(command=self.canvas.yview)
         self.canvas.config(yscrollcommand=self.vbar.set)
