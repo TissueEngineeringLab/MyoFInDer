@@ -623,7 +623,7 @@ class main_window(Tk):
         self._stop_processing()
 
         # get the file_names
-        file_names = self._nuclei_table.get_file_names()
+        file_names = self._nuclei_table.filenames
         self._set_unsaved_status()
 
         # switch off process button
@@ -765,7 +765,7 @@ class main_window(Tk):
 
         # if unsaved, show the window
         if self._save_button['state'] == 'enabled' and \
-                not len(self._nuclei_table.get_file_names()) == 0:
+                not len(self._nuclei_table.filenames) == 0:
             # create
             warning_window = Toplevel(self)
             warning_window.grab_set()

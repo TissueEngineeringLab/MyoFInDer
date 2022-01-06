@@ -533,9 +533,6 @@ class Table(ttk.Frame):
         else:
             self.imageCanvas.reset()
 
-    def get_file_names(self):
-        return self.filenames
-
     def input_processed_data(self, nuclei_negative_positions,
                              nuclei_positive_positions, fibre_centres, index):
 
