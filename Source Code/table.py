@@ -18,17 +18,18 @@ labelLineColour = '#646464'
 labelLineColour_Selected = 'black'
 
 
-class Table:
+class Table(ttk.Frame):
 
     def __init__(self, root):
+
+        super().__init__(root)
 
         # initialise the canvas and scrollbar
         self.rowHeight = 50
 
-        self.frame = ttk.Frame(root)
-        self.frame.pack(expand=True, fill="both", anchor="n", side='top')
+        self.pack(expand=True, fill="both", anchor="n", side='top')
 
-        self.canvas = Canvas(self.frame, bg='#FFFFFF',
+        self.canvas = Canvas(self, bg='#FFFFFF',
                              highlightbackground='black',
                              highlightthickness=3)
         self.canvas.configure(scrollregion=self.canvas.bbox('all'))
@@ -36,7 +37,7 @@ class Table:
                          pady=5)
         self.imageCanvas = None
 
-        self.vbar = Scrollbar(self.frame, orient="vertical")
+        self.vbar = Scrollbar(self, orient="vertical")
         self.vbar.pack(side='right', fill='y', pady=5)
         self.vbar.config(command=self.canvas.yview)
         self.canvas.config(yscrollcommand=self.vbar.set)
