@@ -7,10 +7,6 @@ from numpy import load, asarray, save
 from cv2 import imread, line, ellipse, imwrite
 from os import path, mkdir
 
-# get the absolute path of the exe
-BASE_PATH = path.abspath('')  # [:-7]
-BASE_PATH += "/"
-
 # colorcodes
 backgroundColour = '#EAECEE'
 backgroundColour_Selected = '#ABB2B9'
@@ -26,6 +22,7 @@ class Table(ttk.Frame):
 
         # initialise the canvas and scrollbar
         self.rowHeight = 50
+        self._base_path = path.abspath('') + "/"
 
         self.pack(expand=True, fill="both", anchor="n", side='top')
 
@@ -56,7 +53,7 @@ class Table(ttk.Frame):
     def save_table(self, directory):
 
         # save to an Excel
-        workbook = Workbook(BASE_PATH + 'Projects/' + directory +
+        workbook = Workbook(self._base_path + 'Projects/' + directory +
                             '/' + directory + '.xlsx')
         worksheet = workbook.add_worksheet()
         bold = workbook.add_format({'bold': True, 'align': 'center'})
@@ -116,7 +113,7 @@ class Table(ttk.Frame):
                     if type(item[0]) == str and type(item[1]) == list and \
                             type(item[2]) == list and type(item[3]) == list:
                         if path.isfile(item[0]):
-                            self.filenames.append(BASE_PATH + item[0])
+                            self.filenames.append(self._base_path + item[0])
                             self.nucleiPositions.append([item[1], item[2]])
                             self.fibrePositions.append(item[3])
 
@@ -139,30 +136,32 @@ class Table(ttk.Frame):
 
         # convert to numpy
         arr = asarray(to_save)
-        save(BASE_PATH + 'Projects/' + directory + '/data', arr)
+        save(self._base_path + 'Projects/' + directory + '/data', arr)
 
     def save_originals(self, directory):
 
         # create a directory with the original images
-        if not path.isdir(BASE_PATH + 'Projects/' + directory +
+        if not path.isdir(self._base_path + 'Projects/' + directory +
                           '/Original Images'):
-            mkdir(BASE_PATH + 'Projects/' + directory + '/Original Images')
+            mkdir(self._base_path + 'Projects/' + directory +
+                  '/Original Images')
 
         # save the images
         for filename in self.filenames:
             basename = path.basename(filename)
-            if filename != BASE_PATH + 'Projects/' + directory + \
+            if filename != self._base_path + 'Projects/' + directory + \
                     '/Original Images/' + basename:
-                copyfile(filename, BASE_PATH + 'Projects/' + directory
+                copyfile(filename, self._base_path + 'Projects/' + directory
                          + '/Original Images/' + basename)
 
     def save_altered_images(self, directory):
 
         # create a directory with the altered images
-        if path.isdir(BASE_PATH + 'Projects/' + directory +
+        if path.isdir(self._base_path + 'Projects/' + directory +
                       '/Altered Images'):
-            rmtree(BASE_PATH + 'Projects/' + directory + '/Altered Images')
-        mkdir(BASE_PATH + 'Projects/' + directory + '/Altered Images')
+            rmtree(self._base_path + 'Projects/' + directory +
+                   '/Altered Images')
+        mkdir(self._base_path + 'Projects/' + directory + '/Altered Images')
 
         # read the images and then save them
         for i, filename in enumerate(self.filenames):
@@ -171,7 +170,7 @@ class Table(ttk.Frame):
     def _draw_nuclei_save(self, index, project_name):
 
         # loop through the fibres
-        cv_img = imread(BASE_PATH + "Projects/" + project_name +
+        cv_img = imread(self._base_path + "Projects/" + project_name +
                         "/Original Images/" +
                         path.basename(self.filenames[index]))
         square_size = 9
@@ -211,7 +210,8 @@ class Table(ttk.Frame):
                         (255, 255, 255), 1)
 
         # save it
-        imwrite(BASE_PATH + "Projects/" + project_name + "/Altered Images/"
+        imwrite(self._base_path + "Projects/" + project_name +
+                "/Altered Images/"
                 + path.basename(self.filenames[index])[:-4] + ".png",
                 cv_img)
 
