@@ -536,9 +536,6 @@ class Table(ttk.Frame):
     def get_file_names(self):
         return self.filenames
 
-    def get_current_image_index(self):
-        return self.currentImageIndex
-
     def input_processed_data(self, nuclei_negative_positions,
                              nuclei_positive_positions, fibre_centres, index):
 
