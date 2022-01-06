@@ -16,7 +16,7 @@ nonFibreNucleiColour = 'red'  # 2A7DDE
 
 class Zoom_Advanced:
     """ Advanced zoom of the image """
-    def __init__(self, mainframe, nuclei_table):
+    def __init__(self, mainframe, nuclei_table=None):
         """ Initialize the main Frame """
         self.nucleiTable = nuclei_table
         self.master = mainframe
