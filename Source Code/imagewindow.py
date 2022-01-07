@@ -73,7 +73,7 @@ class Zoom_Advanced(ttk.Frame):
     def set_table(self, table_):
         self._nuclei_table = table_
 
-    def set_which_indcation(self, is_nuclei):
+    def set_which_indication(self, is_nuclei):
         self._indicating_nuclei = is_nuclei
 
     def left_click(self, widget, rel_x, rel_y):
@@ -196,7 +196,7 @@ class Zoom_Advanced(ttk.Frame):
 
             elif self._indicators_nf[1]:
 
-                # find closest fibre
+                # find the closest fibre
                 closest_fibre_index, closest_fibre_id = \
                     self._find_closest_fibre(rel_x_scale, rel_y_scale)
                 if closest_fibre_index != -1:

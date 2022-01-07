@@ -230,12 +230,12 @@ class main_window(Tk):
 
         # automatic save
         self._auto_save_name = 'AUTOSAVE'
-        self._resave_images = False
+        self._re_save_images = False
         self._auto_save_job = None
 
         self._max_recent_projects = 20
 
-        # set the warning var for foldername input
+        # set the warning var for folder name input
         self._warning_var = StringVar(value='')
         self._name_entry = None
         self._folder_name_window_save_button = None
@@ -400,10 +400,10 @@ class main_window(Tk):
         self.bind('<ButtonPress-1>', self._left_click)
         self.bind('<ButtonPress-3>', self._right_click)
         if system() == "Linux":
-            self.bind('<4>', self._onwheel)
-            self.bind('<5>', self._onwheel)
+            self.bind('<4>', self._on_wheel)
+            self.bind('<5>', self._on_wheel)
         else:
-            self.bind('<MouseWheel>', self._onwheel)
+            self.bind('<MouseWheel>', self._on_wheel)
         self.bind('<Motion>', self._motion)
         self.bind('<Left>', self._on_left_press)
         self.bind('<Right>', self._on_right_press)
@@ -435,7 +435,7 @@ class main_window(Tk):
             return
 
         if save_as:
-            self._resave_images = True
+            self._re_save_images = True
 
         if directory != self._auto_save_name:
             # destroy the save as window if it exists
@@ -454,7 +454,7 @@ class main_window(Tk):
             self.title("Cellen Tellen - Project '" +
                        self._current_project + "'")
 
-            # do the recent projects shit
+            # do the recent projects sh*t
             if not path.isdir(self._base_path + 'Projects/' + directory):
                 self._recent_projects_menu.insert_command(
                     index=0, label="Load '" + directory + "'",
@@ -500,9 +500,9 @@ class main_window(Tk):
         self._nuclei_table.save_table(directory)
 
         # save the originals
-        if self._resave_images or directory == self._auto_save_name:
+        if self._re_save_images or directory == self._auto_save_name:
             self._nuclei_table.save_originals(directory)
-        self._resave_images = False
+        self._re_save_images = False
 
         # save the altered images
         if self._save_altered_images_boolean.get() == 1 or \
@@ -534,7 +534,7 @@ class main_window(Tk):
         self._file_menu.entryconfig(
             self._file_menu.index("Delete Current Project"), state="normal")
 
-        # do the recent projects shit
+        # do the recent projects sh*t
         if path.isdir(self._base_path + 'Projects/' + directory) \
                 and directory != self._auto_save_name:
             # remove it first
@@ -558,7 +558,7 @@ class main_window(Tk):
         # load the project
         self._nuclei_table.load_project(self._base_path + 'Projects/'
                                         + directory)
-        self._resave_images = False
+        self._re_save_images = False
 
         # if there are images loaded
         if self._nuclei_table.images_available():
@@ -706,7 +706,7 @@ class main_window(Tk):
         if is_thread:
             if index >= len(file_names) - self._n_threads_running:
                 # close the threshold
-                self._thread_exitted(get_ident())
+                self._thread_exited(get_ident())
             else:
                 # keep on processing more images
                 self._process_thread(index + self._n_threads_running,
@@ -727,7 +727,7 @@ class main_window(Tk):
         self._processing_label['text'] = str(self._total_images_processed) + \
             " of " + str(len(file_names)) + " Images Processed"
 
-    def _thread_exitted(self, id_):
+    def _thread_exited(self, id_):
         self._current_threads.remove(id_)
         if len(self._current_threads) == 0:
             self._stop_processing()
@@ -759,7 +759,7 @@ class main_window(Tk):
             self._which_indicator_button['state'] = 'disabled'
 
         # pass through the indications to the image canvas
-        self._image_canvas.set_which_indcation(self._indicating_nuclei)
+        self._image_canvas.set_which_indication(self._indicating_nuclei)
 
     def _create_warning_window(self):
 
@@ -857,7 +857,7 @@ class main_window(Tk):
         self._name_entry.focus()
         self._name_entry.icursor(len(self._name_entry.get()))
 
-        # savebutton
+        # save button
         self._folder_name_window_save_button = ttk.Button(
             projectname_window, text='Save', width=30,
             command=partial(self._save_project, self._name_entry.get(), True))
@@ -900,7 +900,7 @@ class main_window(Tk):
         else:
             self._indicating_nuclei = True
             self._which_indicator_button['text'] = 'Manual : Nuclei'
-        self._image_canvas.set_which_indcation(self._indicating_nuclei)
+        self._image_canvas.set_which_indication(self._indicating_nuclei)
 
     @staticmethod
     def _open_github():
@@ -930,7 +930,7 @@ class main_window(Tk):
 
     def _select_images(self):
 
-        # get the filenames with a dialogbox
+        # get the filenames with a dialog box
         file_names = filedialog.askopenfilenames(
             filetypes=[('Image Files', ('.tif', '.png', '.jpg', '.jpeg',
                                         '.bmp', '.hdr'))],
@@ -944,7 +944,7 @@ class main_window(Tk):
             self._process_images_button["state"] = 'enabled'
 
             # add them to the table
-            self._resave_images = True
+            self._re_save_images = True
             self._nuclei_table.add_images(file_names)
             self._set_unsaved_status()
 
@@ -1113,7 +1113,7 @@ class main_window(Tk):
             initialdir=path.normpath(self._base_path + "Projects"),
             title="Choose a Project Folder")
 
-        # load this shit
+        # load this sh*t
         if (folder != '') and path.isdir(self._base_path + 'Projects/' +
                                          path.basename(folder)):
             self._load_project(path.basename(folder))
@@ -1156,13 +1156,13 @@ class main_window(Tk):
         if self._image_canvas.left_click(str(event.widget), event.x, event.y):
             self._set_unsaved_status()
 
-    # when rightclicking, the position of the cursor is sent to the table and
-    # imagecanvas
+    # when right-clicking, the position of the cursor is sent to the table and
+    # image canvas
     def _right_click(self, event):
         if self._image_canvas.right_click(str(event.widget), event.x, event.y):
             self._set_unsaved_status()
 
-    def _onwheel(self, event):
+    def _on_wheel(self, event):
         if system() == "Linux":
             self._nuclei_table.onwheel(str(event.widget),
                                        120 if event.num == 4 else -120)
@@ -1174,8 +1174,8 @@ class main_window(Tk):
         if self._nuclei_table is not None:
             self._nuclei_table.motion(str(event.widget), event.y)
 
-    # pass through the keypressing of the arrows to the imagecanvas to scroll
-    # around the imagecanvas
+    # pass through the key pressing of the arrows to the image canvas to scroll
+    # around the image canvas
     def _on_left_press(self, *_, **__):
         self._image_canvas.arrows(0)
 
