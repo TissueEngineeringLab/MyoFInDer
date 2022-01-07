@@ -8,10 +8,10 @@ from cv2 import imread, line, ellipse, imwrite
 from os import path, mkdir
 
 # colorcodes
-backgroundColour = '#EAECEE'
-backgroundColour_Selected = '#ABB2B9'
-labelLineColour = '#646464'
-labelLineColour_Selected = 'black'
+background_colour = '#EAECEE'
+background_colour_selected = '#ABB2B9'
+label_line_colour = '#646464'
+label_line_colour_selected = 'black'
 
 
 class Table(ttk.Frame):
@@ -21,34 +21,34 @@ class Table(ttk.Frame):
         super().__init__(root)
 
         # initialise the canvas and scrollbar
-        self.rowHeight = 50
+        self._row_height = 50
         self._base_path = path.abspath('') + "/"
 
         self.pack(expand=True, fill="both", anchor="n", side='top')
 
-        self.canvas = Canvas(self, bg='#FFFFFF',
-                             highlightbackground='black',
-                             highlightthickness=3)
-        self.canvas.configure(scrollregion=self.canvas.bbox('all'))
-        self.canvas.pack(expand=True, fill="both", anchor="w", side='left',
-                         pady=5)
-        self.imageCanvas = None
+        self._canvas = Canvas(self, bg='#FFFFFF',
+                              highlightbackground='black',
+                              highlightthickness=3)
+        self._canvas.configure(scrollregion=self._canvas.bbox('all'))
+        self._canvas.pack(expand=True, fill="both", anchor="w", side='left',
+                          pady=5)
+        self._image_canvas = None
 
-        self.vbar = Scrollbar(self, orient="vertical")
-        self.vbar.pack(side='right', fill='y', pady=5)
-        self.vbar.config(command=self.canvas.yview)
-        self.canvas.config(yscrollcommand=self.vbar.set)
+        self._vbar = Scrollbar(self, orient="vertical")
+        self._vbar.pack(side='right', fill='y', pady=5)
+        self._vbar.config(command=self._canvas.yview)
+        self._canvas.config(yscrollcommand=self._vbar.set)
         # data about the images
-        self.nucleiPositions = []
-        self.fibrePositions = []
+        self._nuclei_positions = []
+        self._fibre_positions = []
         self.filenames = []
-        self.currentImageIndex = 0
-        self.hoveringIndex = -1
+        self._current_image_index = 0
+        self._hovering_index = -1
 
         # handles to widgets on the canvas
-        self.itemLines = []
-        self.labels = []
-        self.rectangles = []
+        self._item_lines = []
+        self._labels = []
+        self._rectangles = []
 
     def save_table(self, directory):
 
@@ -71,23 +71,23 @@ class Table(ttk.Frame):
         worksheet.write(0, 1, "Total number of nuclei", bold)
         worksheet.set_column(1, 1, width=22)
         for i, name in enumerate(self.filenames):
-            worksheet.write(i+2, 1, len(self.nucleiPositions[i][0]) +
-                            len(self.nucleiPositions[i][1]))
+            worksheet.write(i + 2, 1, len(self._nuclei_positions[i][0]) +
+                            len(self._nuclei_positions[i][1]))
 
         # write green nuclei
         worksheet.write(0, 2, "Number of tropomyosin positive nuclei", bold)
         worksheet.set_column(2, 2, width=37)
         for i, name in enumerate(self.filenames):
-            worksheet.write(i+2, 2, len(self.nucleiPositions[i][1]))
+            worksheet.write(i + 2, 2, len(self._nuclei_positions[i][1]))
 
         # write ratio
         worksheet.write(0, 3, "Fusion index", bold)
         worksheet.set_column(3, 3, width=17)
         for i, name in enumerate(self.filenames):
-            if len(self.nucleiPositions[i][0]) > 0:
-                worksheet.write(i+2, 3, (len(self.nucleiPositions[i][1])) /
-                                (len(self.nucleiPositions[i][0]) +
-                                 len(self.nucleiPositions[i][1])))
+            if len(self._nuclei_positions[i][0]) > 0:
+                worksheet.write(i + 2, 3, (len(self._nuclei_positions[i][1])) /
+                                (len(self._nuclei_positions[i][0]) +
+                                 len(self._nuclei_positions[i][1])))
             else:
                 worksheet.write(i + 2, 3, 'NA')
 
@@ -95,7 +95,7 @@ class Table(ttk.Frame):
         worksheet.write(0, 4, "Number of Fibres", bold)
         worksheet.set_column(4, 4, width=16)
         for i, name in enumerate(self.filenames):
-            worksheet.write(i + 2, 4, len(self.fibrePositions[i]))
+            worksheet.write(i + 2, 4, len(self._fibre_positions[i]))
 
         workbook.close()
 
@@ -114,8 +114,8 @@ class Table(ttk.Frame):
                             type(item[2]) == list and type(item[3]) == list:
                         if path.isfile(item[0]):
                             self.filenames.append(self._base_path + item[0])
-                            self.nucleiPositions.append([item[1], item[2]])
-                            self.fibrePositions.append(item[3])
+                            self._nuclei_positions.append([item[1], item[2]])
+                            self._fibre_positions.append(item[3])
 
         # make the table
         self._make_table()
@@ -130,9 +130,9 @@ class Table(ttk.Frame):
         for i, filename in enumerate(self.filenames):
             to_save.append(["Projects/" + directory + '/Original Images/' +
                             path.basename(filename),
-                            self.nucleiPositions[i][0],
-                            self.nucleiPositions[i][1],
-                            self.fibrePositions[i]])
+                            self._nuclei_positions[i][0],
+                            self._nuclei_positions[i][1],
+                            self._fibre_positions[i]])
 
         # convert to numpy
         arr = asarray(to_save)
@@ -174,23 +174,25 @@ class Table(ttk.Frame):
                         "/Original Images/" +
                         path.basename(self.filenames[index]))
         square_size = 9
-        for i in range(len(self.fibrePositions[index])):
-            centre = (int(self.fibrePositions[index][i][0] * cv_img.shape[1]),
-                      int(self.fibrePositions[index][i][1] * cv_img.shape[0]))
+        for i in range(len(self._fibre_positions[index])):
+            centre = (int(self._fibre_positions[index][i][0] *
+                          cv_img.shape[1]),
+                      int(self._fibre_positions[index][i][1] *
+                          cv_img.shape[0]))
             line(cv_img, (centre[0] + square_size, centre[1]),
                  (centre[0] - square_size, centre[1]), (0, 0, 255), 2)
             line(cv_img, (centre[0], centre[1] + square_size),
                  (centre[0], centre[1] - square_size), (0, 0, 255), 2)
 
         # loop through the nuclei
-        for i in range(len(self.nucleiPositions[index][0]) +
-                       len(self.nucleiPositions[index][1])):
+        for i in range(len(self._nuclei_positions[index][0]) +
+                       len(self._nuclei_positions[index][1])):
 
-            if i < len(self.nucleiPositions[index][0]):
+            if i < len(self._nuclei_positions[index][0]):
                 # red (negative)
-                centre = (int(self.nucleiPositions[index][0][i][0] *
+                centre = (int(self._nuclei_positions[index][0][i][0] *
                               cv_img.shape[1]),
-                          int(self.nucleiPositions[index][0][i][1] *
+                          int(self._nuclei_positions[index][0][i][1] *
                               cv_img.shape[0]))
                 ellipse(cv_img, centre, (3, 3), 0, 0, 360,
                         (0, 0, 255), -1)
@@ -198,11 +200,11 @@ class Table(ttk.Frame):
                         (255, 255, 255), 1)
             else:
                 # yellow (positive)
-                centre = (int(self.nucleiPositions[index][1]
-                              [i - len(self.nucleiPositions[index][0])][0] *
+                centre = (int(self._nuclei_positions[index][1]
+                              [i - len(self._nuclei_positions[index][0])][0] *
                               cv_img.shape[1]),
-                          int(self.nucleiPositions[index][1]
-                              [i - len(self.nucleiPositions[index][0])][1] *
+                          int(self._nuclei_positions[index][1]
+                              [i - len(self._nuclei_positions[index][0])][1] *
                               cv_img.shape[0]))
                 ellipse(cv_img, centre, (3, 3), 0, 0, 360,
                         (0, 255, 255), -1)
@@ -218,229 +220,241 @@ class Table(ttk.Frame):
     def onwheel(self, widget, delta):
 
         # scroll down the canvas if we are inside the canvas
-        canvas_name = str(self.canvas.winfo_pathname(self.canvas.winfo_id()))
+        canvas_name = str(self._canvas.winfo_pathname(self._canvas.winfo_id()))
         if self.filenames and canvas_name == widget:
-            if self.rowHeight * 2 * len(self.labels) > \
-                    self.canvas.winfo_height():
-                self.canvas.yview_scroll(int(-delta / 120), "units")
+            if self._row_height * 2 * len(self._labels) > \
+                    self._canvas.winfo_height():
+                self._canvas.yview_scroll(int(-delta / 120), "units")
 
        # update the imagecanvas handle
     def set_image_canvas(self, image_canvas):
-        self.imageCanvas = image_canvas
+        self._image_canvas = image_canvas
 
     def _update_data(self, index):
         # set the variables labels for the image
-        total_nuclei = len(self.nucleiPositions[index][0]) + \
-                       len(self.nucleiPositions[index][1])
-        self.canvas.itemconfig(self.labels[index][1], text='Total : ' +
-                                                           str(total_nuclei))
-        self.canvas.itemconfig(self.labels[index][2],
-                               text='Positive : ' +
-                                    str(len(self.nucleiPositions[index][1])))
+        total_nuclei = len(self._nuclei_positions[index][0]) + \
+                       len(self._nuclei_positions[index][1])
+        self._canvas.itemconfig(self._labels[index][1], text='Total : ' +
+                                                             str(total_nuclei))
+        self._canvas.itemconfig(
+            self._labels[index][2],
+            text='Positive : ' + str(len(self._nuclei_positions[index][1])))
         if total_nuclei != 0:
-            self.canvas.itemconfig(self.labels[index][3],
-                                   text="Ratio : {:.2f}%".format(
-                100 * len(self.nucleiPositions[index][1]) / total_nuclei))
+            self._canvas.itemconfig(
+                self._labels[index][3],
+                text="Ratio : {:.2f}%".format(
+                    100 * len(self._nuclei_positions[index][1]) /
+                    total_nuclei))
         else:
-            self.canvas.itemconfig(self.labels[index][3], text='Ratio : NA')
-        self.canvas.itemconfig(self.labels[index][5],
-                               text='Fibres : ' +
-                                    str(len(self.fibrePositions[index])))
+            self._canvas.itemconfig(self._labels[index][3], text='Ratio : NA')
+        self._canvas.itemconfig(
+            self._labels[index][5],
+            text='Fibres : ' + str(len(self._fibre_positions[index])))
 
         # these functions are called by imagewindow to update the lists
         # in the table
 
     def add_fibre(self, position):
-        self.fibrePositions[self.currentImageIndex].append(position)
-        self._update_data(self.currentImageIndex)
+        self._fibre_positions[self._current_image_index].append(position)
+        self._update_data(self._current_image_index)
 
     def remove_fibre(self, position):
-        self.fibrePositions[self.currentImageIndex].remove(position)
-        self._update_data(self.currentImageIndex)
+        self._fibre_positions[self._current_image_index].remove(position)
+        self._update_data(self._current_image_index)
 
     def to_blue(self, position):
-        self.nucleiPositions[self.currentImageIndex][0].append(position)
-        self.nucleiPositions[self.currentImageIndex][1].remove(position)
-        self._update_data(self.currentImageIndex)
+        self._nuclei_positions[self._current_image_index][0].append(position)
+        self._nuclei_positions[self._current_image_index][1].remove(position)
+        self._update_data(self._current_image_index)
 
     def add_blue(self, position):
-        self.nucleiPositions[self.currentImageIndex][0].append(position)
-        self._update_data(self.currentImageIndex)
+        self._nuclei_positions[self._current_image_index][0].append(position)
+        self._update_data(self._current_image_index)
 
     def remove_blue(self, position):
-        self.nucleiPositions[self.currentImageIndex][0].remove(position)
-        self._update_data(self.currentImageIndex)
+        self._nuclei_positions[self._current_image_index][0].remove(position)
+        self._update_data(self._current_image_index)
 
     def remove_green(self, position):
-        self.nucleiPositions[self.currentImageIndex][1].remove(position)
-        self._update_data(self.currentImageIndex)
+        self._nuclei_positions[self._current_image_index][1].remove(position)
+        self._update_data(self._current_image_index)
 
     def to_green(self, position):
-        self.nucleiPositions[self.currentImageIndex][1].append(position)
-        self.nucleiPositions[self.currentImageIndex][0].remove(position)
-        self._update_data(self.currentImageIndex)
+        self._nuclei_positions[self._current_image_index][1].append(position)
+        self._nuclei_positions[self._current_image_index][0].remove(position)
+        self._update_data(self._current_image_index)
 
     def motion(self, widget, rel_y):
         # only if there are items, and we are in the bounds
-        canvas_name = str(self.canvas.winfo_pathname(self.canvas.winfo_id()))
+        canvas_name = str(self._canvas.winfo_pathname(self._canvas.winfo_id()))
         if self.filenames and canvas_name == widget:
             # unhover previous
-            if self.hoveringIndex != -1:
-                self._unhover(self.hoveringIndex)
+            if self._hovering_index != -1:
+                self._unhover(self._hovering_index)
 
             # hover over new item
-            if self.canvas.canvasy(rel_y) >= self.rowHeight * 2 * \
-                    len(self.labels):
+            if self._canvas.canvasy(rel_y) >= self._row_height * 2 * \
+                    len(self._labels):
                 return
-            self._hover(int(self.canvas.canvasy(rel_y) / (self.rowHeight * 2)))
-        elif self.hoveringIndex != -1:
-            self._unhover(self.hoveringIndex)
-            self.hoveringIndex = -1
+            self._hover(int(self._canvas.canvasy(rel_y) /
+                            (self._row_height * 2)))
+        elif self._hovering_index != -1:
+            self._unhover(self._hovering_index)
+            self._hovering_index = -1
 
     def _hover(self, index):
         # set the esthetics of hovering over a table entry (like making the
         # text more black)
-        self.hoveringIndex = index
+        self._hovering_index = index
         if index > 0:
-            self.canvas.itemconfig(self.itemLines[index-1][1],
-                                   fill=labelLineColour_Selected, width=3)
-        self.canvas.itemconfig(self.itemLines[index][0],
-                               fill=labelLineColour_Selected)
-        self.canvas.itemconfig(self.itemLines[index][1],
-                               fill=labelLineColour_Selected, width=3)
-        self.canvas.itemconfig(self.itemLines[index][2],
-                               fill=labelLineColour_Selected)
-        self.canvas.itemconfig(self.labels[index][0],
-                               fill=labelLineColour_Selected)
-        self.canvas.itemconfig(self.labels[index][1],
-                               fill=labelLineColour_Selected)
-        self.canvas.itemconfig(self.labels[index][2],
-                               fill=labelLineColour_Selected)
-        self.canvas.itemconfig(self.labels[index][3],
-                               fill=labelLineColour_Selected)
-        self.canvas.itemconfig(self.labels[index][4],
-                               fill=labelLineColour_Selected)
-        self.canvas.itemconfig(self.labels[index][5],
-                               fill=labelLineColour_Selected)
+            self._canvas.itemconfig(self._item_lines[index - 1][1],
+                                    fill=label_line_colour_selected, width=3)
+        self._canvas.itemconfig(self._item_lines[index][0],
+                                fill=label_line_colour_selected)
+        self._canvas.itemconfig(self._item_lines[index][1],
+                                fill=label_line_colour_selected, width=3)
+        self._canvas.itemconfig(self._item_lines[index][2],
+                                fill=label_line_colour_selected)
+        self._canvas.itemconfig(self._labels[index][0],
+                                fill=label_line_colour_selected)
+        self._canvas.itemconfig(self._labels[index][1],
+                                fill=label_line_colour_selected)
+        self._canvas.itemconfig(self._labels[index][2],
+                                fill=label_line_colour_selected)
+        self._canvas.itemconfig(self._labels[index][3],
+                                fill=label_line_colour_selected)
+        self._canvas.itemconfig(self._labels[index][4],
+                                fill=label_line_colour_selected)
+        self._canvas.itemconfig(self._labels[index][5],
+                                fill=label_line_colour_selected)
 
     def _unhover(self, index):
         # reset the esthetics of hovering over a table entry
-        if index != self.currentImageIndex:
+        if index != self._current_image_index:
             if index > 0:
-                self.canvas.itemconfig(self.itemLines[index-1][1],
-                                       fill=labelLineColour, width=3)
-            self.canvas.itemconfig(self.itemLines[index][0],
-                                   fill=labelLineColour)
-            self.canvas.itemconfig(self.itemLines[index][1],
-                                   fill=labelLineColour, width=3)
-            self.canvas.itemconfig(self.itemLines[index][2],
-                                   fill=labelLineColour)
-            self.canvas.itemconfig(self.labels[index][0], fill=labelLineColour)
-            self.canvas.itemconfig(self.labels[index][1], fill=labelLineColour)
-            self.canvas.itemconfig(self.labels[index][2], fill=labelLineColour)
-            self.canvas.itemconfig(self.labels[index][3], fill=labelLineColour)
-            self.canvas.itemconfig(self.labels[index][4], fill=labelLineColour)
-            self.canvas.itemconfig(self.labels[index][5], fill=labelLineColour)
+                self._canvas.itemconfig(self._item_lines[index - 1][1],
+                                        fill=label_line_colour, width=3)
+            self._canvas.itemconfig(self._item_lines[index][0],
+                                    fill=label_line_colour)
+            self._canvas.itemconfig(self._item_lines[index][1],
+                                    fill=label_line_colour, width=3)
+            self._canvas.itemconfig(self._item_lines[index][2],
+                                    fill=label_line_colour)
+            self._canvas.itemconfig(self._labels[index][0],
+                                    fill=label_line_colour)
+            self._canvas.itemconfig(self._labels[index][1],
+                                    fill=label_line_colour)
+            self._canvas.itemconfig(self._labels[index][2],
+                                    fill=label_line_colour)
+            self._canvas.itemconfig(self._labels[index][3],
+                                    fill=label_line_colour)
+            self._canvas.itemconfig(self._labels[index][4],
+                                    fill=label_line_colour)
+            self._canvas.itemconfig(self._labels[index][5],
+                                    fill=label_line_colour)
 
     def _unselect_image(self, index):
         # set the esthetics of selectibg a table entry (like making the text
         # more black)
         if index != 0:
-            self.canvas.itemconfig(self.itemLines[index-1][1],
-                                   fill=labelLineColour, width=3)
-        self.canvas.itemconfig(self.rectangles[index], fill=backgroundColour)
-        self.canvas.itemconfig(self.itemLines[index][0], fill=labelLineColour)
-        self.canvas.itemconfig(self.itemLines[index][1],
-                               fill=labelLineColour, width=3)
-        self.canvas.itemconfig(self.itemLines[index][2], fill=labelLineColour)
-        self.canvas.itemconfig(self.labels[index][0], fill=labelLineColour)
-        self.canvas.itemconfig(self.labels[index][1], fill=labelLineColour)
-        self.canvas.itemconfig(self.labels[index][2], fill=labelLineColour)
-        self.canvas.itemconfig(self.labels[index][3], fill=labelLineColour)
-        self.canvas.itemconfig(self.labels[index][4], fill=labelLineColour)
-        self.canvas.itemconfig(self.labels[index][5], fill=labelLineColour)
+            self._canvas.itemconfig(self._item_lines[index - 1][1],
+                                    fill=label_line_colour, width=3)
+        self._canvas.itemconfig(self._rectangles[index],
+                                fill=background_colour)
+        self._canvas.itemconfig(self._item_lines[index][0],
+                                fill=label_line_colour)
+        self._canvas.itemconfig(self._item_lines[index][1],
+                                fill=label_line_colour, width=3)
+        self._canvas.itemconfig(self._item_lines[index][2],
+                                fill=label_line_colour)
+        self._canvas.itemconfig(self._labels[index][0], fill=label_line_colour)
+        self._canvas.itemconfig(self._labels[index][1], fill=label_line_colour)
+        self._canvas.itemconfig(self._labels[index][2], fill=label_line_colour)
+        self._canvas.itemconfig(self._labels[index][3], fill=label_line_colour)
+        self._canvas.itemconfig(self._labels[index][4], fill=label_line_colour)
+        self._canvas.itemconfig(self._labels[index][5], fill=label_line_colour)
 
     def _select_image(self, index):
         # reset the esthetics of selecting a table entry
-        self.imageCanvas.load_image(self.filenames[index],
-                                    self.nucleiPositions[index],
-                                    self.fibrePositions[index])
-        self.currentImageIndex = index
+        self._image_canvas.load_image(self.filenames[index],
+                                      self._nuclei_positions[index],
+                                      self._fibre_positions[index])
+        self._current_image_index = index
         if index != 0:
-            self.canvas.itemconfig(self.itemLines[index-1][1],
-                                   fill=labelLineColour_Selected, width=3)
-        self.canvas.itemconfig(self.rectangles[index],
-                               fill=backgroundColour_Selected)
-        self.canvas.itemconfig(self.itemLines[index][0],
-                               fill=labelLineColour_Selected)
-        self.canvas.itemconfig(self.itemLines[index][1],
-                               fill=labelLineColour_Selected, width=3)
-        self.canvas.itemconfig(self.itemLines[index][2],
-                               fill=labelLineColour_Selected)
-        self.canvas.itemconfig(self.labels[index][0],
-                               fill=labelLineColour_Selected)
-        self.canvas.itemconfig(self.labels[index][1],
-                               fill=labelLineColour_Selected)
-        self.canvas.itemconfig(self.labels[index][2],
-                               fill=labelLineColour_Selected)
-        self.canvas.itemconfig(self.labels[index][3],
-                               fill=labelLineColour_Selected)
-        self.canvas.itemconfig(self.labels[index][4],
-                               fill=labelLineColour_Selected)
-        self.canvas.itemconfig(self.labels[index][5],
-                               fill=labelLineColour_Selected)
+            self._canvas.itemconfig(self._item_lines[index - 1][1],
+                                    fill=label_line_colour_selected, width=3)
+        self._canvas.itemconfig(self._rectangles[index],
+                                fill=background_colour_selected)
+        self._canvas.itemconfig(self._item_lines[index][0],
+                                fill=label_line_colour_selected)
+        self._canvas.itemconfig(self._item_lines[index][1],
+                                fill=label_line_colour_selected, width=3)
+        self._canvas.itemconfig(self._item_lines[index][2],
+                                fill=label_line_colour_selected)
+        self._canvas.itemconfig(self._labels[index][0],
+                                fill=label_line_colour_selected)
+        self._canvas.itemconfig(self._labels[index][1],
+                                fill=label_line_colour_selected)
+        self._canvas.itemconfig(self._labels[index][2],
+                                fill=label_line_colour_selected)
+        self._canvas.itemconfig(self._labels[index][3],
+                                fill=label_line_colour_selected)
+        self._canvas.itemconfig(self._labels[index][4],
+                                fill=label_line_colour_selected)
+        self._canvas.itemconfig(self._labels[index][5],
+                                fill=label_line_colour_selected)
 
     def left_click(self, widget, rel_y):
 
         # only if there are items, and we are in the bounds
-        canvas_name = str(self.canvas.winfo_pathname(self.canvas.winfo_id()))
+        canvas_name = str(self._canvas.winfo_pathname(self._canvas.winfo_id()))
         if self.filenames and canvas_name == widget:
             # unselect previous
-            self._unselect_image(self.currentImageIndex)
+            self._unselect_image(self._current_image_index)
 
             # select new image
-            self._select_image(int(self.canvas.canvasy(rel_y) /
-                                   (self.rowHeight * 2)))
+            self._select_image(int(self._canvas.canvasy(rel_y) /
+                                   (self._row_height * 2)))
 
     def reset(self):
         # remove everything previous
-        for item in self.labels:
+        for item in self._labels:
             for it in item:
-                self.canvas.delete(it)
-        for item in self.itemLines:
+                self._canvas.delete(it)
+        for item in self._item_lines:
             for it in item:
-                self.canvas.delete(it)
-        for it in self.rectangles:
-            self.canvas.delete(it)
+                self._canvas.delete(it)
+        for it in self._rectangles:
+            self._canvas.delete(it)
 
-        self.labels = []
-        self.rectangles = []
-        self.itemLines = []
-        self.currentImageIndex = 0
-        self.hoveringIndex = -1
-        self.nucleiPositions = []
-        self.fibrePositions = []
+        self._labels = []
+        self._rectangles = []
+        self._item_lines = []
+        self._current_image_index = 0
+        self._hovering_index = -1
+        self._nuclei_positions = []
+        self._fibre_positions = []
         self.filenames = []
 
     def add_images(self, filenames):
 
         # remove everything previous
-        for item in self.labels:
+        for item in self._labels:
             for it in item:
-                self.canvas.delete(it)
-        for item in self.itemLines:
+                self._canvas.delete(it)
+        for item in self._item_lines:
             for it in item:
-                self.canvas.delete(it)
-        for it in self.rectangles:
-            self.canvas.delete(it)
-        self.labels = []
-        self.rectangles = []
-        self.itemLines = []
+                self._canvas.delete(it)
+        for it in self._rectangles:
+            self._canvas.delete(it)
+        self._labels = []
+        self._rectangles = []
+        self._item_lines = []
 
         # add the filenames
         self.filenames += filenames
-        self.nucleiPositions += [[[], []] for _ in filenames]
-        self.fibrePositions += [[] for _ in filenames]
+        self._nuclei_positions += [[[], []] for _ in filenames]
+        self._fibre_positions += [[] for _ in filenames]
 
         # make the table
         self._make_table()
@@ -448,39 +462,33 @@ class Table(ttk.Frame):
     def _make_table(self):
 
         # make the table
-        width = self.canvas.winfo_width()
+        width = self._canvas.winfo_width()
         for i, name in enumerate(self.filenames):
 
             # horizontal lines
-            half_line = self.canvas.create_line(-1,
-                                                (2 * i + 1) * self.rowHeight,
-                                                width,
-                                                (2 * i + 1) * self.rowHeight,
-                                                width=1, fill=labelLineColour)
-            full_line = self.canvas.create_line(-1,
-                                                (2 * i + 2) * self.rowHeight,
-                                                width,
-                                                (2 * i + 2) * self.rowHeight,
-                                                width=2, fill=labelLineColour)
+            half_line = self._canvas.create_line(
+                -1, (2 * i + 1) * self._row_height, width,
+                (2 * i + 1) * self._row_height, width=1,
+                fill=label_line_colour)
+            full_line = self._canvas.create_line(
+                -1, (2 * i + 2) * self._row_height, width,
+                (2 * i + 2) * self._row_height, width=2,
+                fill=label_line_colour)
 
             # rectangle
-            rect = self.canvas.create_rectangle(-1, self.rowHeight * 2 * i,
-                                                width,
-                                                self.rowHeight * (2 * i + 2),
-                                                fill=backgroundColour)
-            self.canvas.tag_lower(rect)  # lower it (background)
+            rect = self._canvas.create_rectangle(
+                -1, self._row_height * 2 * i, width,
+                self._row_height * (2 * i + 2), fill=background_colour)
+            self._canvas.tag_lower(rect)  # lower it (background)
 
-            index_text = self.canvas.create_text(25, (2 * i) * self.rowHeight +
-                                                 int(self.rowHeight / 2),
-                                                 text=str(i + 1),
-                                                 anchor='center',
-                                                 font=('Helvetica', 10,
-                                                       'bold'),
-                                                 fill=labelLineColour)
-            index_line = self.canvas.create_line(50,
-                                                 (2 * i) * self.rowHeight, 50,
-                                                 (2 * i + 1) * self.rowHeight,
-                                                 width=1, fill=labelLineColour)
+            index_text = self._canvas.create_text(
+                25, (2 * i) * self._row_height + int(self._row_height / 2),
+                text=str(i + 1), anchor='center',
+                font=('Helvetica', 10, 'bold'), fill=label_line_colour)
+            index_line = self._canvas.create_line(
+                50, (2 * i) * self._row_height, 50,
+                (2 * i + 1) * self._row_height, width=1,
+                fill=label_line_colour)
 
             # set the filename
             file_name = path.basename(name)
@@ -488,65 +496,59 @@ class Table(ttk.Frame):
                 file_name = '...' + file_name[-59:]
 
             padding = 10
-            file_name_text = self.canvas.create_text(60,
-                                                     (2 * i) * self.rowHeight +
-                                                     int(self.rowHeight / 4),
-                                                     text=file_name,
-                                                     anchor='nw',
-                                                     fill=labelLineColour)
-            nuclei_text = self.canvas.create_text(padding,
-                                                  (2 * i + 1) * self.rowHeight
-                                                  + int(self.rowHeight / 4),
-                                                  text='error',
-                                                  anchor='nw',
-                                                  fill=labelLineColour)
-            positive_text = self.canvas.create_text(
+            file_name_text = self._canvas.create_text(
+                60, (2 * i) * self._row_height + int(self._row_height / 4),
+                text=file_name, anchor='nw', fill=label_line_colour)
+            nuclei_text = self._canvas.create_text(
+                padding,
+                (2 * i + 1) * self._row_height + int(self._row_height / 4),
+                text='error', anchor='nw', fill=label_line_colour)
+            positive_text = self._canvas.create_text(
                 padding + (width - 2 * padding) / 4,
-                (2 * i + 1) * self.rowHeight + int(self.rowHeight / 4),
-                text='error', anchor='nw', fill=labelLineColour)
-            ratio_text = self.canvas.create_text(
+                (2 * i + 1) * self._row_height + int(self._row_height / 4),
+                text='error', anchor='nw', fill=label_line_colour)
+            ratio_text = self._canvas.create_text(
                 padding + (width - 2 * padding) * 2 / 4,
-                (2 * i + 1) * self.rowHeight + int(self.rowHeight / 4),
-                text='error', anchor='nw', fill=labelLineColour)
-            fiber_text = self.canvas.create_text(
+                (2 * i + 1) * self._row_height + int(self._row_height / 4),
+                text='error', anchor='nw', fill=label_line_colour)
+            fiber_text = self._canvas.create_text(
                 padding * 3 + (width - 2 * padding) * 3 / 4,
-                (2 * i + 1) * self.rowHeight + int(self.rowHeight / 4),
-                text='error', anchor='nw', fill=labelLineColour)
+                (2 * i + 1) * self._row_height + int(self._row_height / 4),
+                text='error', anchor='nw', fill=label_line_colour)
 
             # append the handles
-            self.labels.append([file_name_text, nuclei_text, positive_text,
-                                ratio_text, index_text, fiber_text])
-            self.itemLines.append([half_line, full_line, index_line])
-            self.rectangles.append(rect)
+            self._labels.append([file_name_text, nuclei_text, positive_text,
+                                 ratio_text, index_text, fiber_text])
+            self._item_lines.append([half_line, full_line, index_line])
+            self._rectangles.append(rect)
 
             # update the text
             self._update_data(i)
 
         # set scrollregion
-        self.canvas.config(scrollregion=(0, 0, width,
-                                         (2 * len(self.filenames)) *
-                                         self.rowHeight))
+        self._canvas.config(scrollregion=(0, 0, width,
+                                          (2 * len(self.filenames)) *
+                                          self._row_height))
 
         # create highlighted parts
         if len(self.filenames) != 0:
-            self._select_image(self.currentImageIndex)
+            self._select_image(self._current_image_index)
         else:
-            self.imageCanvas.reset()
+            self._image_canvas.reset()
 
     def input_processed_data(self, nuclei_negative_positions,
                              nuclei_positive_positions, fibre_centres, index):
 
         # update the data
-        self.nucleiPositions[index] = [nuclei_negative_positions,
-                                       nuclei_positive_positions]
+        self._nuclei_positions[index] = [nuclei_negative_positions,
+                                         nuclei_positive_positions]
         if len(fibre_centres) > 0:
-            self.fibrePositions[index] = fibre_centres
+            self._fibre_positions[index] = fibre_centres
         self._update_data(index)
 
         # load the new image if necessary
-        if index == self.currentImageIndex:
-            self.imageCanvas.load_image(self.filenames[self.currentImageIndex],
-                                        self.nucleiPositions[
-                                            self.currentImageIndex],
-                                        self.fibrePositions[
-                                            self.currentImageIndex])
+        if index == self._current_image_index:
+            self._image_canvas.load_image(
+                self.filenames[self._current_image_index],
+                self._nuclei_positions[self._current_image_index],
+                self._fibre_positions[self._current_image_index])

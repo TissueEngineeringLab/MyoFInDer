@@ -21,7 +21,7 @@ from nucleiFibreSegmentation import deepcell_functie, initialize_mesmer
 
 from threading import get_ident, active_count, Thread
 from time import time, sleep
-from json import load as jload, dump
+from json import load, dump
 from functools import partial
 
 default_param = {'fibre_colour_var': "Blue",
@@ -165,7 +165,7 @@ class main_window(Tk):
     def _load_settings(self):
         if path.isfile(self._base_path + 'general.py'):
             with open(self._base_path + 'general.py', 'r') as param_file:
-                param = jload(param_file)
+                param = load(param_file)
         else:
             param = {}
 
