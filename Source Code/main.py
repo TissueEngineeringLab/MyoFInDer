@@ -140,8 +140,8 @@ class main_window(Tk):
 
         self._base_path = path.abspath('') + "/"
 
-        self._icon = PhotoImage(file=self._base_path + "icon.png")
-        self.iconphoto(False, self._icon)
+        icon = PhotoImage(file=self._base_path + "icon.png")
+        self.iconphoto(True, icon)
 
         self._load_settings()
         self._set_menu()

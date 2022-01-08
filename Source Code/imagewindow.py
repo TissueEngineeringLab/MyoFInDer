@@ -69,11 +69,11 @@ class Zoom_Advanced(ttk.Frame):
         self.bind_all('_', partial(self._zoom, delta=-1))
         self._image = None  # open image
         self._image_path = ""
-        self._channels_rgb = (False, False, False)
-        self._indicators_nf = (False, False)
+        self._channels_rgb = (True, True, False)
+        self._indicators_nf = (True, False)
         self._indicating_nuclei = True
-        self._imscale = 1.0  # scale for the canvas image
-        self._canscale = 1.0
+        self._img_scale = 1.0  # scale for the canvas image
+        self._can_scale = 1.0
         self._delta = 1.3  # zoom delta
         self._current_zoom = 0
         self._nuclei = []
@@ -95,17 +95,17 @@ class Zoom_Advanced(ttk.Frame):
             can_x = self._canvas.canvasx(event.x)
             can_y = self._canvas.canvasy(event.y)
 
-            if can_x >= self._image.width * self._imscale or \
-                    can_y >= self._image.height * self._imscale:
+            if can_x >= self._image.width * self._img_scale or \
+                    can_y >= self._image.height * self._img_scale:
                 return
 
             # put white nucleus or set from blue to green
-            radius = max(int(3.0 * self._canscale), 1)
-            square_size = max(int(9.0 * self._canscale), 1)
+            radius = max(int(3.0 * self._can_scale), 1)
+            square_size = max(int(9.0 * self._can_scale), 1)
 
             # coordinaten tov de foto
-            rel_x_scale = can_x / self._imscale
-            rel_y_scale = can_y / self._imscale
+            rel_x_scale = can_x / self._img_scale
+            rel_y_scale = can_y / self._img_scale
 
             if self._indicating_nuclei and self._indicators_nf[0]:
                 # find a close nuclei
@@ -171,13 +171,13 @@ class Zoom_Advanced(ttk.Frame):
             can_x = self._canvas.canvasx(event.x)
             can_y = self._canvas.canvasy(event.y)
 
-            if can_x >= self._image.width * self._imscale or \
-                    can_y >= self._image.height * self._imscale:
+            if can_x >= self._image.width * self._img_scale or \
+                    can_y >= self._image.height * self._img_scale:
                 return
 
             # coordinaten tov de foto
-            rel_x_scale = can_x / self._imscale
-            rel_y_scale = can_y / self._imscale
+            rel_x_scale = can_x / self._img_scale
+            rel_y_scale = can_y / self._img_scale
 
             # find a close nuclei
             if self._indicating_nuclei and self._indicators_nf[0]:
@@ -219,7 +219,7 @@ class Zoom_Advanced(ttk.Frame):
 
     def _find_closest_fibre(self, x, y):
         # find the closest fiber
-        radius = max(9.0 * self._canscale / self._imscale, 9.0)
+        radius = max(9.0 * self._can_scale / self._img_scale, 9.0)
         closest_index = -1
         closest_distance_sq = -1
         for i, fiber in enumerate(self._fibres):
@@ -235,7 +235,7 @@ class Zoom_Advanced(ttk.Frame):
 
     def _find_closest_nuclei(self, x, y):
         # find the closest nucleus
-        radius = max(3.0 * self._canscale / self._imscale, 3.0)
+        radius = max(3.0 * self._can_scale / self._img_scale, 3.0)
         closest_index = -1
         closest_distance_sq = -1
         for i, nucleus in enumerate(self._nuclei):
@@ -251,10 +251,10 @@ class Zoom_Advanced(ttk.Frame):
 
     def set_channels(self, b, g, r):
         self._channels_rgb = (r, g, b)
-        self._set_image(rgb=True)
+        self._set_image(color_change=True)
         self._show_image()
 
-    def _set_image(self, rgb=False):
+    def _set_image(self, color_change=False):
         # load the image with the correct channels
         if self._image_path:
             cv_img = cvtColor(imread(self._image_path), COLOR_BGR2RGB)
@@ -266,18 +266,19 @@ class Zoom_Advanced(ttk.Frame):
                 cv_img[:, :, 2] = zeros([cv_img.shape[0], cv_img.shape[1]])
             image_in = Image.fromarray(cv_img)
 
-            can_width = self._canvas.winfo_width()
-            can_height = self._canvas.winfo_height()
-            can_ratio = can_width / can_height
-            img_ratio = image_in.width / image_in.height
-            if img_ratio >= can_ratio:
-                resize = (can_width, int(can_width / img_ratio))
-            else:
-                resize = (int(can_height * img_ratio), can_height)
-            # self.image = image_in.resize(resize)  # open image
             self._image = image_in
-            if not rgb:
-                self._imscale = resize[0] / image_in.width
+
+            if not color_change:
+                can_width = self._canvas.winfo_width()
+                can_height = self._canvas.winfo_height()
+                can_ratio = can_width / can_height
+                img_ratio = image_in.width / image_in.height
+                if img_ratio >= can_ratio:
+                    resize_width = can_width
+                else:
+                    resize_width = int(can_height * img_ratio)
+
+                self._img_scale = resize_width / image_in.width
 
     def set_indicators(self, nuclei, fibres):
 
@@ -287,7 +288,7 @@ class Zoom_Advanced(ttk.Frame):
                 self._canvas.delete(nuc[2])
         elif not self._indicators_nf[0]:
 
-            radius = max(int(3.0 * self._canscale), 1)
+            radius = max(int(3.0 * self._can_scale), 1)
             # coordinaten van linkerbovenhoek van de foto tov de window
 
             # draw
@@ -295,8 +296,8 @@ class Zoom_Advanced(ttk.Frame):
                 color = non_fibre_nuclei_colour
                 if nuc[3]:
                     color = fibre_nuclei_colour
-                x = nuc[0] * self._imscale
-                y = nuc[1] * self._imscale
+                x = nuc[0] * self._img_scale
+                y = nuc[1] * self._img_scale
                 new_oval = self._canvas.create_oval(
                     x - radius, y - radius, x + radius, y + radius,
                     fill=color, outline='#fff', width=0)
@@ -310,13 +311,13 @@ class Zoom_Advanced(ttk.Frame):
                 self._canvas.delete(fib[2][1])
         elif not self._indicators_nf[1]:
 
-            square_size = max(int(10.0 * self._canscale), 1)
+            square_size = max(int(10.0 * self._can_scale), 1)
             # coordinaten van linkerbovenhoek van de foto tov de window
 
             # draw
             for i, fibre in enumerate(self._fibres):
-                x = fibre[0] * self._imscale
-                y = fibre[1] * self._imscale
+                x = fibre[0] * self._img_scale
+                y = fibre[1] * self._img_scale
                 hor_line = self._canvas.create_line(x + square_size, y,
                                                     x - square_size, y,
                                                     width=2,
@@ -345,16 +346,18 @@ class Zoom_Advanced(ttk.Frame):
         # load the image
         self._image_path = path
         self._set_image()
+        # show the image
+        self._show_image()
 
         # draw the nuclei on the screen
-        radius = max(int(3.0 * self._canscale), 1)
-        square_size = max(int(10.0 * self._canscale), 1)
+        radius = max(int(3.0 * self._can_scale), 1)
+        square_size = max(int(10.0 * self._can_scale), 1)
         # coordinaten van linkerbovenhoek van de foto tov de window
 
         # blue nuclei
         for position in nuclei_positions[0]:
-            x = position[0] * self._imscale
-            y = position[1] * self._imscale
+            x = position[0] * self._img_scale
+            y = position[1] * self._img_scale
             new_oval = None
             if self._indicators_nf[0]:
                 new_oval = self._canvas.create_oval(
@@ -364,8 +367,8 @@ class Zoom_Advanced(ttk.Frame):
             self._nuclei.append([position[0], position[1], new_oval, False])
         # green nuclei
         for position in nuclei_positions[1]:
-            x = position[0] * self._imscale
-            y = position[1] * self._imscale
+            x = position[0] * self._img_scale
+            y = position[1] * self._img_scale
             new_oval = None
             if self._indicators_nf[0]:
                 new_oval = self._canvas.create_oval(
@@ -376,8 +379,8 @@ class Zoom_Advanced(ttk.Frame):
 
         # fibres
         for position in fibre_positions:
-            x = position[0] * self._imscale
-            y = position[1] * self._imscale
+            x = position[0] * self._img_scale
+            y = position[1] * self._img_scale
             hor_line = None
             ver_line = None
             if self._indicators_nf[1]:
@@ -393,14 +396,11 @@ class Zoom_Advanced(ttk.Frame):
             self._fibres.append([position[0], position[1],
                                  (hor_line, ver_line)])
 
-        # show the image
-        self._show_image()
-
     def reset(self):
         # reset the canvas
         self._image = None  # open image
-        self._imscale = 1.0  # scale for the canvas image
-        self._canscale = 1.0
+        self._img_scale = 1.0  # scale for the canvas image
+        self._can_scale = 1.0
         self._delta = 1.3  # zoom delta
         self._current_zoom = 0
         for nuc in self._nuclei:
@@ -455,15 +455,15 @@ class Zoom_Advanced(ttk.Frame):
             if delta < 0:  # scroll down
                 if self._current_zoom < -4:
                     return  # image is less than 30 pixels
-                self._imscale /= self._delta
-                self._canscale /= self._delta
+                self._img_scale /= self._delta
+                self._can_scale /= self._delta
                 scale /= self._delta
                 self._current_zoom -= 1
             elif delta > 0:  # scroll up
                 if self._current_zoom > 4:
                     return  # Arbitrary zoom limit
-                self._imscale *= self._delta
-                self._canscale *= self._delta
+                self._img_scale *= self._delta
+                self._can_scale *= self._delta
                 scale *= self._delta
                 self._current_zoom += 1
             self._canvas.scale('all', 0, 0, scale, scale)  # rescale all the
@@ -472,12 +472,12 @@ class Zoom_Advanced(ttk.Frame):
 
     def _show_image(self, *_, **__):
         if self._image is not None:
-            scaled_x = int(self._image.width * self._imscale)
-            scaled_y = int(self._image.height * self._imscale)
+            scaled_x = int(self._image.width * self._img_scale)
+            scaled_y = int(self._image.height * self._img_scale)
             image = self._image.resize((scaled_x, scaled_y))
-            imagetk = ImageTk.PhotoImage(image)
+            image_tk = ImageTk.PhotoImage(image)
             self._image_id = self._canvas.create_image(0, 0, anchor='nw',
-                                                       image=imagetk)
+                                                       image=image_tk)
             self._canvas.lower(self._image_id)  # set image into background
-            self._canvas.imagetk = imagetk
+            self._canvas.image_tk = image_tk
             self._canvas.configure(scrollregion=(0, 0, scaled_x, scaled_y))
