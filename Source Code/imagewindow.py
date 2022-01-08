@@ -17,11 +17,11 @@ non_fibre_nuclei_colour = 'red'  # 2A7DDE
 
 class Zoom_Advanced(ttk.Frame):
     """ Advanced zoom of the image """
-    def __init__(self, mainframe, nuclei_table=None):
+    def __init__(self, mainframe):
         """ Initialize the main Frame """
         super().__init__(mainframe)
 
-        self._nuclei_table = nuclei_table
+        self._nuclei_table = None
 
         self.pack(expand=True, fill="both", anchor="w", side="left",
                   padx=5, pady=5)
