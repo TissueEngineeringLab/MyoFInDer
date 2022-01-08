@@ -4,11 +4,12 @@
 # constant memory and not crams it with a huge resized image for the large
 # zooms.
 
-from tkinter import UNITS, Canvas, ttk, Scrollbar
+from tkinter import Canvas, ttk, Scrollbar
 from PIL import Image, ImageTk
 from cv2 import cvtColor, imread, COLOR_BGR2RGB
 from numpy import zeros
 from platform import system
+from functools import partial
 
 fibre_nuclei_colour = 'yellow'  # green
 non_fibre_nuclei_colour = 'red'  # 2A7DDE
@@ -55,6 +56,10 @@ class Zoom_Advanced(ttk.Frame):
             self._canvas.bind('<5>', self._wheel)
         else:
             self._canvas.bind('<MouseWheel>', self._wheel)
+        self.bind_all('<Left>', partial(self._arrows, arrow_index=0))
+        self.bind_all('<Right>', partial(self._arrows, arrow_index=1))
+        self.bind_all('<Up>', partial(self._arrows, arrow_index=2))
+        self.bind_all('<Down>', partial(self._arrows, arrow_index=3))
         self._image = None  # open image
         self._image_path = ""
         self._channels_rgb = (False, False, False)
@@ -412,29 +417,18 @@ class Zoom_Advanced(ttk.Frame):
         # show
         self._show_image()
 
-    def arrows(self, arrow_index):
+    def _arrows(self, _, arrow_index):
 
-        # use the arrow keys to scroll around the image
-        self._canvas.configure(yscrollincrement='110')
-        self._canvas.configure(xscrollincrement='160')
-
-        self._canvas.xview_scroll(1, UNITS)
-        self._canvas.yview_scroll(1, UNITS)
-        if arrow_index == 2:
-            self._canvas.yview_scroll(-1, UNITS)
-        elif arrow_index == 3:
-            self._canvas.xview_scroll(-1, UNITS)
-        elif arrow_index == 0:
-            self._canvas.xview_scroll(-2, UNITS)
-            self._canvas.yview_scroll(-1, UNITS)
+        if arrow_index == 0:
+            self._canvas.xview_scroll(-1, "units")
         elif arrow_index == 1:
-            self._canvas.xview_scroll(-1, UNITS)
-            self._canvas.yview_scroll(-2, UNITS)
+            self._canvas.xview_scroll(1, "units")
+        elif arrow_index == 2:
+            self._canvas.yview_scroll(-1, "units")
+        elif arrow_index == 3:
+            self._canvas.yview_scroll(1, "units")
 
         self._show_image()  # redraw the image
-
-        self._canvas.configure(yscrollincrement='0')
-        self._canvas.configure(xscrollincrement='0')
 
     def move_from(self, event):
         """ Remember previous coordinates for scrolling with the mouse """

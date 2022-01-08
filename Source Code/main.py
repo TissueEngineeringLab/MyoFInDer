@@ -405,10 +405,7 @@ class main_window(Tk):
         else:
             self.bind('<MouseWheel>', self._on_wheel)
         self.bind('<Motion>', self._motion)
-        self.bind('<Left>', self._on_left_press)
-        self.bind('<Right>', self._on_right_press)
-        self.bind('<Up>', self._on_up_press)
-        self.bind('<Down>', self._on_down_press)
+
         self.bind('=', self._on_zoom_in_press)
         self.bind('+', self._on_zoom_in_press)
         self.bind('-', self._on_zoom_out_press)
@@ -1172,20 +1169,6 @@ class main_window(Tk):
     def _motion(self, event):
         if hasattr(self, "_nuclei_table"):
             self._nuclei_table.motion(str(event.widget), event.y)
-
-    # pass through the key pressing of the arrows to the image canvas to scroll
-    # around the image canvas
-    def _on_left_press(self, *_, **__):
-        self._image_canvas.arrows(0)
-
-    def _on_up_press(self, *_, **__):
-        self._image_canvas.arrows(1)
-
-    def _on_right_press(self, *_, **__):
-        self._image_canvas.arrows(2)
-
-    def _on_down_press(self, *_, **__):
-        self._image_canvas.arrows(3)
 
     def _on_zoom_in_press(self, event):
         self._image_canvas.zoom(str(event.widget), 120)
