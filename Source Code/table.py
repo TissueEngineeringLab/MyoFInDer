@@ -416,12 +416,14 @@ class Table(ttk.Frame):
 
     def _left_click(self, event):
 
-        # unselect previous
-        self._unselect_image(self._current_image_index)
+        if self._canvas.canvasy(event.y) < self._row_height * 2 * \
+                len(self._labels):
+            # unselect previous
+            self._unselect_image(self._current_image_index)
 
-        # select new image
-        self._select_image(int(self._canvas.canvasy(event.y) /
-                               (self._row_height * 2)))
+            # select new image
+            self._select_image(int(self._canvas.canvasy(event.y) /
+                                   (self._row_height * 2)))
 
     def reset(self):
         # remove everything previous
