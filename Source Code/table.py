@@ -25,39 +25,9 @@ class Table(ttk.Frame):
         self._row_height = 50
         self._base_path = path.abspath('') + "/"
 
-        self.pack(expand=True, fill="both", anchor="n", side='top')
-
-        self._canvas = Canvas(self, bg='#FFFFFF',
-                              highlightbackground='black',
-                              highlightthickness=3)
-        self._canvas.configure(scrollregion=self._canvas.bbox('all'))
-        self._canvas.pack(expand=True, fill="both", anchor="w", side='left',
-                          pady=5)
-        self._image_canvas = None
-
-        self._vbar = Scrollbar(self, orient="vertical")
-        self._vbar.pack(side='right', fill='y', pady=5)
-        self._vbar.config(command=self._canvas.yview)
-        self._canvas.config(yscrollcommand=self._vbar.set)
-        # data about the images
-        self._nuclei_positions = []
-        self._fibre_positions = []
-        self.filenames = []
-        self._current_image_index = 0
-        self._hovering_index = -1
-
-        # handles to widgets on the canvas
-        self._item_lines = []
-        self._labels = []
-        self._rectangles = []
-
-        if system() == "Linux":
-            self._canvas.bind('<4>', self._on_wheel)
-            self._canvas.bind('<5>', self._on_wheel)
-        else:
-            self._canvas.bind('<MouseWheel>', self._on_wheel)
-        self._canvas.bind('<ButtonPress-1>', self._left_click)
-        self._canvas.bind('<Motion>', self._motion)
+        self._set_layout()
+        self._set_bindings()
+        self._set_variables()
 
     def save_table(self, directory):
 
@@ -176,6 +146,140 @@ class Table(ttk.Frame):
         for i, filename in enumerate(self.filenames):
             self._draw_nuclei_save(i, directory)
 
+       # update the image canvas handle
+    def set_image_canvas(self, image_canvas):
+        self._image_canvas = image_canvas
+
+    def add_fibre(self, position):
+        self._fibre_positions[self._current_image_index].append(position)
+        self._update_data(self._current_image_index)
+
+    def remove_fibre(self, position):
+        self._fibre_positions[self._current_image_index].remove(position)
+        self._update_data(self._current_image_index)
+
+    def to_blue(self, position):
+        self._nuclei_positions[self._current_image_index][0].append(position)
+        self._nuclei_positions[self._current_image_index][1].remove(position)
+        self._update_data(self._current_image_index)
+
+    def add_blue(self, position):
+        self._nuclei_positions[self._current_image_index][0].append(position)
+        self._update_data(self._current_image_index)
+
+    def remove_blue(self, position):
+        self._nuclei_positions[self._current_image_index][0].remove(position)
+        self._update_data(self._current_image_index)
+
+    def remove_green(self, position):
+        self._nuclei_positions[self._current_image_index][1].remove(position)
+        self._update_data(self._current_image_index)
+
+    def to_green(self, position):
+        self._nuclei_positions[self._current_image_index][1].append(position)
+        self._nuclei_positions[self._current_image_index][0].remove(position)
+        self._update_data(self._current_image_index)
+
+    def reset(self):
+        # remove everything previous
+        for item in self._labels:
+            for it in item:
+                self._canvas.delete(it)
+        for item in self._item_lines:
+            for it in item:
+                self._canvas.delete(it)
+        for it in self._rectangles:
+            self._canvas.delete(it)
+
+        self._labels = []
+        self._rectangles = []
+        self._item_lines = []
+        self._current_image_index = 0
+        self._hovering_index = -1
+        self._nuclei_positions = []
+        self._fibre_positions = []
+        self.filenames = []
+
+    def add_images(self, filenames):
+
+        # remove everything previous
+        for item in self._labels:
+            for it in item:
+                self._canvas.delete(it)
+        for item in self._item_lines:
+            for it in item:
+                self._canvas.delete(it)
+        for it in self._rectangles:
+            self._canvas.delete(it)
+        self._labels = []
+        self._rectangles = []
+        self._item_lines = []
+
+        # add the filenames
+        self.filenames += filenames
+        self._nuclei_positions += [[[], []] for _ in filenames]
+        self._fibre_positions += [[] for _ in filenames]
+
+        # make the table
+        self._make_table()
+
+    def input_processed_data(self, nuclei_negative_positions,
+                             nuclei_positive_positions, fibre_centres, index):
+
+        # update the data
+        self._nuclei_positions[index] = [nuclei_negative_positions,
+                                         nuclei_positive_positions]
+        if len(fibre_centres) > 0:
+            self._fibre_positions[index] = fibre_centres
+        self._update_data(index)
+
+        # load the new image if necessary
+        if index == self._current_image_index:
+            self._image_canvas.load_image(
+                self.filenames[self._current_image_index],
+                self._nuclei_positions[self._current_image_index],
+                self._fibre_positions[self._current_image_index])
+
+    def _set_layout(self):
+        self.pack(expand=True, fill="both", anchor="n", side='top')
+
+        self._canvas = Canvas(self, bg='#FFFFFF',
+                              highlightbackground='black',
+                              highlightthickness=3)
+        self._canvas.configure(scrollregion=self._canvas.bbox('all'))
+        self._canvas.pack(expand=True, fill="both", anchor="w", side='left',
+                          pady=5)
+        self._image_canvas = None
+
+        self._vbar = Scrollbar(self, orient="vertical")
+        self._vbar.pack(side='right', fill='y', pady=5)
+        self._vbar.config(command=self._canvas.yview)
+        self._canvas.config(yscrollcommand=self._vbar.set)
+
+        self.update()
+
+    def _set_bindings(self):
+        if system() == "Linux":
+            self._canvas.bind('<4>', self._on_wheel)
+            self._canvas.bind('<5>', self._on_wheel)
+        else:
+            self._canvas.bind('<MouseWheel>', self._on_wheel)
+        self._canvas.bind('<ButtonPress-1>', self._left_click)
+        self._canvas.bind('<Motion>', self._motion)
+
+    def _set_variables(self):
+        # data about the images
+        self._nuclei_positions = []
+        self._fibre_positions = []
+        self.filenames = []
+        self._current_image_index = 0
+        self._hovering_index = -1
+
+        # handles to widgets on the canvas
+        self._item_lines = []
+        self._labels = []
+        self._rectangles = []
+
     def _draw_nuclei_save(self, index, project_name):
 
         # loop through the fibres
@@ -237,10 +341,6 @@ class Table(ttk.Frame):
                 self._canvas.winfo_height():
             self._canvas.yview_scroll(-delta, "units")
 
-       # update the image canvas handle
-    def set_image_canvas(self, image_canvas):
-        self._image_canvas = image_canvas
-
     def _update_data(self, index):
         # set the variables labels for the image
         total_nuclei = len(self._nuclei_positions[index][0]) + \
@@ -264,36 +364,6 @@ class Table(ttk.Frame):
 
         # these functions are called by image window to update the lists
         # in the table
-
-    def add_fibre(self, position):
-        self._fibre_positions[self._current_image_index].append(position)
-        self._update_data(self._current_image_index)
-
-    def remove_fibre(self, position):
-        self._fibre_positions[self._current_image_index].remove(position)
-        self._update_data(self._current_image_index)
-
-    def to_blue(self, position):
-        self._nuclei_positions[self._current_image_index][0].append(position)
-        self._nuclei_positions[self._current_image_index][1].remove(position)
-        self._update_data(self._current_image_index)
-
-    def add_blue(self, position):
-        self._nuclei_positions[self._current_image_index][0].append(position)
-        self._update_data(self._current_image_index)
-
-    def remove_blue(self, position):
-        self._nuclei_positions[self._current_image_index][0].remove(position)
-        self._update_data(self._current_image_index)
-
-    def remove_green(self, position):
-        self._nuclei_positions[self._current_image_index][1].remove(position)
-        self._update_data(self._current_image_index)
-
-    def to_green(self, position):
-        self._nuclei_positions[self._current_image_index][1].append(position)
-        self._nuclei_positions[self._current_image_index][0].remove(position)
-        self._update_data(self._current_image_index)
 
     def _motion(self, event):
 
@@ -425,49 +495,6 @@ class Table(ttk.Frame):
             self._select_image(int(self._canvas.canvasy(event.y) /
                                    (self._row_height * 2)))
 
-    def reset(self):
-        # remove everything previous
-        for item in self._labels:
-            for it in item:
-                self._canvas.delete(it)
-        for item in self._item_lines:
-            for it in item:
-                self._canvas.delete(it)
-        for it in self._rectangles:
-            self._canvas.delete(it)
-
-        self._labels = []
-        self._rectangles = []
-        self._item_lines = []
-        self._current_image_index = 0
-        self._hovering_index = -1
-        self._nuclei_positions = []
-        self._fibre_positions = []
-        self.filenames = []
-
-    def add_images(self, filenames):
-
-        # remove everything previous
-        for item in self._labels:
-            for it in item:
-                self._canvas.delete(it)
-        for item in self._item_lines:
-            for it in item:
-                self._canvas.delete(it)
-        for it in self._rectangles:
-            self._canvas.delete(it)
-        self._labels = []
-        self._rectangles = []
-        self._item_lines = []
-
-        # add the filenames
-        self.filenames += filenames
-        self._nuclei_positions += [[[], []] for _ in filenames]
-        self._fibre_positions += [[] for _ in filenames]
-
-        # make the table
-        self._make_table()
-
     def _make_table(self):
 
         # make the table
@@ -544,20 +571,3 @@ class Table(ttk.Frame):
             self._select_image(self._current_image_index)
         else:
             self._image_canvas.reset()
-
-    def input_processed_data(self, nuclei_negative_positions,
-                             nuclei_positive_positions, fibre_centres, index):
-
-        # update the data
-        self._nuclei_positions[index] = [nuclei_negative_positions,
-                                         nuclei_positive_positions]
-        if len(fibre_centres) > 0:
-            self._fibre_positions[index] = fibre_centres
-        self._update_data(index)
-
-        # load the new image if necessary
-        if index == self._current_image_index:
-            self._image_canvas.load_image(
-                self.filenames[self._current_image_index],
-                self._nuclei_positions[self._current_image_index],
-                self._fibre_positions[self._current_image_index])

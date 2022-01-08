@@ -24,6 +24,159 @@ class Zoom_Advanced(ttk.Frame):
         self._nuclei_table = None
         self._main_window = main_window
 
+        self._set_layout()
+        self._set_bindings()
+        self._set_variables()
+
+    def set_table(self, table_):
+        self._nuclei_table = table_
+
+    def set_which_indication(self, is_nuclei):
+        self._indicating_nuclei = is_nuclei
+
+    def set_channels(self, b, g, r):
+        self._channels_rgb = (r, g, b)
+        self._set_image(color_change=True)
+        self._show_image()
+
+    def set_indicators(self, nuclei, fibres):
+
+        # nuclei
+        if not nuclei:
+            for nuc in self._nuclei:
+                self._canvas.delete(nuc[2])
+        elif not self._indicators_nf[0]:
+
+            radius = max(int(3.0 * self._can_scale), 1)
+            # coordinaten van linkerbovenhoek van de foto tov de window
+
+            # draw
+            for i, nuc in enumerate(self._nuclei):
+                color = non_fibre_nuclei_colour
+                if nuc[3]:
+                    color = fibre_nuclei_colour
+                x = nuc[0] * self._img_scale
+                y = nuc[1] * self._img_scale
+                new_oval = self._canvas.create_oval(
+                    x - radius, y - radius, x + radius, y + radius,
+                    fill=color, outline='#fff', width=0)
+                # #2A7DDE (blue) #2B8915 (green)
+                self._nuclei[i][2] = new_oval
+
+        # fibers
+        if not fibres:
+            for fib in self._fibres:
+                self._canvas.delete(fib[2][0])
+                self._canvas.delete(fib[2][1])
+        elif not self._indicators_nf[1]:
+
+            square_size = max(int(10.0 * self._can_scale), 1)
+            # coordinaten van linkerbovenhoek van de foto tov de window
+
+            # draw
+            for i, fibre in enumerate(self._fibres):
+                x = fibre[0] * self._img_scale
+                y = fibre[1] * self._img_scale
+                hor_line = self._canvas.create_line(x + square_size, y,
+                                                    x - square_size, y,
+                                                    width=2,
+                                                    fill='red')
+                ver_line = self._canvas.create_line(x, y + square_size, x,
+                                                    y - square_size, width=2,
+                                                    fill='red')
+                self._fibres[i][2] = (hor_line, ver_line)
+
+        self._indicators_nf = (nuclei, fibres)
+
+    def load_image(self, path, nuclei_positions, fibre_positions):
+
+        # reset image
+        self.reset()
+
+        # remove all the previous nuclei
+        for nucleus in self._nuclei:
+            self._canvas.delete(nucleus[2])
+        self._nuclei = []
+        for fibre in self._fibres:
+            self._canvas.delete(fibre[2][0])
+            self._canvas.delete(fibre[2][1])
+        self._fibres = []
+
+        # load the image
+        self._image_path = path
+        self._set_image()
+        # show the image
+        self._show_image()
+
+        # draw the nuclei on the screen
+        radius = max(int(3.0 * self._can_scale), 1)
+        square_size = max(int(10.0 * self._can_scale), 1)
+        # coordinaten van linkerbovenhoek van de foto tov de window
+
+        # blue nuclei
+        for position in nuclei_positions[0]:
+            x = position[0] * self._img_scale
+            y = position[1] * self._img_scale
+            new_oval = None
+            if self._indicators_nf[0]:
+                new_oval = self._canvas.create_oval(
+                    x - radius, y - radius, x + radius, y + radius,
+                    fill=non_fibre_nuclei_colour, outline='#fff', width=0)
+                # #2A7DDE (blue) #2B8915 (green)
+            self._nuclei.append([position[0], position[1], new_oval, False])
+        # green nuclei
+        for position in nuclei_positions[1]:
+            x = position[0] * self._img_scale
+            y = position[1] * self._img_scale
+            new_oval = None
+            if self._indicators_nf[0]:
+                new_oval = self._canvas.create_oval(
+                    x - radius, y - radius, x + radius, y + radius,
+                    fill=fibre_nuclei_colour, outline='#fff', width=0)
+                # #2A7DDE (blue) #2B8915 (green)
+            self._nuclei.append([position[0], position[1], new_oval, True])
+
+        # fibres
+        for position in fibre_positions:
+            x = position[0] * self._img_scale
+            y = position[1] * self._img_scale
+            hor_line = None
+            ver_line = None
+            if self._indicators_nf[1]:
+                # newrect = self.canvas.create_rectangle(x - square_size,
+                # y - square_size,x + square_size, y + square_size, fill='red',
+                # outline='#fff', width=2) # #2A7DDE (blue) #2B8915 (green)
+                hor_line = self._canvas.create_line(
+                    x + square_size, y, x - square_size, y, width=2,
+                    fill='red')
+                ver_line = self._canvas.create_line(
+                    x, y + square_size, x, y - square_size, width=2,
+                    fill='red')
+            self._fibres.append([position[0], position[1],
+                                 (hor_line, ver_line)])
+
+    def reset(self):
+        # reset the canvas
+        self._image = None  # open image
+        self._img_scale = 1.0  # scale for the canvas image
+        self._can_scale = 1.0
+        self._delta = 1.3  # zoom delta
+        self._current_zoom = 0
+        for nuc in self._nuclei:
+            self._canvas.delete(nuc[2])
+        for fibre in self._fibres:
+            self._canvas.delete(fibre[2][0])
+            self._canvas.delete(fibre[2][1])
+        self._nuclei = []
+        self._canvas.delete(self._image_id)
+        self._image_id = None
+        # Put image into container rectangle and use it to set proper
+        # coordinates to the image
+
+        # show
+        self._show_image()
+
+    def _set_layout(self):
         self.pack(expand=True, fill="both", anchor="w", side="left",
                   padx=5, pady=5)
         self._hbar_frame = ttk.Frame(self)
@@ -48,6 +201,8 @@ class Zoom_Advanced(ttk.Frame):
         self._canvas.config(xscrollcommand=self._hbar.set)
 
         self._canvas.update()  # wait till canvas is create
+
+    def _set_bindings(self):
         # Bind events to the Canvas
         self._canvas.bind('<Configure>', self._show_image)  # canvas is resized
         self._canvas.bind('<ButtonPress-2>', self._move_from)
@@ -67,6 +222,8 @@ class Zoom_Advanced(ttk.Frame):
         self.bind_all('+', partial(self._zoom, delta=1))
         self.bind_all('-', partial(self._zoom, delta=-1))
         self.bind_all('_', partial(self._zoom, delta=-1))
+
+    def _set_variables(self):
         self._image = None  # open image
         self._image_path = ""
         self._channels_rgb = (True, True, False)
@@ -79,14 +236,6 @@ class Zoom_Advanced(ttk.Frame):
         self._nuclei = []
         self._fibres = []
         self._image_id = None
-        # Put image into container rectangle and use it to set proper
-        # coordinates to the image
-
-    def set_table(self, table_):
-        self._nuclei_table = table_
-
-    def set_which_indication(self, is_nuclei):
-        self._indicating_nuclei = is_nuclei
 
     def _left_click(self, event):
 
@@ -249,11 +398,6 @@ class Zoom_Advanced(ttk.Frame):
             return closest_index, self._nuclei[closest_index][2]
         return -1, -1
 
-    def set_channels(self, b, g, r):
-        self._channels_rgb = (r, g, b)
-        self._set_image(color_change=True)
-        self._show_image()
-
     def _set_image(self, color_change=False):
         # load the image with the correct channels
         if self._image_path:
@@ -279,143 +423,6 @@ class Zoom_Advanced(ttk.Frame):
                     resize_width = int(can_height * img_ratio)
 
                 self._img_scale = resize_width / image_in.width
-
-    def set_indicators(self, nuclei, fibres):
-
-        # nuclei
-        if not nuclei:
-            for nuc in self._nuclei:
-                self._canvas.delete(nuc[2])
-        elif not self._indicators_nf[0]:
-
-            radius = max(int(3.0 * self._can_scale), 1)
-            # coordinaten van linkerbovenhoek van de foto tov de window
-
-            # draw
-            for i, nuc in enumerate(self._nuclei):
-                color = non_fibre_nuclei_colour
-                if nuc[3]:
-                    color = fibre_nuclei_colour
-                x = nuc[0] * self._img_scale
-                y = nuc[1] * self._img_scale
-                new_oval = self._canvas.create_oval(
-                    x - radius, y - radius, x + radius, y + radius,
-                    fill=color, outline='#fff', width=0)
-                # #2A7DDE (blue) #2B8915 (green)
-                self._nuclei[i][2] = new_oval
-
-        # fibers
-        if not fibres:
-            for fib in self._fibres:
-                self._canvas.delete(fib[2][0])
-                self._canvas.delete(fib[2][1])
-        elif not self._indicators_nf[1]:
-
-            square_size = max(int(10.0 * self._can_scale), 1)
-            # coordinaten van linkerbovenhoek van de foto tov de window
-
-            # draw
-            for i, fibre in enumerate(self._fibres):
-                x = fibre[0] * self._img_scale
-                y = fibre[1] * self._img_scale
-                hor_line = self._canvas.create_line(x + square_size, y,
-                                                    x - square_size, y,
-                                                    width=2,
-                                                    fill='red')
-                ver_line = self._canvas.create_line(x, y + square_size, x,
-                                                    y - square_size, width=2,
-                                                    fill='red')
-                self._fibres[i][2] = (hor_line, ver_line)
-
-        self._indicators_nf = (nuclei, fibres)
-
-    def load_image(self, path, nuclei_positions, fibre_positions):
-
-        # reset image
-        self.reset()
-
-        # remove all the previous nuclei
-        for nucleus in self._nuclei:
-            self._canvas.delete(nucleus[2])
-        self._nuclei = []
-        for fibre in self._fibres:
-            self._canvas.delete(fibre[2][0])
-            self._canvas.delete(fibre[2][1])
-        self._fibres = []
-
-        # load the image
-        self._image_path = path
-        self._set_image()
-        # show the image
-        self._show_image()
-
-        # draw the nuclei on the screen
-        radius = max(int(3.0 * self._can_scale), 1)
-        square_size = max(int(10.0 * self._can_scale), 1)
-        # coordinaten van linkerbovenhoek van de foto tov de window
-
-        # blue nuclei
-        for position in nuclei_positions[0]:
-            x = position[0] * self._img_scale
-            y = position[1] * self._img_scale
-            new_oval = None
-            if self._indicators_nf[0]:
-                new_oval = self._canvas.create_oval(
-                    x - radius, y - radius, x + radius, y + radius,
-                    fill=non_fibre_nuclei_colour, outline='#fff', width=0)
-                # #2A7DDE (blue) #2B8915 (green)
-            self._nuclei.append([position[0], position[1], new_oval, False])
-        # green nuclei
-        for position in nuclei_positions[1]:
-            x = position[0] * self._img_scale
-            y = position[1] * self._img_scale
-            new_oval = None
-            if self._indicators_nf[0]:
-                new_oval = self._canvas.create_oval(
-                    x - radius, y - radius, x + radius, y + radius,
-                    fill=fibre_nuclei_colour, outline='#fff', width=0)
-                # #2A7DDE (blue) #2B8915 (green)
-            self._nuclei.append([position[0], position[1], new_oval, True])
-
-        # fibres
-        for position in fibre_positions:
-            x = position[0] * self._img_scale
-            y = position[1] * self._img_scale
-            hor_line = None
-            ver_line = None
-            if self._indicators_nf[1]:
-                # newrect = self.canvas.create_rectangle(x - square_size,
-                # y - square_size,x + square_size, y + square_size, fill='red',
-                # outline='#fff', width=2) # #2A7DDE (blue) #2B8915 (green)
-                hor_line = self._canvas.create_line(
-                    x + square_size, y, x - square_size, y, width=2,
-                    fill='red')
-                ver_line = self._canvas.create_line(
-                    x, y + square_size, x, y - square_size, width=2,
-                    fill='red')
-            self._fibres.append([position[0], position[1],
-                                 (hor_line, ver_line)])
-
-    def reset(self):
-        # reset the canvas
-        self._image = None  # open image
-        self._img_scale = 1.0  # scale for the canvas image
-        self._can_scale = 1.0
-        self._delta = 1.3  # zoom delta
-        self._current_zoom = 0
-        for nuc in self._nuclei:
-            self._canvas.delete(nuc[2])
-        for fibre in self._fibres:
-            self._canvas.delete(fibre[2][0])
-            self._canvas.delete(fibre[2][1])
-        self._nuclei = []
-        self._canvas.delete(self._image_id)
-        self._image_id = None
-        # Put image into container rectangle and use it to set proper
-        # coordinates to the image
-
-        # show
-        self._show_image()
 
     def _arrows(self, _, arrow_index):
 
