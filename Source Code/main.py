@@ -399,17 +399,7 @@ class main_window(Tk):
     def _set_bindings(self):
         self.bind('<ButtonPress-1>', self._left_click)
         self.bind('<ButtonPress-3>', self._right_click)
-        if system() == "Linux":
-            self.bind('<4>', self._on_wheel)
-            self.bind('<5>', self._on_wheel)
-        else:
-            self.bind('<MouseWheel>', self._on_wheel)
         self.bind('<Motion>', self._motion)
-
-        self.bind('=', self._on_zoom_in_press)
-        self.bind('+', self._on_zoom_in_press)
-        self.bind('-', self._on_zoom_out_press)
-        self.bind('_', self._on_zoom_out_press)
 
     def _set_autosave_time(self):
 
@@ -1148,7 +1138,6 @@ class main_window(Tk):
         self._save_settings()
 
     def _left_click(self, event):
-        self._nuclei_table.left_click(str(event.widget), event.y)
         if self._image_canvas.left_click(str(event.widget), event.x, event.y):
             self._set_unsaved_status()
 
@@ -1158,23 +1147,9 @@ class main_window(Tk):
         if self._image_canvas.right_click(str(event.widget), event.x, event.y):
             self._set_unsaved_status()
 
-    def _on_wheel(self, event):
-        if system() == "Linux":
-            self._nuclei_table.onwheel(str(event.widget),
-                                       120 if event.num == 4 else -120)
-        else:
-            self._nuclei_table.onwheel(str(event.widget),
-                                       120 * event.delta / abs(event.delta))
-
     def _motion(self, event):
         if hasattr(self, "_nuclei_table"):
             self._nuclei_table.motion(str(event.widget), event.y)
-
-    def _on_zoom_in_press(self, event):
-        self._image_canvas.zoom(str(event.widget), 120)
-
-    def _on_zoom_out_press(self, event):
-        self._image_canvas.zoom(str(event.widget), -120)
 
 
 if __name__ == "__main__":

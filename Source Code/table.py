@@ -6,8 +6,9 @@ from shutil import copyfile, rmtree
 from numpy import load, asarray, save
 from cv2 import imread, line, ellipse, imwrite
 from os import path, mkdir
+from platform import system
 
-# colorcodes
+# color codes
 background_colour = '#EAECEE'
 background_colour_selected = '#ABB2B9'
 label_line_colour = '#646464'
@@ -49,6 +50,13 @@ class Table(ttk.Frame):
         self._item_lines = []
         self._labels = []
         self._rectangles = []
+
+        if system() == "Linux":
+            self._canvas.bind('<4>', self._on_wheel)
+            self._canvas.bind('<5>', self._on_wheel)
+        else:
+            self._canvas.bind('<MouseWheel>', self._on_wheel)
+        self._canvas.bind('<ButtonPress-1>', self._left_click)
 
     def save_table(self, directory):
 
@@ -217,16 +225,18 @@ class Table(ttk.Frame):
                 + path.basename(self.filenames[index])[:-4] + ".png",
                 cv_img)
 
-    def onwheel(self, widget, delta):
+    def _on_wheel(self, event):
 
-        # scroll down the canvas if we are inside the canvas
-        canvas_name = str(self._canvas.winfo_pathname(self._canvas.winfo_id()))
-        if self.filenames and canvas_name == widget:
-            if self._row_height * 2 * len(self._labels) > \
-                    self._canvas.winfo_height():
-                self._canvas.yview_scroll(int(-delta / 120), "units")
+        if system() == "Linux":
+            delta = 1 if event.num == 4 else -1
+        else:
+            delta = int(event.delta / abs(event.delta))
 
-       # update the imagecanvas handle
+        if self._row_height * 2 * len(self._labels) > \
+                self._canvas.winfo_height():
+            self._canvas.yview_scroll(-delta, "units")
+
+       # update the image canvas handle
     def set_image_canvas(self, image_canvas):
         self._image_canvas = image_canvas
 
@@ -251,7 +261,7 @@ class Table(ttk.Frame):
             self._labels[index][5],
             text='Fibres : ' + str(len(self._fibre_positions[index])))
 
-        # these functions are called by imagewindow to update the lists
+        # these functions are called by image window to update the lists
         # in the table
 
     def add_fibre(self, position):
@@ -404,17 +414,14 @@ class Table(ttk.Frame):
         self._canvas.itemconfig(self._labels[index][5],
                                 fill=label_line_colour_selected)
 
-    def left_click(self, widget, rel_y):
+    def _left_click(self, event):
 
-        # only if there are items, and we are in the bounds
-        canvas_name = str(self._canvas.winfo_pathname(self._canvas.winfo_id()))
-        if self.filenames and canvas_name == widget:
-            # unselect previous
-            self._unselect_image(self._current_image_index)
+        # unselect previous
+        self._unselect_image(self._current_image_index)
 
-            # select new image
-            self._select_image(int(self._canvas.canvasy(rel_y) /
-                                   (self._row_height * 2)))
+        # select new image
+        self._select_image(int(self._canvas.canvasy(event.y) /
+                               (self._row_height * 2)))
 
     def reset(self):
         # remove everything previous
@@ -525,7 +532,7 @@ class Table(ttk.Frame):
             # update the text
             self._update_data(i)
 
-        # set scrollregion
+        # set scroll region
         self._canvas.config(scrollregion=(0, 0, width,
                                           (2 * len(self.filenames)) *
                                           self._row_height))

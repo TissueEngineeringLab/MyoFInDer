@@ -49,17 +49,21 @@ class Zoom_Advanced(ttk.Frame):
         self._canvas.update()  # wait till canvas is create
         # Bind events to the Canvas
         self._canvas.bind('<Configure>', self._show_image)  # canvas is resized
-        self._canvas.bind('<ButtonPress-2>', self.move_from)
-        self._canvas.bind('<B2-Motion>', self.move_to)
+        self._canvas.bind('<ButtonPress-2>', self._move_from)
+        self._canvas.bind('<B2-Motion>', self._move_to)
         if system() == "Linux":
-            self._canvas.bind('<4>', self._wheel)
-            self._canvas.bind('<5>', self._wheel)
+            self._canvas.bind('<4>', self._zoom)
+            self._canvas.bind('<5>', self._zoom)
         else:
-            self._canvas.bind('<MouseWheel>', self._wheel)
+            self._canvas.bind('<MouseWheel>', self._zoom)
         self.bind_all('<Left>', partial(self._arrows, arrow_index=0))
         self.bind_all('<Right>', partial(self._arrows, arrow_index=1))
         self.bind_all('<Up>', partial(self._arrows, arrow_index=2))
         self.bind_all('<Down>', partial(self._arrows, arrow_index=3))
+        self.bind_all('=', partial(self._zoom, delta=1))
+        self.bind_all('+', partial(self._zoom, delta=1))
+        self.bind_all('-', partial(self._zoom, delta=-1))
+        self.bind_all('_', partial(self._zoom, delta=-1))
         self._image = None  # open image
         self._image_path = ""
         self._channels_rgb = (False, False, False)
@@ -68,7 +72,7 @@ class Zoom_Advanced(ttk.Frame):
         self._imscale = 1.0  # scale for the canvas image
         self._canscale = 1.0
         self._delta = 1.3  # zoom delta
-        self._zoom = 0
+        self._current_zoom = 0
         self._nuclei = []
         self._fibres = []
         self._image_id = None
@@ -402,7 +406,7 @@ class Zoom_Advanced(ttk.Frame):
         self._imscale = 1.0  # scale for the canvas image
         self._canscale = 1.0
         self._delta = 1.3  # zoom delta
-        self._zoom = 0
+        self._current_zoom = 0
         for nuc in self._nuclei:
             self._canvas.delete(nuc[2])
         for fibre in self._fibres:
@@ -430,52 +434,45 @@ class Zoom_Advanced(ttk.Frame):
 
         self._show_image()  # redraw the image
 
-    def move_from(self, event):
+    def _move_from(self, event):
         """ Remember previous coordinates for scrolling with the mouse """
         if self._image is not None:
             self._canvas.scan_mark(event.x, event.y)
             self._show_image()  # redraw the image
 
-    def move_to(self, event):
+    def _move_to(self, event):
         """ Drag (move) canvas to the new position """
         if self._image is not None:
             self._canvas.scan_dragto(event.x, event.y, gain=1)
             self._show_image()  # redraw the image
 
-    def zoom(self, widget, delta, wheel=False):
+    def _zoom(self, event, delta=None):
         if self._image is not None:
-            canvas_name = str(
-                self._canvas.winfo_pathname(self._canvas.winfo_id()))
-            if wheel and canvas_name != widget:
-                return  # zoom only inside image area
+            if delta is None:
+                if system() == "Linux":
+                    delta = 1 if event.num == 4 else -1
+                else:
+                    delta = int(event.delta / abs(event.delta))
 
             scale = 1.0
             # Respond to Linux (event.num) or Windows (event.delta) wheel event
             if delta < 0:  # scroll down
-                if self._zoom < -4:
+                if self._current_zoom < -4:
                     return  # image is less than 30 pixels
                 self._imscale /= self._delta
                 self._canscale /= self._delta
                 scale /= self._delta
-                self._zoom -= 1
+                self._current_zoom -= 1
             elif delta > 0:  # scroll up
-                if self._zoom > 4:
+                if self._current_zoom > 4:
                     return  # Arbitrary zoom limit
                 self._imscale *= self._delta
                 self._canscale *= self._delta
                 scale *= self._delta
-                self._zoom += 1
+                self._current_zoom += 1
             self._canvas.scale('all', 0, 0, scale, scale)  # rescale all the
             # elements in the image
             self._show_image()
-
-    def _wheel(self, event):
-        """ Zoom with mouse wheel """
-        if system() == "Linux":
-            self.zoom(str(event.widget),
-                      1 if event.num == 4 else -1, wheel=True)
-        else:
-            self.zoom(str(event.widget), event.delta, wheel=True)
 
     def _show_image(self, *_, **__):
         if self._image is not None:
