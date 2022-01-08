@@ -57,6 +57,7 @@ class Table(ttk.Frame):
         else:
             self._canvas.bind('<MouseWheel>', self._on_wheel)
         self._canvas.bind('<ButtonPress-1>', self._left_click)
+        self._canvas.bind('<Motion>', self._motion)
 
     def save_table(self, directory):
 
@@ -294,19 +295,18 @@ class Table(ttk.Frame):
         self._nuclei_positions[self._current_image_index][0].remove(position)
         self._update_data(self._current_image_index)
 
-    def motion(self, widget, rel_y):
-        # only if there are items, and we are in the bounds
-        canvas_name = str(self._canvas.winfo_pathname(self._canvas.winfo_id()))
-        if self.filenames and canvas_name == widget:
-            # unhover previous
+    def _motion(self, event):
+
+        if self.filenames:
+            # un hover previous
             if self._hovering_index != -1:
                 self._unhover(self._hovering_index)
 
             # hover over new item
-            if self._canvas.canvasy(rel_y) >= self._row_height * 2 * \
+            if self._canvas.canvasy(event.y) >= self._row_height * 2 * \
                     len(self._labels):
                 return
-            self._hover(int(self._canvas.canvasy(rel_y) /
+            self._hover(int(self._canvas.canvasy(event.y) /
                             (self._row_height * 2)))
         elif self._hovering_index != -1:
             self._unhover(self._hovering_index)

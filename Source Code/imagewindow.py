@@ -17,11 +17,12 @@ non_fibre_nuclei_colour = 'red'  # 2A7DDE
 
 class Zoom_Advanced(ttk.Frame):
     """ Advanced zoom of the image """
-    def __init__(self, mainframe):
+    def __init__(self, mainframe, main_window):
         """ Initialize the main Frame """
         super().__init__(mainframe)
 
         self._nuclei_table = None
+        self._main_window = main_window
 
         self.pack(expand=True, fill="both", anchor="w", side="left",
                   padx=5, pady=5)
@@ -60,6 +61,8 @@ class Zoom_Advanced(ttk.Frame):
         self.bind_all('<Right>', partial(self._arrows, arrow_index=1))
         self.bind_all('<Up>', partial(self._arrows, arrow_index=2))
         self.bind_all('<Down>', partial(self._arrows, arrow_index=3))
+        self._canvas.bind('<ButtonPress-1>', self._left_click)
+        self._canvas.bind('<ButtonPress-3>', self._right_click)
         self.bind_all('=', partial(self._zoom, delta=1))
         self.bind_all('+', partial(self._zoom, delta=1))
         self.bind_all('-', partial(self._zoom, delta=-1))
@@ -85,14 +88,12 @@ class Zoom_Advanced(ttk.Frame):
     def set_which_indication(self, is_nuclei):
         self._indicating_nuclei = is_nuclei
 
-    def left_click(self, widget, rel_x, rel_y):
+    def _left_click(self, event):
 
-        canvas_name = str(self._canvas.winfo_pathname(self._canvas.winfo_id()))
+        if self._image is not None:
 
-        if self._image is not None and widget == canvas_name:
-
-            can_x = self._canvas.canvasx(rel_x)
-            can_y = self._canvas.canvasy(rel_y)
+            can_x = self._canvas.canvasx(event.x)
+            can_y = self._canvas.canvasy(event.y)
 
             if can_x >= self._image.width * self._imscale or \
                     can_y >= self._image.height * self._imscale:
@@ -126,10 +127,9 @@ class Zoom_Advanced(ttk.Frame):
                         self._nuclei_table.to_blue(
                             [self._nuclei[closest_nuclei_index][0],
                              self._nuclei[closest_nuclei_index][1]])
-                    return True
 
                 # otherwise, add a new nucleus
-                elif rel_y_scale >= 0 and rel_x_scale >= 0:
+                else:
                     self._nuclei_table.add_blue([rel_x_scale, rel_y_scale])
                     new_oval = self._canvas.create_oval(
                         can_x - radius, can_y - radius, can_x + radius,
@@ -138,15 +138,14 @@ class Zoom_Advanced(ttk.Frame):
                     # #65ADF5#2A7DDE (blue) #2B8915 (green)
                     self._nuclei.append([rel_x_scale, rel_y_scale,
                                          new_oval, False])
-                    return True
-                return False
+
+                self._main_window.set_unsaved_status()
 
             elif self._indicators_nf[1]:
                 # find a close fibre
                 closest_fiber_index, closest_fiber_id = \
                     self._find_closest_fibre(rel_x_scale, rel_y_scale)
-                if closest_fiber_index == -1 and rel_y_scale >= 0 \
-                        and rel_x_scale >= 0:
+                if closest_fiber_index == -1:
                     # newRect = self.canvas.create_rectangle(
                     #     can_x - square_size,
                     #     can_y - square_size,can_x + square_size,
@@ -162,18 +161,15 @@ class Zoom_Advanced(ttk.Frame):
                     self._fibres.append([rel_x_scale, rel_y_scale,
                                          (hor_line, ver_line)])
                     self._nuclei_table.add_fibre([rel_x_scale, rel_y_scale])
-                    return True
 
-        return False
+                    self._main_window.set_unsaved_status()
 
-    def right_click(self, widget, rel_x, rel_y):
+    def _right_click(self, event):
 
-        canvas_name = str(self._canvas.winfo_pathname(self._canvas.winfo_id()))
+        if self._image is not None:
 
-        if self._image is not None and widget == canvas_name:
-
-            can_x = self._canvas.canvasx(rel_x)
-            can_y = self._canvas.canvasy(rel_y)
+            can_x = self._canvas.canvasx(event.x)
+            can_y = self._canvas.canvasy(event.y)
 
             if can_x >= self._image.width * self._imscale or \
                     can_y >= self._image.height * self._imscale:
@@ -201,7 +197,8 @@ class Zoom_Advanced(ttk.Frame):
 
                     del self._nuclei[closest_nuclei_index]
                     self._canvas.delete(closest_nuclei_id)
-                    return True
+
+                    self._main_window.set_unsaved_status()
 
             elif self._indicators_nf[1]:
 
@@ -217,9 +214,8 @@ class Zoom_Advanced(ttk.Frame):
                     del self._fibres[closest_fibre_index]
                     self._canvas.delete(closest_fibre_id[0])
                     self._canvas.delete(closest_fibre_id[1])
-                    return True
 
-        return False
+                    self._main_window.set_unsaved_status()
 
     def _find_closest_fibre(self, x, y):
         # find the closest fiber

@@ -24,6 +24,10 @@ from time import time, sleep
 from json import load, dump
 from functools import partial
 
+# set better resolution
+if system() == "Windows" and int(release()) >= 8:
+    dll.shcore.SetProcessDpiAwareness(True)
+
 default_param = {'fibre_colour_var': "Blue",
                  'previous_fibre_colour_var': "Blue",
                  'nuclei_colour_var': "Blue",
@@ -123,11 +127,6 @@ class splash(Tk):
         sleep(1)
 
 
-# set better resolution
-if system() == "Windows" and int(release()) >= 8:
-    dll.shcore.SetProcessDpiAwareness(True)
-
-
 class main_window(Tk):
 
     def __init__(self):
@@ -147,9 +146,8 @@ class main_window(Tk):
         self._load_settings()
         self._set_menu()
         self._set_layout()
-        self._set_bindings()
 
-        self._image_canvas = Zoom_Advanced(self._frm)
+        self._image_canvas = Zoom_Advanced(self._frm, self)
         self._nuclei_table = Table(self._aux_frame)
         self._image_canvas.set_table(self._nuclei_table)
         self._nuclei_table.set_image_canvas(self._image_canvas)
@@ -396,11 +394,6 @@ class main_window(Tk):
         self._which_indicator_button.pack(fill="x", anchor="w", side='left',
                                           padx=3, pady=5)
 
-    def _set_bindings(self):
-        self.bind('<ButtonPress-1>', self._left_click)
-        self.bind('<ButtonPress-3>', self._right_click)
-        self.bind('<Motion>', self._motion)
-
     def _set_autosave_time(self):
 
         # if a previous timer was set, cancel it
@@ -611,7 +604,7 @@ class main_window(Tk):
 
         # get the file_names
         file_names = self._nuclei_table.filenames
-        self._set_unsaved_status()
+        self.set_unsaved_status()
 
         # switch off process button
         self._total_images_processed = 0
@@ -637,7 +630,7 @@ class main_window(Tk):
                     t1.start()
                     print(t1)
 
-    def _set_unsaved_status(self):
+    def set_unsaved_status(self):
 
         # set the unsaved status
         if self._current_project != '':
@@ -688,7 +681,7 @@ class main_window(Tk):
 
         # close if necessary
         self._update_processed_images(file_names)
-        self._set_unsaved_status()
+        self.set_unsaved_status()
 
         if is_thread:
             if index >= len(file_names) - self._n_threads_running:
@@ -941,7 +934,7 @@ class main_window(Tk):
             # add them to the table
             self._re_save_images = True
             self._nuclei_table.add_images(file_names)
-            self._set_unsaved_status()
+            self.set_unsaved_status()
 
     def _create_settings_window(self):
 
@@ -1136,20 +1129,6 @@ class main_window(Tk):
 
         # save
         self._save_settings()
-
-    def _left_click(self, event):
-        if self._image_canvas.left_click(str(event.widget), event.x, event.y):
-            self._set_unsaved_status()
-
-    # when right-clicking, the position of the cursor is sent to the table and
-    # image canvas
-    def _right_click(self, event):
-        if self._image_canvas.right_click(str(event.widget), event.x, event.y):
-            self._set_unsaved_status()
-
-    def _motion(self, event):
-        if hasattr(self, "_nuclei_table"):
-            self._nuclei_table.motion(str(event.widget), event.y)
 
 
 if __name__ == "__main__":
