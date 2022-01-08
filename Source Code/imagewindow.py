@@ -226,9 +226,12 @@ class Zoom_Advanced(ttk.Frame):
     def _set_variables(self):
         self._image = None  # open image
         self._image_path = ""
-        self._channels_rgb = (True, True, False)
-        self._indicators_nf = (True, False)
-        self._indicating_nuclei = True
+        self._channels_rgb = (self._main_window.red_channel_bool.get(),
+                              self._main_window.green_channel_bool.get(),
+                              self._main_window.blue_channel_bool.get())
+        self._indicators_nf = (self._main_window.show_nuclei_bool.get(),
+                               self._main_window.show_fibres_bool.get())
+        self._indicating_nuclei = self._main_window.indicating_nuclei
         self._img_scale = 1.0  # scale for the canvas image
         self._can_scale = 1.0
         self._delta = 1.3  # zoom delta

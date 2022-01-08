@@ -153,9 +153,6 @@ class main_window(Tk):
         self._nuclei_table.set_image_canvas(self._image_canvas)
         self._save_settings(2)
 
-        self._set_indicators()
-        self._set_image_channels()
-
         self.update()
         self.protocol("WM_DELETE_WINDOW", self._create_warning_window)
         self.mainloop()
@@ -202,19 +199,19 @@ class main_window(Tk):
         self._recent_projects = param.pop('recent_projects',
                                           default_param['recent_projects'])
 
-        self._blue_channel_bool = BooleanVar(
+        self.blue_channel_bool = BooleanVar(
             value=param.pop('blue_channel_bool',
                             default_param['blue_channel_bool']))
-        self._green_channel_bool = BooleanVar(
+        self.green_channel_bool = BooleanVar(
             value=param.pop('green_channel_bool',
                             default_param['green_channel_bool']))
-        self._red_channel_bool = BooleanVar(
+        self.red_channel_bool = BooleanVar(
             value=param.pop('red_channel_bool',
                             default_param['red_channel_bool']))
-        self._show_nuclei_bool = BooleanVar(
+        self.show_nuclei_bool = BooleanVar(
             value=param.pop('show_nuclei_bool',
                             default_param['show_nuclei_bool']))
-        self._show_fibres_bool = BooleanVar(
+        self.show_fibres_bool = BooleanVar(
             value=param.pop('show_fibres_bool',
                             default_param['show_fibres_bool']))
 
@@ -239,7 +236,7 @@ class main_window(Tk):
         self._folder_name_window_save_button = None
         self._current_project = ''
 
-        self._indicating_nuclei = True
+        self.indicating_nuclei = True
 
         self._save_settings()
 
@@ -345,19 +342,19 @@ class main_window(Tk):
         self._channels.pack(anchor="w", side="left", fill='x', padx=3, pady=5)
         self._blue_channel_check_button = ttk.Checkbutton(
             self._tick_frame_1, text="Blue Channel", onvalue=True,
-            offvalue=False, variable=self._blue_channel_bool,
+            offvalue=False, variable=self.blue_channel_bool,
             command=self._set_image_channels)
         self._blue_channel_check_button.pack(anchor="w", side="left", fill='x',
                                              padx=3, pady=5)
         self._green_channel_check_button = ttk.Checkbutton(
             self._tick_frame_1, text="Green Channel", onvalue=True,
-            offvalue=False, variable=self._green_channel_bool,
+            offvalue=False, variable=self.green_channel_bool,
             command=self._set_image_channels)
         self._green_channel_check_button.pack(anchor="w", side="left",
                                               fill='x', padx=3, pady=5)
         self._red_channel_check_button = ttk.Checkbutton(
             self._tick_frame_1, text="Red Channel", onvalue=True,
-            offvalue=False, variable=self._red_channel_bool,
+            offvalue=False, variable=self.red_channel_bool,
             command=self._set_image_channels)
         self._red_channel_check_button.pack(anchor="w", side="left", fill='x',
                                             padx=3, pady=5)
@@ -367,12 +364,12 @@ class main_window(Tk):
         self._indicator.pack(anchor="w", side="left", fill='x', padx=3, pady=5)
         self._show_nuclei_check_button = ttk.Checkbutton(
             self._tick_frame_2, text="Nuclei", onvalue=True, offvalue=False,
-            variable=self._show_nuclei_bool, command=self._set_indicators)
+            variable=self.show_nuclei_bool, command=self._set_indicators)
         self._show_nuclei_check_button.pack(anchor="w", side="left", fill='x',
                                             padx=3, pady=5)
         self._show_fibres_check_button = ttk.Checkbutton(
             self._tick_frame_2, text="Fibres", onvalue=True, offvalue=False,
-            variable=self._show_fibres_bool, command=self._set_indicators)
+            variable=self.show_fibres_bool, command=self._set_indicators)
         self._show_fibres_check_button.pack(anchor="w", side="left", fill='x',
                                             padx=3, pady=5)
 
@@ -558,11 +555,11 @@ class main_window(Tk):
                     self._n_threads.get(),
                     self._small_objects_threshold.get(),
                     self._recent_projects,
-                    self._blue_channel_bool.get(),
-                    self._green_channel_bool.get(),
-                    self._red_channel_bool.get(),
-                    self._show_nuclei_bool.get(),
-                    self._show_fibres_bool.get()]
+                    self.blue_channel_bool.get(),
+                    self.green_channel_bool.get(),
+                    self.red_channel_bool.get(),
+                    self.show_nuclei_bool.get(),
+                    self.show_fibres_bool.get()]
 
         settings = {key: setting for key, setting in
                     zip(default_param.keys(), settings)}
@@ -713,33 +710,33 @@ class main_window(Tk):
             self._stop_processing()
 
     def _set_image_channels(self):
-        self._image_canvas.set_channels(self._blue_channel_bool.get(),
-                                        self._green_channel_bool.get(),
-                                        self._red_channel_bool.get())
+        self._image_canvas.set_channels(self.blue_channel_bool.get(),
+                                        self.green_channel_bool.get(),
+                                        self.red_channel_bool.get())
         self._save_settings()
 
     def _set_indicators(self):
         # set the indicators
-        self._image_canvas.set_indicators(self._show_nuclei_bool.get(),
-                                          self._show_fibres_bool.get())
+        self._image_canvas.set_indicators(self.show_nuclei_bool.get(),
+                                          self.show_fibres_bool.get())
         self._save_settings()
 
         # set which indication
-        if self._show_fibres_bool.get() and not self._show_nuclei_bool.get():
-            self._indicating_nuclei = False
+        if self.show_fibres_bool.get() and not self.show_nuclei_bool.get():
+            self.indicating_nuclei = False
             self._which_indicator_button['text'] = 'Manual : Fibres'
             self._which_indicator_button['state'] = 'disabled'
 
-        if self._show_fibres_bool.get() and self._show_nuclei_bool.get():
+        if self.show_fibres_bool.get() and self.show_nuclei_bool.get():
             self._which_indicator_button['state'] = 'enabled'
 
-        if not self._show_fibres_bool.get() and self._show_nuclei_bool.get():
-            self._indicating_nuclei = True
+        if not self.show_fibres_bool.get() and self.show_nuclei_bool.get():
+            self.indicating_nuclei = True
             self._which_indicator_button['text'] = 'Manual : Nuclei'
             self._which_indicator_button['state'] = 'disabled'
 
         # pass through the indications to the image canvas
-        self._image_canvas.set_which_indication(self._indicating_nuclei)
+        self._image_canvas.set_which_indication(self.indicating_nuclei)
 
     def _create_warning_window(self):
 
@@ -882,13 +879,13 @@ class main_window(Tk):
         return True
 
     def _change_indications(self):
-        if self._indicating_nuclei:
-            self._indicating_nuclei = False
+        if self.indicating_nuclei:
+            self.indicating_nuclei = False
             self._which_indicator_button['text'] = 'Manual : Fibres'
         else:
-            self._indicating_nuclei = True
+            self.indicating_nuclei = True
             self._which_indicator_button['text'] = 'Manual : Nuclei'
-        self._image_canvas.set_which_indication(self._indicating_nuclei)
+        self._image_canvas.set_which_indication(self.indicating_nuclei)
 
     @staticmethod
     def _open_github():
