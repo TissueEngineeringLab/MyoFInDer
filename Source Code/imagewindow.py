@@ -4,7 +4,7 @@
 # constant memory and not crams it with a huge resized image for the large
 # zooms.
 
-from tkinter import Canvas, ttk, Scrollbar
+from tkinter import Canvas, ttk
 from PIL import Image, ImageTk
 from cv2 import cvtColor, imread, COLOR_BGR2RGB
 from numpy import zeros
@@ -190,12 +190,12 @@ class Zoom_Advanced(ttk.Frame):
         self._canvas.configure(scrollregion=self._canvas.bbox('all'))
         self._canvas.pack(expand=True, fill="both", side='left')
 
-        self._vbar = Scrollbar(self, orient="vertical")
+        self._vbar = ttk.Scrollbar(self, orient="vertical")
         self._vbar.pack(fill='y', side='right')
         self._vbar.config(command=self._canvas.yview)
         self._canvas.config(yscrollcommand=self._vbar.set)
 
-        self._hbar = Scrollbar(self._hbar_frame, orient="horizontal")
+        self._hbar = ttk.Scrollbar(self._hbar_frame, orient="horizontal")
         self._hbar.pack(fill='x')
         self._hbar.config(command=self._canvas.xview)
         self._canvas.config(xscrollcommand=self._hbar.set)

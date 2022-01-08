@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from tkinter import Scrollbar, ttk, Canvas
+from tkinter import ttk, Canvas
 from xlsxwriter import Workbook
 from shutil import copyfile, rmtree
 from numpy import load, asarray, save
@@ -251,7 +251,7 @@ class Table(ttk.Frame):
                           pady=5)
         self._image_canvas = None
 
-        self._vbar = Scrollbar(self, orient="vertical")
+        self._vbar = ttk.Scrollbar(self, orient="vertical")
         self._vbar.pack(side='right', fill='y', pady=5)
         self._vbar.config(command=self._canvas.yview)
         self._canvas.config(yscrollcommand=self._vbar.set)
