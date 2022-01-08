@@ -47,21 +47,11 @@ class Zoom_Advanced(ttk.Frame):
                 self._canvas.delete(nuc[2])
         elif not self._indicators_nf[0]:
 
-            radius = max(int(3.0 * self._can_scale), 1)
-            # coordinaten van linkerbovenhoek van de foto tov de window
-
             # draw
             for i, nuc in enumerate(self._nuclei):
-                color = non_fibre_nuclei_colour
-                if nuc[3]:
-                    color = fibre_nuclei_colour
-                x = nuc[0] * self._img_scale
-                y = nuc[1] * self._img_scale
-                new_oval = self._canvas.create_oval(
-                    x - radius, y - radius, x + radius, y + radius,
-                    fill=color, outline='#fff', width=0)
-                # #2A7DDE (blue) #2B8915 (green)
-                self._nuclei[i][2] = new_oval
+                color = fibre_nuclei_colour if nuc[3] \
+                    else non_fibre_nuclei_colour
+                self._nuclei[i][2] = self._draw_nucleus(nuc[0], nuc[1], color)
 
         # fibers
         if not fibres:
@@ -70,21 +60,9 @@ class Zoom_Advanced(ttk.Frame):
                 self._canvas.delete(fib[2][1])
         elif not self._indicators_nf[1]:
 
-            square_size = max(int(10.0 * self._can_scale), 1)
-            # coordinaten van linkerbovenhoek van de foto tov de window
-
             # draw
             for i, fibre in enumerate(self._fibres):
-                x = fibre[0] * self._img_scale
-                y = fibre[1] * self._img_scale
-                hor_line = self._canvas.create_line(x + square_size, y,
-                                                    x - square_size, y,
-                                                    width=2,
-                                                    fill='red')
-                ver_line = self._canvas.create_line(x, y + square_size, x,
-                                                    y - square_size, width=2,
-                                                    fill='red')
-                self._fibres[i][2] = (hor_line, ver_line)
+                self._fibres[i][2] = self._draw_fibre(fibre[0], fibre[1])
 
         self._indicators_nf = (nuclei, fibres)
 
@@ -105,55 +83,35 @@ class Zoom_Advanced(ttk.Frame):
         # load the image
         self._image_path = path
         self._set_image()
-        # show the image
         self._show_image()
 
-        # draw the nuclei on the screen
-        radius = max(int(3.0 * self._can_scale), 1)
-        square_size = max(int(10.0 * self._can_scale), 1)
-        # coordinaten van linkerbovenhoek van de foto tov de window
-
         # blue nuclei
-        for position in nuclei_positions[0]:
-            x = position[0] * self._img_scale
-            y = position[1] * self._img_scale
-            new_oval = None
+        for pos in nuclei_positions[0]:
             if self._indicators_nf[0]:
-                new_oval = self._canvas.create_oval(
-                    x - radius, y - radius, x + radius, y + radius,
-                    fill=non_fibre_nuclei_colour, outline='#fff', width=0)
-                # #2A7DDE (blue) #2B8915 (green)
-            self._nuclei.append([position[0], position[1], new_oval, False])
+                self._nuclei.append(
+                    [pos[0], pos[1],
+                     self._draw_nucleus(pos[0], pos[1],
+                                        non_fibre_nuclei_colour),
+                     False])
+            else:
+                self._nuclei.append([pos[0], pos[1], None, False])
         # green nuclei
-        for position in nuclei_positions[1]:
-            x = position[0] * self._img_scale
-            y = position[1] * self._img_scale
-            new_oval = None
+        for pos in nuclei_positions[1]:
             if self._indicators_nf[0]:
-                new_oval = self._canvas.create_oval(
-                    x - radius, y - radius, x + radius, y + radius,
-                    fill=fibre_nuclei_colour, outline='#fff', width=0)
-                # #2A7DDE (blue) #2B8915 (green)
-            self._nuclei.append([position[0], position[1], new_oval, True])
+                self._nuclei.append(
+                    [pos[0], pos[1],
+                     self._draw_nucleus(pos[0], pos[1], fibre_nuclei_colour),
+                     False])
+            else:
+                self._nuclei.append([pos[0], pos[1], None, False])
 
         # fibres
-        for position in fibre_positions:
-            x = position[0] * self._img_scale
-            y = position[1] * self._img_scale
-            hor_line = None
-            ver_line = None
+        for pos in fibre_positions:
             if self._indicators_nf[1]:
-                # newrect = self.canvas.create_rectangle(x - square_size,
-                # y - square_size,x + square_size, y + square_size, fill='red',
-                # outline='#fff', width=2) # #2A7DDE (blue) #2B8915 (green)
-                hor_line = self._canvas.create_line(
-                    x + square_size, y, x - square_size, y, width=2,
-                    fill='red')
-                ver_line = self._canvas.create_line(
-                    x, y + square_size, x, y - square_size, width=2,
-                    fill='red')
-            self._fibres.append([position[0], position[1],
-                                 (hor_line, ver_line)])
+                self._fibres.append([pos[0], pos[1],
+                                     self._draw_fibre(pos[0], pos[1])])
+            else:
+                self._fibres.append([pos[0], pos[1], (None, None)])
 
     def reset(self):
         # reset the canvas
@@ -207,21 +165,25 @@ class Zoom_Advanced(ttk.Frame):
         self._canvas.bind('<Configure>', self._show_image)  # canvas is resized
         self._canvas.bind('<ButtonPress-2>', self._move_from)
         self._canvas.bind('<B2-Motion>', self._move_to)
+
         if system() == "Linux":
             self._canvas.bind('<4>', self._zoom)
             self._canvas.bind('<5>', self._zoom)
         else:
             self._canvas.bind('<MouseWheel>', self._zoom)
+
         self.bind_all('<Left>', partial(self._arrows, arrow_index=0))
         self.bind_all('<Right>', partial(self._arrows, arrow_index=1))
         self.bind_all('<Up>', partial(self._arrows, arrow_index=2))
         self.bind_all('<Down>', partial(self._arrows, arrow_index=3))
-        self._canvas.bind('<ButtonPress-1>', self._left_click)
-        self._canvas.bind('<ButtonPress-3>', self._right_click)
+
         self.bind_all('=', partial(self._zoom, delta=1))
         self.bind_all('+', partial(self._zoom, delta=1))
         self.bind_all('-', partial(self._zoom, delta=-1))
         self.bind_all('_', partial(self._zoom, delta=-1))
+
+        self._canvas.bind('<ButtonPress-1>', self._left_click)
+        self._canvas.bind('<ButtonPress-3>', self._right_click)
 
     def _set_variables(self):
         self._image = None  # open image
@@ -240,6 +202,31 @@ class Zoom_Advanced(ttk.Frame):
         self._fibres = []
         self._image_id = None
 
+    def _draw_nucleus(self, unscaled_x, unscaled_y, color):
+
+        radius = max(int(3.0 * self._can_scale), 1)
+
+        x = unscaled_x * self._img_scale
+        y = unscaled_y * self._img_scale
+        return self._canvas.create_oval(
+            x - radius, y - radius, x + radius, y + radius,
+            fill=color, outline='#fff', width=0)
+
+    def _draw_fibre(self, unscaled_x, unscaled_y):
+
+        square_size = max(int(10.0 * self._can_scale), 1)
+
+        x = unscaled_x * self._img_scale
+        y = unscaled_y * self._img_scale
+        hor_line = self._canvas.create_line(x + square_size, y,
+                                            x - square_size, y,
+                                            width=2,
+                                            fill='red')
+        ver_line = self._canvas.create_line(x, y + square_size, x,
+                                            y - square_size, width=2,
+                                            fill='red')
+        return hor_line, ver_line
+
     def _left_click(self, event):
 
         if self._image is not None:
@@ -250,10 +237,6 @@ class Zoom_Advanced(ttk.Frame):
             if can_x >= self._image.width * self._img_scale or \
                     can_y >= self._image.height * self._img_scale:
                 return
-
-            # put white nucleus or set from blue to green
-            radius = max(int(3.0 * self._can_scale), 1)
-            square_size = max(int(9.0 * self._can_scale), 1)
 
             # coordinaten tov de foto
             rel_x_scale = can_x / self._img_scale
@@ -283,13 +266,11 @@ class Zoom_Advanced(ttk.Frame):
                 # otherwise, add a new nucleus
                 else:
                     self._nuclei_table.add_blue([rel_x_scale, rel_y_scale])
-                    new_oval = self._canvas.create_oval(
-                        can_x - radius, can_y - radius, can_x + radius,
-                        can_y + radius,
-                        fill=non_fibre_nuclei_colour, outline='#fff', width=0)
-                    # #65ADF5#2A7DDE (blue) #2B8915 (green)
-                    self._nuclei.append([rel_x_scale, rel_y_scale,
-                                         new_oval, False])
+                    self._nuclei.append(
+                        [rel_x_scale, rel_y_scale,
+                         self._draw_nucleus(rel_x_scale, rel_y_scale,
+                                            non_fibre_nuclei_colour),
+                         False])
 
                 self._main_window.set_unsaved_status()
 
@@ -298,20 +279,9 @@ class Zoom_Advanced(ttk.Frame):
                 closest_fiber_index, closest_fiber_id = \
                     self._find_closest_fibre(rel_x_scale, rel_y_scale)
                 if closest_fiber_index == -1:
-                    # newRect = self.canvas.create_rectangle(
-                    #     can_x - square_size,
-                    #     can_y - square_size,can_x + square_size,
-                    #     can_y + square_size,
-                    #     fill='red', outline='#fff', width=2) # #2A7DDE (blue)
-                    # #2B8915 (green)
-                    hor_line = self._canvas.create_line(
-                        can_x + square_size, can_y, can_x - square_size, can_y,
-                        width=2, fill='red')
-                    ver_line = self._canvas.create_line(
-                        can_x, can_y + square_size, can_x, can_y - square_size,
-                        width=2, fill='red')
                     self._fibres.append([rel_x_scale, rel_y_scale,
-                                         (hor_line, ver_line)])
+                                         self._draw_fibre(rel_x_scale,
+                                                          rel_y_scale)])
                     self._nuclei_table.add_fibre([rel_x_scale, rel_y_scale])
 
                     self._main_window.set_unsaved_status()
