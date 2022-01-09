@@ -110,6 +110,7 @@ class Zoom_Advanced(ttk.Frame):
         self._delete_nuclei()
         self._delete_fibres()
         self._nuclei = []
+        self._fibres = []
         if self._image_id is not None:
             self._canvas.delete(self._image_id)
         self._image_id = None
