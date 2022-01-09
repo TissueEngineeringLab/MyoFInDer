@@ -88,9 +88,9 @@ class Zoom_Advanced(ttk.Frame):
                 self._nuclei.append(
                     [pos[0], pos[1],
                      self._draw_nucleus(pos[0], pos[1], fibre_nuclei_colour),
-                     False])
+                     True])
             else:
-                self._nuclei.append([pos[0], pos[1], None, False])
+                self._nuclei.append([pos[0], pos[1], None, True])
 
         # fibres
         for pos in fibre_positions:
