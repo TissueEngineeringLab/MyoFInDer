@@ -236,7 +236,7 @@ class main_window(Tk):
         self._folder_name_window_save_button = None
         self._current_project = ''
 
-        self.indicating_nuclei = True
+        self.draw_nuclei = True
 
         self._save_settings()
 
@@ -710,33 +710,31 @@ class main_window(Tk):
             self._stop_processing()
 
     def _set_image_channels(self):
-        self._image_canvas.set_channels(self.blue_channel_bool.get(),
-                                        self.green_channel_bool.get(),
-                                        self.red_channel_bool.get())
+        self._image_canvas.set_channels()
         self._save_settings()
 
     def _set_indicators(self):
+        
+        show_nuclei = self.show_nuclei_bool.get()
+        show_fibres = self.show_fibres_bool.get()
+        
         # set the indicators
-        self._image_canvas.set_indicators(self.show_nuclei_bool.get(),
-                                          self.show_fibres_bool.get())
+        self._image_canvas.set_indicators()
         self._save_settings()
 
         # set which indication
-        if self.show_fibres_bool.get() and not self.show_nuclei_bool.get():
-            self.indicating_nuclei = False
+        if show_fibres and not show_nuclei:
+            self.draw_nuclei = False
             self._which_indicator_button['text'] = 'Manual : Fibres'
             self._which_indicator_button['state'] = 'disabled'
 
-        if self.show_fibres_bool.get() and self.show_nuclei_bool.get():
+        elif show_fibres and show_nuclei:
             self._which_indicator_button['state'] = 'enabled'
 
-        if not self.show_fibres_bool.get() and self.show_nuclei_bool.get():
-            self.indicating_nuclei = True
+        if not show_fibres and show_nuclei:
+            self.draw_nuclei = True
             self._which_indicator_button['text'] = 'Manual : Nuclei'
             self._which_indicator_button['state'] = 'disabled'
-
-        # pass through the indications to the image canvas
-        self._image_canvas.set_which_indication(self.indicating_nuclei)
 
     def _create_warning_window(self):
 
@@ -879,13 +877,12 @@ class main_window(Tk):
         return True
 
     def _change_indications(self):
-        if self.indicating_nuclei:
-            self.indicating_nuclei = False
+        if self.draw_nuclei:
+            self.draw_nuclei = False
             self._which_indicator_button['text'] = 'Manual : Fibres'
         else:
-            self.indicating_nuclei = True
+            self.draw_nuclei = True
             self._which_indicator_button['text'] = 'Manual : Nuclei'
-        self._image_canvas.set_which_indication(self.indicating_nuclei)
 
     @staticmethod
     def _open_github():
