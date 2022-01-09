@@ -110,7 +110,8 @@ class Zoom_Advanced(ttk.Frame):
         self._delete_nuclei()
         self._delete_fibres()
         self._nuclei = []
-        self._canvas.delete(self._image_id)
+        if self._image_id is not None:
+            self._canvas.delete(self._image_id)
         self._image_id = None
         # Put image into container rectangle and use it to set proper
         # coordinates to the image
