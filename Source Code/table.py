@@ -209,18 +209,10 @@ class Table(ttk.Frame):
 
     def reset(self):
         # remove everything previous
-        for item in self._labels:
-            for it in item:
-                self._canvas.delete(it)
-        for item in self._lines:
-            for it in item:
-                self._canvas.delete(it)
-        for it in self._rectangles:
-            self._canvas.delete(it)
+        for item in self._canvas.find_all():
+            self._canvas.delete(item)
 
-        self._labels = []
-        self._rectangles = []
-        self._lines = []
+        self._items = []
         self._current_image_index = 0
         self._hovering_index = None
         self._nuclei_positions = []
@@ -230,17 +222,10 @@ class Table(ttk.Frame):
     def add_images(self, filenames):
 
         # remove everything previous
-        for item in self._labels:
-            for it in item:
-                self._canvas.delete(it)
-        for item in self._lines:
-            for it in item:
-                self._canvas.delete(it)
-        for it in self._rectangles:
-            self._canvas.delete(it)
-        self._labels = []
-        self._rectangles = []
-        self._lines = []
+        for item in self._canvas.find_all():
+            self._canvas.delete(item)
+
+        self._items = []
 
         # add the filenames
         self.filenames += filenames
@@ -303,9 +288,7 @@ class Table(ttk.Frame):
         self._image_canvas = None
 
         # handles to widgets on the canvas
-        self._lines = []
-        self._labels = []
-        self._rectangles = []
+        self._items = []
 
     def _draw_nuclei_save(self, index, project_name):
 
@@ -371,21 +354,22 @@ class Table(ttk.Frame):
         # set the variables labels for the image
         total_nuclei = len(self._nuclei_positions[index][0]) + \
                        len(self._nuclei_positions[index][1])
-        self._canvas.itemconfig(self._labels[index][1], text='Total : ' +
-                                                             str(total_nuclei))
+        self._canvas.itemconfig(self._items[index].labels.nuclei_text,
+                                text='Total : ' + str(total_nuclei))
         self._canvas.itemconfig(
-            self._labels[index][2],
+            self._items[index].labels.positive_text,
             text='Positive : ' + str(len(self._nuclei_positions[index][1])))
-        if total_nuclei != 0:
+        if total_nuclei > 0:
             self._canvas.itemconfig(
-                self._labels[index][3],
+                self._items[index].labels.ratio_text,
                 text="Ratio : {:.2f}%".format(
                     100 * len(self._nuclei_positions[index][1]) /
                     total_nuclei))
         else:
-            self._canvas.itemconfig(self._labels[index][3], text='Ratio : NA')
+            self._canvas.itemconfig(self._items[index].labels.ratio_text,
+                                    text='Ratio : NA')
         self._canvas.itemconfig(
-            self._labels[index][5],
+            self._items[index].labels.fiber_text,
             text='Fibres : ' + str(len(self._fibre_positions[index])))
 
         # these functions are called by image window to update the lists
@@ -434,21 +418,32 @@ class Table(ttk.Frame):
         rect_color = background_selected if selected else background
 
         if index > 0:
-            self._canvas.itemconfig(self._lines[index - 1][1], fill=line_color)
+            self._canvas.itemconfig(self._items[index-1].lines.full_line,
+                                    fill=line_color)
 
         if not hover:
-            self._canvas.itemconfig(self._rectangles[index], fill=rect_color)
+            self._canvas.itemconfig(self._items[index].rect.rect,
+                                    fill=rect_color)
 
-        self._canvas.itemconfig(self._lines[index][0], fill=line_color)
-        self._canvas.itemconfig(self._lines[index][1], fill=line_color)
-        self._canvas.itemconfig(self._lines[index][2], fill=line_color)
+        self._canvas.itemconfig(self._items[index].lines.half_line,
+                                fill=line_color)
+        self._canvas.itemconfig(self._items[index].lines.full_line,
+                                fill=line_color)
+        self._canvas.itemconfig(self._items[index].lines.index_line,
+                                fill=line_color)
 
-        self._canvas.itemconfig(self._labels[index][0], fill=line_color)
-        self._canvas.itemconfig(self._labels[index][1], fill=line_color)
-        self._canvas.itemconfig(self._labels[index][2], fill=line_color)
-        self._canvas.itemconfig(self._labels[index][3], fill=line_color)
-        self._canvas.itemconfig(self._labels[index][4], fill=line_color)
-        self._canvas.itemconfig(self._labels[index][5], fill=line_color)
+        self._canvas.itemconfig(self._items[index].labels.name_text,
+                                fill=line_color)
+        self._canvas.itemconfig(self._items[index].labels.nuclei_text,
+                                fill=line_color)
+        self._canvas.itemconfig(self._items[index].labels.ratio_text,
+                                fill=line_color)
+        self._canvas.itemconfig(self._items[index].labels.positive_text,
+                                fill=line_color)
+        self._canvas.itemconfig(self._items[index].labels.index_text,
+                                fill=line_color)
+        self._canvas.itemconfig(self._items[index].labels.fiber_text,
+                                fill=line_color)
 
     def _left_click(self, event):
 
@@ -497,7 +492,7 @@ class Table(ttk.Frame):
                 file_name = '...' + file_name[-59:]
 
             padding = 10
-            file_name_text = self._canvas.create_text(
+            name_text = self._canvas.create_text(
                 60, top + int(self._row_height / 4),
                 text=file_name, anchor='nw', fill=label_line)
             nuclei_text = self._canvas.create_text(
@@ -517,10 +512,16 @@ class Table(ttk.Frame):
                 text='error', anchor='nw', fill=label_line)
 
             # append the handles
-            self._labels.append([file_name_text, nuclei_text, positive_text,
-                                 ratio_text, index_text, fiber_text])
-            self._lines.append([half_line, full_line, index_line])
-            self._rectangles.append(rect)
+            self._items.append(Table_element(Labels(name_text,
+                                                    nuclei_text,
+                                                    positive_text,
+                                                    ratio_text,
+                                                    index_text,
+                                                    fiber_text),
+                                             Lines(half_line,
+                                                   full_line,
+                                                   index_line),
+                                             Rectangle(rect)))
 
             # update the text
             self._update_data(i)
