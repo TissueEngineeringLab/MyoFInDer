@@ -7,12 +7,42 @@ from numpy import load, asarray, save
 from cv2 import imread, line, ellipse, imwrite
 from os import path, mkdir
 from platform import system
+from dataclasses import dataclass
 
 # color codes
 background = '#EAECEE'
 background_selected = '#ABB2B9'
 label_line = '#646464'
 label_line_selected = 'black'
+
+
+@dataclass
+class Labels:
+    name_text: int
+    nuclei_text: int
+    positive_text: int
+    ratio_text: int
+    index_text: int
+    fiber_text: int
+
+
+@dataclass
+class Lines:
+    half_line: int
+    full_line: int
+    index_line: int
+
+
+@dataclass
+class Rectangle:
+    rect: int
+
+
+@dataclass
+class Table_element:
+    labels: Labels
+    lines: Lines
+    rect: Rectangle
 
 
 class Table(ttk.Frame):
@@ -182,7 +212,7 @@ class Table(ttk.Frame):
         for item in self._labels:
             for it in item:
                 self._canvas.delete(it)
-        for item in self._item_lines:
+        for item in self._lines:
             for it in item:
                 self._canvas.delete(it)
         for it in self._rectangles:
@@ -190,7 +220,7 @@ class Table(ttk.Frame):
 
         self._labels = []
         self._rectangles = []
-        self._item_lines = []
+        self._lines = []
         self._current_image_index = 0
         self._hovering_index = None
         self._nuclei_positions = []
@@ -203,14 +233,14 @@ class Table(ttk.Frame):
         for item in self._labels:
             for it in item:
                 self._canvas.delete(it)
-        for item in self._item_lines:
+        for item in self._lines:
             for it in item:
                 self._canvas.delete(it)
         for it in self._rectangles:
             self._canvas.delete(it)
         self._labels = []
         self._rectangles = []
-        self._item_lines = []
+        self._lines = []
 
         # add the filenames
         self.filenames += filenames
@@ -273,7 +303,7 @@ class Table(ttk.Frame):
         self._image_canvas = None
 
         # handles to widgets on the canvas
-        self._item_lines = []
+        self._lines = []
         self._labels = []
         self._rectangles = []
 
@@ -377,106 +407,48 @@ class Table(ttk.Frame):
             self._hovering_index = None
 
     def _hover(self, index):
-        # set the esthetics of hovering over a table entry (like making the
-        # text more black)
+
         self._hovering_index = index
-        if index > 0:
-            self._canvas.itemconfig(self._item_lines[index - 1][1],
-                                    fill=label_line_selected, width=3)
-        self._canvas.itemconfig(self._item_lines[index][0],
-                                fill=label_line_selected)
-        self._canvas.itemconfig(self._item_lines[index][1],
-                                fill=label_line_selected, width=3)
-        self._canvas.itemconfig(self._item_lines[index][2],
-                                fill=label_line_selected)
-        self._canvas.itemconfig(self._labels[index][0],
-                                fill=label_line_selected)
-        self._canvas.itemconfig(self._labels[index][1],
-                                fill=label_line_selected)
-        self._canvas.itemconfig(self._labels[index][2],
-                                fill=label_line_selected)
-        self._canvas.itemconfig(self._labels[index][3],
-                                fill=label_line_selected)
-        self._canvas.itemconfig(self._labels[index][4],
-                                fill=label_line_selected)
-        self._canvas.itemconfig(self._labels[index][5],
-                                fill=label_line_selected)
+        self._set_aesthetics(index, selected=True, hover=True)
 
     def _un_hover(self, index):
-        # reset the esthetics of hovering over a table entry
+
         if index != self._current_image_index:
-            if index > 0:
-                self._canvas.itemconfig(self._item_lines[index - 1][1],
-                                        fill=label_line, width=3)
-            self._canvas.itemconfig(self._item_lines[index][0],
-                                    fill=label_line)
-            self._canvas.itemconfig(self._item_lines[index][1],
-                                    fill=label_line, width=3)
-            self._canvas.itemconfig(self._item_lines[index][2],
-                                    fill=label_line)
-            self._canvas.itemconfig(self._labels[index][0],
-                                    fill=label_line)
-            self._canvas.itemconfig(self._labels[index][1],
-                                    fill=label_line)
-            self._canvas.itemconfig(self._labels[index][2],
-                                    fill=label_line)
-            self._canvas.itemconfig(self._labels[index][3],
-                                    fill=label_line)
-            self._canvas.itemconfig(self._labels[index][4],
-                                    fill=label_line)
-            self._canvas.itemconfig(self._labels[index][5],
-                                    fill=label_line)
+            self._set_aesthetics(index, selected=False, hover=True)
 
     def _unselect_image(self, index):
-        # set the esthetics of selecting a table entry (like making the text
-        # more black)
-        if index > 0:
-            self._canvas.itemconfig(self._item_lines[index - 1][1],
-                                    fill=label_line, width=3)
-        self._canvas.itemconfig(self._rectangles[index],
-                                fill=background)
-        self._canvas.itemconfig(self._item_lines[index][0],
-                                fill=label_line)
-        self._canvas.itemconfig(self._item_lines[index][1],
-                                fill=label_line, width=3)
-        self._canvas.itemconfig(self._item_lines[index][2],
-                                fill=label_line)
-        self._canvas.itemconfig(self._labels[index][0], fill=label_line)
-        self._canvas.itemconfig(self._labels[index][1], fill=label_line)
-        self._canvas.itemconfig(self._labels[index][2], fill=label_line)
-        self._canvas.itemconfig(self._labels[index][3], fill=label_line)
-        self._canvas.itemconfig(self._labels[index][4], fill=label_line)
-        self._canvas.itemconfig(self._labels[index][5], fill=label_line)
+
+        self._set_aesthetics(index, selected=False, hover=False)
 
     def _select_image(self, index):
-        # reset the esthetics of selecting a table entry
+
         self._image_canvas.load_image(self.filenames[index],
                                       self._nuclei_positions[index],
                                       self._fibre_positions[index])
         self._current_image_index = index
+        self._set_aesthetics(index, selected=True, hover=False)
+
+    def _set_aesthetics(self, index, selected, hover):
+
+        line_color = label_line_selected if selected else label_line
+        rect_color = background_selected if selected else background
+
         if index > 0:
-            self._canvas.itemconfig(self._item_lines[index - 1][1],
-                                    fill=label_line_selected, width=3)
-        self._canvas.itemconfig(self._rectangles[index],
-                                fill=background_selected)
-        self._canvas.itemconfig(self._item_lines[index][0],
-                                fill=label_line_selected)
-        self._canvas.itemconfig(self._item_lines[index][1],
-                                fill=label_line_selected, width=3)
-        self._canvas.itemconfig(self._item_lines[index][2],
-                                fill=label_line_selected)
-        self._canvas.itemconfig(self._labels[index][0],
-                                fill=label_line_selected)
-        self._canvas.itemconfig(self._labels[index][1],
-                                fill=label_line_selected)
-        self._canvas.itemconfig(self._labels[index][2],
-                                fill=label_line_selected)
-        self._canvas.itemconfig(self._labels[index][3],
-                                fill=label_line_selected)
-        self._canvas.itemconfig(self._labels[index][4],
-                                fill=label_line_selected)
-        self._canvas.itemconfig(self._labels[index][5],
-                                fill=label_line_selected)
+            self._canvas.itemconfig(self._lines[index - 1][1], fill=line_color)
+
+        if not hover:
+            self._canvas.itemconfig(self._rectangles[index], fill=rect_color)
+
+        self._canvas.itemconfig(self._lines[index][0], fill=line_color)
+        self._canvas.itemconfig(self._lines[index][1], fill=line_color)
+        self._canvas.itemconfig(self._lines[index][2], fill=line_color)
+
+        self._canvas.itemconfig(self._labels[index][0], fill=line_color)
+        self._canvas.itemconfig(self._labels[index][1], fill=line_color)
+        self._canvas.itemconfig(self._labels[index][2], fill=line_color)
+        self._canvas.itemconfig(self._labels[index][3], fill=line_color)
+        self._canvas.itemconfig(self._labels[index][4], fill=line_color)
+        self._canvas.itemconfig(self._labels[index][5], fill=line_color)
 
     def _left_click(self, event):
 
@@ -497,31 +469,27 @@ class Table(ttk.Frame):
         # make the table
         width = self._canvas.winfo_width()
         for i, name in enumerate(self.filenames):
+            top = 2 * i * self._row_height
+            middle = (2 * i + 1) * self._row_height
+            bottom = (2 * i + 2) * self._row_height
 
             # horizontal lines
             half_line = self._canvas.create_line(
-                -1, (2 * i + 1) * self._row_height, width,
-                (2 * i + 1) * self._row_height, width=1,
-                fill=label_line)
+                -1, middle, width, middle, width=1, fill=label_line)
             full_line = self._canvas.create_line(
-                -1, (2 * i + 2) * self._row_height, width,
-                (2 * i + 2) * self._row_height, width=2,
-                fill=label_line)
+                -1, bottom, width, bottom, width=3, fill=label_line)
 
             # rectangle
             rect = self._canvas.create_rectangle(
-                -1, self._row_height * 2 * i, width,
-                self._row_height * (2 * i + 2), fill=background)
+                -1, top, width, bottom, fill=background)
             self._canvas.tag_lower(rect)  # lower it (background)
 
             index_text = self._canvas.create_text(
-                25, (2 * i) * self._row_height + int(self._row_height / 2),
+                25, top + int(self._row_height / 2),
                 text=str(i + 1), anchor='center',
                 font=('Helvetica', 10, 'bold'), fill=label_line)
             index_line = self._canvas.create_line(
-                50, (2 * i) * self._row_height, 50,
-                (2 * i + 1) * self._row_height, width=1,
-                fill=label_line)
+                50, top, 50, middle, width=1, fill=label_line)
 
             # set the filename
             file_name = path.basename(name)
@@ -530,29 +498,28 @@ class Table(ttk.Frame):
 
             padding = 10
             file_name_text = self._canvas.create_text(
-                60, (2 * i) * self._row_height + int(self._row_height / 4),
+                60, top + int(self._row_height / 4),
                 text=file_name, anchor='nw', fill=label_line)
             nuclei_text = self._canvas.create_text(
-                padding,
-                (2 * i + 1) * self._row_height + int(self._row_height / 4),
+                padding, middle + int(self._row_height / 4),
                 text='error', anchor='nw', fill=label_line)
             positive_text = self._canvas.create_text(
                 padding + (width - 2 * padding) / 4,
-                (2 * i + 1) * self._row_height + int(self._row_height / 4),
+                middle + int(self._row_height / 4),
                 text='error', anchor='nw', fill=label_line)
             ratio_text = self._canvas.create_text(
                 padding + (width - 2 * padding) * 2 / 4,
-                (2 * i + 1) * self._row_height + int(self._row_height / 4),
+                middle + int(self._row_height / 4),
                 text='error', anchor='nw', fill=label_line)
             fiber_text = self._canvas.create_text(
                 padding * 3 + (width - 2 * padding) * 3 / 4,
-                (2 * i + 1) * self._row_height + int(self._row_height / 4),
+                middle + int(self._row_height / 4),
                 text='error', anchor='nw', fill=label_line)
 
             # append the handles
             self._labels.append([file_name_text, nuclei_text, positive_text,
                                  ratio_text, index_text, fiber_text])
-            self._item_lines.append([half_line, full_line, index_line])
+            self._lines.append([half_line, full_line, index_line])
             self._rectangles.append(rect)
 
             # update the text
