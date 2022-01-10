@@ -10,9 +10,27 @@ from cv2 import cvtColor, imread, COLOR_BGR2RGB
 from numpy import zeros
 from platform import system
 from functools import partial
+from dataclasses import dataclass
+from typing import Optional
 
-fibre_nuclei_colour = 'yellow'  # green
-non_fibre_nuclei_colour = 'red'  # 2A7DDE
+in_fibre = 'yellow'  # green
+out_fibre = 'red'  # 2A7DDE
+
+
+@dataclass
+class Nucleus:
+    x_pos: int
+    y_pos: int
+    tk_obj: Optional[int]
+    color: str
+
+
+@dataclass
+class Fibre:
+    x_pos: int
+    y_pos: int
+    h_line: Optional[int]
+    v_line: Optional[int]
 
 
 class Zoom_Advanced(ttk.Frame):
@@ -44,16 +62,17 @@ class Zoom_Advanced(ttk.Frame):
         if self._main_window.show_nuclei_bool.get():
             # draw
             for i, nuc in enumerate(self._nuclei):
-                color = fibre_nuclei_colour if nuc[3] \
-                    else non_fibre_nuclei_colour
-                self._nuclei[i][2] = self._draw_nucleus(nuc[0], nuc[1], color)
+                self._nuclei[i].tk_obj = self._draw_nucleus(nuc.x_pos,
+                                                            nuc.y_pos,
+                                                            nuc.color)
 
         # fibers
         if self._main_window.show_fibres_bool.get():
 
             # draw
             for i, fibre in enumerate(self._fibres):
-                self._fibres[i][2] = self._draw_fibre(fibre[0], fibre[1])
+                self._fibres[i].h_line,  self._fibres[i].v_line = \
+                    self._draw_fibre(fibre.x_pos, fibre.y_pos)
 
     def load_image(self, path, nuclei_positions, fibre_positions):
 
@@ -75,30 +94,29 @@ class Zoom_Advanced(ttk.Frame):
         # blue nuclei
         for pos in nuclei_positions[0]:
             if self._main_window.show_nuclei_bool.get():
-                self._nuclei.append(
-                    [pos[0], pos[1],
-                     self._draw_nucleus(pos[0], pos[1],
-                                        non_fibre_nuclei_colour),
-                     False])
+                self._nuclei.append(Nucleus(
+                    pos[0], pos[1],
+                    self._draw_nucleus(pos[0], pos[1], out_fibre),
+                    out_fibre))
             else:
-                self._nuclei.append([pos[0], pos[1], None, False])
+                self._nuclei.append(Nucleus(pos[0], pos[1], None, out_fibre))
         # green nuclei
         for pos in nuclei_positions[1]:
             if self._main_window.show_nuclei_bool.get():
-                self._nuclei.append(
-                    [pos[0], pos[1],
-                     self._draw_nucleus(pos[0], pos[1], fibre_nuclei_colour),
-                     True])
+                self._nuclei.append(Nucleus(
+                    pos[0], pos[1],
+                    self._draw_nucleus(pos[0], pos[1], in_fibre),
+                    in_fibre))
             else:
-                self._nuclei.append([pos[0], pos[1], None, True])
+                self._nuclei.append(Nucleus(pos[0], pos[1], None, in_fibre))
 
         # fibres
         for pos in fibre_positions:
             if self._main_window.show_fibres_bool.get():
-                self._fibres.append([pos[0], pos[1],
-                                     self._draw_fibre(pos[0], pos[1])])
+                self._fibres.append(Fibre(pos[0], pos[1],
+                                          *self._draw_fibre(pos[0], pos[1])))
             else:
-                self._fibres.append([pos[0], pos[1], (None, None)])
+                self._fibres.append(Fibre(pos[0], pos[1], None, None))
 
     def reset(self):
         # reset the canvas
@@ -122,12 +140,12 @@ class Zoom_Advanced(ttk.Frame):
     
     def _delete_nuclei(self):
         for nuc in self._nuclei:
-            self._canvas.delete(nuc[2])
+            self._canvas.delete(nuc.tk_obj)
     
     def _delete_fibres(self):
         for fibre in self._fibres:
-            self._canvas.delete(fibre[2][0])
-            self._canvas.delete(fibre[2][1])
+            self._canvas.delete(fibre.h_line)
+            self._canvas.delete(fibre.v_line)
 
     def _set_layout(self):
         self.pack(expand=True, fill="both", anchor="w", side="left",
@@ -234,44 +252,42 @@ class Zoom_Advanced(ttk.Frame):
             if self._main_window.draw_nuclei and \
                     self._main_window.show_nuclei_bool.get():
                 # find a close nuclei
-                closest_nucleus_index, closest_nucleus_obj = \
+                closest_index, closest_obj = \
                     self._find_closest_nucleus(rel_x_scale, rel_y_scale)
-                if closest_nucleus_index is not None:
+                if closest_index is not None:
                     # convert the nucleus from blue to green
-                    if not self._nuclei[closest_nucleus_index][3]:
-                        self._canvas.itemconfig(closest_nucleus_obj,
-                                                fill=fibre_nuclei_colour)
-                        self._nuclei[closest_nucleus_index][3] = True
+                    if self._nuclei[closest_index].color == out_fibre:
+                        self._canvas.itemconfig(closest_obj, fill=in_fibre)
+                        self._nuclei[closest_index].color = in_fibre
                         self._nuclei_table.to_green(
-                            [self._nuclei[closest_nucleus_index][0],
-                             self._nuclei[closest_nucleus_index][1]])
+                            [self._nuclei[closest_index].x_pos,
+                             self._nuclei[closest_index].y_pos])
                     else:
-                        self._canvas.itemconfig(closest_nucleus_obj,
-                                                fill=non_fibre_nuclei_colour)
-                        self._nuclei[closest_nucleus_index][3] = False
+                        self._canvas.itemconfig(closest_obj, fill=out_fibre)
+                        self._nuclei[closest_index].color = out_fibre
                         self._nuclei_table.to_blue(
-                            [self._nuclei[closest_nucleus_index][0],
-                             self._nuclei[closest_nucleus_index][1]])
+                            [self._nuclei[closest_index].x_pos,
+                             self._nuclei[closest_index].y_pos])
 
                 # otherwise, add a new nucleus
                 else:
                     self._nuclei_table.add_blue([rel_x_scale, rel_y_scale])
-                    self._nuclei.append(
-                        [rel_x_scale, rel_y_scale,
-                         self._draw_nucleus(rel_x_scale, rel_y_scale,
-                                            non_fibre_nuclei_colour),
-                         False])
+                    self._nuclei.append(Nucleus(
+                        rel_x_scale, rel_y_scale,
+                        self._draw_nucleus(rel_x_scale, rel_y_scale,
+                                           out_fibre),
+                        out_fibre))
 
                 self._main_window.set_unsaved_status()
 
             elif self._main_window.show_fibres_bool.get():
                 # find a close fibre
-                closest_fiber_index, _ = \
+                closest_fiber_index, _, __ = \
                     self._find_closest_fibre(rel_x_scale, rel_y_scale)
                 if closest_fiber_index is None:
-                    self._fibres.append([rel_x_scale, rel_y_scale,
-                                         self._draw_fibre(rel_x_scale,
-                                                          rel_y_scale)])
+                    self._fibres.append(Fibre(rel_x_scale, rel_y_scale,
+                                              *self._draw_fibre(rel_x_scale,
+                                                                rel_y_scale)))
                     self._nuclei_table.add_fibre([rel_x_scale, rel_y_scale])
 
                     self._main_window.set_unsaved_status()
@@ -294,39 +310,39 @@ class Zoom_Advanced(ttk.Frame):
             # find a close nuclei
             if self._main_window.draw_nuclei and \
                     self._main_window.show_nuclei_bool.get():
-                closest_nucleus_index, closest_nucleus_obj = \
+                closest_index, closest_obj = \
                     self._find_closest_nucleus(rel_x_scale, rel_y_scale)
-                if closest_nucleus_index is not None:
+                if closest_index is not None:
 
                     # delete it
-                    if self._nuclei[closest_nucleus_index][3]:
+                    if self._nuclei[closest_index].color == in_fibre:
                         self._nuclei_table.remove_green(
-                            [self._nuclei[closest_nucleus_index][0],
-                             self._nuclei[closest_nucleus_index][1]])
+                            [self._nuclei[closest_index].x_pos,
+                             self._nuclei[closest_index].y_pos])
                     else:
                         self._nuclei_table.remove_blue(
-                            [self._nuclei[closest_nucleus_index][0],
-                             self._nuclei[closest_nucleus_index][1]])
+                            [self._nuclei[closest_index].x_pos,
+                             self._nuclei[closest_index].y_pos])
 
-                    del self._nuclei[closest_nucleus_index]
-                    self._canvas.delete(closest_nucleus_obj)
+                    del self._nuclei[closest_index]
+                    self._canvas.delete(closest_obj)
 
                     self._main_window.set_unsaved_status()
 
             elif self._main_window.show_fibres_bool.get():
 
                 # find the closest fibre
-                closest_fibre_index, closest_fibre_obj = \
+                closest_fibre_index, h_line, v_line = \
                     self._find_closest_fibre(rel_x_scale, rel_y_scale)
                 if closest_fibre_index is not None:
 
                     # delete it
                     self._nuclei_table.remove_fibre(
-                        [self._fibres[closest_fibre_index][0],
-                         self._fibres[closest_fibre_index][1]])
+                        [self._fibres[closest_fibre_index].x_pos,
+                         self._fibres[closest_fibre_index].y_pos])
                     del self._fibres[closest_fibre_index]
-                    self._canvas.delete(closest_fibre_obj[0])
-                    self._canvas.delete(closest_fibre_obj[1])
+                    self._canvas.delete(h_line)
+                    self._canvas.delete(v_line)
 
                     self._main_window.set_unsaved_status()
 
@@ -336,15 +352,16 @@ class Zoom_Advanced(ttk.Frame):
         closest_index = None
         closest_distance = None
         for i, fiber in enumerate(self._fibres):
-            if abs(x - fiber[0]) <= radius and \
-                    abs(y - fiber[1]) <= radius:
-                dis_sq = (fiber[0] - x) ** 2 + (fiber[1] - y) ** 2
+            if abs(x - fiber.x_pos) <= radius and \
+                    abs(y - fiber.y_pos) <= radius:
+                dis_sq = (fiber.x_pos - x) ** 2 + (fiber.y_pos - y) ** 2
                 if closest_distance is None or dis_sq < closest_distance:
                     closest_index = i
                     closest_distance = dis_sq
         if closest_index is not None:
-            return closest_index, self._fibres[closest_index][2]
-        return None, None
+            return closest_index, self._fibres[closest_index].h_line, \
+                   self._fibres[closest_index].v_line
+        return None, None, None
 
     def _find_closest_nucleus(self, x, y):
         # find the closest nucleus
@@ -352,14 +369,14 @@ class Zoom_Advanced(ttk.Frame):
         closest_index = None
         closest_distance = None
         for i, nucleus in enumerate(self._nuclei):
-            if abs(x - nucleus[0]) <= radius and \
-                    abs(y - nucleus[1]) <= radius:
-                dis_sq = (nucleus[0] - x) ** 2 + (nucleus[1] - y) ** 2
+            if abs(x - nucleus.x_pos) <= radius and \
+                    abs(y - nucleus.y_pos) <= radius:
+                dis_sq = (nucleus.x_pos - x) ** 2 + (nucleus.y_pos - y) ** 2
                 if closest_distance is None or dis_sq < closest_distance:
                     closest_index = i
                     closest_distance = dis_sq
         if closest_index is not None:
-            return closest_index, self._nuclei[closest_index][2]
+            return closest_index, self._nuclei[closest_index].tk_obj
         return None, None
 
     def _set_image(self):
