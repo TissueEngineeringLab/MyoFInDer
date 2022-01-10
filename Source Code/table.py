@@ -334,8 +334,7 @@ class Table(ttk.Frame):
         else:
             delta = int(event.delta / abs(event.delta))
 
-        if self._row_height * 2 * len(self.filenames) > \
-                self._canvas.winfo_height():
+        if self._table_height > self._canvas.winfo_height():
             self._canvas.yview_scroll(-delta, "units")
 
     def _update_data(self, index):
@@ -370,11 +369,9 @@ class Table(ttk.Frame):
                 self._un_hover(self._hovering_index)
 
             # hover over new item
-            if self._canvas.canvasy(event.y) >= self._row_height * 2 * \
-                    len(self.filenames):
-                return
-            self._hover(int(self._canvas.canvasy(event.y) /
-                            (self._row_height * 2)))
+            if self._canvas.canvasy(event.y) < self._table_height:
+                self._hover(int(self._canvas.canvasy(event.y) /
+                                (self._row_height * 2)))
         elif self._hovering_index is not None:
             self._un_hover(self._hovering_index)
             self._hovering_index = None
@@ -483,14 +480,17 @@ class Table(ttk.Frame):
 
     def _left_click(self, event):
 
-        if self._canvas.canvasy(event.y) < self._row_height * 2 * \
-                len(self.filenames):
+        if self._canvas.canvasy(event.y) < self._table_height:
             # unselect previous
             self._unselect_image(self._current_image_index)
 
             # select new image
             self._select_image(int(self._canvas.canvasy(event.y) /
                                    (self._row_height * 2)))
+
+    @property
+    def _table_height(self):
+        return self._row_height * 2 * len(self.filenames)
 
     def _make_table(self):
 
@@ -559,9 +559,7 @@ class Table(ttk.Frame):
             self._update_data(i)
 
         # set scroll region
-        self._canvas.config(scrollregion=(0, 0, width,
-                                          (2 * len(self.filenames)) *
-                                          self._row_height))
+        self._canvas.config(scrollregion=(0, 0, width, self._table_height))
 
         # create highlighted parts
         if self.filenames:
