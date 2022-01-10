@@ -259,19 +259,20 @@ class Zoom_Advanced(ttk.Frame):
                     if self._nuclei[closest_index].color == out_fibre:
                         self._canvas.itemconfig(closest_obj, fill=in_fibre)
                         self._nuclei[closest_index].color = in_fibre
-                        self._nuclei_table.to_green(
+                        self._nuclei_table.out_to_in(
                             [self._nuclei[closest_index].x_pos,
                              self._nuclei[closest_index].y_pos])
                     else:
                         self._canvas.itemconfig(closest_obj, fill=out_fibre)
                         self._nuclei[closest_index].color = out_fibre
-                        self._nuclei_table.to_blue(
+                        self._nuclei_table.in_to_out(
                             [self._nuclei[closest_index].x_pos,
                              self._nuclei[closest_index].y_pos])
 
                 # otherwise, add a new nucleus
                 else:
-                    self._nuclei_table.add_blue([rel_x_scale, rel_y_scale])
+                    self._nuclei_table.add_out_nucleus(
+                        [rel_x_scale, rel_y_scale])
                     self._nuclei.append(Nucleus(
                         rel_x_scale, rel_y_scale,
                         self._draw_nucleus(rel_x_scale, rel_y_scale,
@@ -316,11 +317,11 @@ class Zoom_Advanced(ttk.Frame):
 
                     # delete it
                     if self._nuclei[closest_index].color == in_fibre:
-                        self._nuclei_table.remove_green(
+                        self._nuclei_table.remove_in_nucleus(
                             [self._nuclei[closest_index].x_pos,
                              self._nuclei[closest_index].y_pos])
                     else:
-                        self._nuclei_table.remove_blue(
+                        self._nuclei_table.remove_out_nucleus(
                             [self._nuclei[closest_index].x_pos,
                              self._nuclei[closest_index].y_pos])
 
