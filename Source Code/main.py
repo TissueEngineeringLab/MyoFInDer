@@ -538,7 +538,7 @@ class main_window(Tk):
         self._re_save_images = False
 
         # if there are images loaded
-        if self._nuclei_table.images_available():
+        if self._nuclei_table.filenames:
             self._process_images_button['state'] = 'enabled'
         else:
             self._process_images_button['state'] = 'disabled'

@@ -99,9 +99,6 @@ class Table(ttk.Frame):
         # make the table
         self._make_table()
 
-    def images_available(self):
-        return len(self.filenames) != 0
-
     def save_data(self, directory):
 
         # make array
@@ -434,9 +431,9 @@ class Table(ttk.Frame):
                                     fill=label_line_colour)
 
     def _unselect_image(self, index):
-        # set the esthetics of selectibg a table entry (like making the text
+        # set the esthetics of selecting a table entry (like making the text
         # more black)
-        if index != 0:
+        if index > 0:
             self._canvas.itemconfig(self._item_lines[index - 1][1],
                                     fill=label_line_colour, width=3)
         self._canvas.itemconfig(self._rectangles[index],
@@ -460,7 +457,7 @@ class Table(ttk.Frame):
                                       self._nuclei_positions[index],
                                       self._fibre_positions[index])
         self._current_image_index = index
-        if index != 0:
+        if index > 0:
             self._canvas.itemconfig(self._item_lines[index - 1][1],
                                     fill=label_line_colour_selected, width=3)
         self._canvas.itemconfig(self._rectangles[index],
