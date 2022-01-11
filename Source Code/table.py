@@ -18,12 +18,12 @@ label_line_selected = 'black'
 
 @dataclass
 class Labels:
-    name_text: int
-    nuclei_text: int
-    positive_text: int
-    ratio_text: int
-    index_text: int
-    fiber_text: int
+    name: int
+    nuclei: int
+    positive: int
+    ratio: int
+    index: int
+    fiber: int
 
 
 @dataclass
@@ -354,22 +354,22 @@ class Table(ttk.Frame):
         # set the variables labels for the image
         total_nuclei = len(self._nuclei_positions[index][0]) + \
                        len(self._nuclei_positions[index][1])
-        self._canvas.itemconfig(self._items[index].labels.nuclei_text,
+        self._canvas.itemconfig(self._items[index].labels.nuclei,
                                 text='Total : ' + str(total_nuclei))
         self._canvas.itemconfig(
-            self._items[index].labels.positive_text,
+            self._items[index].labels.positive,
             text='Positive : ' + str(len(self._nuclei_positions[index][1])))
         if total_nuclei > 0:
             self._canvas.itemconfig(
-                self._items[index].labels.ratio_text,
+                self._items[index].labels.ratio,
                 text="Ratio : {:.2f}%".format(
                     100 * len(self._nuclei_positions[index][1]) /
                     total_nuclei))
         else:
-            self._canvas.itemconfig(self._items[index].labels.ratio_text,
+            self._canvas.itemconfig(self._items[index].labels.ratio,
                                     text='Ratio : NA')
         self._canvas.itemconfig(
-            self._items[index].labels.fiber_text,
+            self._items[index].labels.fiber,
             text='Fibres : ' + str(len(self._fibre_positions[index])))
 
         # these functions are called by image window to update the lists
@@ -432,17 +432,17 @@ class Table(ttk.Frame):
         self._canvas.itemconfig(self._items[index].lines.index_line,
                                 fill=line_color)
 
-        self._canvas.itemconfig(self._items[index].labels.name_text,
+        self._canvas.itemconfig(self._items[index].labels.name,
                                 fill=line_color)
-        self._canvas.itemconfig(self._items[index].labels.nuclei_text,
+        self._canvas.itemconfig(self._items[index].labels.nuclei,
                                 fill=line_color)
-        self._canvas.itemconfig(self._items[index].labels.ratio_text,
+        self._canvas.itemconfig(self._items[index].labels.ratio,
                                 fill=line_color)
-        self._canvas.itemconfig(self._items[index].labels.positive_text,
+        self._canvas.itemconfig(self._items[index].labels.positive,
                                 fill=line_color)
-        self._canvas.itemconfig(self._items[index].labels.index_text,
+        self._canvas.itemconfig(self._items[index].labels.index,
                                 fill=line_color)
-        self._canvas.itemconfig(self._items[index].labels.fiber_text,
+        self._canvas.itemconfig(self._items[index].labels.fiber,
                                 fill=line_color)
 
     def _left_click(self, event):
