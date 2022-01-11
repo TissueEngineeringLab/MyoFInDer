@@ -35,28 +35,16 @@ class Fibre:
 
 @dataclass
 class Nuclei:
-    nucleus: List[Nucleus] = field(default_factory=list)
+    nuclei: List[Nucleus] = field(default_factory=list)
 
     _current_index: int = -1
 
-    def __getitem__(self, coord: tuple):
-        if not isinstance(coord, tuple) or len(coord) != 2:
-            raise TypeError("The item are indexed by position, the x and y "
-                            "coordinates should be given.")
-
-        x, y = coord
-        ret = [nuc for nuc in self.nucleus if nuc.x_pos == x
-               and nuc.y_pos == y]
-        if ret:
-            return ret[0]
-        raise IndexError
-
     def append(self, nuc):
-        self.nucleus.append(nuc)
+        self.nuclei.append(nuc)
 
     def remove(self, nuc):
         try:
-            self.nucleus.remove(nuc)
+            self.nuclei.remove(nuc)
         except ValueError:
             raise ValueError("No matching nucleus to delete")
 
@@ -66,7 +54,7 @@ class Nuclei:
     def __next__(self):
         try:
             self._current_index += 1
-            return self.nucleus[self._current_index]
+            return self.nuclei[self._current_index]
         except IndexError:
             self._current_index = -1
             raise StopIteration
@@ -77,18 +65,6 @@ class Fibres:
     fibres: List[Fibre] = field(default_factory=list)
 
     _current_index: int = -1
-
-    def __getitem__(self, coord: tuple):
-        if not isinstance(coord, tuple) or len(coord) != 2:
-            raise TypeError("The item are indexed by position, the x and y "
-                            "coordinates should be given.")
-
-        x, y = coord
-        ret = [fib for fib in self.fibres if fib.x_pos == x
-               and fib.y_pos == y]
-        if ret:
-            return ret[0]
-        raise IndexError
 
     def append(self, fib):
         self.fibres.append(fib)
@@ -387,7 +363,7 @@ class Zoom_Advanced(ttk.Frame):
                 if nuc is not None:
 
                     # delete it
-                    if self._nuclei[nuc.x_pos, nuc.y_pos].color == in_fibre:
+                    if nuc.color == in_fibre:
                         self._nuclei_table.remove_in_nucleus(
                             [nuc.x_pos, nuc.y_pos])
                     else:
