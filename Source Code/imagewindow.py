@@ -51,21 +51,14 @@ class Nuclei:
             return ret[0]
         raise IndexError
 
-    def __delitem__(self, coord: tuple):
-        if not isinstance(coord, tuple) or len(coord) != 2:
-            raise TypeError("The item are indexed by position, the x and y "
-                            "coordinates should be given.")
-
-        x, y = coord
-        ret = [nuc for nuc in self.nucleus if nuc.x_pos == x
-               and nuc.y_pos == y]
-        if ret:
-            self.nucleus.remove(ret[0])
-        else:
-            raise ValueError("No matching nucleus to delete")
-
     def append(self, nuc):
         self.nucleus.append(nuc)
+
+    def remove(self, nuc):
+        try:
+            self.nucleus.remove(nuc)
+        except ValueError:
+            raise ValueError("No matching nucleus to delete")
 
     def __iter__(self):
         return self
@@ -97,21 +90,14 @@ class Fibres:
             return ret[0]
         raise IndexError
 
-    def __delitem__(self, coord: tuple):
-        if not isinstance(coord, tuple) or len(coord) != 2:
-            raise TypeError("The item are indexed by position, the x and y "
-                            "coordinates should be given.")
-
-        x, y = coord
-        ret = [fib for fib in self.fibres if fib.x_pos == x
-               and fib.y_pos == y]
-        if ret:
-            self.fibres.remove(ret[0])
-        else:
-            raise ValueError("No matching fibre to delete")
-
     def append(self, fib):
         self.fibres.append(fib)
+
+    def remove(self, fib):
+        try:
+            self.fibres.remove(fib)
+        except ValueError:
+            raise ValueError("No matching fibre to delete")
 
     def __iter__(self):
         return self
@@ -409,7 +395,7 @@ class Zoom_Advanced(ttk.Frame):
                             [nuc.x_pos, nuc.y_pos])
 
                     self._canvas.delete(nuc.tk_obj)
-                    del self._nuclei[nuc.x_pos, nuc.y_pos]
+                    self._nuclei.remove(nuc)
 
                     self._main_window.set_unsaved_status()
 
@@ -423,7 +409,7 @@ class Zoom_Advanced(ttk.Frame):
                     self._nuclei_table.remove_fibre([fib.x_pos, fib.y_pos])
                     self._canvas.delete(fib.h_line)
                     self._canvas.delete(fib.v_line)
-                    del self._fibres[fib.x_pos, fib.y_pos]
+                    self._fibres.remove(fib)
 
                     self._main_window.set_unsaved_status()
 
