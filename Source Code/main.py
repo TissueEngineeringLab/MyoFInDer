@@ -13,7 +13,6 @@ else:
 
 from table import Table
 from imagewindow import Zoom_Advanced
-from validateFileName import is_pathname_valid
 from shutil import rmtree
 from webbrowser import open_new
 
@@ -79,6 +78,249 @@ class Warning_window(Toplevel):
                  padx=20, pady=7)
 
         self.update()
+
+
+class Project_name_window(Toplevel):
+
+    def __init__(self, main_window, new_project):
+        super().__init__(main_window)
+
+        self._main_window = main_window
+        self._new_project = new_project
+
+        self._warning_var = StringVar(value='')
+
+        self.resizable(False, False)
+        self.grab_set()
+
+        if new_project:
+            self.title("Creating a New Empty Project")
+        else:
+            self.title("Saving the Current Project")
+
+        self._set_layout()
+        self._check_project_name_entry(self._name_entry.get())
+
+    def _set_layout(self):
+        if self._new_project:
+            ask_label = ttk.Label(self,
+                                  text='Choose a name for your NEW EMPTY '
+                                       'Project')
+            ask_label.pack(anchor='n', expand=False, fill='none', side='top',
+                           padx=20, pady=10)
+        else:
+            ask_label = ttk.Label(self,
+                                  text='Choose a name for your '
+                                       'CURRENT Project :')
+            ask_label.pack(anchor='n', expand=False, fill='none', side='top',
+                           padx=20, pady=10)
+
+        # set the warning label (gives warnings when the name is bad)
+        self._warning_var.set('')
+        warning_label = ttk.Label(self,
+                                  textvariable=self._warning_var,
+                                  foreground='red')
+        warning_label.pack(anchor='n', expand=False, fill='none', side='top',
+                           padx=20, pady=7)
+        validate_command = warning_label.register(
+            self._check_project_name_entry)
+
+        # set the entry box to input the name
+        self._name_entry = ttk.Entry(
+            self, validate='key', state='normal',
+            width=30,
+            validatecommand=(validate_command, '%P'))
+        self._name_entry.pack(anchor='n', expand=False, fill='none',
+                              side='top', padx=20, pady=7)
+        self._name_entry.focus()
+        self._name_entry.icursor(len(self._name_entry.get()))
+
+        # save button
+        self._folder_name_window_save_button = ttk.Button(
+            self, text='Save', width=30,
+            command=partial(self._main_window.save_project,
+                            self._name_entry.get(), True))
+        self._folder_name_window_save_button.pack(
+            anchor='n', expand=False, fill='none', side='top', padx=20,
+            pady=7)
+        self.bind('<Return>', self._enter_pressed)
+
+        self.update()
+
+    def _check_project_name_entry(self, new_entry):
+
+        # check if it is a valid name
+        if '/' in new_entry or '.' in new_entry or not new_entry:
+            self._folder_name_window_save_button['state'] = 'disabled'
+            if len(new_entry) > 0:
+                self._warning_var.set('This is not a valid projectname !')
+            else:
+                self._warning_var.set('')
+            return True
+
+        # check if it already exists
+        if path.isdir(self._main_window.base_path + 'Projects/' + new_entry):
+            self._warning_var.set('This project already exists')
+            self._folder_name_window_save_button['state'] = 'disabled'
+            return True
+
+        # no warnings
+        self._warning_var.set('')
+        self._folder_name_window_save_button['state'] = 'enabled'
+        return True
+
+    def _enter_pressed(self, *_, **__):
+
+        # if the window exists and the save button is enabled
+        if self._folder_name_window_save_button['state'] == 'enabled':
+            self._main_window.save_project(self._name_entry.get(), True)
+
+
+class Settings_window(Toplevel):
+
+    def __init__(self, main_window):
+        super().__init__(main_window)
+
+        self._main_window = main_window
+
+        self.resizable(False, False)
+        self.grab_set()
+
+        self.title("Settings")
+
+        self._set_layout()
+
+    def _set_layout(self):
+        frame = ttk.Frame(self, padding="20 20 20 20")
+        frame.grid(sticky='NESW')
+
+        # nuclei colour
+        ttk.Label(frame, text="Nuclei Colour :    ").grid(column=0, row=0,
+                                                          sticky='NE')
+        nuclei_colour_r1 = ttk.Radiobutton(
+            frame, text="Blue Channel", variable=self._main_window._nuclei_colour,
+            value="Blue", command=self._main_window._nuclei_colour_sel)
+        nuclei_colour_r1.grid(column=1, row=0, sticky='NW')
+        nuclei_colour_r2 = ttk.Radiobutton(frame, text="Green Channel",
+                                           variable=self._main_window._nuclei_colour,
+                                           value="Green",
+                                           command=self._main_window._nuclei_colour_sel)
+        nuclei_colour_r2.grid(column=1, row=1, sticky='NW')
+        nuclei_colour_r3 = ttk.Radiobutton(frame, text="Red Channel",
+                                           variable=self._main_window._nuclei_colour,
+                                           value="Red",
+                                           command=self._main_window._nuclei_colour_sel)
+        nuclei_colour_r3.grid(column=1, row=2, sticky='NW')
+
+        # fibre colour
+        ttk.Label(frame, text="Fibre Colour :    ").grid(
+            column=0, row=3, sticky='NE', pady=(10, 0))
+        fibre_colour_r1 = ttk.Radiobutton(frame, text="Blue Channel",
+                                          variable=self._main_window._fibre_colour,
+                                          value="Blue",
+                                          command=self._main_window._nuclei_colour_sel)
+        fibre_colour_r1.grid(column=1, row=3, sticky='NW', pady=(10, 0))
+        fibre_colour_r2 = ttk.Radiobutton(frame, text="Green Channel",
+                                          variable=self._main_window._fibre_colour,
+                                          value="Green",
+                                          command=self._main_window._nuclei_colour_sel)
+        fibre_colour_r2.grid(column=1, row=4, sticky='NW')
+        fibre_colour_r3 = ttk.Radiobutton(frame, text="Red Channel",
+                                          variable=self._main_window._fibre_colour,
+                                          value="Red",
+                                          command=self._main_window._nuclei_colour_sel)
+        fibre_colour_r3.grid(column=1, row=5, sticky='NW')
+
+        # autosave timer
+        ttk.Label(frame, text='Autosave Interval :    ').grid(
+            column=0, row=6, sticky='NE', pady=(10, 0))
+        ttk.Radiobutton(frame, text="5 Minutes", variable=self._main_window._auto_save_time,
+                        value=5 * 60,
+                        command=partial(self._main_window._save_settings, 2)).grid(
+            column=1, row=6, sticky='NW', pady=(10, 0))
+        ttk.Radiobutton(frame, text="15 Minutes",
+                        variable=self._main_window._auto_save_time,
+                        value=15 * 60,
+                        command=partial(self._main_window._save_settings, 2)).grid(
+            column=1, row=7, sticky='NW')
+        ttk.Radiobutton(frame, text="30 Minutes",
+                        variable=self._main_window._auto_save_time,
+                        value=30 * 60,
+                        command=partial(self._main_window._save_settings, 2)).grid(
+            column=1, row=8, sticky='NW')
+        ttk.Radiobutton(frame, text="60 Minutes",
+                        variable=self._main_window._auto_save_time,
+                        value=60 * 60,
+                        command=partial(self._main_window._save_settings, 2)).grid(
+            column=1, row=9, sticky='NW')
+        ttk.Radiobutton(frame, text="Never",
+                        variable=self._main_window._auto_save_time, value=-1,
+                        command=partial(self._main_window._save_settings, 2)).grid(
+            column=1, row=10, sticky='NW')
+
+        # save altered images
+        ttk.Label(frame, text='Save Altered Images :    ').grid(
+            column=0, row=11, sticky='NE', pady=(10, 0))
+        ttk.Radiobutton(frame, text="On",
+                        variable=self._main_window._save_altered_images_boolean,
+                        value=1,
+                        command=partial(self._main_window._save_settings, 3)).grid(
+            column=1, row=11, sticky='NW', pady=(10, 0))
+        ttk.Radiobutton(frame, text="Off",
+                        variable=self._main_window._save_altered_images_boolean,
+                        value=0,
+                        command=partial(self._main_window._save_settings, 3)).\
+            grid(column=1, row=12, sticky='NW')
+
+        # fibre counting
+        ttk.Label(frame, text='Count Fibres :    ').grid(
+            column=0, row=13, sticky='NE', pady=(10, 0))
+        ttk.Radiobutton(frame, text="On",
+                        variable=self._main_window._do_fibre_counting, value=1,
+                        command=partial(self._main_window._save_settings, 4)).\
+            grid(column=1, row=13, sticky='NW', pady=(10, 0))
+        ttk.Radiobutton(frame, text="Off",
+                        variable=self._main_window._do_fibre_counting, value=0,
+                        command=partial(self._main_window._save_settings, 4)).\
+            grid(column=1, row=14, sticky='NW')
+
+        # multithreading
+        ttk.Label(frame, text='Number of Threads :    ').grid(
+            column=0, row=15, sticky='NE', pady=(10, 0))
+
+        self._thread_slider = Scale(frame, from_=0, to=5, orient="horizontal",
+                                    command=self._thread_slider_func,
+                                    showvalue=False,
+                                    length=150)
+        self._thread_slider.set(int(self._main_window._n_threads.get()))
+        self._thread_slider.grid(column=1, row=15, sticky='NW', pady=(10, 0))
+
+        # small objects threshold
+        ttk.Label(frame, text='Dead cells size Threshold :    ').grid(
+            column=0, row=16, sticky='NE', pady=(10, 0))
+
+        self._small_objects_slider = Scale(
+            frame, from_=10, to=1000,
+            orient="horizontal",
+            command=self._small_objects_slider_func,
+            length=150, showvalue=False)
+        self._small_objects_slider.set(
+            int(self._main_window._small_objects_threshold.get()))
+        self._small_objects_slider.grid(column=1, row=16, sticky='NW',
+                                        pady=(10, 0))
+
+    def _thread_slider_func(self, n):
+        if int(n) == 0:
+            self._thread_slider.configure(label='Off')
+        else:
+            self._thread_slider.configure(label=str(n))
+        self._main_window._n_threads.set(int(n))
+        self._main_window._save_settings()
+
+    def _small_objects_slider_func(self, n):
+        self._small_objects_slider.configure(label=str(n))
+        self._main_window._small_objects_threshold.set(n)
+        self._main_window._save_settings()
 
 
 class Splash(Tk):
@@ -174,9 +416,9 @@ class Main_window(Tk):
         else:
             self.attributes('-zoomed', True)
 
-        self._base_path = path.abspath('') + "/"
+        self.base_path = path.abspath('') + "/"
 
-        icon = PhotoImage(file=self._base_path + "icon.png")
+        icon = PhotoImage(file=self.base_path + "icon.png")
         self.iconphoto(True, icon)
 
         self._load_settings()
@@ -195,8 +437,8 @@ class Main_window(Tk):
         self.mainloop()
 
     def _load_settings(self):
-        if path.isfile(self._base_path + 'general.py'):
-            with open(self._base_path + 'general.py', 'r') as param_file:
+        if path.isfile(self.base_path + 'general.py'):
+            with open(self.base_path + 'general.py', 'r') as param_file:
                 param = load(param_file)
         else:
             param = {}
@@ -302,7 +544,7 @@ class Main_window(Tk):
                                     command=partial(self._load_project,
                                                     self._auto_save_name))
 
-        if path.isdir(self._base_path + 'Projects/' + self._auto_save_name):
+        if path.isdir(self.base_path + 'Projects/' + self._auto_save_name):
             self._file_menu.entryconfig("Load Automatic Save", state='normal')
         self._file_menu.add_separator()
 
@@ -329,10 +571,10 @@ class Main_window(Tk):
 
     def _set_recent_projects(self):
         # load the list of recent projects if these projects exist
-        if path.isdir(self._base_path + 'Projects'):
+        if path.isdir(self.base_path + 'Projects'):
             loaded = list(self._recent_projects)
             for folder in loaded:
-                if path.isdir(self._base_path + 'Projects/' + folder) \
+                if path.isdir(self.base_path + 'Projects/' + folder) \
                         and folder != '':
                     self._recent_projects_menu.add_command(
                         label="Load '" + folder + "'",
@@ -340,7 +582,7 @@ class Main_window(Tk):
                 else:
                     self._recent_projects.remove(folder)
         else:
-            mkdir(self._base_path + 'Projects')
+            mkdir(self.base_path + 'Projects')
 
         if len(self._recent_projects) == 0:
             self._file_menu.entryconfig("Recent Projects", state='disabled')
@@ -440,10 +682,10 @@ class Main_window(Tk):
         # set a new timer if needed
         if self._auto_save_time.get() > 0:
             self._auto_save_job = self.after(self._auto_save_time.get() * 1000,
-                                             partial(self._save_project,
+                                             partial(self.save_project,
                                                      self._auto_save_name))
 
-    def _save_project(self, directory, save_as=False):
+    def save_project(self, directory, save_as=False):
 
         # don't autosave if not needed
         if self._auto_save_time.get() <= 0 and \
@@ -471,7 +713,7 @@ class Main_window(Tk):
                        self._current_project + "'")
 
             # do the recent projects sh*t
-            if not path.isdir(self._base_path + 'Projects/' + directory):
+            if not path.isdir(self.base_path + 'Projects/' + directory):
                 self._recent_projects_menu.insert_command(
                     index=0, label="Load '" + directory + "'",
                     command=partial(self._load_project, directory))
@@ -493,8 +735,8 @@ class Main_window(Tk):
                 self._set_autosave_time()
 
         # create the folder
-        if not path.isdir(self._base_path + 'Projects/' + directory):
-            mkdir(self._base_path + 'Projects/' + directory)
+        if not path.isdir(self.base_path + 'Projects/' + directory):
+            mkdir(self.base_path + 'Projects/' + directory)
 
         # create saving popup
         saving_popup = Toplevel(self)
@@ -542,7 +784,7 @@ class Main_window(Tk):
             self._file_menu.index("Delete Current Project"), state="normal")
 
         # do the recent projects sh*t
-        if path.isdir(self._base_path + 'Projects/' + directory) \
+        if path.isdir(self.base_path + 'Projects/' + directory) \
                 and directory != self._auto_save_name:
             # remove it first
             if directory in self._recent_projects:
@@ -563,7 +805,7 @@ class Main_window(Tk):
             self._save_settings()
 
         # load the project
-        self._nuclei_table.load_project(self._base_path + 'Projects/'
+        self._nuclei_table.load_project(self.base_path + 'Projects/'
                                         + directory)
         self._re_save_images = False
 
@@ -602,7 +844,7 @@ class Main_window(Tk):
         if setting_index == 2:
             self._set_autosave_time()
 
-        with open(self._base_path + 'general.py', 'w') as param_file:
+        with open(self.base_path + 'general.py', 'w') as param_file:
             dump(settings, param_file)
 
     def _stop_processing(self):
@@ -785,93 +1027,12 @@ class Main_window(Tk):
             self._create_project_name_window()
         else:
             # perform normal save
-            self._save_project(self._current_project)
+            self.save_project(self._current_project)
 
     def _create_project_name_window(self, new_project=False):
 
         # create the window
-        projectname_window = Toplevel(self)
-        projectname_window.resizable(False, False)
-        projectname_window.grab_set()
-
-        if new_project:
-            projectname_window.title("Creating a New Empty Project")
-        else:
-            projectname_window.title("Saving the Current Project")
-
-        # set label
-        if new_project:
-            ask_label = ttk.Label(projectname_window,
-                                  text='Choose a name for your NEW EMPTY '
-                                       'Project')
-            ask_label.pack(anchor='n', expand=False, fill='none', side='top',
-                           padx=20, pady=20)
-        else:
-            ask_label = ttk.Label(projectname_window,
-                                  text='Choose a name for your '
-                                       'CURRENT Project :')
-            ask_label.pack(anchor='n', expand=False, fill='none', side='top',
-                           padx=20, pady=7)
-
-        # set the warning label (gives warnings when the name is bad)
-        self._warning_var.set('')
-        warning_label = ttk.Label(projectname_window,
-                                  textvariable=self._warning_var,
-                                  foreground='red')
-        warning_label.pack(anchor='n', expand=False, fill='none', side='top',
-                           padx=20, pady=7)
-        validate_command = warning_label.register(
-            self._check_project_name_entry)
-
-        # set the entry box to input the name
-        self._name_entry = ttk.Entry(
-            projectname_window, validate='key', state='normal',
-            width=30,
-            validatecommand=(validate_command, '%P'))
-        self._name_entry.pack(anchor='n', expand=False, fill='none',
-                              side='top', padx=20, pady=7)
-        self._name_entry.focus()
-        self._name_entry.icursor(len(self._name_entry.get()))
-
-        # save button
-        self._folder_name_window_save_button = ttk.Button(
-            projectname_window, text='Save', width=30,
-            command=partial(self._save_project, self._name_entry.get(), True))
-        self._folder_name_window_save_button.pack(
-            anchor='n', expand=False, fill='none', side='top', padx=20,
-            pady=7)
-        projectname_window.bind('<Return>', self._enter_pressed)
-
-        projectname_window.update()
-
-        self._check_project_name_entry(self._name_entry.get())
-
-    def _enter_pressed(self, *_, **__):
-
-        # if the window exists and the save button is enabled
-        if self._folder_name_window_save_button['state'] == 'enabled':
-            self._save_project(self._name_entry.get(), True)
-
-    def _check_project_name_entry(self, new_entry):
-
-        # check if it is a valid name
-        if not is_pathname_valid(new_entry) or '/' in new_entry \
-                or '.' in new_entry:
-            self._folder_name_window_save_button['state'] = 'disabled'
-            if len(new_entry) != 0:
-                self._warning_var.set('This is not a valid projectname !')
-            return True
-
-        # check if it already exists
-        if path.isdir(self._base_path + 'Projects/' + new_entry):
-            self._warning_var.set('This project already exists')
-            self._folder_name_window_save_button['state'] = 'disabled'
-            return True
-
-        # no warnings
-        self._warning_var.set('')
-        self._folder_name_window_save_button['state'] = 'enabled'
-        return True
+        Project_name_window(self, new_project)
 
     def _change_indications(self):
         if self.draw_nuclei:
@@ -930,134 +1091,13 @@ class Main_window(Tk):
     def _create_settings_window(self):
 
         # create the window
-        new_window = Toplevel(self)
-        new_window.resizable(False, False)
-        new_window.grab_set()  # when you show the popup
-        new_window.title("Settings")
-
-        frame = ttk.Frame(new_window, padding="20 20 20 20")
-        frame.grid(sticky='NESW')
-
-        # nuclei colour
-        ttk.Label(frame, text="Nuclei Colour :    ").grid(column=0, row=0,
-                                                          sticky='NE')
-        nuclei_colour_r1 = ttk.Radiobutton(
-            frame, text="Blue Channel", variable=self._nuclei_colour,
-            value="Blue", command=self._nuclei_colour_sel)
-        nuclei_colour_r1.grid(column=1, row=0, sticky='NW')
-        nuclei_colour_r2 = ttk.Radiobutton(frame, text="Green Channel",
-                                           variable=self._nuclei_colour,
-                                           value="Green",
-                                           command=self._nuclei_colour_sel)
-        nuclei_colour_r2.grid(column=1, row=1, sticky='NW')
-        nuclei_colour_r3 = ttk.Radiobutton(frame, text="Red Channel",
-                                           variable=self._nuclei_colour,
-                                           value="Red",
-                                           command=self._nuclei_colour_sel)
-        nuclei_colour_r3.grid(column=1, row=2, sticky='NW')
-
-        # fibre colour
-        ttk.Label(frame, text="Fibre Colour :    ").grid(
-            column=0, row=3, sticky='NE', pady=(10, 0))
-        fibre_colour_r1 = ttk.Radiobutton(frame, text="Blue Channel",
-                                          variable=self._fibre_colour,
-                                          value="Blue",
-                                          command=self._nuclei_colour_sel)
-        fibre_colour_r1.grid(column=1, row=3, sticky='NW', pady=(10, 0))
-        fibre_colour_r2 = ttk.Radiobutton(frame, text="Green Channel",
-                                          variable=self._fibre_colour,
-                                          value="Green",
-                                          command=self._nuclei_colour_sel)
-        fibre_colour_r2.grid(column=1, row=4, sticky='NW')
-        fibre_colour_r3 = ttk.Radiobutton(frame, text="Red Channel",
-                                          variable=self._fibre_colour,
-                                          value="Red",
-                                          command=self._nuclei_colour_sel)
-        fibre_colour_r3.grid(column=1, row=5, sticky='NW')
-
-        # autosave timer
-        ttk.Label(frame, text='Autosave Interval :    ').grid(
-            column=0, row=6, sticky='NE', pady=(10, 0))
-        ttk.Radiobutton(frame, text="5 Minutes", variable=self._auto_save_time,
-                        value=5 * 60,
-                        command=partial(self._save_settings, 2)).grid(
-            column=1, row=6, sticky='NW', pady=(10, 0))
-        ttk.Radiobutton(frame, text="15 Minutes",
-                        variable=self._auto_save_time,
-                        value=15 * 60,
-                        command=partial(self._save_settings, 2)).grid(
-            column=1, row=7, sticky='NW')
-        ttk.Radiobutton(frame, text="30 Minutes",
-                        variable=self._auto_save_time,
-                        value=30 * 60,
-                        command=partial(self._save_settings, 2)).grid(
-            column=1, row=8, sticky='NW')
-        ttk.Radiobutton(frame, text="60 Minutes",
-                        variable=self._auto_save_time,
-                        value=60 * 60,
-                        command=partial(self._save_settings, 2)).grid(
-            column=1, row=9, sticky='NW')
-        ttk.Radiobutton(frame, text="Never",
-                        variable=self._auto_save_time, value=-1,
-                        command=partial(self._save_settings, 2)).grid(
-            column=1, row=10, sticky='NW')
-
-        # save altered images
-        ttk.Label(frame, text='Save Altered Images :    ').grid(
-            column=0, row=11, sticky='NE', pady=(10, 0))
-        ttk.Radiobutton(frame, text="On",
-                        variable=self._save_altered_images_boolean,
-                        value=1,
-                        command=partial(self._save_settings, 3)).grid(
-            column=1, row=11, sticky='NW', pady=(10, 0))
-        ttk.Radiobutton(frame, text="Off",
-                        variable=self._save_altered_images_boolean,
-                        value=0,
-                        command=partial(self._save_settings, 3)).grid(
-            column=1, row=12, sticky='NW')
-
-        # fibre counting
-        ttk.Label(frame, text='Count Fibres :    ').grid(
-            column=0, row=13, sticky='NE', pady=(10, 0))
-        ttk.Radiobutton(frame, text="On",
-                        variable=self._do_fibre_counting, value=1,
-                        command=partial(self._save_settings, 4)).grid(
-            column=1, row=13, sticky='NW', pady=(10, 0))
-        ttk.Radiobutton(frame, text="Off",
-                        variable=self._do_fibre_counting, value=0,
-                        command=partial(self._save_settings, 4)).grid(
-            column=1, row=14, sticky='NW')
-
-        # multithreading
-        ttk.Label(frame, text='Number of Threads :    ').grid(
-            column=0, row=15, sticky='NE', pady=(10, 0))
-
-        self._thread_slider = Scale(frame, from_=0, to=5, orient="horizontal",
-                                    command=self._thread_slider_func,
-                                    showvalue=False,
-                                    length=150)
-        self._thread_slider.set(int(self._n_threads.get()))
-        self._thread_slider.grid(column=1, row=15, sticky='NW', pady=(10, 0))
-
-        # small objects threshold
-        ttk.Label(frame, text='Dead cells size Threshold :    ').grid(
-            column=0, row=16, sticky='NE', pady=(10, 0))
-
-        self._small_objects_slider = Scale(
-            frame, from_=10, to=1000,
-            orient="horizontal",
-            command=self._small_objects_slider_func,
-            length=150, showvalue=False)
-        self._small_objects_slider.set(
-            int(self._small_objects_threshold.get()))
-        self._small_objects_slider.grid(column=1, row=16, sticky='NW',
-                                        pady=(10, 0))
+        Settings_window(self)
 
     def _delete_current_project(self):
 
         if self._current_project != '':
             # delete the project
-            rmtree(self._base_path + 'Projects/' + self._current_project)
+            rmtree(self.base_path + 'Projects/' + self._current_project)
 
             # remove the load button
             self._recent_projects_menu.delete(
@@ -1080,26 +1120,13 @@ class Main_window(Tk):
 
         # ask a folder
         folder = filedialog.askdirectory(
-            initialdir=path.normpath(self._base_path + "Projects"),
+            initialdir=path.normpath(self.base_path + "Projects"),
             title="Choose a Project Folder")
 
         # load this sh*t
-        if (folder != '') and path.isdir(self._base_path + 'Projects/' +
+        if (folder != '') and path.isdir(self.base_path + 'Projects/' +
                                          path.basename(folder)):
             self._load_project(path.basename(folder))
-
-    def _thread_slider_func(self, n):
-        if int(n) == 0:
-            self._thread_slider.configure(label='Off')
-        else:
-            self._thread_slider.configure(label=str(n))
-        self._n_threads.set(int(n))
-        self._save_settings()
-
-    def _small_objects_slider_func(self, n):
-        self._small_objects_slider.configure(label=str(n))
-        self._small_objects_threshold.set(n)
-        self._save_settings()
 
     def _nuclei_colour_sel(self):
 
