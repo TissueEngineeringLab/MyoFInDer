@@ -7,13 +7,17 @@ from numpy import load, asarray, save
 from cv2 import imread, line, ellipse, imwrite
 from os import path, mkdir
 from platform import system
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Optional, List
 
 # color codes
 background = '#EAECEE'
 background_selected = '#ABB2B9'
 label_line = '#646464'
 label_line_selected = 'black'
+
+in_fibre = 'yellow'  # green
+out_fibre = 'red'  # 2A7DDE
 
 
 @dataclass
@@ -43,6 +47,100 @@ class Table_element:
     labels: Labels
     lines: Lines
     rect: Rectangle
+
+
+@dataclass
+class Nucleus:
+    x_pos: int
+    y_pos: int
+    tk_obj: Optional[int]
+    color: str
+
+    def __eq__(self, other):
+        if not isinstance(other, Nucleus):
+            raise NotImplemented("Only two nuclei can be compared together")
+        return self.x_pos == other.x_pos and self.y_pos == other.y_pos
+
+
+@dataclass
+class Fibre:
+    x_pos: int
+    y_pos: int
+    h_line: Optional[int]
+    v_line: Optional[int]
+
+    def __eq__(self, other):
+        if not isinstance(other, Fibre):
+            raise NotImplemented("Only two fibres can be compared together")
+        return self.x_pos == other.x_pos and self.y_pos == other.y_pos
+
+
+@dataclass
+class Nuclei:
+    nuclei: List[Nucleus] = field(default_factory=list)
+
+    _current_index: int = -1
+
+    def append(self, nuc):
+        self.nuclei.append(nuc)
+
+    def remove(self, nuc):
+        try:
+            self.nuclei.remove(nuc)
+        except ValueError:
+            raise ValueError("No matching nucleus to delete")
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            self._current_index += 1
+            return self.nuclei[self._current_index]
+        except IndexError:
+            self._current_index = -1
+            raise StopIteration
+
+    @property
+    def nuclei_in_count(self):
+        return len([nuc for nuc in self.nuclei if nuc.color == in_fibre])
+
+    @property
+    def nuclei_out_count(self):
+        return len([nuc for nuc in self.nuclei if nuc.color == out_fibre])
+
+    def __len__(self):
+        return len(self.nuclei)
+
+
+@dataclass
+class Fibres:
+    fibres: List[Fibre] = field(default_factory=list)
+
+    _current_index: int = -1
+
+    def append(self, fib):
+        self.fibres.append(fib)
+
+    def remove(self, fib):
+        try:
+            self.fibres.remove(fib)
+        except ValueError:
+            raise ValueError("No matching fibre to delete")
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            self._current_index += 1
+            return self.fibres[self._current_index]
+        except IndexError:
+            self._current_index = -1
+            raise StopIteration
+
+    def __len__(self):
+        return len(self.fibres)
 
 
 class Table(ttk.Frame):
@@ -80,23 +178,21 @@ class Table(ttk.Frame):
         worksheet.write(0, 1, "Total number of nuclei", bold)
         worksheet.set_column(1, 1, width=22)
         for i, name in enumerate(self.filenames):
-            worksheet.write(i + 2, 1, len(self._nuclei_positions[i][0]) +
-                            len(self._nuclei_positions[i][1]))
+            worksheet.write(i + 2, 1, len(self._nuclei[i]))
 
         # write green nuclei
         worksheet.write(0, 2, "Number of tropomyosin positive nuclei", bold)
         worksheet.set_column(2, 2, width=37)
         for i, name in enumerate(self.filenames):
-            worksheet.write(i + 2, 2, len(self._nuclei_positions[i][1]))
+            worksheet.write(i + 2, 2, self._nuclei[i].nuclei_in_count)
 
         # write ratio
         worksheet.write(0, 3, "Fusion index", bold)
         worksheet.set_column(3, 3, width=17)
         for i, name in enumerate(self.filenames):
-            if len(self._nuclei_positions[i][0]) > 0:
-                worksheet.write(i + 2, 3, (len(self._nuclei_positions[i][1])) /
-                                (len(self._nuclei_positions[i][0]) +
-                                 len(self._nuclei_positions[i][1])))
+            if self._nuclei[i].nuclei_out_count > 0:
+                worksheet.write(i + 2, 3, self._nuclei[i].nuclei_in_count /
+                                len(self._nuclei[i]))
             else:
                 worksheet.write(i + 2, 3, 'NA')
 
@@ -104,7 +200,7 @@ class Table(ttk.Frame):
         worksheet.write(0, 4, "Number of Fibres", bold)
         worksheet.set_column(4, 4, width=16)
         for i, name in enumerate(self.filenames):
-            worksheet.write(i + 2, 4, len(self._fibre_positions[i]))
+            worksheet.write(i + 2, 4, len(self._fibres[i]))
 
         workbook.close()
 
@@ -123,8 +219,14 @@ class Table(ttk.Frame):
                             type(item[2]) == list and type(item[3]) == list:
                         if path.isfile(item[0]):
                             self.filenames.append(self._base_path + item[0])
-                            self._nuclei_positions.append([item[1], item[2]])
-                            self._fibre_positions.append(item[3])
+                            self._nuclei.append(
+                                Nuclei([Nucleus(x, y, None, out_fibre)
+                                        for x, y in item[1]] +
+                                       [Nucleus(x, y, None, in_fibre)
+                                        for x, y in item[2]]))
+                            self._fibres.append(
+                                Fibres([Fibre(x, y, None, None)
+                                        for x, y in item[3]]))
 
         # make the table
         self._make_table()
@@ -134,11 +236,16 @@ class Table(ttk.Frame):
         # make array
         to_save = []
         for i, filename in enumerate(self.filenames):
+            nuc_out = [(nuc.x_pos, nuc.y_pos) for nuc in self._nuclei[i]
+                       if nuc.color == out_fibre]
+            nuc_in = [(nuc.x_pos, nuc.y_pos) for nuc in self._nuclei[i]
+                      if nuc.color == in_fibre]
+            fib = [(fib.x_pos, fib.y_pos) for fib in self._fibres[i]]
             to_save.append(["Projects/" + directory + '/Original Images/' +
                             path.basename(filename),
-                            self._nuclei_positions[i][0],
-                            self._nuclei_positions[i][1],
-                            self._fibre_positions[i]])
+                            nuc_out,
+                            nuc_in,
+                            fib])
 
         # convert to numpy
         arr = asarray(to_save)
@@ -177,34 +284,36 @@ class Table(ttk.Frame):
     def set_image_canvas(self, image_canvas):
         self._image_canvas = image_canvas
 
-    def add_fibre(self, position):
-        self._fibre_positions[self._current_image_index].append(position)
+    def add_fibre(self, fibre):
+        self._fibres[self._current_image_index].append(fibre)
         self._update_data(self._current_image_index)
 
-    def remove_fibre(self, position):
-        self._fibre_positions[self._current_image_index].remove(position)
+    def remove_fibre(self, fibre):
+        self._fibres[self._current_image_index].remove(fibre)
         self._update_data(self._current_image_index)
 
-    def add_out_nucleus(self, position):
-        self._nuclei_positions[self._current_image_index][0].append(position)
+    def add_out_nucleus(self, nucleus):
+        self._nuclei[self._current_image_index].append(nucleus)
         self._update_data(self._current_image_index)
 
-    def remove_out_nucleus(self, position):
-        self._nuclei_positions[self._current_image_index][0].remove(position)
+    def remove_out_nucleus(self, nucleus):
+        self._nuclei[self._current_image_index].remove(nucleus)
         self._update_data(self._current_image_index)
 
-    def remove_in_nucleus(self, position):
-        self._nuclei_positions[self._current_image_index][1].remove(position)
+    def remove_in_nucleus(self, nucleus):
+        self._nuclei[self._current_image_index].remove(nucleus)
         self._update_data(self._current_image_index)
 
-    def in_to_out(self, position):
-        self._nuclei_positions[self._current_image_index][0].append(position)
-        self._nuclei_positions[self._current_image_index][1].remove(position)
+    def in_to_out(self, nucleus):
+        for nuc in self._nuclei[self._current_image_index]:
+            if nuc == nucleus:
+                nuc.color = out_fibre
         self._update_data(self._current_image_index)
 
-    def out_to_in(self, position):
-        self._nuclei_positions[self._current_image_index][1].append(position)
-        self._nuclei_positions[self._current_image_index][0].remove(position)
+    def out_to_in(self, nucleus):
+        for nuc in self._nuclei[self._current_image_index]:
+            if nuc == nucleus:
+                nuc.color = in_fibre
         self._update_data(self._current_image_index)
 
     def reset(self):
@@ -215,8 +324,8 @@ class Table(ttk.Frame):
         self._items = []
         self._current_image_index = 0
         self._hovering_index = None
-        self._nuclei_positions = []
-        self._fibre_positions = []
+        self._nuclei = []
+        self._fibres = []
         self.filenames = []
 
     def add_images(self, filenames):
@@ -229,8 +338,8 @@ class Table(ttk.Frame):
 
         # add the filenames
         self.filenames += filenames
-        self._nuclei_positions += [[[], []] for _ in filenames]
-        self._fibre_positions += [[] for _ in filenames]
+        self._nuclei += [Nuclei() for _ in filenames]
+        self._fibres += [Fibres() for _ in filenames]
 
         # make the table
         self._make_table()
@@ -239,18 +348,24 @@ class Table(ttk.Frame):
                              nuclei_positive_positions, fibre_centres, index):
 
         # update the data
-        self._nuclei_positions[index] = [nuclei_negative_positions,
-                                         nuclei_positive_positions]
-        if len(fibre_centres) > 0:
-            self._fibre_positions[index] = fibre_centres
+        self._nuclei[index] = Nuclei()
+        for x, y in nuclei_negative_positions:
+            self._nuclei[index].append(Nucleus(x, y, None, out_fibre))
+        for x, y in nuclei_positive_positions:
+            self._nuclei[index].append(Nucleus(x, y, None, in_fibre))
+
+        self._fibres[index] = Fibres()
+        for x, y in fibre_centres:
+            self._fibres[index].append(Fibre(x, y, None, None))
+
         self._update_data(index)
 
         # load the new image if necessary
         if index == self._current_image_index:
             self._image_canvas.load_image(
                 self.filenames[self._current_image_index],
-                self._nuclei_positions[self._current_image_index],
-                self._fibre_positions[self._current_image_index])
+                self._nuclei[self._current_image_index],
+                self._fibres[self._current_image_index])
 
     def _set_layout(self):
         self.pack(expand=True, fill="both", anchor="n", side='top')
@@ -280,8 +395,8 @@ class Table(ttk.Frame):
 
     def _set_variables(self):
         # data about the images
-        self._nuclei_positions = []
-        self._fibre_positions = []
+        self._nuclei = []
+        self._fibres = []
         self.filenames = []
         self._current_image_index = 0
         self._hovering_index = None
@@ -297,42 +412,24 @@ class Table(ttk.Frame):
                         "/Original Images/" +
                         path.basename(self.filenames[index]))
         square_size = 9
-        for i in range(len(self._fibre_positions[index])):
-            centre = (int(self._fibre_positions[index][i][0] *
-                          cv_img.shape[1]),
-                      int(self._fibre_positions[index][i][1] *
-                          cv_img.shape[0]))
-            line(cv_img, (centre[0] + square_size, centre[1]),
-                 (centre[0] - square_size, centre[1]), (0, 0, 255), 2)
-            line(cv_img, (centre[0], centre[1] + square_size),
-                 (centre[0], centre[1] - square_size), (0, 0, 255), 2)
+        for fib in self._fibres[index]:
+            x, y = fib.x_pos, fib.y_pos
+            line(cv_img, (x + square_size, y), (x - square_size, y),
+                 (0, 0, 255), 2)
+            line(cv_img, (x, y + square_size), (x, y - square_size),
+                 (0, 0, 255), 2)
 
         # loop through the nuclei
-        for i in range(len(self._nuclei_positions[index][0]) +
-                       len(self._nuclei_positions[index][1])):
-
-            if i < len(self._nuclei_positions[index][0]):
-                # red (negative)
-                centre = (int(self._nuclei_positions[index][0][i][0] *
-                              cv_img.shape[1]),
-                          int(self._nuclei_positions[index][0][i][1] *
-                              cv_img.shape[0]))
+        for nuc in self._nuclei[index]:
+            centre = (nuc.x_pos, nuc.y_pos)
+            if nuc.color == out_fibre:
                 ellipse(cv_img, centre, (3, 3), 0, 0, 360,
                         (0, 0, 255), -1)
-                ellipse(cv_img, centre, (4, 4), 0, 0, 360,
-                        (255, 255, 255), 1)
             else:
-                # yellow (positive)
-                centre = (int(self._nuclei_positions[index][1]
-                              [i - len(self._nuclei_positions[index][0])][0] *
-                              cv_img.shape[1]),
-                          int(self._nuclei_positions[index][1]
-                              [i - len(self._nuclei_positions[index][0])][1] *
-                              cv_img.shape[0]))
                 ellipse(cv_img, centre, (3, 3), 0, 0, 360,
                         (0, 255, 255), -1)
-                ellipse(cv_img, centre, (4, 4), 0, 0, 360,
-                        (255, 255, 255), 1)
+            ellipse(cv_img, centre, (4, 4), 0, 0, 360,
+                    (255, 255, 255), 1)
 
         # save it
         imwrite(self._base_path + "Projects/" + project_name +
@@ -352,25 +449,25 @@ class Table(ttk.Frame):
 
     def _update_data(self, index):
         # set the variables labels for the image
-        total_nuclei = len(self._nuclei_positions[index][0]) + \
-                       len(self._nuclei_positions[index][1])
+        nuclei = self._nuclei[index]
+        total_nuclei = len(nuclei)
         self._canvas.itemconfig(self._items[index].labels.nuclei,
                                 text='Total : ' + str(total_nuclei))
         self._canvas.itemconfig(
             self._items[index].labels.positive,
-            text='Positive : ' + str(len(self._nuclei_positions[index][1])))
+            text='Positive : ' + str(nuclei.nuclei_in_count))
         if total_nuclei > 0:
             self._canvas.itemconfig(
                 self._items[index].labels.ratio,
                 text="Ratio : {:.2f}%".format(
-                    100 * len(self._nuclei_positions[index][1]) /
+                    100 * nuclei.nuclei_in_count /
                     total_nuclei))
         else:
             self._canvas.itemconfig(self._items[index].labels.ratio,
                                     text='Ratio : NA')
         self._canvas.itemconfig(
             self._items[index].labels.fiber,
-            text='Fibres : ' + str(len(self._fibre_positions[index])))
+            text='Fibres : ' + str(len(self._fibres[index])))
 
         # these functions are called by image window to update the lists
         # in the table
@@ -407,8 +504,7 @@ class Table(ttk.Frame):
     def _select_image(self, index):
 
         self._image_canvas.load_image(self.filenames[index],
-                                      self._nuclei_positions[index],
-                                      self._fibre_positions[index])
+                                      self._nuclei[index], self._fibres[index])
         self._current_image_index = index
         self._set_aesthetics(index, selected=True, hover=False)
 

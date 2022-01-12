@@ -12,6 +12,7 @@ from platform import system
 from functools import partial
 from dataclasses import dataclass, field
 from typing import Optional, List
+from copy import deepcopy
 
 in_fibre = 'yellow'  # green
 out_fibre = 'red'  # 2A7DDE
@@ -24,6 +25,11 @@ class Nucleus:
     tk_obj: Optional[int]
     color: str
 
+    def __eq__(self, other):
+        if not isinstance(other, Nucleus):
+            raise NotImplemented("Only two nuclei can be compared together")
+        return self.x_pos == other.x_pos and self.y_pos == other.y_pos
+
 
 @dataclass
 class Fibre:
@@ -31,6 +37,11 @@ class Fibre:
     y_pos: int
     h_line: Optional[int]
     v_line: Optional[int]
+
+    def __eq__(self, other):
+        if not isinstance(other, Fibre):
+            raise NotImplemented("Only two fibres can be compared together")
+        return self.x_pos == other.x_pos and self.y_pos == other.y_pos
 
 
 @dataclass
@@ -59,6 +70,17 @@ class Nuclei:
             self._current_index = -1
             raise StopIteration
 
+    @property
+    def nuclei_in_count(self):
+        return len([nuc for nuc in self.nuclei if nuc.color == in_fibre])
+
+    @property
+    def nuclei_out_count(self):
+        return len([nuc for nuc in self.nuclei if nuc.color == out_fibre])
+
+    def __len__(self):
+        return len(self.nuclei)
+
 
 @dataclass
 class Fibres:
@@ -85,6 +107,9 @@ class Fibres:
         except IndexError:
             self._current_index = -1
             raise StopIteration
+
+    def __len__(self):
+        return len(self.fibres)
 
 
 class Zoom_Advanced(ttk.Frame):
@@ -128,16 +153,14 @@ class Zoom_Advanced(ttk.Frame):
                 fibre.h_line,  fibre.v_line = \
                     self._draw_fibre(fibre.x_pos, fibre.y_pos)
 
-    def load_image(self, path, nuclei_positions, fibre_positions):
+    def load_image(self, path, nuclei, fibres):
 
         # reset image
         self.reset()
 
         # remove all the previous nuclei
         self._delete_nuclei()
-        self._nuclei = Nuclei()
         self._delete_fibres()
-        self._fibres = Fibres()
 
         # load the image
         self._image_path = path
@@ -145,32 +168,19 @@ class Zoom_Advanced(ttk.Frame):
         self._resize_to_canvas()
         self._show_image()
 
-        # blue nuclei
-        for pos in nuclei_positions[0]:
-            if self._main_window.show_nuclei_bool.get():
-                self._nuclei.append(Nucleus(
-                    pos[0], pos[1],
-                    self._draw_nucleus(pos[0], pos[1], out_fibre),
-                    out_fibre))
-            else:
-                self._nuclei.append(Nucleus(pos[0], pos[1], None, out_fibre))
-        # green nuclei
-        for pos in nuclei_positions[1]:
-            if self._main_window.show_nuclei_bool.get():
-                self._nuclei.append(Nucleus(
-                    pos[0], pos[1],
-                    self._draw_nucleus(pos[0], pos[1], in_fibre),
-                    in_fibre))
-            else:
-                self._nuclei.append(Nucleus(pos[0], pos[1], None, in_fibre))
+        self._nuclei = deepcopy(nuclei)
+
+        if self._main_window.show_nuclei_bool.get():
+            for nuc in self._nuclei:
+                nuc.tk_obj = self._draw_nucleus(nuc.x_pos, nuc.y_pos,
+                                                nuc.color)
+
+        self._fibres = deepcopy(fibres)
 
         # fibres
-        for pos in fibre_positions:
-            if self._main_window.show_fibres_bool.get():
-                self._fibres.append(Fibre(pos[0], pos[1],
-                                          *self._draw_fibre(pos[0], pos[1])))
-            else:
-                self._fibres.append(Fibre(pos[0], pos[1], None, None))
+        if self._main_window.show_fibres_bool.get():
+            for fib in self._fibres:
+                fib.h_line, fib.v_line = self._draw_fibre(fib.x_pos, fib.y_pos)
 
     def reset(self):
         # reset the canvas
@@ -312,21 +322,21 @@ class Zoom_Advanced(ttk.Frame):
                     if nuc.color == out_fibre:
                         self._canvas.itemconfig(nuc.tk_obj, fill=in_fibre)
                         nuc.color = in_fibre
-                        self._nuclei_table.out_to_in([nuc.x_pos, nuc.y_pos])
+                        self._nuclei_table.out_to_in(nuc)
                     else:
                         self._canvas.itemconfig(nuc.tk_obj, fill=out_fibre)
                         nuc.color = out_fibre
-                        self._nuclei_table.in_to_out([nuc.x_pos, nuc.y_pos])
+                        self._nuclei_table.in_to_out(nuc)
 
                 # otherwise, add a new nucleus
                 else:
-                    self._nuclei_table.add_out_nucleus(
-                        [rel_x_scale, rel_y_scale])
-                    self._nuclei.append(Nucleus(
-                        rel_x_scale, rel_y_scale,
-                        self._draw_nucleus(rel_x_scale, rel_y_scale,
-                                           out_fibre),
-                        out_fibre))
+                    new_nuc = Nucleus(rel_x_scale, rel_y_scale,
+                                      self._draw_nucleus(rel_x_scale,
+                                                         rel_y_scale,
+                                                         out_fibre),
+                                      out_fibre)
+                    self._nuclei_table.add_out_nucleus(new_nuc)
+                    self._nuclei.append(new_nuc)
 
                 self._main_window.set_unsaved_status()
 
@@ -334,10 +344,11 @@ class Zoom_Advanced(ttk.Frame):
                 # find a close fibre
                 fib = self._find_closest_fibre(rel_x_scale, rel_y_scale)
                 if fib is None:
-                    self._fibres.append(Fibre(rel_x_scale, rel_y_scale,
-                                              *self._draw_fibre(rel_x_scale,
-                                                                rel_y_scale)))
-                    self._nuclei_table.add_fibre([rel_x_scale, rel_y_scale])
+                    new_fib = Fibre(rel_x_scale, rel_y_scale,
+                                    *self._draw_fibre(rel_x_scale,
+                                                      rel_y_scale))
+                    self._fibres.append(new_fib)
+                    self._nuclei_table.add_fibre(new_fib)
 
                     self._main_window.set_unsaved_status()
 
@@ -364,11 +375,9 @@ class Zoom_Advanced(ttk.Frame):
 
                     # delete it
                     if nuc.color == in_fibre:
-                        self._nuclei_table.remove_in_nucleus(
-                            [nuc.x_pos, nuc.y_pos])
+                        self._nuclei_table.remove_in_nucleus(nuc)
                     else:
-                        self._nuclei_table.remove_out_nucleus(
-                            [nuc.x_pos, nuc.y_pos])
+                        self._nuclei_table.remove_out_nucleus(nuc)
 
                     self._canvas.delete(nuc.tk_obj)
                     self._nuclei.remove(nuc)
@@ -382,7 +391,7 @@ class Zoom_Advanced(ttk.Frame):
                 if fib is not None:
 
                     # delete it
-                    self._nuclei_table.remove_fibre([fib.x_pos, fib.y_pos])
+                    self._nuclei_table.remove_fibre(fib)
                     self._canvas.delete(fib.h_line)
                     self._canvas.delete(fib.v_line)
                     self._fibres.remove(fib)
