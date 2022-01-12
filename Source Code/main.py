@@ -144,6 +144,7 @@ class main_window(Tk):
         self.iconphoto(True, icon)
 
         self._load_settings()
+        self._set_variables()
         self._set_menu()
         self._set_layout()
 
@@ -215,6 +216,10 @@ class main_window(Tk):
             value=param.pop('show_fibres_bool',
                             default_param['show_fibres_bool']))
 
+        self._save_settings()
+
+    def _set_variables(self):
+
         # threads
         self._current_threads = []
         self._total_images_processed = 0
@@ -237,8 +242,6 @@ class main_window(Tk):
         self._current_project = ''
 
         self.draw_nuclei = True
-
-        self._save_settings()
 
     def _set_menu(self):
         self._menu_bar = Menu(self)
