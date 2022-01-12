@@ -165,17 +165,17 @@ class main_window(Tk):
         else:
             param = {}
 
-        self._fibre_colour_var = StringVar(
+        self._fibre_colour = StringVar(
             value=param.pop('fibre_colour_var',
                             default_param['fibre_colour_var']))
-        self._previous_fibre_colour_var = StringVar(
+        self._previous_fibre_colour = StringVar(
             value=param.pop('previous_fibre_colour_var',
                             default_param['previous_fibre_colour_var']))
 
-        self._nuclei_colour_var = StringVar(
+        self._nuclei_colour = StringVar(
             value=param.pop('nuclei_colour_var',
                             default_param['nuclei_colour_var']))
-        self._previous_nuclei_colour_var = StringVar(
+        self._previous_nuclei_colour = StringVar(
             value=param.pop('previous_nuclei_colour_var',
                             default_param['previous_nuclei_colour_var']))
 
@@ -465,13 +465,8 @@ class main_window(Tk):
         saving_popup.grab_set()
         saving_popup.title("Saving....")
 
-        scr_width = self.winfo_screenwidth()
-        scr_height = self.winfo_screenheight()
-
-        saving_popup.geometry("400x200+" + str(int(scr_width / 2 - 200)) +
-                              "+" + str(int(scr_height / 2 - 100)))
         ttk.Label(saving_popup, text="Saving to '" + directory + "' ..."). \
-            place(x=200, y=75, anchor='center')
+            pack(anchor='center', expand=False, fill='none')
         saving_popup.update()
         self.update()
         saving_popup.update()
@@ -548,10 +543,10 @@ class main_window(Tk):
 
     def _save_settings(self, setting_index=0):
 
-        settings = [self._fibre_colour_var.get(),
-                    self._previous_fibre_colour_var.get(),
-                    self._nuclei_colour_var.get(),
-                    self._previous_nuclei_colour_var.get(),
+        settings = [self._fibre_colour.get(),
+                    self._previous_fibre_colour.get(),
+                    self._nuclei_colour.get(),
+                    self._previous_nuclei_colour.get(),
                     self._auto_save_time.get(),
                     self._save_altered_images_boolean.get(),
                     self._do_fibre_counting.get(),
@@ -654,8 +649,8 @@ class main_window(Tk):
 
         # get result
         nuclei, nuclei_in_fibre, fibre_positions, image_width, image_height = \
-            deepcell_functie(file, self._nuclei_colour_var.get(),
-                             self._fibre_colour_var.get(),
+            deepcell_functie(file, self._nuclei_colour.get(),
+                             self._fibre_colour.get(),
                              self._do_fibre_counting.get(),
                              small_objects_thresh)
 
@@ -948,16 +943,16 @@ class main_window(Tk):
         ttk.Label(frame, text="Nuclei Colour :    ").grid(column=0, row=0,
                                                           sticky='NE')
         nuclei_colour_r1 = ttk.Radiobutton(
-            frame, text="Blue Channel", variable=self._nuclei_colour_var,
+            frame, text="Blue Channel", variable=self._nuclei_colour,
             value="Blue", command=self._nuclei_colour_sel)
         nuclei_colour_r1.grid(column=1, row=0, sticky='NW')
         nuclei_colour_r2 = ttk.Radiobutton(frame, text="Green Channel",
-                                           variable=self._nuclei_colour_var,
+                                           variable=self._nuclei_colour,
                                            value="Green",
                                            command=self._nuclei_colour_sel)
         nuclei_colour_r2.grid(column=1, row=1, sticky='NW')
         nuclei_colour_r3 = ttk.Radiobutton(frame, text="Red Channel",
-                                           variable=self._nuclei_colour_var,
+                                           variable=self._nuclei_colour,
                                            value="Red",
                                            command=self._nuclei_colour_sel)
         nuclei_colour_r3.grid(column=1, row=2, sticky='NW')
@@ -966,17 +961,17 @@ class main_window(Tk):
         ttk.Label(frame, text="Fibre Colour :    ").grid(
             column=0, row=3, sticky='NE', pady=(10, 0))
         fibre_colour_r1 = ttk.Radiobutton(frame, text="Blue Channel",
-                                          variable=self._fibre_colour_var,
+                                          variable=self._fibre_colour,
                                           value="Blue",
                                           command=self._nuclei_colour_sel)
         fibre_colour_r1.grid(column=1, row=3, sticky='NW', pady=(10, 0))
         fibre_colour_r2 = ttk.Radiobutton(frame, text="Green Channel",
-                                          variable=self._fibre_colour_var,
+                                          variable=self._fibre_colour,
                                           value="Green",
                                           command=self._nuclei_colour_sel)
         fibre_colour_r2.grid(column=1, row=4, sticky='NW')
         fibre_colour_r3 = ttk.Radiobutton(frame, text="Red Channel",
-                                          variable=self._fibre_colour_var,
+                                          variable=self._fibre_colour,
                                           value="Red",
                                           command=self._nuclei_colour_sel)
         fibre_colour_r3.grid(column=1, row=5, sticky='NW')
@@ -1110,19 +1105,19 @@ class main_window(Tk):
     def _nuclei_colour_sel(self):
 
         # if the two are the same, reset one
-        if self._nuclei_colour_var.get() == self._fibre_colour_var.get():
-            if self._previous_nuclei_colour_var.get() != \
-                    self._nuclei_colour_var.get():
-                self._fibre_colour_var.set(
-                    self._previous_nuclei_colour_var.get())
-            elif self._previous_fibre_colour_var.get() != \
-                    self._fibre_colour_var.get():
-                self._nuclei_colour_var.set(
-                    self._previous_fibre_colour_var.get())
+        if self._nuclei_colour.get() == self._fibre_colour.get():
+            if self._previous_nuclei_colour.get() != \
+                    self._nuclei_colour.get():
+                self._fibre_colour.set(
+                    self._previous_nuclei_colour.get())
+            elif self._previous_fibre_colour.get() != \
+                    self._fibre_colour.get():
+                self._nuclei_colour.set(
+                    self._previous_fibre_colour.get())
 
         # set the previous ones to the current one
-        self._previous_nuclei_colour_var.set(self._nuclei_colour_var.get())
-        self._previous_fibre_colour_var.set(self._fibre_colour_var.get())
+        self._previous_nuclei_colour.set(self._nuclei_colour.get())
+        self._previous_fibre_colour.set(self._fibre_colour.get())
 
         # save
         self._save_settings()
