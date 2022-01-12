@@ -322,11 +322,10 @@ class Zoom_Advanced(ttk.Frame):
                     if nuc.color == out_fibre:
                         self._canvas.itemconfig(nuc.tk_obj, fill=in_fibre)
                         nuc.color = in_fibre
-                        self._nuclei_table.out_to_in(nuc)
                     else:
                         self._canvas.itemconfig(nuc.tk_obj, fill=out_fibre)
                         nuc.color = out_fibre
-                        self._nuclei_table.in_to_out(nuc)
+                    self._nuclei_table.switch_nucleus(nuc)
 
                 # otherwise, add a new nucleus
                 else:
@@ -335,7 +334,7 @@ class Zoom_Advanced(ttk.Frame):
                                                          rel_y_scale,
                                                          out_fibre),
                                       out_fibre)
-                    self._nuclei_table.add_out_nucleus(new_nuc)
+                    self._nuclei_table.add_nucleus(new_nuc)
                     self._nuclei.append(new_nuc)
 
                 self._main_window.set_unsaved_status()
@@ -374,10 +373,7 @@ class Zoom_Advanced(ttk.Frame):
                 if nuc is not None:
 
                     # delete it
-                    if nuc.color == in_fibre:
-                        self._nuclei_table.remove_in_nucleus(nuc)
-                    else:
-                        self._nuclei_table.remove_out_nucleus(nuc)
+                    self._nuclei_table.remove_nucleus(nuc)
 
                     self._canvas.delete(nuc.tk_obj)
                     self._nuclei.remove(nuc)

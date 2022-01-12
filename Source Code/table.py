@@ -9,6 +9,7 @@ from os import path, mkdir
 from platform import system
 from dataclasses import dataclass, field
 from typing import Optional, List
+from copy import deepcopy
 
 # color codes
 background = '#EAECEE'
@@ -285,35 +286,25 @@ class Table(ttk.Frame):
         self._image_canvas = image_canvas
 
     def add_fibre(self, fibre):
-        self._fibres[self._current_image_index].append(fibre)
+        self._fibres[self._current_image_index].append(deepcopy(fibre))
         self._update_data(self._current_image_index)
 
     def remove_fibre(self, fibre):
         self._fibres[self._current_image_index].remove(fibre)
         self._update_data(self._current_image_index)
 
-    def add_out_nucleus(self, nucleus):
-        self._nuclei[self._current_image_index].append(nucleus)
+    def add_nucleus(self, nucleus):
+        self._nuclei[self._current_image_index].append(deepcopy(nucleus))
         self._update_data(self._current_image_index)
 
-    def remove_out_nucleus(self, nucleus):
+    def remove_nucleus(self, nucleus):
         self._nuclei[self._current_image_index].remove(nucleus)
         self._update_data(self._current_image_index)
 
-    def remove_in_nucleus(self, nucleus):
-        self._nuclei[self._current_image_index].remove(nucleus)
-        self._update_data(self._current_image_index)
-
-    def in_to_out(self, nucleus):
+    def switch_nucleus(self, nucleus):
         for nuc in self._nuclei[self._current_image_index]:
             if nuc == nucleus:
-                nuc.color = out_fibre
-        self._update_data(self._current_image_index)
-
-    def out_to_in(self, nucleus):
-        for nuc in self._nuclei[self._current_image_index]:
-            if nuc == nucleus:
-                nuc.color = in_fibre
+                nuc.color = out_fibre if nuc.color == in_fibre else in_fibre
         self._update_data(self._current_image_index)
 
     def reset(self):
