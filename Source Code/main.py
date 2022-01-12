@@ -28,8 +28,8 @@ from functools import partial
 if system() == "Windows" and int(release()) >= 8:
     dll.shcore.SetProcessDpiAwareness(True)
 
-default_param = {'fibre_colour_var': "Blue",
-                 'previous_fibre_colour_var': "Blue",
+default_param = {'fibre_colour_var': "Green",
+                 'previous_fibre_colour_var': "Green",
                  'nuclei_colour_var': "Blue",
                  'previous_nuclei_colour_var': "Blue",
                  'auto_save_time': -1,
