@@ -45,7 +45,43 @@ default_param = {'fibre_colour_var': "Green",
                  'show_fibres_bool': False}
 
 
-class splash(Tk):
+class Warning_window(Toplevel):
+
+    def __init__(self, main_window):
+        super().__init__(main_window)
+
+        self._main_window = main_window
+
+        self.resizable(False, False)
+        self.grab_set()
+
+        self.title("Hold on!")
+
+        self._set_layout()
+
+    def _set_layout(self):
+        ttk.Label(self,
+                  text="Are you sure about closing an unsaved project ?"). \
+            pack(anchor='n', expand=False, fill='none', side='top',
+                 padx=20, pady=20)
+
+        # create the buttons
+        ttk.Button(self, text='Save and Close',
+                   command=self._main_window.save_button_pressed, width=40). \
+            pack(anchor='n', expand=False, fill='none', side='top',
+                 padx=20, pady=7)
+        ttk.Button(self, text='Close Without Saving',
+                   command=self._main_window.destroy, width=40). \
+            pack(anchor='n', expand=False, fill='none', side='top',
+                 padx=20, pady=7)
+        ttk.Button(self, text='Cancel', command=self.destroy, width=40). \
+            pack(anchor='n', expand=False, fill='none', side='top',
+                 padx=20, pady=7)
+
+        self.update()
+
+
+class Splash(Tk):
 
     def __init__(self):
         super().__init__()
@@ -127,7 +163,7 @@ class splash(Tk):
         sleep(1)
 
 
-class main_window(Tk):
+class Main_window(Tk):
 
     def __init__(self):
         super().__init__()
@@ -382,7 +418,7 @@ class main_window(Tk):
 
         # save altered images and table
         self._save_button = ttk.Button(self._button_frame, text='Save As',
-                                       command=self._save_button_pressed,
+                                       command=self.save_button_pressed,
                                        state='enabled')
         self._save_button.pack(fill="x", anchor="w", side='left', padx=3,
                                pady=5)
@@ -489,10 +525,6 @@ class main_window(Tk):
 
         # destroy the popup
         saving_popup.destroy()
-
-        # als het nodig is, close
-        if self._close:
-            self.destroy()
 
     def _load_project(self, directory):
 
@@ -738,48 +770,15 @@ class main_window(Tk):
 
         # if unsaved, show the window
         if self._save_button['state'] == 'enabled' and \
-                not len(self._nuclei_table.filenames) == 0:
+                self._nuclei_table.filenames:
             # create
-            warning_window = Toplevel(self)
-            warning_window.resizable(False, False)
-            warning_window.grab_set()
-
-            warning_window.title("Hold on!")
-            self._close = True
-
-            # create the label
-            ttk.Label(warning_window,
-                      text="Are you sure about closing an unsaved project ?").\
-                pack(anchor='n', expand=False, fill='none', side='top',
-                     padx=20, pady=20)
-
-            # create the buttons
-            ttk.Button(warning_window, text='Save and Close',
-                       command=self._save_button_pressed, width=40). \
-                pack(anchor='n', expand=False, fill='none', side='top',
-                     padx=20, pady=7)
-            ttk.Button(warning_window, text='Close Without Saving',
-                       command=self.destroy, width=40). \
-                pack(anchor='n', expand=False, fill='none', side='top',
-                     padx=20, pady=7)
-            ttk.Button(warning_window, text='Cancel',
-                       command=partial(self._quit_warning_window,
-                                       warning_window),
-                       width=40).\
-                pack(anchor='n', expand=False, fill='none', side='top',
-                     padx=20, pady=7)
-
-            warning_window.update()
+            Warning_window(self)
 
         else:
             # if saved, destroy the window
             self.destroy()
 
-    def _quit_warning_window(self, warning_window):
-        warning_window.destroy()
-        self._close = False
-
-    def _save_button_pressed(self):
+    def save_button_pressed(self):
 
         # save as if necessary
         if self._current_project == '':
@@ -1125,5 +1124,5 @@ class main_window(Tk):
 
 if __name__ == "__main__":
 
-    splash()
-    main_window()
+    Splash()
+    Main_window()
