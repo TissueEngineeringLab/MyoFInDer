@@ -22,26 +22,37 @@ from threading import get_ident, active_count, Thread
 from time import time, sleep
 from json import load, dump
 from functools import partial
+from dataclasses import dataclass, field
 
 # set better resolution
 if system() == "Windows" and int(release()) >= 8:
     dll.shcore.SetProcessDpiAwareness(True)
 
-default_param = {'fibre_colour_var': "Green",
-                 'previous_fibre_colour_var': "Green",
-                 'nuclei_colour_var': "Blue",
-                 'previous_nuclei_colour_var': "Blue",
-                 'auto_save_time': -1,
-                 'save_altered_images_boolean': 0,
-                 'do_fibre_counting': 0,
-                 'n_threads': 3,
-                 'small_objects_threshold': 400,
-                 'recent_projects': [],
-                 'blue_channel_bool': True,
-                 'green_channel_bool': True,
-                 'red_channel_bool': False,
-                 'show_nuclei_bool': True,
-                 'show_fibres_bool': False}
+
+@dataclass
+class Settings:
+    fibre_colour: StringVar = field(
+        default_factory=partial(StringVar, value="Green"))
+    nuclei_colour: StringVar = field(
+        default_factory=partial(StringVar, value="Blue"))
+    auto_save_time: IntVar = field(default_factory=partial(IntVar, value=-1))
+    save_altered_images: BooleanVar = field(
+        default_factory=partial(BooleanVar, value=False))
+    do_fibre_counting: BooleanVar = field(
+        default_factory=partial(BooleanVar, value=False))
+    n_threads: IntVar = field(default_factory=partial(IntVar, value=3))
+    small_objects_threshold: IntVar = field(
+        default_factory=partial(IntVar, value=400))
+    blue_channel_bool: BooleanVar = field(
+        default_factory=partial(BooleanVar, value=True))
+    green_channel_bool: BooleanVar = field(
+        default_factory=partial(BooleanVar, value=True))
+    red_channel_bool: BooleanVar = field(
+        default_factory=partial(BooleanVar, value=False))
+    show_nuclei: BooleanVar = field(
+        default_factory=partial(BooleanVar, value=True))
+    show_fibres: BooleanVar = field(
+        default_factory=partial(BooleanVar, value=False))
 
 
 class Warning_window(Toplevel):
@@ -182,6 +193,7 @@ class Settings_window(Toplevel):
         super().__init__(main_window)
 
         self._main_window = main_window
+        self._settings = self._main_window.settings
 
         self.resizable(False, False)
         self.grab_set()
@@ -198,101 +210,80 @@ class Settings_window(Toplevel):
         ttk.Label(frame, text="Nuclei Colour :    ").grid(column=0, row=0,
                                                           sticky='NE')
         nuclei_colour_r1 = ttk.Radiobutton(
-            frame, text="Blue Channel", variable=self._main_window._nuclei_colour,
-            value="Blue", command=self._main_window._nuclei_colour_sel)
+            frame, text="Blue Channel", variable=self._settings.nuclei_colour,
+            value="Blue")
         nuclei_colour_r1.grid(column=1, row=0, sticky='NW')
-        nuclei_colour_r2 = ttk.Radiobutton(frame, text="Green Channel",
-                                           variable=self._main_window._nuclei_colour,
-                                           value="Green",
-                                           command=self._main_window._nuclei_colour_sel)
+        nuclei_colour_r2 = ttk.Radiobutton(
+            frame, text="Green Channel", variable=self._settings.nuclei_colour,
+            value="Green")
         nuclei_colour_r2.grid(column=1, row=1, sticky='NW')
-        nuclei_colour_r3 = ttk.Radiobutton(frame, text="Red Channel",
-                                           variable=self._main_window._nuclei_colour,
-                                           value="Red",
-                                           command=self._main_window._nuclei_colour_sel)
+        nuclei_colour_r3 = ttk.Radiobutton(
+            frame, text="Red Channel", variable=self._settings.nuclei_colour,
+            value="Red")
         nuclei_colour_r3.grid(column=1, row=2, sticky='NW')
 
         # fibre colour
         ttk.Label(frame, text="Fibre Colour :    ").grid(
             column=0, row=3, sticky='NE', pady=(10, 0))
-        fibre_colour_r1 = ttk.Radiobutton(frame, text="Blue Channel",
-                                          variable=self._main_window._fibre_colour,
-                                          value="Blue",
-                                          command=self._main_window._nuclei_colour_sel)
+        fibre_colour_r1 = ttk.Radiobutton(
+            frame, text="Blue Channel", variable=self._settings.fibre_colour,
+            value="Blue")
         fibre_colour_r1.grid(column=1, row=3, sticky='NW', pady=(10, 0))
-        fibre_colour_r2 = ttk.Radiobutton(frame, text="Green Channel",
-                                          variable=self._main_window._fibre_colour,
-                                          value="Green",
-                                          command=self._main_window._nuclei_colour_sel)
+        fibre_colour_r2 = ttk.Radiobutton(
+            frame, text="Green Channel", variable=self._settings.fibre_colour,
+            value="Green")
         fibre_colour_r2.grid(column=1, row=4, sticky='NW')
-        fibre_colour_r3 = ttk.Radiobutton(frame, text="Red Channel",
-                                          variable=self._main_window._fibre_colour,
-                                          value="Red",
-                                          command=self._main_window._nuclei_colour_sel)
+        fibre_colour_r3 = ttk.Radiobutton(
+            frame, text="Red Channel", variable=self._settings.fibre_colour,
+            value="Red")
         fibre_colour_r3.grid(column=1, row=5, sticky='NW')
 
         # autosave timer
         ttk.Label(frame, text='Autosave Interval :    ').grid(
             column=0, row=6, sticky='NE', pady=(10, 0))
-        ttk.Radiobutton(frame, text="5 Minutes", variable=self._main_window._auto_save_time,
-                        value=5 * 60,
-                        command=partial(self._main_window._save_settings, 2)).grid(
-            column=1, row=6, sticky='NW', pady=(10, 0))
-        ttk.Radiobutton(frame, text="15 Minutes",
-                        variable=self._main_window._auto_save_time,
-                        value=15 * 60,
-                        command=partial(self._main_window._save_settings, 2)).grid(
-            column=1, row=7, sticky='NW')
-        ttk.Radiobutton(frame, text="30 Minutes",
-                        variable=self._main_window._auto_save_time,
-                        value=30 * 60,
-                        command=partial(self._main_window._save_settings, 2)).grid(
-            column=1, row=8, sticky='NW')
-        ttk.Radiobutton(frame, text="60 Minutes",
-                        variable=self._main_window._auto_save_time,
-                        value=60 * 60,
-                        command=partial(self._main_window._save_settings, 2)).grid(
-            column=1, row=9, sticky='NW')
-        ttk.Radiobutton(frame, text="Never",
-                        variable=self._main_window._auto_save_time, value=-1,
-                        command=partial(self._main_window._save_settings, 2)).grid(
-            column=1, row=10, sticky='NW')
+        ttk.Radiobutton(
+            frame, text="5 Minutes", variable=self._settings.auto_save_time,
+            value=5 * 60).grid(column=1, row=6, sticky='NW', pady=(10, 0))
+        ttk.Radiobutton(
+            frame, text="15 Minutes", variable=self._settings.auto_save_time,
+            value=15 * 60).grid(column=1, row=7, sticky='NW')
+        ttk.Radiobutton(
+            frame, text="30 Minutes", variable=self._settings.auto_save_time,
+            value=30 * 60).grid(column=1, row=8, sticky='NW')
+        ttk.Radiobutton(
+            frame, text="60 Minutes", variable=self._settings.auto_save_time,
+            value=60 * 60).grid(column=1, row=9, sticky='NW')
+        ttk.Radiobutton(
+            frame, text="Never", variable=self._settings.auto_save_time,
+            value=-1).grid(column=1, row=10, sticky='NW')
 
         # save altered images
         ttk.Label(frame, text='Save Altered Images :    ').grid(
             column=0, row=11, sticky='NE', pady=(10, 0))
-        ttk.Radiobutton(frame, text="On",
-                        variable=self._main_window._save_altered_images_boolean,
-                        value=1,
-                        command=partial(self._main_window._save_settings, 3)).grid(
-            column=1, row=11, sticky='NW', pady=(10, 0))
-        ttk.Radiobutton(frame, text="Off",
-                        variable=self._main_window._save_altered_images_boolean,
-                        value=0,
-                        command=partial(self._main_window._save_settings, 3)).\
-            grid(column=1, row=12, sticky='NW')
+        ttk.Radiobutton(
+            frame, text="On", variable=self._settings.save_altered_images,
+            value=1).grid(column=1, row=11, sticky='NW', pady=(10, 0))
+        ttk.Radiobutton(
+            frame, text="Off", variable=self._settings.save_altered_images,
+            value=0).grid(column=1, row=12, sticky='NW')
 
         # fibre counting
         ttk.Label(frame, text='Count Fibres :    ').grid(
             column=0, row=13, sticky='NE', pady=(10, 0))
-        ttk.Radiobutton(frame, text="On",
-                        variable=self._main_window._do_fibre_counting, value=1,
-                        command=partial(self._main_window._save_settings, 4)).\
-            grid(column=1, row=13, sticky='NW', pady=(10, 0))
-        ttk.Radiobutton(frame, text="Off",
-                        variable=self._main_window._do_fibre_counting, value=0,
-                        command=partial(self._main_window._save_settings, 4)).\
-            grid(column=1, row=14, sticky='NW')
+        ttk.Radiobutton(
+            frame, text="On", variable=self._settings.do_fibre_counting,
+            value=1).grid(column=1, row=13, sticky='NW', pady=(10, 0))
+        ttk.Radiobutton(
+            frame, text="Off", variable=self._settings.do_fibre_counting,
+            value=0).grid(column=1, row=14, sticky='NW')
 
         # multithreading
         ttk.Label(frame, text='Number of Threads :    ').grid(
             column=0, row=15, sticky='NE', pady=(10, 0))
 
-        self._thread_slider = Scale(frame, from_=0, to=5, orient="horizontal",
-                                    command=self._thread_slider_func,
-                                    showvalue=False,
-                                    length=150)
-        self._thread_slider.set(int(self._main_window._n_threads.get()))
+        self._thread_slider = Scale(
+            frame, from_=0, to=5, orient="horizontal",
+            variable=self._settings.n_threads, showvalue=False, length=150)
         self._thread_slider.grid(column=1, row=15, sticky='NW', pady=(10, 0))
 
         # small objects threshold
@@ -301,26 +292,10 @@ class Settings_window(Toplevel):
 
         self._small_objects_slider = Scale(
             frame, from_=10, to=1000,
-            orient="horizontal",
-            command=self._small_objects_slider_func,
-            length=150, showvalue=False)
-        self._small_objects_slider.set(
-            int(self._main_window._small_objects_threshold.get()))
+            variable=self._settings.small_objects_threshold,
+            orient="horizontal", length=150, showvalue=False)
         self._small_objects_slider.grid(column=1, row=16, sticky='NW',
                                         pady=(10, 0))
-
-    def _thread_slider_func(self, n):
-        if int(n) == 0:
-            self._thread_slider.configure(label='Off')
-        else:
-            self._thread_slider.configure(label=str(n))
-        self._main_window._n_threads.set(int(n))
-        self._main_window._save_settings()
-
-    def _small_objects_slider_func(self, n):
-        self._small_objects_slider.configure(label=str(n))
-        self._main_window._small_objects_threshold.set(n)
-        self._main_window._save_settings()
 
 
 class Splash(Tk):
@@ -437,66 +412,47 @@ class Main_window(Tk):
         self.mainloop()
 
     def _load_settings(self):
-        if path.isfile(self.base_path + 'general.py'):
-            with open(self.base_path + 'general.py', 'r') as param_file:
-                param = load(param_file)
+        if path.isfile(self.base_path + 'settings.py'):
+            with open(self.base_path + 'settings.py', 'r') as param_file:
+                settings = load(param_file)
         else:
-            param = {}
+            settings = {}
 
-        self._fibre_colour = StringVar(
-            value=param.pop('fibre_colour_var',
-                            default_param['fibre_colour_var']))
-        self._previous_fibre_colour = StringVar(
-            value=param.pop('previous_fibre_colour_var',
-                            default_param['previous_fibre_colour_var']))
+        self.settings = Settings()
+        for key, value in settings.items():
+            getattr(self.settings, key).set(value)
 
-        self._nuclei_colour = StringVar(
-            value=param.pop('nuclei_colour_var',
-                            default_param['nuclei_colour_var']))
-        self._previous_nuclei_colour = StringVar(
-            value=param.pop('previous_nuclei_colour_var',
-                            default_param['previous_nuclei_colour_var']))
-
-        self._auto_save_time = IntVar(
-            value=param.pop('auto_save_time', default_param['auto_save_time']))
-
-        self._save_altered_images_boolean = IntVar(
-            value=param.pop('save_altered_images_boolean',
-                            default_param['save_altered_images_boolean']))
-
-        self._do_fibre_counting = IntVar(
-            value=param.pop('do_fibre_counting',
-                            default_param['do_fibre_counting']))
-
-        self._n_threads = IntVar(
-            value=param.pop('n_threads', default_param['n_threads']))
-
-        self._small_objects_threshold = IntVar(
-            value=param.pop('small_objects_threshold',
-                            default_param['small_objects_threshold']))
-
-        self._recent_projects = param.pop('recent_projects',
-                                          default_param['recent_projects'])
-
-        self.blue_channel_bool = BooleanVar(
-            value=param.pop('blue_channel_bool',
-                            default_param['blue_channel_bool']))
-        self.green_channel_bool = BooleanVar(
-            value=param.pop('green_channel_bool',
-                            default_param['green_channel_bool']))
-        self.red_channel_bool = BooleanVar(
-            value=param.pop('red_channel_bool',
-                            default_param['red_channel_bool']))
-        self.show_nuclei_bool = BooleanVar(
-            value=param.pop('show_nuclei_bool',
-                            default_param['show_nuclei_bool']))
-        self.show_fibres_bool = BooleanVar(
-            value=param.pop('show_fibres_bool',
-                            default_param['show_fibres_bool']))
+        if path.isfile(self.base_path + 'recent_projects.py'):
+            with open(self.base_path +
+                      'recent_projects.py', 'r') as recent_projects:
+                recent = load(recent_projects)
+            self._recent_projects = recent['recent_projects']
+        else:
+            self._recent_projects = []
 
         self._save_settings()
 
     def _set_variables(self):
+
+        self.settings.fibre_colour.trace_add("write", self._nuclei_colour_sel)
+        self.settings.nuclei_colour.trace_add("write", self._nuclei_colour_sel)
+        self.settings.auto_save_time.trace_add("write",
+                                               self._save_settings_time)
+        self.settings.save_altered_images.trace_add("write",
+                                                    self._save_settings_images)
+        self.settings.do_fibre_counting.trace_add("write",
+                                                  self._save_settings_callback)
+        self.settings.small_objects_threshold.trace_add(
+            "write", self._save_settings_callback)
+        self.settings.n_threads.trace_add("write",
+                                          self._save_settings_callback)
+
+        self._previous_nuclei_colour = StringVar(
+            value=self.settings.nuclei_colour.get())
+        self._previous_fibre_colour = StringVar(
+            value=self.settings.fibre_colour.get())
+
+        self.draw_nuclei = BooleanVar(value=True)
 
         # threads
         self._current_threads = []
@@ -518,8 +474,6 @@ class Main_window(Tk):
         self._name_entry = None
         self._folder_name_window_save_button = None
         self._current_project = ''
-
-        self.draw_nuclei = True
 
     def _set_menu(self):
         self._menu_bar = Menu(self)
@@ -623,19 +577,19 @@ class Main_window(Tk):
         self._channels.pack(anchor="w", side="left", fill='x', padx=3, pady=5)
         self._blue_channel_check_button = ttk.Checkbutton(
             self._tick_frame_1, text="Blue Channel", onvalue=True,
-            offvalue=False, variable=self.blue_channel_bool,
+            offvalue=False, variable=self.settings.blue_channel_bool,
             command=self._set_image_channels)
         self._blue_channel_check_button.pack(anchor="w", side="left", fill='x',
                                              padx=3, pady=5)
         self._green_channel_check_button = ttk.Checkbutton(
             self._tick_frame_1, text="Green Channel", onvalue=True,
-            offvalue=False, variable=self.green_channel_bool,
+            offvalue=False, variable=self.settings.green_channel_bool,
             command=self._set_image_channels)
         self._green_channel_check_button.pack(anchor="w", side="left",
                                               fill='x', padx=3, pady=5)
         self._red_channel_check_button = ttk.Checkbutton(
             self._tick_frame_1, text="Red Channel", onvalue=True,
-            offvalue=False, variable=self.red_channel_bool,
+            offvalue=False, variable=self.settings.red_channel_bool,
             command=self._set_image_channels)
         self._red_channel_check_button.pack(anchor="w", side="left", fill='x',
                                             padx=3, pady=5)
@@ -645,12 +599,12 @@ class Main_window(Tk):
         self._indicator.pack(anchor="w", side="left", fill='x', padx=3, pady=5)
         self._show_nuclei_check_button = ttk.Checkbutton(
             self._tick_frame_2, text="Nuclei", onvalue=True, offvalue=False,
-            variable=self.show_nuclei_bool, command=self._set_indicators)
+            variable=self.settings.show_nuclei, command=self._set_indicators)
         self._show_nuclei_check_button.pack(anchor="w", side="left", fill='x',
                                             padx=3, pady=5)
         self._show_fibres_check_button = ttk.Checkbutton(
             self._tick_frame_2, text="Fibres", onvalue=True, offvalue=False,
-            variable=self.show_fibres_bool, command=self._set_indicators)
+            variable=self.settings.show_fibres, command=self._set_indicators)
         self._show_fibres_check_button.pack(anchor="w", side="left", fill='x',
                                             padx=3, pady=5)
 
@@ -680,15 +634,16 @@ class Main_window(Tk):
         self._auto_save_job = None
 
         # set a new timer if needed
-        if self._auto_save_time.get() > 0:
-            self._auto_save_job = self.after(self._auto_save_time.get() * 1000,
+        if self.settings.auto_save_time.get() > 0:
+            self._auto_save_job = self.after(self.settings.auto_save_time.get()
+                                             * 1000,
                                              partial(self.save_project,
                                                      self._auto_save_name))
 
     def save_project(self, directory, save_as=False):
 
         # don't autosave if not needed
-        if self._auto_save_time.get() <= 0 and \
+        if self.settings.auto_save_time.get() <= 0 and \
                 directory == self._auto_save_name:
             return
 
@@ -731,7 +686,7 @@ class Main_window(Tk):
         else:
             # set the automatic save entry
             self._file_menu.entryconfig("Load Automatic Save", state='normal')
-            if self._auto_save_time.get() > 0:  # recall the autosave
+            if self.settings.auto_save_time.get() > 0:  # recall the autosave
                 self._set_autosave_time()
 
         # create the folder
@@ -758,7 +713,7 @@ class Main_window(Tk):
         self._re_save_images = False
 
         # save the altered images
-        if self._save_altered_images_boolean.get() == 1 or \
+        if self.settings.save_altered_images.get() == 1 or \
                 directory == self._auto_save_name:
             self._nuclei_table.save_altered_images(directory)
 
@@ -815,26 +770,16 @@ class Main_window(Tk):
         else:
             self._process_images_button['state'] = 'disabled'
 
+    def _save_settings_time(self, _, __, ___):
+        self._save_settings(setting_index=2)
+
+    def _save_settings_images(self, _, __, ___):
+        self._save_settings(setting_index=3)
+
+    def _save_settings_callback(self, _, __, ___):
+        self._save_settings()
+
     def _save_settings(self, setting_index=0):
-
-        settings = [self._fibre_colour.get(),
-                    self._previous_fibre_colour.get(),
-                    self._nuclei_colour.get(),
-                    self._previous_nuclei_colour.get(),
-                    self._auto_save_time.get(),
-                    self._save_altered_images_boolean.get(),
-                    self._do_fibre_counting.get(),
-                    self._n_threads.get(),
-                    self._small_objects_threshold.get(),
-                    self._recent_projects,
-                    self.blue_channel_bool.get(),
-                    self.green_channel_bool.get(),
-                    self.red_channel_bool.get(),
-                    self.show_nuclei_bool.get(),
-                    self.show_fibres_bool.get()]
-
-        settings = {key: setting for key, setting in
-                    zip(default_param.keys(), settings)}
 
         # enable save button if needed
         if setting_index == 3:
@@ -844,8 +789,15 @@ class Main_window(Tk):
         if setting_index == 2:
             self._set_autosave_time()
 
-        with open(self.base_path + 'general.py', 'w') as param_file:
+        settings = {key: value.get() for key, value in
+                    self.settings.__dict__.items()}
+
+        with open(self.base_path + 'settings.py', 'w') as param_file:
             dump(settings, param_file)
+
+        with open(self.base_path +
+                  'recent_projects.py', 'w') as recent_projects:
+            dump({'recent_projects': self._recent_projects}, recent_projects)
 
     def _stop_processing(self):
 
@@ -884,17 +836,18 @@ class Main_window(Tk):
         self.update()
 
         # start threading
-        n_threads_running = self._n_threads.get()
-        if int(self._n_threads.get()) == 0:
+        n_threads_running = self.settings.n_threads.get()
+        if int(self.settings.n_threads.get()) == 0:
             self._process_thread(0, file_names, False,
-                                 self._small_objects_threshold.get())
+                                 self.settings.small_objects_threshold.get())
         else:
             for i in range(n_threads_running):
                 if i <= len(file_names) - 1:
                     t1 = Thread(target=self._process_thread,
                                 args=(i, file_names,
                                       True,
-                                      self._small_objects_threshold.get()),
+                                      self.settings.small_objects_threshold.
+                                      get()),
                                 daemon=True)
                     t1.start()
                     print(t1)
@@ -923,9 +876,9 @@ class Main_window(Tk):
 
         # get result
         nuclei, nuclei_in_fibre, fibre_positions, image_width, image_height = \
-            deepcell_functie(file, self._nuclei_colour.get(),
-                             self._fibre_colour.get(),
-                             self._do_fibre_counting.get(),
+            deepcell_functie(file, self.settings.nuclei_colour.get(),
+                             self.settings.fibre_colour.get(),
+                             self.settings.do_fibre_counting.get(),
                              small_objects_thresh)
 
         end1 = time()
@@ -987,8 +940,8 @@ class Main_window(Tk):
 
     def _set_indicators(self):
         
-        show_nuclei = self.show_nuclei_bool.get()
-        show_fibres = self.show_fibres_bool.get()
+        show_nuclei = self.settings.show_nuclei.get()
+        show_fibres = self.settings.show_fibres.get()
         
         # set the indicators
         self._image_canvas.set_indicators()
@@ -996,7 +949,7 @@ class Main_window(Tk):
 
         # set which indication
         if show_fibres and not show_nuclei:
-            self.draw_nuclei = False
+            self.draw_nuclei.set(False)
             self._which_indicator_button['text'] = 'Manual : Fibres'
             self._which_indicator_button['state'] = 'disabled'
 
@@ -1004,7 +957,7 @@ class Main_window(Tk):
             self._which_indicator_button['state'] = 'enabled'
 
         if not show_fibres and show_nuclei:
-            self.draw_nuclei = True
+            self.draw_nuclei.set(True)
             self._which_indicator_button['text'] = 'Manual : Nuclei'
             self._which_indicator_button['state'] = 'disabled'
 
@@ -1035,11 +988,11 @@ class Main_window(Tk):
         Project_name_window(self, new_project)
 
     def _change_indications(self):
-        if self.draw_nuclei:
-            self.draw_nuclei = False
+        if self.draw_nuclei.get():
+            self.draw_nuclei.set(False)
             self._which_indicator_button['text'] = 'Manual : Fibres'
         else:
-            self.draw_nuclei = True
+            self.draw_nuclei.set(True)
             self._which_indicator_button['text'] = 'Manual : Nuclei'
 
     @staticmethod
@@ -1128,22 +1081,23 @@ class Main_window(Tk):
                                          path.basename(folder)):
             self._load_project(path.basename(folder))
 
-    def _nuclei_colour_sel(self):
+    def _nuclei_colour_sel(self, _, __, ___):
 
         # if the two are the same, reset one
-        if self._nuclei_colour.get() == self._fibre_colour.get():
+        if self.settings.nuclei_colour.get() == \
+                self.settings.fibre_colour.get():
             if self._previous_nuclei_colour.get() != \
-                    self._nuclei_colour.get():
-                self._fibre_colour.set(
+                    self.settings.nuclei_colour.get():
+                self.settings.fibre_colour.set(
                     self._previous_nuclei_colour.get())
             elif self._previous_fibre_colour.get() != \
-                    self._fibre_colour.get():
-                self._nuclei_colour.set(
+                    self.settings.fibre_colour.get():
+                self.settings.nuclei_colour.set(
                     self._previous_fibre_colour.get())
 
         # set the previous ones to the current one
-        self._previous_nuclei_colour.set(self._nuclei_colour.get())
-        self._previous_fibre_colour.set(self._fibre_colour.get())
+        self._previous_nuclei_colour.set(self.settings.nuclei_colour.get())
+        self._previous_fibre_colour.set(self.settings.fibre_colour.get())
 
         # save
         self._save_settings()

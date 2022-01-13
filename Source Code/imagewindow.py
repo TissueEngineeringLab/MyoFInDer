@@ -120,6 +120,8 @@ class Zoom_Advanced(ttk.Frame):
 
         self._nuclei_table = None
         self._main_window = main_window
+        self._settings = self._main_window.settings
+        self._draw_nuclei = self._main_window.draw_nuclei
 
         self._set_layout()
         self._set_bindings()
@@ -138,7 +140,7 @@ class Zoom_Advanced(ttk.Frame):
         self._delete_fibres()
 
         # nuclei
-        if self._main_window.show_nuclei_bool.get():
+        if self._settings.show_nuclei.get():
             # draw
             for nuc in self._nuclei:
                 nuc.tk_obj = self._draw_nucleus(nuc.x_pos,
@@ -146,7 +148,7 @@ class Zoom_Advanced(ttk.Frame):
                                                 nuc.color)
 
         # fibers
-        if self._main_window.show_fibres_bool.get():
+        if self._settings.show_fibres.get():
 
             # draw
             for fibre in self._fibres:
@@ -170,7 +172,7 @@ class Zoom_Advanced(ttk.Frame):
 
         self._nuclei = deepcopy(nuclei)
 
-        if self._main_window.show_nuclei_bool.get():
+        if self._settings.show_nuclei.get():
             for nuc in self._nuclei:
                 nuc.tk_obj = self._draw_nucleus(nuc.x_pos, nuc.y_pos,
                                                 nuc.color)
@@ -178,7 +180,7 @@ class Zoom_Advanced(ttk.Frame):
         self._fibres = deepcopy(fibres)
 
         # fibres
-        if self._main_window.show_fibres_bool.get():
+        if self._settings.show_fibres.get():
             for fib in self._fibres:
                 fib.h_line, fib.v_line = self._draw_fibre(fib.x_pos, fib.y_pos)
 
@@ -313,8 +315,7 @@ class Zoom_Advanced(ttk.Frame):
             rel_x_scale = can_x / self._img_scale
             rel_y_scale = can_y / self._img_scale
 
-            if self._main_window.draw_nuclei and \
-                    self._main_window.show_nuclei_bool.get():
+            if self._draw_nuclei.get() and self._settings.show_nuclei.get():
                 # find a close nuclei
                 nuc = self._find_closest_nucleus(rel_x_scale, rel_y_scale)
                 if nuc is not None:
@@ -339,7 +340,7 @@ class Zoom_Advanced(ttk.Frame):
 
                 self._main_window.set_unsaved_status()
 
-            elif self._main_window.show_fibres_bool.get():
+            elif self._settings.show_fibres.get():
                 # find a close fibre
                 fib = self._find_closest_fibre(rel_x_scale, rel_y_scale)
                 if fib is None:
@@ -367,8 +368,7 @@ class Zoom_Advanced(ttk.Frame):
             rel_y_scale = can_y / self._img_scale
 
             # find a close nuclei
-            if self._main_window.draw_nuclei and \
-                    self._main_window.show_nuclei_bool.get():
+            if self._draw_nuclei.get() and self._settings.show_nuclei.get():
                 nuc = self._find_closest_nucleus(rel_x_scale, rel_y_scale)
                 if nuc is not None:
 
@@ -380,7 +380,7 @@ class Zoom_Advanced(ttk.Frame):
 
                     self._main_window.set_unsaved_status()
 
-            elif self._main_window.show_fibres_bool.get():
+            elif self._settings.show_fibres.get():
 
                 # find the closest fibre
                 fib = self._find_closest_fibre(rel_x_scale, rel_y_scale)
@@ -424,11 +424,11 @@ class Zoom_Advanced(ttk.Frame):
         # load the image with the correct channels
         if self._image_path:
             cv_img = cvtColor(imread(self._image_path), COLOR_BGR2RGB)
-            if not self._main_window.red_channel_bool.get():
+            if not self._settings.red_channel_bool.get():
                 cv_img[:, :, 0] = zeros([cv_img.shape[0], cv_img.shape[1]])
-            if not self._main_window.green_channel_bool.get():
+            if not self._settings.green_channel_bool.get():
                 cv_img[:, :, 1] = zeros([cv_img.shape[0], cv_img.shape[1]])
-            if not self._main_window.blue_channel_bool.get():
+            if not self._settings.blue_channel_bool.get():
                 cv_img[:, :, 2] = zeros([cv_img.shape[0], cv_img.shape[1]])
             image_in = Image.fromarray(cv_img)
 
