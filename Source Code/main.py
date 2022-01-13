@@ -636,11 +636,12 @@ class Main_window(Tk):
         # set a new timer if needed
         if self.settings.auto_save_time.get() > 0:
             self._auto_save_job = self.after(self.settings.auto_save_time.get()
-                                             * 1000,
-                                             partial(self.save_project,
-                                                     self._auto_save_name))
+                                             * 1000, self.save_project)
 
-    def save_project(self, directory, save_as=False):
+    def save_project(self, directory=None, save_as=False):
+
+        if directory is None:
+            directory = self._auto_save_name
 
         # don't autosave if not needed
         if self.settings.auto_save_time.get() <= 0 and \
