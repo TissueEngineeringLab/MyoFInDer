@@ -32,27 +32,29 @@ if system() == "Windows" and int(release()) >= 8:
 @dataclass
 class Settings:
     fibre_colour: StringVar = field(
-        default_factory=partial(StringVar, value="Green"))
+        default_factory=partial(StringVar, value="Green", name='fibre_colour'))
     nuclei_colour: StringVar = field(
-        default_factory=partial(StringVar, value="Blue"))
-    auto_save_time: IntVar = field(default_factory=partial(IntVar, value=-1))
+        default_factory=partial(StringVar, value="Blue", name='nuclei_colour'))
+    auto_save_time: IntVar = field(
+        default_factory=partial(IntVar, value=-1, name='auto_save_time'))
     save_altered_images: BooleanVar = field(
-        default_factory=partial(BooleanVar, value=False))
+        default_factory=partial(BooleanVar, value=False, name='save_altered'))
     do_fibre_counting: BooleanVar = field(
-        default_factory=partial(BooleanVar, value=False))
-    n_threads: IntVar = field(default_factory=partial(IntVar, value=3))
+        default_factory=partial(BooleanVar, value=False, name='fibre_count'))
+    n_threads: IntVar = field(
+        default_factory=partial(IntVar, value=3, name='n_threads'))
     small_objects_threshold: IntVar = field(
-        default_factory=partial(IntVar, value=400))
+        default_factory=partial(IntVar, value=400, name='small_objects'))
     blue_channel_bool: BooleanVar = field(
-        default_factory=partial(BooleanVar, value=True))
+        default_factory=partial(BooleanVar, value=True, name='blue_channel'))
     green_channel_bool: BooleanVar = field(
-        default_factory=partial(BooleanVar, value=True))
+        default_factory=partial(BooleanVar, value=True, name='green_channel'))
     red_channel_bool: BooleanVar = field(
-        default_factory=partial(BooleanVar, value=False))
+        default_factory=partial(BooleanVar, value=False, name='red_channel'))
     show_nuclei: BooleanVar = field(
-        default_factory=partial(BooleanVar, value=True))
+        default_factory=partial(BooleanVar, value=True, name='show_nuclei'))
     show_fibres: BooleanVar = field(
-        default_factory=partial(BooleanVar, value=False))
+        default_factory=partial(BooleanVar, value=False, name='show_fibres'))
 
 
 class Warning_window(Toplevel):
@@ -429,6 +431,7 @@ class Main_window(Tk):
 
         self._load_settings()
         self._set_variables()
+        self._set_traces()
         self._set_menu()
         self._set_layout()
 
@@ -436,7 +439,7 @@ class Main_window(Tk):
         self._nuclei_table = Table(self._aux_frame)
         self._image_canvas.set_table(self._nuclei_table)
         self._nuclei_table.set_image_canvas(self._image_canvas)
-        self._save_settings(2)
+        self._save_settings(autosave_time=True)
 
         self.update()
         self.protocol("WM_DELETE_WINDOW", self._create_warning_window)
@@ -463,20 +466,21 @@ class Main_window(Tk):
 
         self._save_settings()
 
-    def _set_variables(self):
-
+    def _set_traces(self):
         self.settings.fibre_colour.trace_add("write", self._nuclei_colour_sel)
         self.settings.nuclei_colour.trace_add("write", self._nuclei_colour_sel)
         self.settings.auto_save_time.trace_add("write",
-                                               self._save_settings_time)
-        self.settings.save_altered_images.trace_add("write",
-                                                    self._save_settings_images)
+                                               self._save_settings_callback)
+        self.settings.save_altered_images.trace_add(
+            "write", self._save_settings_callback)
         self.settings.do_fibre_counting.trace_add("write",
                                                   self._save_settings_callback)
         self.settings.small_objects_threshold.trace_add(
             "write", self._save_settings_callback)
         self.settings.n_threads.trace_add("write",
                                           self._save_settings_callback)
+
+    def _set_variables(self):
 
         self._previous_nuclei_colour = StringVar(
             value=self.settings.nuclei_colour.get())
@@ -802,23 +806,22 @@ class Main_window(Tk):
         else:
             self._process_images_button['state'] = 'disabled'
 
-    def _save_settings_time(self, _, __, ___):
-        self._save_settings(setting_index=2)
+    def _save_settings_callback(self, name, _, __):
+        if name == 'auto_save_time':
+            self._save_settings(autosave_time=True)
+        elif name == 'save_altered':
+            self._save_settings(enable_save=True)
+        else:
+            self._save_settings()
 
-    def _save_settings_images(self, _, __, ___):
-        self._save_settings(setting_index=3)
-
-    def _save_settings_callback(self, _, __, ___):
-        self._save_settings()
-
-    def _save_settings(self, setting_index=0):
+    def _save_settings(self, autosave_time=False, enable_save=False):
 
         # enable save button if needed
-        if setting_index == 3:
+        if enable_save:
             self._save_button['state'] = 'enabled'
 
         # set the autosave timer
-        if setting_index == 2:
+        if autosave_time:
             self._set_autosave_time()
 
         settings = {key: value.get() for key, value in
