@@ -201,14 +201,17 @@ class Settings_window(Toplevel):
         self.title("Settings")
 
         self._set_layout()
+        self.update()
+        self._center()
 
     def _set_layout(self):
         frame = ttk.Frame(self, padding="20 20 20 20")
         frame.grid(sticky='NESW')
 
         # nuclei colour
-        ttk.Label(frame, text="Nuclei Colour :    ").grid(column=0, row=0,
-                                                          sticky='NE')
+        ttk.Label(frame, text="Nuclei Colour :").grid(column=0, row=0,
+                                                      sticky='NE',
+                                                      padx=(0, 10))
         nuclei_colour_r1 = ttk.Radiobutton(
             frame, text="Blue Channel", variable=self._settings.nuclei_colour,
             value="Blue")
@@ -223,8 +226,8 @@ class Settings_window(Toplevel):
         nuclei_colour_r3.grid(column=1, row=2, sticky='NW')
 
         # fibre colour
-        ttk.Label(frame, text="Fibre Colour :    ").grid(
-            column=0, row=3, sticky='NE', pady=(10, 0))
+        ttk.Label(frame, text="Fibre Colour :").grid(
+            column=0, row=3, sticky='NE', pady=(10, 0), padx=(0, 10))
         fibre_colour_r1 = ttk.Radiobutton(
             frame, text="Blue Channel", variable=self._settings.fibre_colour,
             value="Blue")
@@ -239,8 +242,8 @@ class Settings_window(Toplevel):
         fibre_colour_r3.grid(column=1, row=5, sticky='NW')
 
         # autosave timer
-        ttk.Label(frame, text='Autosave Interval :    ').grid(
-            column=0, row=6, sticky='NE', pady=(10, 0))
+        ttk.Label(frame, text='Autosave Interval :').grid(
+            column=0, row=6, sticky='NE', pady=(10, 0), padx=(0, 10))
         ttk.Radiobutton(
             frame, text="5 Minutes", variable=self._settings.auto_save_time,
             value=5 * 60).grid(column=1, row=6, sticky='NW', pady=(10, 0))
@@ -258,8 +261,8 @@ class Settings_window(Toplevel):
             value=-1).grid(column=1, row=10, sticky='NW')
 
         # save altered images
-        ttk.Label(frame, text='Save Altered Images :    ').grid(
-            column=0, row=11, sticky='NE', pady=(10, 0))
+        ttk.Label(frame, text='Save Altered Images :').grid(
+            column=0, row=11, sticky='NE', pady=(10, 0), padx=(0, 10))
         ttk.Radiobutton(
             frame, text="On", variable=self._settings.save_altered_images,
             value=1).grid(column=1, row=11, sticky='NW', pady=(10, 0))
@@ -268,8 +271,8 @@ class Settings_window(Toplevel):
             value=0).grid(column=1, row=12, sticky='NW')
 
         # fibre counting
-        ttk.Label(frame, text='Count Fibres :    ').grid(
-            column=0, row=13, sticky='NE', pady=(10, 0))
+        ttk.Label(frame, text='Count Fibres :').grid(
+            column=0, row=13, sticky='NE', pady=(10, 0), padx=(0, 10))
         ttk.Radiobutton(
             frame, text="On", variable=self._settings.do_fibre_counting,
             value=1).grid(column=1, row=13, sticky='NW', pady=(10, 0))
@@ -278,24 +281,52 @@ class Settings_window(Toplevel):
             value=0).grid(column=1, row=14, sticky='NW')
 
         # multithreading
-        ttk.Label(frame, text='Number of Threads :    ').grid(
-            column=0, row=15, sticky='NE', pady=(10, 0))
+        ttk.Label(frame, text='Number of Threads :').grid(
+            column=0, row=15, sticky='E', pady=(10, 0), padx=(0, 10))
 
-        self._thread_slider = Scale(
-            frame, from_=0, to=5, orient="horizontal",
-            variable=self._settings.n_threads, showvalue=False, length=150)
-        self._thread_slider.grid(column=1, row=15, sticky='NW', pady=(10, 0))
+        thread_slider_frame = ttk.Frame(frame)
+
+        ttk.Label(thread_slider_frame, textvariable=self._settings.n_threads,
+                  width=3).\
+            pack(side='left', anchor='w', fill='none', expand=False,
+                 padx=(0, 20))
+
+        Scale(thread_slider_frame, from_=0, to=5, orient="horizontal",
+              variable=self._settings.n_threads, showvalue=False, length=150,
+              tickinterval=1).\
+            pack(side='left', anchor='w', fill='none', expand=False)
+
+        thread_slider_frame.grid(column=1, row=15, sticky='NW', pady=(10, 0))
 
         # small objects threshold
-        ttk.Label(frame, text='Dead cells size Threshold :    ').grid(
-            column=0, row=16, sticky='NE', pady=(10, 0))
+        ttk.Label(frame, text='Dead cells size Threshold :').grid(
+            column=0, row=16, sticky='E', pady=(10, 0), padx=(0, 10))
 
-        self._small_objects_slider = Scale(
-            frame, from_=10, to=1000,
-            variable=self._settings.small_objects_threshold,
-            orient="horizontal", length=150, showvalue=False)
-        self._small_objects_slider.grid(column=1, row=16, sticky='NW',
-                                        pady=(10, 0))
+        threshold_slider_frame = ttk.Frame(frame)
+
+        ttk.Label(threshold_slider_frame,
+                  textvariable=self._settings.small_objects_threshold,
+                  width=3). \
+            pack(side='left', anchor='w', fill='none', expand=False,
+                 padx=(0, 20))
+
+        Scale(threshold_slider_frame, from_=10, to=1000,
+              variable=self._settings.small_objects_threshold,
+              orient="horizontal", length=150, showvalue=False,
+              tickinterval=300). \
+            pack(side='left', anchor='w', fill='none', expand=False)
+
+        threshold_slider_frame.grid(column=1, row=16, sticky='NW',
+                                    pady=(10, 0))
+
+    def _center(self):
+        scr_width = self.winfo_screenwidth()
+        scr_height = self.winfo_screenheight()
+        height = self.winfo_height()
+        width = self.winfo_width()
+
+        self.geometry('+%d+%d' % ((scr_width - width) / 2,
+                                  (scr_height - height) / 2))
 
 
 class Splash(Tk):
