@@ -237,6 +237,8 @@ class Zoom_Advanced(ttk.Frame):
         self._hbar.config(command=self._canvas.xview)
         self._canvas.config(xscrollcommand=self._hbar.set)
 
+        self._canvas.configure(xscrollincrement='1', yscrollincrement='1')
+
         self._canvas.update()  # wait till canvas is create
 
     def _set_bindings(self):
@@ -256,10 +258,10 @@ class Zoom_Advanced(ttk.Frame):
         self.bind_all('<Up>', partial(self._arrows, arrow_index=2))
         self.bind_all('<Down>', partial(self._arrows, arrow_index=3))
 
-        self.bind_all('=', partial(self._zoom, delta=1))
-        self.bind_all('+', partial(self._zoom, delta=1))
-        self.bind_all('-', partial(self._zoom, delta=-1))
-        self.bind_all('_', partial(self._zoom, delta=-1))
+        self.bind_all('=', partial(self._zoom, delta=1, mouse=False))
+        self.bind_all('+', partial(self._zoom, delta=1, mouse=False))
+        self.bind_all('-', partial(self._zoom, delta=-1, mouse=False))
+        self.bind_all('_', partial(self._zoom, delta=-1, mouse=False))
 
         self._canvas.bind('<ButtonPress-1>', self._left_click)
         self._canvas.bind('<ButtonPress-3>', self._right_click)
@@ -471,7 +473,7 @@ class Zoom_Advanced(ttk.Frame):
             self._canvas.scan_dragto(event.x, event.y, gain=1)
             self._show_image()  # redraw the image
 
-    def _zoom(self, event, delta=None):
+    def _zoom(self, event, delta=None, mouse=True):
         if self._image is not None:
             if delta is None:
                 if system() == "Linux":
@@ -480,6 +482,8 @@ class Zoom_Advanced(ttk.Frame):
                     delta = int(event.delta / abs(event.delta))
 
             scale = 1.0
+            x_can = self._canvas.canvasx(event.x) if mouse else 0
+            y_can = self._canvas.canvasy(event.y) if mouse else 0
             # Respond to Linux (event.num) or Windows (event.delta) wheel event
             if delta < 0:  # scroll down
                 if self._current_zoom < -4:
@@ -488,6 +492,12 @@ class Zoom_Advanced(ttk.Frame):
                 self._can_scale /= self._delta
                 scale /= self._delta
                 self._current_zoom -= 1
+
+                self._canvas.xview_scroll(int((1 / self._delta - 1) * x_can),
+                                          "units")
+                self._canvas.yview_scroll(int((1 / self._delta - 1) * y_can),
+                                          "units")
+
             elif delta > 0:  # scroll up
                 if self._current_zoom > 4:
                     return  # Arbitrary zoom limit
@@ -497,9 +507,10 @@ class Zoom_Advanced(ttk.Frame):
                 self._current_zoom += 1
             self._canvas.scale('all', 0, 0, scale, scale)  # rescale all the
             # elements in the image
-            self._show_image()
+            self._show_image(x=x_can if delta > 0 else None,
+                             y=y_can if delta > 0 else None)
 
-    def _show_image(self, *_, **__):
+    def _show_image(self, *_, x=None, y=None):
         if self._image is not None:
             scaled_x = int(self._image.width * self._img_scale)
             scaled_y = int(self._image.height * self._img_scale)
@@ -510,3 +521,13 @@ class Zoom_Advanced(ttk.Frame):
             self._canvas.lower(self._image_id)  # set image into background
             self._canvas.image_tk = image_tk
             self._canvas.configure(scrollregion=(0, 0, scaled_x, scaled_y))
+
+            if scaled_x < self._canvas.winfo_width() or \
+                    scaled_y < self._canvas.winfo_height():
+                self._canvas.xview_moveto(0),
+                self._canvas.yview_moveto(0)
+                return
+
+            if x is not None or y is not None:
+                self._canvas.xview_scroll(int((self._delta - 1) * x), "units")
+                self._canvas.yview_scroll(int((self._delta - 1) * y), "units")
