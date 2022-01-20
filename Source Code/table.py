@@ -5,7 +5,7 @@ from xlsxwriter import Workbook
 from shutil import copyfile, rmtree
 from numpy import load, asarray, save
 from cv2 import imread, line, ellipse, imwrite
-from os import path, mkdir
+from pathlib import Path
 from platform import system
 from dataclasses import dataclass, field
 from typing import Optional, List
@@ -152,17 +152,17 @@ class Table(ttk.Frame):
 
         # initialise the canvas and scrollbar
         self._row_height = 50
-        self._base_path = path.abspath('') + "/"
+        self._base_path = Path()
+        self._projects_path = Path() / 'Projects'
 
         self._set_layout()
         self._set_bindings()
         self._set_variables()
 
-    def save_table(self, directory):
+    def save_table(self, directory: Path):
 
         # save to an Excel
-        workbook = Workbook(self._base_path + 'Projects/' + directory +
-                            '/' + directory + '.xlsx')
+        workbook = Workbook(str(directory / str(directory.name + '.xlsx')))
         worksheet = workbook.add_worksheet()
         bold = workbook.add_format({'bold': True, 'align': 'center'})
 
@@ -170,7 +170,7 @@ class Table(ttk.Frame):
         worksheet.write(0, 0, "Image names", bold)
         max_size = 11
         for i, name in enumerate(self.filenames):
-            name = path.basename(self.filenames[i])
+            name = self.filenames[i].name
             worksheet.write(i+2, 0, name)
             max_size = max(len(name), max_size)
         worksheet.set_column(0, 0, width=max_size)
@@ -205,34 +205,38 @@ class Table(ttk.Frame):
 
         workbook.close()
 
-    def load_project(self, directory):
+    def load_project(self, directory: Path):
 
         # reset
         self.reset()
 
         # load the data
-        if path.isfile(directory + '/data.npy') and \
-                path.isdir(directory + '/Original Images'):
-            data = load(directory + '/data.npy', allow_pickle=True).tolist()
-            for item in data:
-                if len(item) == 4:
-                    if type(item[0]) == str and type(item[1]) == list and \
-                            type(item[2]) == list and type(item[3]) == list:
-                        if path.isfile(item[0]):
-                            self.filenames.append(self._base_path + item[0])
-                            self._nuclei.append(
-                                Nuclei([Nucleus(x, y, None, out_fibre)
-                                        for x, y in item[1]] +
-                                       [Nucleus(x, y, None, in_fibre)
-                                        for x, y in item[2]]))
-                            self._fibres.append(
-                                Fibres([Fibre(x, y, None, None)
-                                        for x, y in item[3]]))
+        if (directory / 'data.npy').is_file() and \
+                (directory / 'Original Images').is_dir():
+            data = load(str(directory / 'data.npy'),
+                        allow_pickle=True).tolist()
+            if isinstance(data, list):
+                for item in data:
+                    if len(item) == 4:
+                        if isinstance(item[0], str) and \
+                                isinstance(item[1], list) and \
+                                isinstance(item[2], list) and \
+                                isinstance(item[3], list):
+                            if Path(item[0]).is_file():
+                                self.filenames.append(Path(item[0]))
+                                self._nuclei.append(
+                                    Nuclei([Nucleus(x, y, None, out_fibre)
+                                            for x, y in item[1]] +
+                                           [Nucleus(x, y, None, in_fibre)
+                                            for x, y in item[2]]))
+                                self._fibres.append(
+                                    Fibres([Fibre(x, y, None, None)
+                                            for x, y in item[3]]))
 
         # make the table
         self._make_table()
 
-    def save_data(self, directory):
+    def save_data(self, directory: Path):
 
         # make array
         to_save = []
@@ -242,40 +246,32 @@ class Table(ttk.Frame):
             nuc_in = [(nuc.x_pos, nuc.y_pos) for nuc in self._nuclei[i]
                       if nuc.color == in_fibre]
             fib = [(fib.x_pos, fib.y_pos) for fib in self._fibres[i]]
-            to_save.append(["Projects/" + directory + '/Original Images/' +
-                            path.basename(filename),
+            to_save.append([str(directory / 'Original Images' / filename.name),
                             nuc_out,
                             nuc_in,
                             fib])
 
         # convert to numpy
-        arr = asarray(to_save)
-        save(self._base_path + 'Projects/' + directory + '/data', arr)
+        save(str(directory / 'data'), asarray(to_save))
 
-    def save_originals(self, directory):
+    def save_originals(self, directory: Path):
 
         # create a directory with the original images
-        if not path.isdir(self._base_path + 'Projects/' + directory +
-                          '/Original Images'):
-            mkdir(self._base_path + 'Projects/' + directory +
-                  '/Original Images')
+        if not (directory / 'Original Images').is_dir():
+            Path.mkdir(directory / 'Original Images')
 
         # save the images
         for filename in self.filenames:
-            basename = path.basename(filename)
-            if filename != self._base_path + 'Projects/' + directory + \
-                    '/Original Images/' + basename:
-                copyfile(filename, self._base_path + 'Projects/' + directory
-                         + '/Original Images/' + basename)
+            if self._projects_path not in filename.parents:
+                copyfile(filename, directory / 'Original Images' /
+                         filename.name)
 
-    def save_altered_images(self, directory):
+    def save_altered_images(self, directory: Path):
 
         # create a directory with the altered images
-        if path.isdir(self._base_path + 'Projects/' + directory +
-                      '/Altered Images'):
-            rmtree(self._base_path + 'Projects/' + directory +
-                   '/Altered Images')
-        mkdir(self._base_path + 'Projects/' + directory + '/Altered Images')
+        if (directory / 'Altered Images').is_dir():
+            rmtree(directory / 'Altered Images')
+        Path.mkdir(directory / 'Altered Images')
 
         # read the images and then save them
         for i, filename in enumerate(self.filenames):
@@ -317,9 +313,9 @@ class Table(ttk.Frame):
         self._hovering_index = None
         self._nuclei = []
         self._fibres = []
-        self.filenames = []
+        self.filenames: List[Path] = []
 
-    def add_images(self, filenames):
+    def add_images(self, filenames: List[Path]):
 
         # remove everything previous
         for item in self._canvas.find_all():
@@ -396,12 +392,11 @@ class Table(ttk.Frame):
         # handles to widgets on the canvas
         self._items = []
 
-    def _draw_nuclei_save(self, index, project_name):
+    def _draw_nuclei_save(self, index, project_name: Path):
 
         # loop through the fibres
-        cv_img = imread(self._base_path + "Projects/" + project_name +
-                        "/Original Images/" +
-                        path.basename(self.filenames[index]))
+        cv_img = imread(str(project_name / "Original Images" /
+                        self.filenames[index].name))
         square_size = 9
         for fib in self._fibres[index]:
             x, y = int(fib.x_pos), int(fib.y_pos)
@@ -423,9 +418,8 @@ class Table(ttk.Frame):
                     (255, 255, 255), 1)
 
         # save it
-        imwrite(self._base_path + "Projects/" + project_name +
-                "/Altered Images/"
-                + path.basename(self.filenames[index])[:-4] + ".png",
+        imwrite(str(project_name / "Altered Images" /
+                    self.filenames[index].name),
                 cv_img)
 
     def _on_wheel(self, event):
@@ -574,7 +568,7 @@ class Table(ttk.Frame):
                 50, top, 50, middle, width=1, fill=label_line)
 
             # set the filename
-            file_name = path.basename(name)
+            file_name = name.name
             if len(file_name) >= 59:
                 file_name = '...' + file_name[-59:]
 

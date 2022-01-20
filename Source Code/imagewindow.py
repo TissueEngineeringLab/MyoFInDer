@@ -268,7 +268,7 @@ class Zoom_Advanced(ttk.Frame):
 
     def _set_variables(self):
         self._image = None  # open image
-        self._image_path = ""
+        self._image_path = None
         self._img_scale = 1.0  # scale for the canvas image
         self._can_scale = 1.0
         self._delta = 1.3  # zoom delta
@@ -425,7 +425,7 @@ class Zoom_Advanced(ttk.Frame):
     def _set_image(self):
         # load the image with the correct channels
         if self._image_path:
-            cv_img = cvtColor(imread(self._image_path), COLOR_BGR2RGB)
+            cv_img = cvtColor(imread(str(self._image_path)), COLOR_BGR2RGB)
             if not self._settings.red_channel_bool.get():
                 cv_img[:, :, 0] = zeros([cv_img.shape[0], cv_img.shape[1]])
             if not self._settings.green_channel_bool.get():

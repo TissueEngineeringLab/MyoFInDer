@@ -3,7 +3,6 @@
 from tkinter import ttk, filedialog, Canvas, Tk, IntVar, \
     Toplevel, Scale, PhotoImage, Menu, StringVar, BooleanVar
 from PIL import ImageTk, Image
-from os import path, mkdir
 from platform import system, release
 
 if system() == "Windows":
@@ -23,6 +22,7 @@ from time import time, sleep
 from json import load, dump
 from functools import partial
 from dataclasses import dataclass, field
+from pathlib import Path
 
 # set better resolution
 if system() == "Windows" and int(release()) >= 8:
@@ -101,6 +101,8 @@ class Project_name_window(Toplevel):
         self._main_window = main_window
         self._new_project = new_project
 
+        self._projects_path = self._main_window.projects_path
+
         self._warning_var = StringVar(value='')
 
         self.resizable(False, False)
@@ -150,9 +152,7 @@ class Project_name_window(Toplevel):
 
         # save button
         self._folder_name_window_save_button = ttk.Button(
-            self, text='Save', width=30,
-            command=partial(self._main_window.save_project,
-                            self._name_entry.get(), True))
+            self, text='Save', width=30, command=self._enter_pressed)
         self._folder_name_window_save_button.pack(
             anchor='n', expand=False, fill='none', side='top', padx=20,
             pady=7)
@@ -172,7 +172,7 @@ class Project_name_window(Toplevel):
             return True
 
         # check if it already exists
-        if path.isdir(self._main_window.base_path + 'Projects/' + new_entry):
+        if (self._projects_path / new_entry).is_dir():
             self._warning_var.set('This project already exists')
             self._folder_name_window_save_button['state'] = 'disabled'
             return True
@@ -186,7 +186,8 @@ class Project_name_window(Toplevel):
 
         # if the window exists and the save button is enabled
         if self._folder_name_window_save_button['state'] == 'enabled':
-            self._main_window.save_project(self._name_entry.get(), True)
+            self._main_window.save_project(self._projects_path /
+                                           self._name_entry.get(), True)
 
 
 class Settings_window(Toplevel):
@@ -424,9 +425,10 @@ class Main_window(Tk):
         else:
             self.attributes('-zoomed', True)
 
-        self.base_path = path.abspath('') + "/"
+        self._base_path = Path()
+        self.projects_path = self._base_path / 'Projects'
 
-        icon = PhotoImage(file=self.base_path + "icon.png")
+        icon = PhotoImage(file=self._base_path / "icon.png")
         self.iconphoto(True, icon)
 
         self._load_settings()
@@ -446,8 +448,8 @@ class Main_window(Tk):
         self.mainloop()
 
     def _load_settings(self):
-        if path.isfile(self.base_path + 'settings.py'):
-            with open(self.base_path + 'settings.py', 'r') as param_file:
+        if (self._base_path / 'settings.py').is_file():
+            with open(self._base_path / 'settings.py', 'r') as param_file:
                 settings = load(param_file)
         else:
             settings = {}
@@ -456,11 +458,12 @@ class Main_window(Tk):
         for key, value in settings.items():
             getattr(self.settings, key).set(value)
 
-        if path.isfile(self.base_path + 'recent_projects.py'):
-            with open(self.base_path +
+        if (self._base_path / 'recent_projects.py').is_file():
+            with open(self._base_path /
                       'recent_projects.py', 'r') as recent_projects:
                 recent = load(recent_projects)
-            self._recent_projects = recent['recent_projects']
+            self._recent_projects = [Path(proj) for proj in
+                                     recent['recent_projects'] if proj]
         else:
             self._recent_projects = []
 
@@ -498,17 +501,17 @@ class Main_window(Tk):
         self._small_objects_slider = None
 
         # automatic save
-        self._auto_save_name = 'AUTOSAVE'
+        self._auto_save_path = self.projects_path / 'AUTOSAVE'
         self._re_save_images = False
         self._auto_save_job = None
 
         self._max_recent_projects = 20
+        self._name_window = None
 
         # set the warning var for folder name input
         self._warning_var = StringVar(value='')
         self._name_entry = None
-        self._folder_name_window_save_button = None
-        self._current_project = ''
+        self._current_project = None
 
     def _set_menu(self):
         self._menu_bar = Menu(self)
@@ -531,9 +534,9 @@ class Main_window(Tk):
         self._file_menu.add_command(label='Load Automatic Save',
                                     state='disabled',
                                     command=partial(self._load_project,
-                                                    self._auto_save_name))
+                                                    self._auto_save_path))
 
-        if path.isdir(self.base_path + 'Projects/' + self._auto_save_name):
+        if self._auto_save_path.is_dir():
             self._file_menu.entryconfig("Load Automatic Save", state='normal')
         self._file_menu.add_separator()
 
@@ -560,20 +563,18 @@ class Main_window(Tk):
 
     def _set_recent_projects(self):
         # load the list of recent projects if these projects exist
-        if path.isdir(self.base_path + 'Projects'):
-            loaded = list(self._recent_projects)
-            for folder in loaded:
-                if path.isdir(self.base_path + 'Projects/' + folder) \
-                        and folder != '':
+        if self.projects_path.is_dir():
+            for path in self._recent_projects:
+                if path.is_dir() and (path / 'data.npy').is_file():
                     self._recent_projects_menu.add_command(
-                        label="Load '" + folder + "'",
-                        command=partial(self._load_project, folder))
+                        label="Load '" + path.name + "'",
+                        command=partial(self._load_project, path))
                 else:
-                    self._recent_projects.remove(folder)
+                    self._recent_projects.remove(path)
         else:
-            mkdir(self.base_path + 'Projects')
+            Path.mkdir(self.projects_path)
 
-        if len(self._recent_projects) == 0:
+        if not self._recent_projects:
             self._file_menu.entryconfig("Recent Projects", state='disabled')
 
     def _set_layout(self):
@@ -673,23 +674,23 @@ class Main_window(Tk):
             self._auto_save_job = self.after(self.settings.auto_save_time.get()
                                              * 1000, self.save_project)
 
-    def save_project(self, directory=None, save_as=False):
+    def save_project(self, directory: Path = None, save_as=False):
 
         if directory is None:
-            directory = self._auto_save_name
+            directory = self._auto_save_path
 
         # don't autosave if not needed
         if self.settings.auto_save_time.get() <= 0 and \
-                directory == self._auto_save_name:
+                directory == self._auto_save_path:
             return
 
         if save_as:
             self._re_save_images = True
 
-        if directory != self._auto_save_name:
+        if directory != self._auto_save_path:
             # destroy the save as window if it exists
-            if self._folder_name_window_save_button is not None:
-                self._folder_name_window_save_button.master.destroy()
+            if self._name_window is not None:
+                self._name_window.destroy()
 
             # set the save button
             self._save_button['state'] = 'disabled'
@@ -701,19 +702,19 @@ class Main_window(Tk):
             # change the current project name
             self._current_project = directory
             self.title("Cellen Tellen - Project '" +
-                       self._current_project + "'")
+                       self._current_project.name + "'")
 
             # do the recent projects sh*t
-            if not path.isdir(self.base_path + 'Projects/' + directory):
+            if not directory.is_dir():
                 self._recent_projects_menu.insert_command(
-                    index=0, label="Load '" + directory + "'",
+                    index=0, label="Load '" + directory.name + "'",
                     command=partial(self._load_project, directory))
                 self._recent_projects.insert(0, directory)
                 self._file_menu.entryconfig("Recent Projects", state='normal')
                 if len(self._recent_projects) > self._max_recent_projects:
                     # remove the last
                     self._recent_projects_menu.delete(
-                        "Load '" + self._recent_projects[-1] +
+                        "Load '" + self._recent_projects[-1].name +
                         "'")
                     self._recent_projects.pop(len(self._recent_projects) - 1)
 
@@ -726,31 +727,33 @@ class Main_window(Tk):
                 self._set_autosave_time()
 
         # create the folder
-        if not path.isdir(self.base_path + 'Projects/' + directory):
-            mkdir(self.base_path + 'Projects/' + directory)
+        if not directory.is_dir():
+            Path.mkdir(directory)
 
         # create saving popup
         saving_popup = Toplevel(self)
         saving_popup.grab_set()
         saving_popup.title("Saving....")
 
-        ttk.Label(saving_popup, text="Saving to '" + directory + "' ..."). \
-            pack(anchor='center', expand=False, fill='none')
+        ttk.Label(saving_popup, text="Saving to '" + directory.name +
+                                     "' ..."). \
+            pack(anchor='center', expand=False, fill='none', padx=10, pady=10)
         saving_popup.update()
         self.update()
         saving_popup.update()
+        sleep(1)
 
         # save the table
         self._nuclei_table.save_table(directory)
 
         # save the originals
-        if self._re_save_images or directory == self._auto_save_name:
+        if self._re_save_images or directory == self._auto_save_path:
             self._nuclei_table.save_originals(directory)
         self._re_save_images = False
 
         # save the altered images
-        if self.settings.save_altered_images.get() == 1 or \
-                directory == self._auto_save_name:
+        if self.settings.save_altered_images.get() or \
+                directory == self._auto_save_path:
             self._nuclei_table.save_altered_images(directory)
 
         # save the data
@@ -759,13 +762,13 @@ class Main_window(Tk):
         # destroy the popup
         saving_popup.destroy()
 
-    def _load_project(self, directory):
+    def _load_project(self, directory: Path):
 
         # stop processing
         self._stop_processing()
 
         # set the window title
-        self.title("Cellen Tellen - Project '" + directory + "'")
+        self.title("Cellen Tellen - Project '" + directory.name + "'")
         self._current_project = directory
 
         # set the save button
@@ -775,29 +778,29 @@ class Main_window(Tk):
             self._file_menu.index("Delete Current Project"), state="normal")
 
         # do the recent projects sh*t
-        if path.isdir(self.base_path + 'Projects/' + directory) \
-                and directory != self._auto_save_name:
+        if (self.projects_path / directory).is_dir() \
+                and directory != self._auto_save_path:
             # remove it first
             if directory in self._recent_projects:
-                self._recent_projects_menu.delete("Load '" + directory + "'")
+                self._recent_projects_menu.delete("Load '" + directory.name +
+                                                  "'")
                 self._recent_projects.remove(directory)
 
             self._recent_projects_menu.insert_command(
-                index=0, label="Load '" + directory + "'",
+                index=0, label="Load '" + directory.name + "'",
                 command=partial(self._load_project, directory))
             self._recent_projects.insert(0, directory)
             self._file_menu.entryconfig("Recent Projects", state='normal')
             if len(self._recent_projects) > self._max_recent_projects:
                 # remove the last
                 self._recent_projects_menu.delete(
-                    "Load '" + self._recent_projects[-1] + "'")
+                    "Load '" + self._recent_projects[-1].name + "'")
                 self._recent_projects.pop(len(self._recent_projects) - 1)
 
             self._save_settings()
 
         # load the project
-        self._nuclei_table.load_project(self.base_path + 'Projects/'
-                                        + directory)
+        self._nuclei_table.load_project(self.projects_path / directory)
         self._re_save_images = False
 
         # if there are images loaded
@@ -827,12 +830,14 @@ class Main_window(Tk):
         settings = {key: value.get() for key, value in
                     self.settings.__dict__.items()}
 
-        with open(self.base_path + 'settings.py', 'w') as param_file:
+        with open(self._base_path / 'settings.py', 'w') as param_file:
             dump(settings, param_file)
 
-        with open(self.base_path +
-                  'recent_projects.py', 'w') as recent_projects:
-            dump({'recent_projects': self._recent_projects}, recent_projects)
+        with open(self._base_path /
+                  'recent_projects.py', 'w') as recent_projects_file:
+            dump({'recent_projects': [str(path) for path in
+                                      self._recent_projects]},
+                 recent_projects_file)
 
     def _stop_processing(self):
 
@@ -890,9 +895,9 @@ class Main_window(Tk):
     def set_unsaved_status(self):
 
         # set the unsaved status
-        if self._current_project != '':
-            self.title("Cellen Tellen - Project '" + self._current_project +
-                       "' (Unsaved)")
+        if self._current_project is not None:
+            self.title("Cellen Tellen - Project '" + self._current_project.name
+                       + "' (Unsaved)")
             self._save_button['state'] = 'enabled'
             self._save_button['text'] = 'Save'
 
@@ -1011,7 +1016,7 @@ class Main_window(Tk):
     def save_button_pressed(self):
 
         # save as if necessary
-        if self._current_project == '':
+        if self._current_project is None:
             self._create_project_name_window()
         else:
             # perform normal save
@@ -1020,7 +1025,7 @@ class Main_window(Tk):
     def _create_project_name_window(self, new_project=False):
 
         # create the window
-        Project_name_window(self, new_project)
+        self. _name_window = Project_name_window(self, new_project)
 
     def _change_indications(self):
         if self.draw_nuclei.get():
@@ -1051,7 +1056,7 @@ class Main_window(Tk):
 
         # set window title
         self.title("Cellen Tellen - New Project (Unsaved)")
-        self._current_project = ''
+        self._current_project = None
 
         # call for project name
         self._create_project_name_window(True)
@@ -1064,7 +1069,8 @@ class Main_window(Tk):
                                         '.bmp', '.hdr'))],
             parent=self, title='Please select a directory')
 
-        if len(file_names) != 0:
+        if file_names:
+            file_names = [Path(path) for path in file_names]
             # stop processing
             self._stop_processing()
 
@@ -1083,16 +1089,17 @@ class Main_window(Tk):
 
     def _delete_current_project(self):
 
-        if self._current_project != '':
+        if self._current_project is not None:
             # delete the project
-            rmtree(self.base_path + 'Projects/' + self._current_project)
+            rmtree(self._current_project)
 
             # remove the load button
             self._recent_projects_menu.delete(
                 self._recent_projects_menu.index("Load '" +
-                                                 self._current_project + "'"))
+                                                 self._current_project.name +
+                                                 "'"))
             self._recent_projects.remove(self._current_project)
-            if len(self._recent_projects) == 0:
+            if not self._recent_projects:
                 self._file_menu.entryconfig("Recent Projects",
                                             state='disabled')
             self._save_settings()
@@ -1100,7 +1107,7 @@ class Main_window(Tk):
             # create empty project
             self._create_empty_project()
 
-            if self._current_project == self._auto_save_name:
+            if self._current_project == self._auto_save_path:
                 self._file_menu.entryconfig("Load Automatic Save",
                                             state='disabled')
 
@@ -1108,13 +1115,18 @@ class Main_window(Tk):
 
         # ask a folder
         folder = filedialog.askdirectory(
-            initialdir=path.normpath(self.base_path + "Projects"),
+            initialdir=self.projects_path,
+            mustexist=True,
             title="Choose a Project Folder")
 
+        if not folder:
+            return
+
+        folder = Path(folder)
+
         # load this sh*t
-        if (folder != '') and path.isdir(self.base_path + 'Projects/' +
-                                         path.basename(folder)):
-            self._load_project(path.basename(folder))
+        if (folder / 'data.npy').is_file():
+            self._load_project(folder)
 
     def _nuclei_colour_sel(self, _, __, ___):
 
