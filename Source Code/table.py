@@ -397,25 +397,23 @@ class Table(ttk.Frame):
         # loop through the fibres
         cv_img = imread(str(project_name / "Original Images" /
                         self.filenames[index].name))
-        square_size = 9
+        square_size = 20
         for fib in self._fibres[index]:
             x, y = int(fib.x_pos), int(fib.y_pos)
             line(cv_img, (x + square_size, y), (x - square_size, y),
-                 (0, 0, 255), 2)
+                 (0, 0, 255), 4)
             line(cv_img, (x, y + square_size), (x, y - square_size),
-                 (0, 0, 255), 2)
+                 (0, 0, 255), 4)
 
         # loop through the nuclei
         for nuc in self._nuclei[index]:
             centre = (int(nuc.x_pos), int(nuc.y_pos))
             if nuc.color == out_fibre:
-                ellipse(cv_img, centre, (3, 3), 0, 0, 360,
+                ellipse(cv_img, centre, (6, 6), 0, 0, 360,
                         (0, 0, 255), -1)
             else:
-                ellipse(cv_img, centre, (3, 3), 0, 0, 360,
+                ellipse(cv_img, centre, (6, 6), 0, 0, 360,
                         (0, 255, 255), -1)
-            ellipse(cv_img, centre, (4, 4), 0, 0, 360,
-                    (255, 255, 255), 1)
 
         # save it
         imwrite(str(project_name / "Altered Images" /
