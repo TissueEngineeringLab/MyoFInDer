@@ -404,7 +404,7 @@ class Table(ttk.Frame):
                         path.basename(self.filenames[index]))
         square_size = 9
         for fib in self._fibres[index]:
-            x, y = fib.x_pos, fib.y_pos
+            x, y = int(fib.x_pos), int(fib.y_pos)
             line(cv_img, (x + square_size, y), (x - square_size, y),
                  (0, 0, 255), 2)
             line(cv_img, (x, y + square_size), (x, y - square_size),
@@ -412,7 +412,7 @@ class Table(ttk.Frame):
 
         # loop through the nuclei
         for nuc in self._nuclei[index]:
-            centre = (nuc.x_pos, nuc.y_pos)
+            centre = (int(nuc.x_pos), int(nuc.y_pos))
             if nuc.color == out_fibre:
                 ellipse(cv_img, centre, (3, 3), 0, 0, 360,
                         (0, 0, 255), -1)
