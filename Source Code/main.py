@@ -65,6 +65,18 @@ class Settings:
         default_factory=partial(BooleanVar, value=False, name='show_fibres'))
 
 
+class Saving_popup(Toplevel):
+
+    def __init__(self, main_window, directory):
+        super().__init__(main_window)
+
+        self.title("Saving....")
+        ttk.Label(self, text="Saving to '" + directory.name + "' ..."). \
+            pack(anchor='center', expand=False, fill='none', padx=10, pady=10)
+
+        self.update()
+
+
 class Warning_window(Toplevel):
 
     def __init__(self, main_window, return_var):
@@ -860,14 +872,7 @@ class Main_window(Tk):
             Path.mkdir(directory)
 
         # create saving popup
-        saving_popup = Toplevel(self)
-        saving_popup.grab_set()
-        saving_popup.title("Saving....")
-
-        ttk.Label(saving_popup, text="Saving to '" + directory.name +
-                                     "' ..."). \
-            pack(anchor='center', expand=False, fill='none', padx=10, pady=10)
-        saving_popup.update()
+        saving_popup = Saving_popup(self, directory)
         sleep(1)
 
         # save the table
