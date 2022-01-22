@@ -8,7 +8,7 @@ from platform import system, release
 if system() == "Windows":
   from ctypes import pythonapi, py_object, windll as dll
 else:
-  from ctypes import pythonapi, py_object, cdll as dll
+  from ctypes import pythonapi, py_object
 
 from table import Table
 from imagewindow import Zoom_Advanced
@@ -20,13 +20,21 @@ from nucleiFibreSegmentation import deepcell_functie, initialize_mesmer
 from threading import get_ident, active_count, Thread
 from time import time, sleep
 from json import load, dump
-from functools import partial
+from functools import partial, wraps
 from dataclasses import dataclass, field
 from pathlib import Path
 
 # set better resolution
 if system() == "Windows" and int(release()) >= 8:
     dll.shcore.SetProcessDpiAwareness(True)
+
+
+def _save_before_closing(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if self._create_warning_window():
+            func(self, *args, **kwargs)
+    return wrapper
 
 
 @dataclass
@@ -59,17 +67,20 @@ class Settings:
 
 class Warning_window(Toplevel):
 
-    def __init__(self, main_window):
+    def __init__(self, main_window, return_var):
         super().__init__(main_window)
 
         self._main_window = main_window
+        self._return_var = return_var
 
         self.resizable(False, False)
         self.grab_set()
 
         self.title("Hold on!")
+        self.bind('<Destroy>', self._cancel)
 
         self._set_layout()
+        self.update()
 
     def _set_layout(self):
         ttk.Label(self,
@@ -78,28 +89,36 @@ class Warning_window(Toplevel):
                  padx=20, pady=20)
 
         # create the buttons
-        ttk.Button(self, text='Save and Close',
-                   command=self._main_window.save_button_pressed, width=40). \
+        ttk.Button(self, text='Save Before Continuing',
+                   command=self._save, width=40). \
             pack(anchor='n', expand=False, fill='none', side='top',
                  padx=20, pady=7)
-        ttk.Button(self, text='Close Without Saving',
-                   command=self._main_window.destroy, width=40). \
+        ttk.Button(self, text='Continue Without Saving',
+                   command=self._ignore,
+                   width=40). \
             pack(anchor='n', expand=False, fill='none', side='top',
                  padx=20, pady=7)
         ttk.Button(self, text='Cancel', command=self.destroy, width=40). \
             pack(anchor='n', expand=False, fill='none', side='top',
                  padx=20, pady=7)
 
-        self.update()
+    def _save(self):
+        self._return_var.set(2)
+
+    def _ignore(self):
+        self._return_var.set(1)
+
+    def _cancel(self, *_, **__):
+        self._return_var.set(0)
 
 
 class Project_name_window(Toplevel):
 
-    def __init__(self, main_window, new_project):
+    def __init__(self, main_window, return_var):
         super().__init__(main_window)
 
         self._main_window = main_window
-        self._new_project = new_project
+        self._return_var = return_var
 
         self._projects_path = self._main_window.projects_path
 
@@ -108,27 +127,20 @@ class Project_name_window(Toplevel):
         self.resizable(False, False)
         self.grab_set()
 
-        if new_project:
-            self.title("Creating a New Empty Project")
-        else:
-            self.title("Saving the Current Project")
+        self.bind("<Destroy>", self._cancel)
+        self.title("Saving the Current Project")
 
         self._set_layout()
+        self.update()
         self._check_project_name_entry(self._name_entry.get())
 
     def _set_layout(self):
-        if self._new_project:
-            ask_label = ttk.Label(self,
-                                  text='Choose a name for your NEW EMPTY '
-                                       'Project')
-            ask_label.pack(anchor='n', expand=False, fill='none', side='top',
-                           padx=20, pady=10)
-        else:
-            ask_label = ttk.Label(self,
-                                  text='Choose a name for your '
-                                       'CURRENT Project :')
-            ask_label.pack(anchor='n', expand=False, fill='none', side='top',
-                           padx=20, pady=10)
+
+        ask_label = ttk.Label(self,
+                              text='Choose a name for your '
+                                   'current Project :')
+        ask_label.pack(anchor='n', expand=False, fill='none', side='top',
+                       padx=20, pady=10)
 
         # set the warning label (gives warnings when the name is bad)
         self._warning_var.set('')
@@ -158,8 +170,6 @@ class Project_name_window(Toplevel):
             pady=7)
         self.bind('<Return>', self._enter_pressed)
 
-        self.update()
-
     def _check_project_name_entry(self, new_entry):
 
         # check if it is a valid name
@@ -186,8 +196,13 @@ class Project_name_window(Toplevel):
 
         # if the window exists and the save button is enabled
         if self._folder_name_window_save_button['state'] == 'enabled':
-            self._main_window.save_project(self._projects_path /
-                                           self._name_entry.get(), True)
+            self._return_var.set(1)
+
+    def _cancel(self, *_, **__):
+        self._return_var.set(0)
+
+    def return_name(self):
+        return self._name_entry.get()
 
 
 class Settings_window(Toplevel):
@@ -425,7 +440,7 @@ class Main_window(Tk):
         else:
             self.attributes('-zoomed', True)
 
-        self._base_path = Path()
+        self._base_path = Path(__file__).parent
         self.projects_path = self._base_path / 'Projects'
 
         icon = PhotoImage(file=self._base_path / "icon.png")
@@ -444,7 +459,7 @@ class Main_window(Tk):
         self._save_settings(autosave_time=True)
 
         self.update()
-        self.protocol("WM_DELETE_WINDOW", self._create_warning_window)
+        self.protocol("WM_DELETE_WINDOW", self._safe_destroy)
         self.mainloop()
 
     def _load_settings(self):
@@ -520,20 +535,22 @@ class Main_window(Tk):
 
         self._file_menu = Menu(self._menu_bar, tearoff=0)
         self._file_menu.add_command(label="New Empty Project",
-                                    command=self._create_empty_project)
+                                    command=self._safe_empty_project)
         self._file_menu.add_command(label="Save Project As",
-                                    command=self._create_project_name_window)
+                                    command=partial(self._save_button_pressed,
+                                                    force_save_as=True))
         self._file_menu.add_command(label="Delete Current Project",
                                     command=self._delete_current_project)
         self._file_menu.entryconfig(
             self._file_menu.index("Delete Current Project"), state="disabled")
-        self._file_menu.add_command(label="Load From Explorer",
-                                    command=self._load_project_from_explorer)
+        self._file_menu.add_command(
+            label="Load From Explorer",
+            command=self._safe_load_explorer)
         self._file_menu.add_separator()
 
         self._file_menu.add_command(label='Load Automatic Save',
                                     state='disabled',
-                                    command=partial(self._load_project,
+                                    command=partial(self._safe_load,
                                                     self._auto_save_path))
 
         if self._auto_save_path.is_dir():
@@ -548,7 +565,7 @@ class Main_window(Tk):
 
         self._settings_menu = Menu(self._menu_bar, tearoff=0)
         self._settings_menu.add_command(
-            label="Settings", command=self._create_settings_window)
+            label="Settings", command=partial(Settings_window, self))
         self._menu_bar.add_cascade(label="Settings", menu=self._settings_menu)
 
         self._help_menu = Menu(self._menu_bar, tearoff=0)
@@ -568,7 +585,7 @@ class Main_window(Tk):
                 if path.is_dir() and (path / 'data.npy').is_file():
                     self._recent_projects_menu.add_command(
                         label="Load '" + path.name + "'",
-                        command=partial(self._load_project, path))
+                        command=partial(self._safe_load, path))
                 else:
                     self._recent_projects.remove(path)
         else:
@@ -650,7 +667,7 @@ class Main_window(Tk):
 
         # save altered images and table
         self._save_button = ttk.Button(self._button_frame, text='Save As',
-                                       command=self.save_button_pressed,
+                                       command=self._save_button_pressed,
                                        state='enabled')
         self._save_button.pack(fill="x", anchor="w", side='left', padx=3,
                                pady=5)
@@ -662,6 +679,123 @@ class Main_window(Tk):
         self._which_indicator_button.pack(fill="x", anchor="w", side='left',
                                           padx=3, pady=5)
 
+    def _save_settings_callback(self, name, _, __):
+        if name == 'auto_save_time':
+            self._save_settings(autosave_time=True)
+        elif name == 'save_altered':
+            self._save_settings(enable_save=True)
+        else:
+            self._save_settings()
+
+    def _save_settings(self, autosave_time=False, enable_save=False):
+
+        # enable save button if needed
+        if enable_save:
+            self._save_button['state'] = 'enabled'
+
+        # set the autosave timer
+        if autosave_time:
+            self._set_autosave_time()
+
+        settings = {key: value.get() for key, value in
+                    self.settings.__dict__.items()}
+
+        with open(self._base_path / 'settings.py', 'w') as param_file:
+            dump(settings, param_file)
+
+        with open(self._base_path /
+                  'recent_projects.py', 'w') as recent_projects_file:
+            dump({'recent_projects': [str(path) for path in
+                                      self._recent_projects]},
+                 recent_projects_file)
+
+    def _delete_current_project(self):
+
+        # Todo: check if they're sure
+        #  save path relative to root (for cases when the parent dic
+        #  is moved)
+        #  duplicates in recent projects
+
+        if self._current_project is not None:
+            # delete the project
+            rmtree(self._current_project)
+
+            # remove the load button
+            self._recent_projects_menu.delete(
+                self._recent_projects_menu.index("Load '" +
+                                                 self._current_project.name +
+                                                 "'"))
+            if self._current_project in self._recent_projects:
+                self._recent_projects.remove(self._current_project)
+            if not self._recent_projects:
+                self._file_menu.entryconfig("Recent Projects",
+                                            state='disabled')
+            self._save_settings()
+
+            if self._current_project == self._auto_save_path:
+                self._file_menu.entryconfig("Load Automatic Save",
+                                            state='disabled')
+
+            # create empty project
+            self._create_empty_project()
+
+    def _load_project_from_explorer(self):
+
+        # ask a folder
+        folder = filedialog.askdirectory(
+            initialdir=self.projects_path,
+            mustexist=True,
+            title="Choose a Project Folder")
+
+        if not folder:
+            return
+
+        folder = Path(folder)
+
+        # load this sh*t
+        if (folder / 'data.npy').is_file():
+            self._load_project(folder)
+
+    def _create_empty_project(self):
+
+        # reset everything
+        self._stop_processing()
+        self._nuclei_table.reset()
+        self._image_canvas.reset()
+
+        # set the save button
+        self._save_button['state'] = 'enabled'
+        self._save_button['text'] = 'Save As'
+        self._process_images_button['state'] = 'disabled'
+        self._file_menu.entryconfig(self._file_menu.index("Delete Current "
+                                                          "Project"),
+                                    state="disabled")
+
+        # set window title
+        self.title("Cellen Tellen - New Project (Unsaved)")
+        self._current_project = None
+
+    def _select_images(self):
+
+        # get the filenames with a dialog box
+        file_names = filedialog.askopenfilenames(
+            filetypes=[('Image Files', ('.tif', '.png', '.jpg', '.jpeg',
+                                        '.bmp', '.hdr'))],
+            parent=self, title='Please select a directory')
+
+        if file_names:
+            file_names = [Path(path) for path in file_names]
+            # stop processing
+            self._stop_processing()
+
+            # enable the process image buttons
+            self._process_images_button["state"] = 'enabled'
+
+            # add them to the table
+            self._re_save_images = True
+            self._nuclei_table.add_images(file_names)
+            self.set_unsaved_status()
+
     def _set_autosave_time(self):
 
         # if a previous timer was set, cancel it
@@ -672,9 +806,9 @@ class Main_window(Tk):
         # set a new timer if needed
         if self.settings.auto_save_time.get() > 0:
             self._auto_save_job = self.after(self.settings.auto_save_time.get()
-                                             * 1000, self.save_project)
+                                             * 1000, self._save_project)
 
-    def save_project(self, directory: Path = None, save_as=False):
+    def _save_project(self, directory: Path = None, save_as=False):
 
         if directory is None:
             directory = self._auto_save_path
@@ -691,6 +825,7 @@ class Main_window(Tk):
             # destroy the save as window if it exists
             if self._name_window is not None:
                 self._name_window.destroy()
+                self._name_window = None
 
             # set the save button
             self._save_button['state'] = 'disabled'
@@ -809,35 +944,14 @@ class Main_window(Tk):
         else:
             self._process_images_button['state'] = 'disabled'
 
-    def _save_settings_callback(self, name, _, __):
-        if name == 'auto_save_time':
-            self._save_settings(autosave_time=True)
-        elif name == 'save_altered':
-            self._save_settings(enable_save=True)
-        else:
-            self._save_settings()
+    def set_unsaved_status(self):
 
-    def _save_settings(self, autosave_time=False, enable_save=False):
-
-        # enable save button if needed
-        if enable_save:
+        # set the unsaved status
+        if self._current_project is not None:
+            self.title("Cellen Tellen - Project '" + self._current_project.name
+                       + "' (Unsaved)")
             self._save_button['state'] = 'enabled'
-
-        # set the autosave timer
-        if autosave_time:
-            self._set_autosave_time()
-
-        settings = {key: value.get() for key, value in
-                    self.settings.__dict__.items()}
-
-        with open(self._base_path / 'settings.py', 'w') as param_file:
-            dump(settings, param_file)
-
-        with open(self._base_path /
-                  'recent_projects.py', 'w') as recent_projects_file:
-            dump({'recent_projects': [str(path) for path in
-                                      self._recent_projects]},
-                 recent_projects_file)
+            self._save_button['text'] = 'Save'
 
     def _stop_processing(self):
 
@@ -891,15 +1005,6 @@ class Main_window(Tk):
                                 daemon=True)
                     t1.start()
                     print(t1)
-
-    def set_unsaved_status(self):
-
-        # set the unsaved status
-        if self._current_project is not None:
-            self.title("Cellen Tellen - Project '" + self._current_project.name
-                       + "' (Unsaved)")
-            self._save_button['state'] = 'enabled'
-            self._save_button['text'] = 'Save'
 
     def _process_thread(self, index, file_names, is_thread,
                         small_objects_thresh):
@@ -1001,31 +1106,71 @@ class Main_window(Tk):
             self._which_indicator_button['text'] = 'Manual : Nuclei'
             self._which_indicator_button['state'] = 'disabled'
 
+    # def _save_before_closing(func):
+    #    @wraps(func)
+    #    def wrapper(self, *args, **kwargs):
+    #         if self._create_warning_window():
+    #             func(self, *args, **kwargs)
+    #     return wrapper
+
     def _create_warning_window(self):
 
         # if unsaved, show the window
         if self._save_button['state'] == 'enabled' and \
                 self._nuclei_table.filenames:
+
             # create
-            Warning_window(self)
+            return_var = IntVar()
+            warning_window = Warning_window(self, return_var)
+            self.wait_variable(return_var)
+            ret = return_var.get()
+            if ret == 2:
+                warning_window.destroy()
+                return self._save_button_pressed()
+            elif ret == 1:
+                warning_window.destroy()
+                return True
+            else:
+                return False
 
-        else:
-            # if saved, destroy the window
-            self.destroy()
+        return True
 
-    def save_button_pressed(self):
+    def _save_button_pressed(self, force_save_as=False):
 
         # save as if necessary
-        if self._current_project is None:
-            self._create_project_name_window()
+        if force_save_as or self._current_project is None:
+            return_var = IntVar()
+            name_window = Project_name_window(self, return_var)
+            self.wait_variable(return_var)
+            ret = return_var.get()
+            if ret:
+                name = name_window.return_name()
+                name_window.destroy()
+                self._save_project(self.projects_path / name, True)
+                return True
+            else:
+                return False
+
         else:
             # perform normal save
-            self.save_project(self._current_project)
+            self._save_project(self._current_project)
+            return True
 
-    def _create_project_name_window(self, new_project=False):
+    @_save_before_closing
+    def _safe_destroy(self):
+        self.destroy()
 
-        # create the window
-        self. _name_window = Project_name_window(self, new_project)
+    @_save_before_closing
+    def _safe_empty_project(self):
+        self._create_empty_project()
+
+    @_save_before_closing
+    def _safe_load_explorer(self):
+        self._load_project_from_explorer()
+
+    @_save_before_closing
+    def _safe_load(self, path):
+        self._load_project(path)
 
     def _change_indications(self):
         if self.draw_nuclei.get():
@@ -1038,95 +1183,6 @@ class Main_window(Tk):
     @staticmethod
     def _open_github():
         open_new("https://github.com/Quentinderore2/Cellen-Tellen")
-
-    def _create_empty_project(self):
-
-        # reset everything
-        self._stop_processing()
-        self._nuclei_table.reset()
-        self._image_canvas.reset()
-
-        # set the save button
-        self._save_button['state'] = 'enabled'
-        self._save_button['text'] = 'Save As'
-        self._process_images_button['state'] = 'disabled'
-        self._file_menu.entryconfig(self._file_menu.index("Delete Current "
-                                                          "Project"),
-                                    state="disabled")
-
-        # set window title
-        self.title("Cellen Tellen - New Project (Unsaved)")
-        self._current_project = None
-
-        # call for project name
-        self._create_project_name_window(True)
-
-    def _select_images(self):
-
-        # get the filenames with a dialog box
-        file_names = filedialog.askopenfilenames(
-            filetypes=[('Image Files', ('.tif', '.png', '.jpg', '.jpeg',
-                                        '.bmp', '.hdr'))],
-            parent=self, title='Please select a directory')
-
-        if file_names:
-            file_names = [Path(path) for path in file_names]
-            # stop processing
-            self._stop_processing()
-
-            # enable the process image buttons
-            self._process_images_button["state"] = 'enabled'
-
-            # add them to the table
-            self._re_save_images = True
-            self._nuclei_table.add_images(file_names)
-            self.set_unsaved_status()
-
-    def _create_settings_window(self):
-
-        # create the window
-        Settings_window(self)
-
-    def _delete_current_project(self):
-
-        if self._current_project is not None:
-            # delete the project
-            rmtree(self._current_project)
-
-            # remove the load button
-            self._recent_projects_menu.delete(
-                self._recent_projects_menu.index("Load '" +
-                                                 self._current_project.name +
-                                                 "'"))
-            self._recent_projects.remove(self._current_project)
-            if not self._recent_projects:
-                self._file_menu.entryconfig("Recent Projects",
-                                            state='disabled')
-            self._save_settings()
-
-            # create empty project
-            self._create_empty_project()
-
-            if self._current_project == self._auto_save_path:
-                self._file_menu.entryconfig("Load Automatic Save",
-                                            state='disabled')
-
-    def _load_project_from_explorer(self):
-
-        # ask a folder
-        folder = filedialog.askdirectory(
-            initialdir=self.projects_path,
-            mustexist=True,
-            title="Choose a Project Folder")
-
-        if not folder:
-            return
-
-        folder = Path(folder)
-
-        # load this sh*t
-        if (folder / 'data.npy').is_file():
-            self._load_project(folder)
 
     def _nuclei_colour_sel(self, _, __, ___):
 
