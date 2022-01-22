@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from tkinter import ttk, filedialog, Canvas, Tk, IntVar, \
-    Toplevel, Scale, PhotoImage, Menu, StringVar, BooleanVar
+    Toplevel, Scale, PhotoImage, Menu, StringVar, BooleanVar, messagebox
 from PIL import ImageTk, Image
 from platform import system, release
 
@@ -711,12 +711,15 @@ class Main_window(Tk):
 
     def _delete_current_project(self):
 
-        # Todo: check if they're sure
-        #  save path relative to root (for cases when the parent dic
+        # Todo: save path relative to root (for cases when the parent dic
         #  is moved)
         #  duplicates in recent projects
 
-        if self._current_project is not None:
+        ret = messagebox.askyesno('Hold on !',
+                                  "Do you really want to delete the current "
+                                  "project ?\nThis operation can't be undone.")
+
+        if ret and self._current_project is not None:
             # delete the project
             rmtree(self._current_project)
 
@@ -873,8 +876,6 @@ class Main_window(Tk):
         ttk.Label(saving_popup, text="Saving to '" + directory.name +
                                      "' ..."). \
             pack(anchor='center', expand=False, fill='none', padx=10, pady=10)
-        saving_popup.update()
-        self.update()
         saving_popup.update()
         sleep(1)
 
