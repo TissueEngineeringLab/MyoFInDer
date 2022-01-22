@@ -477,8 +477,13 @@ class Main_window(Tk):
             with open(self._base_path /
                       'recent_projects.py', 'r') as recent_projects:
                 recent = load(recent_projects)
-            self._recent_projects = [Path(proj) for proj in
-                                     recent['recent_projects'] if proj]
+
+            self._recent_projects = [
+                self.projects_path / proj for proj in recent['recent_projects']
+                if proj
+                and (self.projects_path / proj).is_dir()
+                and (self.projects_path / proj / 'data.npy').is_file()]
+            self._recent_projects = list(dict.fromkeys(self._recent_projects))
         else:
             self._recent_projects = []
 
@@ -576,23 +581,14 @@ class Main_window(Tk):
         self._quit_menu.add_command(label="Quit", command=self.destroy)
         self._menu_bar.add_cascade(label="Quit", menu=self._quit_menu)
 
-        self._set_recent_projects()
-
-    def _set_recent_projects(self):
-        # load the list of recent projects if these projects exist
-        if self.projects_path.is_dir():
-            for path in self._recent_projects:
-                if path.is_dir() and (path / 'data.npy').is_file():
-                    self._recent_projects_menu.add_command(
-                        label="Load '" + path.name + "'",
-                        command=partial(self._safe_load, path))
-                else:
-                    self._recent_projects.remove(path)
-        else:
-            Path.mkdir(self.projects_path)
-
         if not self._recent_projects:
             self._file_menu.entryconfig("Recent Projects", state='disabled')
+            return
+
+        for path in self._recent_projects:
+            self._recent_projects_menu.add_command(
+                label="Load '" + path.name + "'",
+                command=partial(self._safe_load, path))
 
     def _set_layout(self):
         self._frm = ttk.Frame()
@@ -705,15 +701,11 @@ class Main_window(Tk):
 
         with open(self._base_path /
                   'recent_projects.py', 'w') as recent_projects_file:
-            dump({'recent_projects': [str(path) for path in
+            dump({'recent_projects': [str(path.name) for path in
                                       self._recent_projects]},
                  recent_projects_file)
 
     def _delete_current_project(self):
-
-        # Todo: save path relative to root (for cases when the parent dic
-        #  is moved)
-        #  duplicates in recent projects
 
         ret = messagebox.askyesno('Hold on !',
                                   "Do you really want to delete the current "
@@ -852,8 +844,7 @@ class Main_window(Tk):
                 if len(self._recent_projects) > self._max_recent_projects:
                     # remove the last
                     self._recent_projects_menu.delete(
-                        "Load '" + self._recent_projects[-1].name +
-                        "'")
+                        "Load '" + self._recent_projects[-1].name + "'")
                     self._recent_projects.pop(len(self._recent_projects) - 1)
 
                 self._save_settings()
