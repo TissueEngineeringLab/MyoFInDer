@@ -31,7 +31,7 @@ class Table(ttk.Frame):
         # initialise the canvas and scrollbar
         self._row_height = 50
         self._base_path = Path(__file__).parent
-        self._projects_path = Path() / 'Projects'
+        self._projects_path = self._base_path / 'Projects'
 
         self._set_layout()
         self._set_bindings()
