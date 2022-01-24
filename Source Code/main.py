@@ -6,9 +6,7 @@ from PIL import ImageTk, Image
 from platform import system, release
 
 if system() == "Windows":
-  from ctypes import pythonapi, py_object, windll as dll
-else:
-  from ctypes import pythonapi, py_object
+  from ctypes import windll
 
 from table import Table
 from imagewindow import Zoom_Advanced
@@ -17,8 +15,8 @@ from webbrowser import open_new
 
 from nucleiFibreSegmentation import deepcell_functie, initialize_mesmer
 
-from threading import get_ident, active_count, Thread
-from time import time, sleep
+from threading import Thread, BoundedSemaphore, active_count
+from time import sleep
 from json import load, dump
 from functools import partial, wraps
 from dataclasses import dataclass, field
@@ -26,7 +24,7 @@ from pathlib import Path
 
 # set better resolution
 if system() == "Windows" and int(release()) >= 8:
-    dll.shcore.SetProcessDpiAwareness(True)
+    windll.shcore.SetProcessDpiAwareness(True)
 
 
 def _save_before_closing(func):
@@ -524,6 +522,9 @@ class Main_window(Tk):
         self.settings.n_threads.trace_add("write",
                                           self._save_settings_callback)
 
+        self._processed_images_count.trace_add("write",
+                                               self._update_processed_images)
+
     def _set_variables(self):
 
         self._previous_nuclei_colour = StringVar(
@@ -534,8 +535,9 @@ class Main_window(Tk):
         self.draw_nuclei = BooleanVar(value=True)
 
         # threads
-        self._current_threads = []
-        self._total_images_processed = 0
+        self._processed_images_count = IntVar(value=0)
+        self._img_to_process_count = 0
+        self._threads = []
         self._thread_slider = None
         self._n_threads_running = 0
 
@@ -820,7 +822,8 @@ class Main_window(Tk):
 
             directory = Path(folder)
 
-        if not directory.is_dir() or not (directory / 'data.npy').is_file():
+        if not directory.is_dir() or not (directory / 'data.npy').is_file()\
+                or not directory.parent == self.projects_path:
             messagebox.showerror("Error while loading",
                                  "This isn't a valid Cellen-tellen project !")
             return
@@ -932,21 +935,16 @@ class Main_window(Tk):
     def _safe_load(self, path: Path = None):
         self._load_project(path)
 
-    def _stop_processing(self):
+    def _stop_processing(self, force=True):
 
-        # end the threads
-        for thread in self._current_threads:
-            res = pythonapi.PyThreadState_SetAsyncExc(thread,
-                                                      py_object(SystemExit))
-            if res > 1:
-                pythonapi.PyThreadState_SetAsyncExc(thread, 0)
-                print('Exception raise failure')
-
-        print("Still running threads (should be 1) :", active_count())
+        if not force and active_count() > 2:
+            return
 
         # empty threads
-        self._current_threads = []
-        self._total_images_processed = 0
+        self._threads = []
+        self._processed_images_count.set(0)
+        self._img_to_process_count = 0
+        self._process_images_button["state"] = 'enabled'
         self._process_images_button['text'] = "Process Images"
         self._process_images_button.configure(command=self._process_images)
         self._processing_label['text'] = ""
@@ -961,7 +959,8 @@ class Main_window(Tk):
         self.set_unsaved_status()
 
         # switch off process button
-        self._total_images_processed = 0
+        self._processed_images_count.set(0)
+        self._img_to_process_count = len(file_names)
         self._process_images_button['text'] = 'Stop Processing'
         self._process_images_button.configure(command=self._stop_processing)
         self._processing_label['text'] = "0 of " + str(len(file_names)) + \
@@ -969,93 +968,46 @@ class Main_window(Tk):
         self.update()
 
         # start threading
-        n_threads_running = self.settings.n_threads.get()
-        if int(self.settings.n_threads.get()) == 0:
-            self._process_thread(0, file_names, False,
+        n_threads = self.settings.n_threads.get()
+        semaphore = BoundedSemaphore(value=max(n_threads, 1))
+        if not n_threads:
+            for file in file_names:
+                self._process_thread(file, semaphore)
+        else:
+            self._threads = [Thread(target=self._process_thread,
+                                    args=(file, semaphore))
+                             for file in file_names]
+            for thread in self._threads:
+                thread.start()
+
+    def _process_thread(self, file: Path, semaphore: BoundedSemaphore):
+
+        with semaphore:
+            # get result
+            nuclei, nuclei_in_fibre, fibre_positions, image_width, \
+                image_height = \
+                deepcell_functie(file, self.settings.nuclei_colour.get(),
+                                 self.settings.fibre_colour.get(),
+                                 self.settings.do_fibre_counting.get(),
                                  self.settings.small_objects_threshold.get())
-        else:
-            for i in range(n_threads_running):
-                if i <= len(file_names) - 1:
-                    t1 = Thread(target=self._process_thread,
-                                args=(i, file_names,
-                                      True,
-                                      self.settings.small_objects_threshold.
-                                      get()),
-                                daemon=True)
-                    t1.start()
-                    print(t1)
 
-    def _process_thread(self, index, file_names, is_thread,
-                        small_objects_thresh):
+            # send the output to the table
+            self._nuclei_table.input_processed_data(nuclei, nuclei_in_fibre,
+                                                    fibre_positions, file)
 
-        # add the thread
-        if is_thread:
-            id_ = get_ident()
-            if id_ not in self._current_threads:
-                self._current_threads.append(id_)
+            # close if necessary
+            self._processed_images_count.set(
+                self._processed_images_count.get() + 1)
+            self.set_unsaved_status()
 
-        file = file_names[index]
+        self._stop_processing(force=False)
 
-        start = time()
-
-        # get result
-        nuclei, nuclei_in_fibre, fibre_positions, image_width, image_height = \
-            deepcell_functie(file, self.settings.nuclei_colour.get(),
-                             self.settings.fibre_colour.get(),
-                             self.settings.do_fibre_counting.get(),
-                             small_objects_thresh)
-
-        end1 = time()
-
-        # convert image coordinates to relative between 0 and 1
-        for nucleus in nuclei:
-            nucleus[0] = float(nucleus[0]) / float(image_width)
-            nucleus[1] = float(nucleus[1]) / float(image_height)
-        for nucleus in nuclei_in_fibre:
-            nucleus[0] = float(nucleus[0]) / float(image_width)
-            nucleus[1] = float(nucleus[1]) / float(image_height)
-        for pos in fibre_positions:
-            pos[0] = float(pos[0]) / float(image_width)
-            pos[1] = float(pos[1]) / float(image_height)
-
-        print("file : ", end1 - start)
-
-        # send the output to the table
-        self._nuclei_table.input_processed_data(nuclei, nuclei_in_fibre,
-                                                fibre_positions, file)
-
-        # close if necessary
-        self._update_processed_images(file_names)
-        self.set_unsaved_status()
-
-        if is_thread:
-            if index >= len(file_names) - self._n_threads_running:
-                # close the threshold
-                self._thread_exited(get_ident())
-            else:
-                # keep on processing more images
-                self._process_thread(index + self._n_threads_running,
-                                     file_names, True, small_objects_thresh)
-        else:
-            if index + 1 < len(file_names):
-                # keep on processing more images
-                self._process_thread(index + 1, file_names, False,
-                                     small_objects_thresh)
-            else:
-                # all images are done
-                self._stop_processing()
-
-    def _update_processed_images(self, file_names):
-
+    def _update_processed_images(self, _, __, ___):
         # change the label
-        self._total_images_processed += 1
-        self._processing_label['text'] = str(self._total_images_processed) + \
-            " of " + str(len(file_names)) + " Images Processed"
-
-    def _thread_exited(self, id_):
-        self._current_threads.remove(id_)
-        if len(self._current_threads) == 0:
-            self._stop_processing()
+        processed = self._processed_images_count.get()
+        if processed:
+            self._processing_label['text'] = str(processed) + \
+                " of " + str(self._img_to_process_count) + " Images Processed"
 
     def _select_images(self):
 

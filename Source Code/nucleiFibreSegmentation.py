@@ -10,7 +10,7 @@ Created on Thu Oct 21 12:05:16 2021
 
 from deepcell.applications import Mesmer  # het model te gebruiken
 import numpy as np
-from time import time
+from pathlib import Path
 import cv2
 
 # --------------------------------------------------------------------------
@@ -324,7 +324,7 @@ def fibre_detection__nuclei_positions(original,
         list_tuple_fibre_centres
 
 
-def deepcell_functie(filename,
+def deepcell_functie(filename: Path,
                      kleurcellen,
                      kleurcyto,
                      do_fibre_counting,
@@ -340,18 +340,13 @@ def deepcell_functie(filename,
     centers of pixels inside
     """
 
-    t1 = time()
-
     # load the image
-    image = cv2.imread(filename)
-
-    t2 = time()
+    image = cv2.imread(str(filename))
 
     amount_of_files = 8
     whole_color = str_to_number_color(kleurcellen, kleurcyto)
-    print(whole_color)
     
-    # deepclel post process parameters
+    # deepcell post process parameters
     parameters = [0.05, 0, 0.3, 2, small_objects_thresh, 15, 2,
                   amount_of_files, None]  # veel sneller als mpp = None
     # parameters = [0.1, 0, 0.3, 2, 414, 15, 2, amount_of_files, None]
@@ -359,14 +354,10 @@ def deepcell_functie(filename,
     # get the deepcell prediction segmentation mask
     labeled_image = cellen_herkennen(image, whole_color, parameters)
 
-    t3 = time()
     # get the lists of fibre and nuclei centres
     list_tuple_location, list_tuple_location_fibre, \
         list_tuple_fibre_centres = fibre_detection__nuclei_positions(
             image[:, :, whole_color[1]], labeled_image, do_fibre_counting)
-
-    t10 = time()
-    print(t2 - t1, t3 - t2, (t10 - t3), t10 - t1)
 
     return list_tuple_location, list_tuple_location_fibre, \
         list_tuple_fibre_centres, image.shape[1], image.shape[0]
