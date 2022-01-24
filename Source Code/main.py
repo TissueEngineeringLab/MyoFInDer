@@ -474,6 +474,15 @@ class Main_window(Tk):
         self.protocol("WM_DELETE_WINDOW", self._safe_destroy)
         self.mainloop()
 
+    def set_unsaved_status(self):
+
+        # set the unsaved status
+        if self._current_project is not None:
+            self.title("Cellen Tellen - Project '" + self._current_project.name
+                       + "' (Unsaved)")
+            self._save_button['state'] = 'enabled'
+            self._save_button['text'] = 'Save'
+
     def _load_settings(self):
         if (self._base_path / 'settings.py').is_file():
             with open(self._base_path / 'settings.py', 'r') as param_file:
@@ -560,7 +569,7 @@ class Main_window(Tk):
             self._file_menu.index("Delete Current Project"), state="disabled")
         self._file_menu.add_command(
             label="Load From Explorer",
-            command=self._safe_load_explorer)
+            command=self._safe_load)
         self._file_menu.add_separator()
 
         self._file_menu.add_command(label='Load Automatic Save',
@@ -742,21 +751,6 @@ class Main_window(Tk):
             # create empty project
             self._create_empty_project()
 
-    def _load_project_from_explorer(self):
-
-        # ask a folder
-        folder = filedialog.askdirectory(
-            initialdir=self.projects_path,
-            mustexist=True,
-            title="Choose a Project Folder")
-
-        if not folder:
-            return
-
-        folder = Path(folder)
-
-        self._load_project(folder)
-
     def _create_empty_project(self):
 
         # reset everything
@@ -775,38 +769,6 @@ class Main_window(Tk):
         # set window title
         self.title("Cellen Tellen - New Project (Unsaved)")
         self._current_project = None
-
-    def _select_images(self):
-
-        # get the filenames with a dialog box
-        file_names = filedialog.askopenfilenames(
-            filetypes=[('Image Files', ('.tif', '.png', '.jpg', '.jpeg',
-                                        '.bmp', '.hdr'))],
-            parent=self, title='Please select a directory')
-
-        if file_names:
-            file_names = [Path(path) for path in file_names]
-            # stop processing
-            self._stop_processing()
-
-            # enable the process image buttons
-            self._process_images_button["state"] = 'enabled'
-
-            # add them to the table
-            self._nuclei_table.add_images(file_names)
-            self.set_unsaved_status()
-
-    def _set_autosave_time(self):
-
-        # if a previous timer was set, cancel it
-        if self._auto_save_job is not None:
-            self.after_cancel(self._auto_save_job)
-        self._auto_save_job = None
-
-        # set a new timer if needed
-        if self.settings.auto_save_time.get() > 0:
-            self._auto_save_job = self.after(self.settings.auto_save_time.get()
-                                             * 1000, self._save_project)
 
     def _save_project(self, directory: Path = None):
 
@@ -854,6 +816,45 @@ class Main_window(Tk):
         # destroy the popup
         saving_popup.destroy()
 
+    def _load_project(self, directory: Path = None):
+
+        if directory is None:
+            # ask a folder
+            folder = filedialog.askdirectory(
+                initialdir=self.projects_path,
+                mustexist=True,
+                title="Choose a Project Folder")
+
+            if not folder:
+                return
+
+            directory = Path(folder)
+
+        if not directory.is_dir() or not (directory / 'data.npy').is_file():
+            messagebox.showerror("Error while loading",
+                                 "This isn't a valid Cellen-tellen project !")
+            return
+
+        # stop processing
+        self._stop_processing()
+
+        # set the save button
+        self._set_title_and_button(directory)
+
+        # do the recent projects sh*t
+        if directory != self._auto_save_path:
+
+            self._add_to_recent_projects(directory)
+
+        # load the project
+        self._nuclei_table.load_project(directory)
+
+        # if there are images loaded
+        if self._nuclei_table.filenames:
+            self._process_images_button['state'] = 'enabled'
+        else:
+            self._process_images_button['state'] = 'disabled'
+
     def _set_title_and_button(self, directory):
         # set the save button
         self._save_button['state'] = 'disabled'
@@ -886,41 +887,60 @@ class Main_window(Tk):
 
         self._save_settings()
 
-    def _load_project(self, directory: Path):
+    def _create_warning_window(self):
 
-        if not directory.is_dir() or not (directory / 'data.npy').is_file():
-            messagebox.showerror("Error while loading",
-                                 "This isn't a valid Cellen-tellen project !")
-            return
+        # if unsaved, show the window
+        if self._save_button['state'] == 'enabled' and \
+                self._nuclei_table.filenames:
 
-        # stop processing
-        self._stop_processing()
+            # create
+            return_var = IntVar()
+            warning_window = Warning_window(self, return_var)
+            self.wait_variable(return_var)
+            ret = return_var.get()
+            if ret == 2:
+                warning_window.destroy()
+                return self._save_button_pressed()
+            elif ret == 1:
+                warning_window.destroy()
+                return True
+            else:
+                return False
 
-        # set the save button
-        self._set_title_and_button(directory)
+        return True
 
-        # do the recent projects sh*t
-        if directory != self._auto_save_path:
+    def _save_button_pressed(self, force_save_as=False):
 
-            self._add_to_recent_projects(directory)
+        # save as if necessary
+        if force_save_as or self._current_project is None:
+            return_var = IntVar()
+            name_window = Project_name_window(self, return_var)
+            self.wait_variable(return_var)
+            ret = return_var.get()
+            if ret:
+                name = name_window.return_name()
+                name_window.destroy()
+                self._save_project(self.projects_path / name)
+                return True
+            else:
+                return False
 
-        # load the project
-        self._nuclei_table.load_project(directory)
-
-        # if there are images loaded
-        if self._nuclei_table.filenames:
-            self._process_images_button['state'] = 'enabled'
         else:
-            self._process_images_button['state'] = 'disabled'
+            # perform normal save
+            self._save_project(self._current_project)
+            return True
 
-    def set_unsaved_status(self):
+    @_save_before_closing
+    def _safe_destroy(self):
+        self.destroy()
 
-        # set the unsaved status
-        if self._current_project is not None:
-            self.title("Cellen Tellen - Project '" + self._current_project.name
-                       + "' (Unsaved)")
-            self._save_button['state'] = 'enabled'
-            self._save_button['text'] = 'Save'
+    @_save_before_closing
+    def _safe_empty_project(self):
+        self._create_empty_project()
+
+    @_save_before_closing
+    def _safe_load(self, path: Path = None):
+        self._load_project(path)
 
     def _stop_processing(self):
 
@@ -1048,6 +1068,38 @@ class Main_window(Tk):
         if len(self._current_threads) == 0:
             self._stop_processing()
 
+    def _select_images(self):
+
+        # get the filenames with a dialog box
+        file_names = filedialog.askopenfilenames(
+            filetypes=[('Image Files', ('.tif', '.png', '.jpg', '.jpeg',
+                                        '.bmp', '.hdr'))],
+            parent=self, title='Please select a directory')
+
+        if file_names:
+            file_names = [Path(path) for path in file_names]
+            # stop processing
+            self._stop_processing()
+
+            # enable the process image buttons
+            self._process_images_button["state"] = 'enabled'
+
+            # add them to the table
+            self._nuclei_table.add_images(file_names)
+            self.set_unsaved_status()
+
+    def _set_autosave_time(self):
+
+        # if a previous timer was set, cancel it
+        if self._auto_save_job is not None:
+            self.after_cancel(self._auto_save_job)
+        self._auto_save_job = None
+
+        # set a new timer if needed
+        if self.settings.auto_save_time.get() > 0:
+            self._auto_save_job = self.after(self.settings.auto_save_time.get()
+                                             * 1000, self._save_project)
+
     def _set_image_channels(self):
         self._image_canvas.set_channels()
         self._save_settings()
@@ -1075,65 +1127,6 @@ class Main_window(Tk):
             self._which_indicator_button['text'] = 'Manual : Nuclei'
             self._which_indicator_button['state'] = 'disabled'
 
-    def _create_warning_window(self):
-
-        # if unsaved, show the window
-        if self._save_button['state'] == 'enabled' and \
-                self._nuclei_table.filenames:
-
-            # create
-            return_var = IntVar()
-            warning_window = Warning_window(self, return_var)
-            self.wait_variable(return_var)
-            ret = return_var.get()
-            if ret == 2:
-                warning_window.destroy()
-                return self._save_button_pressed()
-            elif ret == 1:
-                warning_window.destroy()
-                return True
-            else:
-                return False
-
-        return True
-
-    def _save_button_pressed(self, force_save_as=False):
-
-        # save as if necessary
-        if force_save_as or self._current_project is None:
-            return_var = IntVar()
-            name_window = Project_name_window(self, return_var)
-            self.wait_variable(return_var)
-            ret = return_var.get()
-            if ret:
-                name = name_window.return_name()
-                name_window.destroy()
-                self._save_project(self.projects_path / name)
-                return True
-            else:
-                return False
-
-        else:
-            # perform normal save
-            self._save_project(self._current_project)
-            return True
-
-    @_save_before_closing
-    def _safe_destroy(self):
-        self.destroy()
-
-    @_save_before_closing
-    def _safe_empty_project(self):
-        self._create_empty_project()
-
-    @_save_before_closing
-    def _safe_load_explorer(self):
-        self._load_project_from_explorer()
-
-    @_save_before_closing
-    def _safe_load(self, path):
-        self._load_project(path)
-
     def _change_indications(self):
         if self.draw_nuclei.get():
             self.draw_nuclei.set(False)
@@ -1141,10 +1134,6 @@ class Main_window(Tk):
         else:
             self.draw_nuclei.set(True)
             self._which_indicator_button['text'] = 'Manual : Nuclei'
-
-    @staticmethod
-    def _open_github():
-        open_new("https://github.com/Quentinderore2/Cellen-Tellen")
 
     def _nuclei_colour_sel(self, _, __, ___):
 
@@ -1166,6 +1155,10 @@ class Main_window(Tk):
 
         # save
         self._save_settings()
+
+    @staticmethod
+    def _open_github():
+        open_new("https://github.com/Quentinderore2/Cellen-Tellen")
 
 
 if __name__ == "__main__":
