@@ -799,19 +799,9 @@ class Main_window(Tk):
         saving_popup = Saving_popup(self, directory)
         sleep(1)
 
-        # save the table
-        self._nuclei_table.save_table(directory)
-
-        # save the originals
-        self._nuclei_table.save_originals(directory)
-
-        # save the altered images
-        if self.settings.save_altered_images.get() or \
-                directory == self._auto_save_path:
-            self._nuclei_table.save_altered_images(directory)
-
-        # save the data
-        self._nuclei_table.save_data(directory)
+        save_altered = self.settings.save_altered_images.get() or \
+            directory == self._auto_save_path
+        self._nuclei_table.save_project(directory, save_altered)
 
         # destroy the popup
         saving_popup.destroy()
@@ -1032,8 +1022,7 @@ class Main_window(Tk):
 
         # send the output to the table
         self._nuclei_table.input_processed_data(nuclei, nuclei_in_fibre,
-                                                fibre_positions,
-                                                index)
+                                                fibre_positions, file)
 
         # close if necessary
         self._update_processed_images(file_names)
