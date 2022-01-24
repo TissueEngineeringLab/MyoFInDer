@@ -293,7 +293,7 @@ class Table(ttk.Frame):
         else:
             self._canvas.bind('<MouseWheel>', self._on_wheel)
         self._canvas.bind('<ButtonPress-1>', self._left_click)
-        self._canvas.bind('<Motion>', self._motion)
+        self._canvas.bind_all('<Motion>', self._motion)
 
     def _set_variables(self):
         # data about the images
@@ -378,13 +378,14 @@ class Table(ttk.Frame):
                 self._un_hover(self._hovering_index)
 
             # hover over new item
-            if self._canvas.canvasy(event.y) < self._table_height:
+            if 0 < self._canvas.canvasy(event.y) < self._table_height and \
+                    event.widget == self._canvas:
                 self._hover(int(self._canvas.canvasy(event.y) /
                                 (self._row_height * 2)))
-        # Todo : doesn't un hover correctly
-        elif self._hovering_index is not None:
-            self._un_hover(self._hovering_index)
-            self._hovering_index = None
+
+            elif self._hovering_index is not None:
+                self._un_hover(self._hovering_index)
+                self._hovering_index = None
 
     def _hover(self, index):
 
