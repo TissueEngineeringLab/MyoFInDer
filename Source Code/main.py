@@ -319,7 +319,7 @@ class Settings_window(Toplevel):
             pack(side='left', anchor='w', fill='none', expand=False,
                  padx=(0, 20))
 
-        Scale(thread_slider_frame, from_=0, to=5, orient="horizontal",
+        Scale(thread_slider_frame, from_=1, to=6, orient="horizontal",
               variable=self._settings.n_threads, showvalue=False, length=150,
               tickinterval=1).\
             pack(side='left', anchor='w', fill='none', expand=False)
@@ -968,17 +968,13 @@ class Main_window(Tk):
         self.update()
 
         # start threading
-        n_threads = self.settings.n_threads.get()
-        semaphore = BoundedSemaphore(value=max(n_threads, 1))
-        if not n_threads:
-            for file in file_names:
-                self._process_thread(file, semaphore)
-        else:
-            self._threads = [Thread(target=self._process_thread,
-                                    args=(file, semaphore))
-                             for file in file_names]
-            for thread in self._threads:
-                thread.start()
+        semaphore = BoundedSemaphore(value=max(self.settings.n_threads.get(),
+                                               1))
+        self._threads = [Thread(target=self._process_thread,
+                                args=(file, semaphore))
+                         for file in file_names]
+        for thread in self._threads:
+            thread.start()
 
     def _process_thread(self, file: Path, semaphore: BoundedSemaphore):
 
