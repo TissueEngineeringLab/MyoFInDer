@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from tkinter import ttk, Canvas
+from tkinter import ttk, Canvas, messagebox
 from xlsxwriter import Workbook
 from shutil import copyfile, rmtree
 from numpy import load, asarray, save
@@ -237,6 +237,14 @@ class Table(ttk.Frame):
         self._items: Dict[Path, Table_element] = {}
 
         # add the filenames
+        for file in filenames:
+            # Todo: warning when two names are equal
+            if file in self.filenames:
+                messagebox.showerror("Error loading files",
+                                     f"The file {file.name} is already opened,"
+                                     f"ignoring.")
+                filenames.remove(file)
+
         self.filenames += filenames
         for file in filenames:
             self._nuclei[file] = Nuclei()
