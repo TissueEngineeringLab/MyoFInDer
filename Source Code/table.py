@@ -47,7 +47,7 @@ class Table(ttk.Frame):
         # write filenames
         worksheet.write(0, 0, "Image names", bold)
         max_size = 11
-        for i, name in enumerate(self.filenames):
+        for i, _ in enumerate(self.filenames):
             name = self.filenames[i].name
             worksheet.write(i+2, 0, name)
             max_size = max(len(name), max_size)
@@ -56,19 +56,19 @@ class Table(ttk.Frame):
         # write total nuclei
         worksheet.write(0, 1, "Total number of nuclei", bold)
         worksheet.set_column(1, 1, width=22)
-        for i, name in enumerate(self.filenames):
+        for i, _ in enumerate(self.filenames):
             worksheet.write(i + 2, 1, len(self._nuclei[i]))
 
         # write green nuclei
         worksheet.write(0, 2, "Number of tropomyosin positive nuclei", bold)
         worksheet.set_column(2, 2, width=37)
-        for i, name in enumerate(self.filenames):
+        for i, _ in enumerate(self.filenames):
             worksheet.write(i + 2, 2, self._nuclei[i].nuclei_in_count)
 
         # write ratio
         worksheet.write(0, 3, "Fusion index", bold)
         worksheet.set_column(3, 3, width=17)
-        for i, name in enumerate(self.filenames):
+        for i, _ in enumerate(self.filenames):
             if self._nuclei[i].nuclei_out_count > 0:
                 worksheet.write(i + 2, 3, self._nuclei[i].nuclei_in_count /
                                 len(self._nuclei[i]))
@@ -78,7 +78,7 @@ class Table(ttk.Frame):
         # write fibers
         worksheet.write(0, 4, "Number of Fibres", bold)
         worksheet.set_column(4, 4, width=16)
-        for i, name in enumerate(self.filenames):
+        for i, _ in enumerate(self.filenames):
             worksheet.write(i + 2, 4, len(self._fibres[i]))
 
         workbook.close()
@@ -100,8 +100,10 @@ class Table(ttk.Frame):
                                 isinstance(item[1], list) and \
                                 isinstance(item[2], list) and \
                                 isinstance(item[3], list):
-                            if Path(item[0]).is_file():
-                                self.filenames.append(Path(item[0]))
+                            if (directory / 'Original Images' /
+                                    item[0]).is_file():
+                                self.filenames.append(
+                                    directory / 'Original Images' / item[0])
                                 self._nuclei.append(
                                     Nuclei([Nucleus(x, y, None, out_fibre)
                                             for x, y in item[1]] +
@@ -118,13 +120,13 @@ class Table(ttk.Frame):
 
         # make array
         to_save = []
-        for i, filename in enumerate(self.filenames):
+        for i, file in enumerate(self.filenames):
             nuc_out = [(nuc.x_pos, nuc.y_pos) for nuc in self._nuclei[i]
                        if nuc.color == out_fibre]
             nuc_in = [(nuc.x_pos, nuc.y_pos) for nuc in self._nuclei[i]
                       if nuc.color == in_fibre]
             fib = [(fib.x_pos, fib.y_pos) for fib in self._fibres[i]]
-            to_save.append([str(directory / 'Original Images' / filename.name),
+            to_save.append([file.name,
                             nuc_out,
                             nuc_in,
                             fib])
@@ -152,7 +154,7 @@ class Table(ttk.Frame):
         Path.mkdir(directory / 'Altered Images')
 
         # read the images and then save them
-        for i, filename in enumerate(self.filenames):
+        for i, _ in enumerate(self.filenames):
             self._draw_nuclei_save(i, directory)
 
        # update the image canvas handle
@@ -420,7 +422,7 @@ class Table(ttk.Frame):
 
         # make the table
         width = self._canvas.winfo_width()
-        for i, name in enumerate(self.filenames):
+        for i, file in enumerate(self.filenames):
             top = 2 * i * self._row_height
             middle = (2 * i + 1) * self._row_height
             bottom = (2 * i + 2) * self._row_height
@@ -444,7 +446,7 @@ class Table(ttk.Frame):
                 50, top, 50, middle, width=1, fill=label_line)
 
             # set the filename
-            file_name = name.name
+            file_name = file.name
             if len(file_name) >= 59:
                 file_name = '...' + file_name[-59:]
 
