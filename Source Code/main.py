@@ -13,7 +13,7 @@ from imagewindow import Zoom_Advanced
 from shutil import rmtree
 from webbrowser import open_new
 
-from nucleiFibreSegmentation import deepcell_functie, initialize_mesmer
+from nucleiFibreSegmentation import Fiber_segmentation
 
 from threading import Thread, BoundedSemaphore, active_count
 from time import sleep
@@ -365,12 +365,8 @@ class Splash(Tk):
         self.grab_set()
 
         self._image = Image.open("movedim.png")
-        self._resize_image()
-        self._display()
 
-        self.destroy()
-
-    def _resize_image(self):
+    def resize_image(self):
         size_factor = 0.35
 
         scr_width = self.winfo_screenwidth()
@@ -400,7 +396,7 @@ class Splash(Tk):
                 (scr_width - int(scr_height * size_factor * img_ratio)) / 2,
                 scr_height * (1 - size_factor) / 2))
 
-    def _display(self):
+    def display(self):
         image_tk = ImageTk.PhotoImage(self._image)
         self._canvas = Canvas(self, bg="brown")
         self._canvas.create_image(0, 0, image=image_tk, anchor="nw")
@@ -430,7 +426,7 @@ class Splash(Tk):
         self._canvas.itemconfig(self._loading_label,
                                 text="Initialising Mesmer...")
         self.update()
-        initialize_mesmer()
+        segmentation = Fiber_segmentation()
 
         self._canvas.itemconfig(self._loading_label,
                                 text="Starting program...")
@@ -438,10 +434,19 @@ class Splash(Tk):
 
         sleep(1)
 
+        return segmentation
+
 
 class Main_window(Tk):
 
     def __init__(self):
+
+        splash = Splash()
+        splash.resize_image()
+        self._segmentation = splash.display()
+
+        splash.destroy()
+
         super().__init__()
 
         self.title("Cellen Tellen - New Project (Unsaved)")
@@ -940,6 +945,8 @@ class Main_window(Tk):
         if not force and active_count() > 2:
             return
 
+        # Todo: Stop threads in a correct way
+
         # empty threads
         self._threads = []
         self._processed_images_count.set(0)
@@ -980,15 +987,14 @@ class Main_window(Tk):
 
         with semaphore:
             # get result
-            nuclei, nuclei_in_fibre, fibre_positions, image_width, \
-                image_height = \
-                deepcell_functie(file, self.settings.nuclei_colour.get(),
-                                 self.settings.fibre_colour.get(),
-                                 self.settings.do_fibre_counting.get(),
-                                 self.settings.small_objects_threshold.get())
+            nuclei_out, nuclei_in, fibre_positions = \
+                self._segmentation(file, self.settings.nuclei_colour.get(),
+                                   self.settings.fibre_colour.get(),
+                                   self.settings.do_fibre_counting.get(),
+                                   self.settings.small_objects_threshold.get())
 
             # send the output to the table
-            self._nuclei_table.input_processed_data(nuclei, nuclei_in_fibre,
+            self._nuclei_table.input_processed_data(nuclei_out, nuclei_in,
                                                     fibre_positions, file)
 
             # close if necessary
@@ -1100,5 +1106,4 @@ class Main_window(Tk):
 
 if __name__ == "__main__":
 
-    Splash()
     Main_window()

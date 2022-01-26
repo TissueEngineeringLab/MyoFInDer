@@ -1,378 +1,219 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Oct 21 12:05:16 2021
+# coding: utf-8
 
-@author: Ibrahim
-"""
-# --------------------------------------------------------------------------
-# libraries
-
-
-from deepcell.applications import Mesmer  # het model te gebruiken
+from deepcell.applications import Mesmer
 import numpy as np
+import numpy.ma as ma
 from pathlib import Path
 import cv2
 
-# --------------------------------------------------------------------------
-# functions
-app = None
+numpy_color_to_int = {"Blue": 0,
+                      "Green": 1,
+                      "Red": 2}
 
 
-# initialise the mesmer app (happens while loading)
-def initialize_mesmer():
-    global app
-    app = Mesmer()
+class Fiber_segmentation:
 
+    def __init__(self):
+        self._app = Mesmer()
 
-def str_to_number_color(color_1, color_2):
-    """
-    Convert "r","g","b" into integers    
+    def __call__(self,
+                 path: Path,
+                 nuclei_color: str,
+                 fibre_color: str,
+                 count_fibres: bool,
+                 small_objects_threshold: int):
 
-    Parameters
-    ----------
-    color_1 : str
-        the color for the cells which could be "b" for blue, "r" for red and
-        "g" for green.
-    color_2 : str
-        the color for the cytoplasm.(mulitplex tissue)
+        colors = [numpy_color_to_int[nuclei_color],
+                  numpy_color_to_int[fibre_color]]
 
-    Returns
-    -------
-    ret : List
-        returns two integers in a list.
+        image = cv2.imread(str(path))
 
-    """   
+        two_channel_image = np.array([image[:, :, colors]])
 
-    if isinstance(color_1, str) and isinstance(color_2, str):
-        colordict = {("Blue", "Green"): [0, 1],
-                     ("Blue", "Red"): [0, 2],
-                     ("Green", "Blue"): [1, 0],
-                     ("Green", "Red"): [1, 2],
-                     ("Red", "Green"): [2, 1],
-                     ("Red", "Blue"): [2, 0]}
-    else:
-        raise ValueError("input needs to be of type str, got" +
-                         str(type(color_1)) + "and" + str(type(color_2)))
-    return colordict.get((color_1, color_2), [2, 1])  # default returns [2, 1]
+        maxima_threshold = 0.05
+        maxima_smooth = 0
+        interior_threshold = 0.3
+        interior_smooth = 2
+        fill_holes_threshold = 15
+        radius = 2
+        microns_per_pixel = None
+        batch_size = 8
 
+        labeled_image = self._app.predict(
+            image=two_channel_image,
+            batch_size=batch_size,
+            image_mpp=microns_per_pixel,
+            preprocess_kwargs={},
+            compartment='nuclear',
+            pad_mode='constant',
+            postprocess_kwargs_whole_cell={},
+            postprocess_kwargs_nuclear={
+                'maxima_threshold': maxima_threshold,
+                'maxima_smooth': maxima_smooth,
+                'interior_threshold': interior_threshold,
+                'interior_smooth': interior_smooth,
+                'small_objects_threshold': small_objects_threshold,
+                'fill_holes_threshold': fill_holes_threshold,
+                'radius': radius})
 
-def cellen_herkennen(image, whole_color, parameters):
-    """
-    Returns an image with labels of the nuclei that it counted.
-    Each nucleus has its own unique number.
-    If the nuclei on the image constitute of 200 pixels, then each of those
-    200 pixels has the same number.
+        labeled_image = np.squeeze(labeled_image)
 
-    Parameters
-    ----------
-    image : nd.array
-        of shape (N,x,y,3) where N is amount of images. xy the height and width
-        and 3 the rgb values of each pixel. (output readAllFiles)
-    whole_color : List
-        List of 2 integers (integers from 0 to 2). (output StrToNumberColor)
-    parameters : List
-        List of parameters for the prediction of the cells. 
+        mask, mask_8bit = self._get_fibre_mask(image[:, :, colors[1]])
+        if count_fibres:
+            fibre_centers = self._fibre_detection(mask_8bit)
+        else:
+            fibre_centers = []
 
-    Returns
-    -------
-    labeledImageCollec : nd.array
-        List of shape (N,x,y,1) where N is amount of images. 
-        xy the height and width and each pixel has one certain value where 0 is
-        background
-        and other value are given to distinct nuclei.(mask)
-    """
-    
-    # een klasse inladen
-    # extract the desired colour from the image.
-    # the predict function requires image with only 2 colors,
-    # one for nuclei and other for cytoplasm(muliplex tissue)
-    image_color = np.array([image[:, :, whole_color]])
-        
-    labeled_image = app.predict(image_color, batch_size=parameters[7],
-                                image_mpp=parameters[8],
-                                compartment='nuclear',
-                                postprocess_kwargs_nuclear={
-        'maxima_threshold': parameters[0],
-        'maxima_smooth': parameters[1],
-        'interior_threshold': parameters[2],
-        'interior_smooth': parameters[3],
-        'small_objects_threshold': parameters[4],
-        'fill_holes_threshold': parameters[5],
-        'radius': parameters[6]})
+        nuclei_out, nuclei_in = self._get_nuclei_positions(labeled_image, mask)
 
-    return np.reshape(labeled_image[0],
-                      (labeled_image.shape[1],
-                       labeled_image.shape[2])).astype(np.uint16)
+        return nuclei_out, nuclei_in, fibre_centers
 
+    @staticmethod
+    def _get_fibre_mask(fibre_channel):
+        # apply first base threshold
+        kernel = np.ones((5, 5), np.uint8)
+        _, binary_thresh = cv2.threshold(fibre_channel, 25, 255,
+                                         cv2.THRESH_BINARY)
 
-def fiber_detection_threshold_and_erode(green_channel, deepcell,
-                                        do_fibre_counting):
+        # Opening, to remove noise in the background
+        processed = cv2.morphologyEx(binary_thresh,
+                                     cv2.MORPH_OPEN, kernel)
 
-    # apply first base threshold
-    kernel = np.ones((5, 5), np.uint8)
-    eerste_threshold = cv2.threshold(green_channel, 20, 255,
-                                     cv2.THRESH_BINARY)[1]
+        # Find contours of the fibers
+        contours, _ = cv2.findContours(processed, cv2.RETR_TREE,
+                                       cv2.CHAIN_APPROX_SIMPLE)
+        for contour in contours:
 
-    toegepast = cv2.bitwise_and(eerste_threshold, green_channel)
-    gemiddelde_intensiteit_groen = cv2.mean(toegepast, eerste_threshold)[0]
-    threshold = int(np.floor(0.7 * np.mean([gemiddelde_intensiteit_groen,
-                                            cv2.mean(green_channel)[0]])))
-    green_fibers_manual = cv2.threshold(green_channel, threshold, 255,
-                                        cv2.THRESH_BINARY)[1]
+            # Fill if enclosing circle smaller than 100 pixels
+            if cv2.minEnclosingCircle(contour)[1] < 100:  # 100
+                cv2.drawContours(processed, [contour], -1, (0, 0, 0), -1)
 
-    # apply an adaptive threshold
-    test3 = cv2.countNonZero(green_fibers_manual)
-    r3 = test3/(green_channel.shape[0] * green_channel.shape[1])
+            # Fill if perimeter smaller than 200 pixels
+            elif cv2.arcLength(contour, True) < 200:
+                cv2.drawContours(processed, [contour], -1, (0, 0, 0), -1)
 
-    threshold = int(np.floor((1.58 * r3) *
-                             np.mean([gemiddelde_intensiteit_groen,
-                                      cv2.mean(green_channel)[0]])))
-    minimumthreshold = 20
-    maximumthreshold = 36
-    if threshold < minimumthreshold:
-        threshold = minimumthreshold
-    if threshold > maximumthreshold:
-        threshold = maximumthreshold
-    green_fibers_manual = cv2.threshold(green_channel, threshold, 255,
-                                        cv2.THRESH_BINARY)[1]
-    open_ = green_fibers_manual
+            # Fill if enclosed area smaller than 1600 pixels
+            elif cv2.contourArea(contour) < 1600:
+                cv2.drawContours(processed, [contour], -1, (0, 0, 0), -1)
 
-    erode_op = cv2.morphologyEx(open_, cv2.MORPH_OPEN, kernel)
+        # Closing, to remove noise inside the fibres
+        processed = cv2.morphologyEx(processed, cv2.MORPH_CLOSE, kernel)
 
-    # find contours of the fibers and remove smallest ones
-    cnts = cv2.findContours(erode_op, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-    for c in cnts:
+        # Inverting black and white
+        processed = cv2.bitwise_not(processed)
 
-        if cv2.minEnclosingCircle(c)[1] < 100:  # 100
-            cv2.drawContours(erode_op, [c], -1, (0, 0, 0), -1)
+        # Find contours of the holes inside the fibers
+        contours, _ = cv2.findContours(processed, cv2.RETR_TREE,
+                                       cv2.CHAIN_APPROX_SIMPLE)
 
-        elif cv2.arcLength(c, True) < 200:  # 200 if the perimeter of a fiber
-            # is too short, it is excluded
-            cv2.drawContours(erode_op, [c], -1, (0, 0, 0), -1)
+        for contour in contours:
+            # Fill hole if its area is smaller than 1600 pixels
+            if cv2.contourArea(contour) < 1600:
+                cv2.drawContours(processed, [contour], -1, (0, 0, 0), -1)
 
-        elif cv2.contourArea(c) < 1600:  # 2000 if the area of a fiber is
-            # too small, it is excluded
-            cv2.drawContours(erode_op, [c], -1, (0, 0, 0), -1)
+        # Inverting black and white again
+        processed = cv2.bitwise_not(processed)
 
-    erode_op = cv2.morphologyEx(erode_op, cv2.MORPH_CLOSE, kernel)
+        # Fills the fibres in white on the labeled image
+        mask = processed.astype(bool)
 
-    # remove holes in the fibres
-    new = cv2.bitwise_not(erode_op)
+        return mask, processed
 
-    cnts = cv2.findContours(new, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+    @staticmethod
+    def _fibre_detection(mask_8bit):
 
-    for c in cnts:
-        area = cv2.contourArea(c)
+        # find contours of the fibers
+        fibre_centres = []
+        # Resize the image to speed up
+        processed = cv2.resize(mask_8bit, None, fx=0.5, fy=0.5)
+        # Find contours
+        contours, hierarchy = cv2.findContours(processed, cv2.RETR_CCOMP,
+                                               cv2.CHAIN_APPROX_SIMPLE)
+        for i, (contour, level) in enumerate(zip(contours, hierarchy[0])):
 
-        if area < 1600:  # if the area of a hole is small enough,
-            # it is filled in
-            cv2.drawContours(new, [c], -1, (0, 0, 0), -1)
+            # Objects that have a parent are just holes
+            if level[3] == -1:
 
-    new = cv2.bitwise_not(new)
-
-    # convert to combines with the deepcell labeled image
-    new16 = new.astype(np.uint16)
-    new16[new16 >= 255] = 0b1111111111111111
-    applied_deepcell = np.bitwise_and(deepcell, new16)
-
-    # find contours of the fibers
-    fibre_centres = []
-    if do_fibre_counting:
-        new = cv2.resize(new, None, fx=1/2, fy=1/2)  # for speed
-        contours = cv2.findContours(new, cv2.RETR_CCOMP,
-                                    cv2.CHAIN_APPROX_SIMPLE)
-        cnts = contours[0] if len(contours) == 2 else contours[1]
-        hierarchy = contours[1]
-        for i, c in enumerate(cnts):
-
-            # check if it is not a hole
-            if hierarchy[0][i][3] == -1:
-
-                # get geometrical centre
-                m = cv2.moments(c)
+                # Calculates the centroid of the contour
+                m = cv2.moments(contour)
                 cx = int(m['m10'] / m['m00'])
                 cy = int(m['m01'] / m['m00'])
 
-                # cut out the contour
-                black_im = np.zeros((new.shape[0] + 1, new.shape[1] + 1, 1),
-                                    np.uint8)
-                cv2.drawContours(black_im, [c], -1, 255, -1)
+                # Fill contours white on a black background
+                black_im = np.zeros(processed.shape, np.uint8)
+                cv2.drawContours(black_im, [contour], -1, 255, -1)
 
-                # find all the holes
-                for j in range(len(hierarchy[0])):
-                    # if we are the parent (only one layer down will be
-                    # scanned)
-                    if hierarchy[0][j][3] == i:
-                        cv2.drawContours(black_im, [cnts[j]], -1, 0, -1)
+                # Fill all the holes black
+                holes = [con for con, lvl in zip(contours, hierarchy[0])
+                         if lvl[3] == i]
+                if holes:
+                    cv2.drawContours(black_im, holes, -1, 0, -1)
 
-                # make first lines black (so that distance transform takes
-                # border into account)
-                black_im[0, :] = np.zeros((new.shape[1] + 1))[0]
-                black_im[:, 0] = np.zeros((new.shape[0] + 1))[0]
+                # Make a black contour to count border in the distance
+                # transform
+                black_im = np.vstack(
+                    [np.zeros(black_im.shape[1]).astype(np.uint8),
+                     black_im])
+                black_im = np.vstack(
+                    [black_im,
+                     np.zeros(black_im.shape[1]).astype(np.uint8)])
+                black_im = np.hstack(
+                    [np.zeros((black_im.shape[0], 1)).astype(np.uint8),
+                     black_im])
+                black_im = np.hstack(
+                    [black_im,
+                     np.zeros((black_im.shape[0], 1)).astype(np.uint8)])
 
-                # do the distance transform
+                # Apply a distance transform
                 dist_transform = cv2.distanceTransform(black_im,
                                                        cv2.DIST_L2, 3)
-                max_dis = np.max(dist_transform)
+                max_dist = np.max(dist_transform)
+                # Cast the distance to an 8 bit image
                 cv2.normalize(dist_transform, dist_transform, 0, 255,
                               cv2.NORM_MINMAX)
-                percentile = np.percentile(dist_transform[dist_transform >
+                # All values above this one are in the top 20%
+                percent_80 = np.percentile(dist_transform[dist_transform >
                                                           0.01], 80)
 
-                # get centre
-                above_percentile = np.where(dist_transform >= percentile)
-                function = (cx - above_percentile[1]) ** 2 + \
-                    (cy - above_percentile[0]) ** 2 - \
-                    (dist_transform[above_percentile[0],
-                                    above_percentile[1]] * max_dis / 255) ** 3
-                min_index = np.argmin(function)
-                fibre_centres.append([above_percentile[1][min_index] * 2,
-                                      above_percentile[0][min_index] * 2])
+                # Keep only the areas far from the fiber and image borders
+                top_20_percent = np.where(dist_transform >= percent_80)
 
-    return applied_deepcell, fibre_centres
+                # Compromise between being close to the centroid and far
+                # from the borders
+                norm = (cx - top_20_percent[1]) ** 2 + \
+                       (cy - top_20_percent[0]) ** 2 - \
+                       (dist_transform[top_20_percent[0],
+                                       top_20_percent[1]] *
+                        max_dist / 255) ** 3
+                min_index = np.argmin(norm)
+                fibre_centres.append(
+                    [(top_20_percent[1][min_index] - 1) * 2,
+                     (top_20_percent[0][min_index] - 1) * 2])
 
+        return fibre_centres
 
-def fibre_detection__nuclei_positions(original,
-                                      labeled_image,
-                                      do_fibre_positions,
-                                      fibre_threshold=0.85):
+    @staticmethod
+    def _get_nuclei_positions(labeled_image,
+                              mask,
+                              fibre_threshold=0.85):
 
-    list_tuple_location = []
-    list_tuple_location_fibre = []
+        nuclei_out_fibre = []
+        nuclei_in_fibre = []
 
-    # get the fibre detection
-    applied, list_tuple_fibre_centres = fiber_detection_threshold_and_erode(
-        original, labeled_image, do_fibre_positions)
+        masked_image = ma.masked_array(labeled_image, mask)
 
-    i = 1
-    y_half_scan_range = 25
-    prev_y = y_half_scan_range
-    while True:  # each nuclei's distinct number from 1 to ...(maximum
-        # amount of nuclei) where are the pixels in image k where
-        # pixelvalue(distinct number) are i.
+        nb_nuc = np.max(labeled_image)
 
-        # get lowest and highest ypixel scan
-        lowest_y = max(0, prev_y - y_half_scan_range)
-        highest_y = min(labeled_image.shape[0], prev_y + y_half_scan_range + 1)
+        for i in range(1, nb_nuc + 1):
 
-        max_y = 0
-        min_y = 0
-        done = False
+            nucleus_y, nucleus_x = np.where(labeled_image == i)
+            center_x = np.mean(nucleus_x)
+            center_y = np.mean(nucleus_y)
 
-        while True:
-            # scan for the nucleus inside this band
-            alle_pixels = np.where(labeled_image[lowest_y:highest_y, :] == i)
+            in_fibre = ma.count_masked(masked_image[nucleus_y, nucleus_x])
+            if in_fibre < fibre_threshold * nucleus_x.shape[0]:
+                nuclei_out_fibre.append((center_x, center_y))
+            else:
+                nuclei_in_fibre.append((center_x, center_y))
 
-            x_cos = alle_pixels[1]
-            y_cos = alle_pixels[0]
-
-            # check if we lost the nucleus
-            if x_cos.shape[0] == 0:
-                if lowest_y == 0 and highest_y == labeled_image.shape[0]:
-                    done = True
-                    break
-                lowest_y = 0
-                highest_y = labeled_image.shape[0]
-                continue
-
-            # get min and max
-            min_y = np.min(y_cos) + lowest_y
-            max_y = np.max(y_cos) + lowest_y
-
-            # break if we found it fully
-            if (min_y != lowest_y or min_y == 0) and \
-                    (max_y != highest_y - 1 or max_y ==
-                     labeled_image.shape[0] - 1):
-                break
-
-            # if we did not completely detect the nucleus
-            if min_y == lowest_y:
-                lowest_y -= 2 * y_half_scan_range
-            elif max_y == highest_y-1:
-                highest_y += 2 * y_half_scan_range
-
-        if done:
-            break
-
-        # get bounding box (evt. gewoon vaste grootte nemen)
-        min_x = np.min(x_cos)
-        max_x = np.max(x_cos)
-
-        # determine whether or not in fibre
-        an = int(np.mean(y_cos)) + lowest_y  # ygem
-        bn = int(np.mean(x_cos))  # xgem
-        loc = [bn, an]
-        prev_y = an
-
-        # get number of pixels in total
-        number_of_pixels = x_cos.shape[0]
-
-        # get number of pixels in fibre
-        number_of_fibre_pixels = np.count_nonzero(applied[min_y:max_y + 1,
-                                                  min_x:max_x + 1] == i)
-
-        # append to correct list
-        if number_of_fibre_pixels / number_of_pixels >= fibre_threshold:
-            list_tuple_location_fibre.append(loc)
-        else:
-            list_tuple_location.append(loc)
-        i += 1
-
-    return list_tuple_location, list_tuple_location_fibre, \
-        list_tuple_fibre_centres
-
-
-def deepcell_functie(filename: Path,
-                     kleurcellen,
-                     kleurcyto,
-                     do_fibre_counting,
-                     small_objects_thresh):
-    """
-    :param filename: the name of the file to extract
-    (filename.tif/filename.tiff -> without extension)
-    :param kleurcellen:
-    :param kleurcyto:
-    :param do_fibre_counting:
-    :param small_objects_thresh:
-    :return: Two lists, one with centers of pixels outside of fibre, one with
-    centers of pixels inside
-    """
-
-    # load the image
-    image = cv2.imread(str(filename))
-
-    amount_of_files = 8
-    whole_color = str_to_number_color(kleurcellen, kleurcyto)
-    
-    # deepcell post process parameters
-    parameters = [0.05, 0, 0.3, 2, small_objects_thresh, 15, 2,
-                  amount_of_files, None]  # veel sneller als mpp = None
-    # parameters = [0.1, 0, 0.3, 2, 414, 15, 2, amount_of_files, None]
-
-    # get the deepcell prediction segmentation mask
-    labeled_image = cellen_herkennen(image, whole_color, parameters)
-
-    # get the lists of fibre and nuclei centres
-    list_tuple_location, list_tuple_location_fibre, \
-        list_tuple_fibre_centres = fibre_detection__nuclei_positions(
-            image[:, :, whole_color[1]], labeled_image, do_fibre_counting)
-
-    return list_tuple_location, list_tuple_location_fibre, \
-        list_tuple_fibre_centres, image.shape[1], image.shape[0]
-
-
-"""
-
-#path aanpassen en zorgen dat foto met deze filename in die path te vinden is
-l, b = deepcell_functie('ditiseenfoto')
-
-
-print(l[:10])
-print(b[:10])
-"""
-
-# define colours kan wel wat beter lol wtf
-# doe sommige dingen maar één keer (lik define colours enal), soms kort maar
-# lengt uit met veel foto's
+        return nuclei_out_fibre, nuclei_in_fibre
