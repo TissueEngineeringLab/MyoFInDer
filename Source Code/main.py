@@ -744,11 +744,14 @@ class Main_window(Tk):
 
     def _delete_current_project(self):
 
+        if self._current_project is None:
+            return
+
         ret = messagebox.askyesno('Hold on !',
                                   "Do you really want to delete the current "
                                   "project ?\nThis operation can't be undone.")
 
-        if ret and self._current_project is not None:
+        if ret:
             # delete the project
             rmtree(self._current_project)
 
