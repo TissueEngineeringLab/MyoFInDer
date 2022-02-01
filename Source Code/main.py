@@ -963,7 +963,6 @@ class Main_window(Tk):
         #   Make sure the threads don't interfere when adding the points
         #   Improve the way the projects are saved
         #   Warning when two names are equal
-        #   Add the delete feature
 
         # empty threads
         self._threads = []

@@ -9,6 +9,7 @@ from pathlib import Path
 from platform import system
 from typing import List, Dict
 from copy import deepcopy
+from functools import partial
 from structure_classes import Nucleus, Fibre, Nuclei, Fibres, Labels, Lines, \
     Rectangle, Table_element
 
@@ -465,6 +466,42 @@ class Table(ttk.Frame):
     def _table_height(self):
         return self._row_height * 2 * len(self.filenames)
 
+    def _delete_image(self, file: Path):
+
+        ret = messagebox.askyesno('Hold on !',
+                                  f"Do you really want to remove {file.name} ?"
+                                  f"\nAll the unsaved data will be lost.")
+
+        if not ret:
+            return
+
+        if self._hovering_index is not None:
+            self._un_hover(self._hovering_index)
+            self._hovering_index = None
+
+        # remove everything previous
+        for item in self._canvas.find_all():
+            self._canvas.delete(item)
+
+        self._items.pop(file)
+        self._index_to_img.pop(self._img_to_index[file])
+        index = self._img_to_index.pop(file)
+        self._nuclei.pop(file)
+        self._fibres.pop(file)
+        self.filenames.remove(file)
+
+        if not self.filenames:
+            self._current_image = None
+            self._hovering_index = None
+
+        if self._current_image == file:
+            if index + 1 in self._index_to_img:
+                self._current_image = self._index_to_img[index + 1]
+            else:
+                self._current_image = self._index_to_img[index - 1]
+
+        self._make_table()
+
     def _make_table(self):
 
         # make the table
@@ -479,6 +516,10 @@ class Table(ttk.Frame):
                 -1, middle, width, middle, width=1, fill=label_line)
             full_line = self._canvas.create_line(
                 -1, bottom, width, bottom, width=3, fill=label_line)
+
+            button = ttk.Button(self._canvas, text="X", width=2,
+                                command=partial(self._delete_image, file))
+            self._canvas.create_window(width - 17, top + 16, window=button)
 
             # rectangle
             rect = self._canvas.create_rectangle(
