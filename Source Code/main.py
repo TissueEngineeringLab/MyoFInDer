@@ -21,6 +21,7 @@ from json import load, dump
 from functools import partial, wraps
 from dataclasses import dataclass, field
 from pathlib import Path
+from screeninfo import get_monitors
 
 # set better resolution
 if system() == "Windows" and int(release()) >= 8:
@@ -348,8 +349,13 @@ class Settings_window(Toplevel):
                                     pady=(10, 0))
 
     def _center(self):
-        scr_width = self.winfo_screenwidth()
-        scr_height = self.winfo_screenheight()
+        monitors = get_monitors()
+        candidates = [monitor for monitor in monitors if
+                      0 <= self.winfo_x() - monitor.x <= monitor.width and
+                      0 <= self.winfo_y() - monitor.y <= monitor.height]
+        current_monitor = candidates[0] if candidates else monitors[0]
+        scr_width = current_monitor.width
+        scr_height = current_monitor.height
         height = self.winfo_height()
         width = self.winfo_width()
 
@@ -369,8 +375,13 @@ class Splash(Tk):
     def resize_image(self):
         size_factor = 0.35
 
-        scr_width = self.winfo_screenwidth()
-        scr_height = self.winfo_screenheight()
+        monitors = get_monitors()
+        candidates = [monitor for monitor in monitors if
+                      0 <= self.winfo_x() - monitor.x <= monitor.width and
+                      0 <= self.winfo_y() - monitor.y <= monitor.height]
+        current_monitor = candidates[0] if candidates else monitors[0]
+        scr_width = current_monitor.width
+        scr_height = current_monitor.height
         img_ratio = self._image.width / self._image.height
         scr_ratio = scr_width / scr_height
 
@@ -946,6 +957,10 @@ class Main_window(Tk):
             return
 
         # Todo: Stop threads in a correct way
+        #   Make sure the threads don't interfere when adding the points
+        #   Improve the way the projects are saved
+        #   Warning when two names are equal
+        #   Add the delete feature
 
         # empty threads
         self._threads = []

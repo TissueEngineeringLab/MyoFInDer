@@ -238,7 +238,6 @@ class Table(ttk.Frame):
 
         # add the filenames
         for file in filenames:
-            # Todo: warning when two names are equal
             if file in self.filenames:
                 messagebox.showerror("Error loading files",
                                      f"The file {file.name} is already opened,"
