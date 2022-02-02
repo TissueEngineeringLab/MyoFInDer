@@ -999,8 +999,7 @@ class Main_window(Tk):
         self.update()
 
         # start threading
-        semaphore = BoundedSemaphore(value=max(self.settings.n_threads.get(),
-                                               1))
+        semaphore = BoundedSemaphore(value=self.settings.n_threads.get())
         self._threads = [Thread(target=self._process_thread,
                                 args=(file, semaphore))
                          for file in file_names]
