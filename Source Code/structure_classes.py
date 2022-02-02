@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from typing import Optional, List
+from tkinter.ttk import Button
 
 in_fibre = 'yellow'  # green
 out_fibre = 'red'  # 2A7DDE
@@ -34,6 +35,7 @@ class Table_element:
     labels: Labels
     lines: Lines
     rect: Rectangle
+    button: Button
 
 
 @dataclass

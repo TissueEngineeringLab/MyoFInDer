@@ -466,6 +466,13 @@ class Table(ttk.Frame):
     def _table_height(self):
         return self._row_height * 2 * len(self.filenames)
 
+    def enable_close_buttons(self, enable: bool):
+
+        state = 'enabled' if enable else 'disabled'
+
+        for item in self._items.values():
+            item.button['state'] = state
+
     def _delete_image(self, file: Path):
 
         ret = messagebox.askyesno('Hold on !',
@@ -568,7 +575,8 @@ class Table(ttk.Frame):
                                                Lines(half_line,
                                                      full_line,
                                                      index_line),
-                                               Rectangle(rect)))
+                                               Rectangle(rect),
+                                               button))
 
             self._index_to_img[i] = file
             self._img_to_index[file] = i

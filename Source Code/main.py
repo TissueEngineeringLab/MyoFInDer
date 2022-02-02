@@ -781,7 +781,6 @@ class Main_window(Tk):
     def _create_empty_project(self):
 
         # reset everything
-        self._stop_processing()
         self._nuclei_table.reset()
         self._image_canvas.reset()
 
@@ -852,9 +851,6 @@ class Main_window(Tk):
             messagebox.showerror("Error while loading",
                                  "This isn't a valid Cellen-tellen project !")
             return
-
-        # stop processing
-        self._stop_processing()
 
         # set the save button
         self._set_title_and_button(directory)
@@ -960,16 +956,51 @@ class Main_window(Tk):
     def _safe_load(self, path: Path = None):
         self._load_project(path)
 
+    def _disable_buttons(self):
+
+        self._load_button['state'] = "disabled"
+        self._save_button['state'] = "disabled"
+        self._which_indicator_button['state'] = 'disabled'
+
+        self._file_menu.entryconfig("Load Automatic Save", state='disabled')
+        self._file_menu.entryconfig("Recent Projects", state='disabled')
+        self._file_menu.entryconfig("Delete Current Project", state="disabled")
+        self._file_menu.entryconfig("Save Project As", state="disabled")
+        self._file_menu.entryconfig("New Empty Project", state="disabled")
+        self._file_menu.entryconfig("Load From Explorer", state="disabled")
+
+        self._nuclei_table.enable_close_buttons(False)
+
+    def _enable_buttons(self):
+
+        self._load_button['state'] = "enabled"
+        self.set_unsaved_status()
+        self._set_indicators()
+
+        if self._auto_save_path.is_dir():
+            self._file_menu.entryconfig("Load Automatic Save", state='normal')
+        if self._recent_projects:
+            self._file_menu.entryconfig("Recent Projects", state='normal')
+        if self._current_project is not None:
+            self._file_menu.entryconfig("Delete Current Project",
+                                        state='normal')
+        self._file_menu.entryconfig("Save Project As", state="normal")
+        self._file_menu.entryconfig("New Empty Project", state="normal")
+        self._file_menu.entryconfig("Load From Explorer", state="normal")
+
+        self._nuclei_table.enable_close_buttons(True)
+
     def _stop_processing(self, force=True):
 
         if not force and active_count() > 2:
             return
 
-        # Todo: Stop threads in a correct way
+        # Todo:
         #   Make sure the threads don't interfere when adding the points
         #   Improve the way the projects are saved
         #   Warning when two names are equal
-        #   Disable everything when running threads
+        #   Handle closing when running threads
+        #   Stop threads in a correct way
 
         # empty threads
         self._threads = []
@@ -980,14 +1011,13 @@ class Main_window(Tk):
         self._process_images_button.configure(command=self._process_images)
         self._processing_label['text'] = ""
 
-    def _process_images(self):
+        self._enable_buttons()
+        self.set_unsaved_status()
 
-        # stop vorige threads
-        self._stop_processing()
+    def _process_images(self):
 
         # get the file_names
         file_names = self._nuclei_table.filenames
-        self.set_unsaved_status()
 
         # switch off process button
         self._processed_images_count.set(0)
@@ -996,6 +1026,9 @@ class Main_window(Tk):
         self._process_images_button.configure(command=self._stop_processing)
         self._processing_label['text'] = "0 of " + str(len(file_names)) + \
                                          " Images Processed"
+
+        self._disable_buttons()
+
         self.update()
 
         # start threading
@@ -1023,7 +1056,6 @@ class Main_window(Tk):
             # close if necessary
             self._processed_images_count.set(
                 self._processed_images_count.get() + 1)
-            self.set_unsaved_status()
 
         self._stop_processing(force=False)
 
@@ -1044,8 +1076,6 @@ class Main_window(Tk):
 
         if file_names:
             file_names = [Path(path) for path in file_names]
-            # stop processing
-            self._stop_processing()
 
             # enable the process image buttons
             self._process_images_button["state"] = 'enabled'
