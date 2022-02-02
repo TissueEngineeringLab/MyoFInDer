@@ -11,7 +11,7 @@ from typing import List, Dict
 from copy import deepcopy
 from functools import partial
 from structure_classes import Nucleus, Fibre, Nuclei, Fibres, Labels, Lines, \
-    Rectangle, Table_element
+    Table_element
 
 # color codes
 background = '#EAECEE'
@@ -429,7 +429,7 @@ class Table(ttk.Frame):
                                     lines.full_line, fill=line_color)
 
         if not hover:
-            self._canvas.itemconfig(self._items[file].rect.rect,
+            self._canvas.itemconfig(self._items[file].rect,
                                     fill=rect_color)
 
         self._canvas.itemconfig(self._items[file].lines.half_line,
@@ -575,7 +575,7 @@ class Table(ttk.Frame):
                                                Lines(half_line,
                                                      full_line,
                                                      index_line),
-                                               Rectangle(rect),
+                                               rect,
                                                button))
 
             self._index_to_img[i] = file

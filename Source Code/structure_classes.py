@@ -26,15 +26,10 @@ class Lines:
 
 
 @dataclass
-class Rectangle:
-    rect: int
-
-
-@dataclass
 class Table_element:
     labels: Labels
     lines: Lines
-    rect: Rectangle
+    rect: int
     button: Button
 
 
