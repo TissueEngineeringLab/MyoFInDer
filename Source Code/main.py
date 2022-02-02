@@ -356,11 +356,13 @@ class Settings_window(Toplevel):
         current_monitor = candidates[0] if candidates else monitors[0]
         scr_width = current_monitor.width
         scr_height = current_monitor.height
+        x_offset = current_monitor.x
+        y_offset = current_monitor.y
         height = self.winfo_height()
         width = self.winfo_width()
 
-        self.geometry('+%d+%d' % ((scr_width - width) / 2,
-                                  (scr_height - height) / 2))
+        self.geometry('+%d+%d' % (x_offset + (scr_width - width) / 2,
+                                  y_offset + (scr_height - height) / 2))
 
 
 class Splash(Tk):
@@ -382,6 +384,8 @@ class Splash(Tk):
         current_monitor = candidates[0] if candidates else monitors[0]
         scr_width = current_monitor.width
         scr_height = current_monitor.height
+        x_offset = current_monitor.x
+        y_offset = current_monitor.y
         img_ratio = self._image.width / self._image.height
         scr_ratio = scr_width / scr_height
 
@@ -393,8 +397,9 @@ class Splash(Tk):
             self.geometry('%dx%d+%d+%d' % (
                 int(scr_width * size_factor),
                 int(scr_width * size_factor / img_ratio),
-                scr_width * (1 - size_factor) / 2,
-                (scr_height - int(scr_width * size_factor / img_ratio)) / 2))
+                x_offset + scr_width * (1 - size_factor) / 2,
+                y_offset + (scr_height - int(scr_width * size_factor /
+                                             img_ratio)) / 2))
 
         else:
             self._image = self._image.resize(
@@ -404,8 +409,9 @@ class Splash(Tk):
             self.geometry('%dx%d+%d+%d' % (
                 int(scr_height * size_factor * img_ratio),
                 int(scr_height * size_factor),
-                (scr_width - int(scr_height * size_factor * img_ratio)) / 2,
-                scr_height * (1 - size_factor) / 2))
+                x_offset + (scr_width - int(scr_height * size_factor *
+                                            img_ratio)) / 2,
+                y_offset + scr_height * (1 - size_factor) / 2))
 
     def display(self):
         image_tk = ImageTk.PhotoImage(self._image)
@@ -963,6 +969,7 @@ class Main_window(Tk):
         #   Make sure the threads don't interfere when adding the points
         #   Improve the way the projects are saved
         #   Warning when two names are equal
+        #   Disable everything when running threads
 
         # empty threads
         self._threads = []
