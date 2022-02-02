@@ -621,7 +621,7 @@ class Main_window(Tk):
         self._menu_bar.add_cascade(label="Help", menu=self._help_menu)
 
         self._quit_menu = Menu(self._menu_bar, tearoff=0)
-        self._quit_menu.add_command(label="Quit", command=self.destroy)
+        self._quit_menu.add_command(label="Quit", command=self._safe_destroy)
         self._menu_bar.add_cascade(label="Quit", menu=self._quit_menu)
 
         if not self._recent_projects:
