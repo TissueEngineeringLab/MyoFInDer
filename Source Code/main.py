@@ -907,6 +907,23 @@ class Main_window(Tk):
 
     def _create_warning_window(self):
 
+        if active_count() > 1:
+            ret = messagebox.askyesno(
+                'Hold on !',
+                "The program is still computing !\n"
+                "It is safer to wait for the computation to end.\n"
+                "Quit anyway ?\n"
+                "(resources may take some time to be released even after "
+                "exiting)")
+
+            if ret:
+                self._stop_event.set()
+            if active_count() > 1:
+                return bool(ret)
+            else:
+                messagebox.showinfo('Update', "Looks like the computation is "
+                                              "actually over now !")
+
         # if unsaved, show the window
         if self._save_button['state'] == 'enabled' and \
                 self._nuclei_table.filenames:
@@ -1002,7 +1019,6 @@ class Main_window(Tk):
         # Todo:
         #   Improve the way the projects are saved
         #   Warning when two names are equal
-        #   Handle closing when running threads
 
         # empty threads
         self._stop_event.set()
@@ -1013,8 +1029,8 @@ class Main_window(Tk):
                 self.update()
                 self._processing_label[
                     'text'] = "Stopping" + '.' * (i % 4) + ' ' * (4 - i % 4) \
-                              + f"(waiting for {active_count() - 1} threads " \
-                                f"to finish)"
+                              + f"(waiting for {active_count() - 1} " \
+                                f"thread(s) to finish)"
                 i += 1
                 sleep(1)
 
