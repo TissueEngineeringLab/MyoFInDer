@@ -15,7 +15,7 @@ from webbrowser import open_new
 
 from nucleiFibreSegmentation import Fiber_segmentation
 
-from threading import Thread, BoundedSemaphore, active_count
+from threading import Thread, BoundedSemaphore, active_count, Event
 from time import sleep
 from json import load, dump
 from functools import partial, wraps
@@ -502,6 +502,10 @@ class Main_window(Tk):
                        + "' (Unsaved)")
             self._save_button['state'] = 'enabled'
             self._save_button['text'] = 'Save'
+        else:
+            self.title("Cellen Tellen - New Project (Unsaved)")
+            self._save_button['state'] = 'enabled'
+            self._save_button['text'] = 'Save As'
 
     def _load_settings(self):
         if (self._base_path / 'settings.py').is_file():
@@ -559,7 +563,7 @@ class Main_window(Tk):
         # threads
         self._processed_images_count = IntVar(value=0)
         self._img_to_process_count = 0
-        self._threads = []
+        self._stop_event = Event()
         self._thread_slider = None
         self._n_threads_running = 0
 
@@ -992,18 +996,28 @@ class Main_window(Tk):
 
     def _stop_processing(self, force=True):
 
-        if not force and active_count() > 2:
+        if not force and (active_count() > 2 or self._stop_event.is_set()):
             return
 
         # Todo:
-        #   Make sure the threads don't interfere when adding the points
         #   Improve the way the projects are saved
         #   Warning when two names are equal
         #   Handle closing when running threads
-        #   Stop threads in a correct way
 
         # empty threads
-        self._threads = []
+        self._stop_event.set()
+        if force:
+            self._processing_label['text'] = "Stopping"
+            i = 1
+            while active_count() > 1:
+                self.update()
+                self._processing_label[
+                    'text'] = "Stopping" + '.' * (i % 4) + ' ' * (4 - i % 4) \
+                              + f"(waiting for {active_count() - 1} threads " \
+                                f"to finish)"
+                i += 1
+                sleep(1)
+
         self._processed_images_count.set(0)
         self._img_to_process_count = 0
         self._process_images_button["state"] = 'enabled'
@@ -1032,14 +1046,17 @@ class Main_window(Tk):
         self.update()
 
         # start threading
+        self._stop_event.clear()
         semaphore = BoundedSemaphore(value=self.settings.n_threads.get())
-        self._threads = [Thread(target=self._process_thread,
-                                args=(file, semaphore))
-                         for file in file_names]
-        for thread in self._threads:
-            thread.start()
+        for file in file_names:
+            Thread(target=self._process_thread,
+                   args=(file, semaphore, self._stop_event)).start()
 
-    def _process_thread(self, file: Path, semaphore: BoundedSemaphore):
+    def _process_thread(self, file: Path, semaphore: BoundedSemaphore,
+                        stop_event: Event):
+
+        if stop_event.is_set():
+            return
 
         with semaphore:
             # get result
@@ -1049,6 +1066,9 @@ class Main_window(Tk):
                                    self.settings.do_fibre_counting.get(),
                                    self.settings.small_objects_threshold.get())
 
+            if stop_event.is_set():
+                return
+
             # send the output to the table
             self._nuclei_table.input_processed_data(nuclei_out, nuclei_in,
                                                     fibre_positions, file)
@@ -1056,6 +1076,9 @@ class Main_window(Tk):
             # close if necessary
             self._processed_images_count.set(
                 self._processed_images_count.get() + 1)
+
+        if stop_event.is_set():
+            return
 
         self._stop_processing(force=False)
 
