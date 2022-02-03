@@ -240,18 +240,25 @@ class Table(ttk.Frame):
         # add the filenames
         for file in filenames:
             if file in self.filenames:
-                messagebox.showerror("Error loading files",
+                messagebox.showerror("Error while loading files",
                                      f"The file {file.name} is already opened,"
                                      f"ignoring.")
                 filenames.remove(file)
+            elif file.name in [file_.name for file_ in self.filenames]:
+                messagebox.showerror("Error while  loading files",
+                                     f"A file with the same name ({file.name})"
+                                     f"is already opened, ignoring.")
+                filenames.remove(file)
 
-        self.filenames += filenames
-        for file in filenames:
-            self._nuclei[file] = Nuclei()
-            self._fibres[file] = Fibres()
+        if filenames:
 
-        # make the table
-        self._make_table()
+            self.filenames += filenames
+            for file in filenames:
+                self._nuclei[file] = Nuclei()
+                self._fibres[file] = Fibres()
+
+            # make the table
+            self._make_table()
 
     def input_processed_data(self, nuclei_negative_positions,
                              nuclei_positive_positions, fibre_centres,

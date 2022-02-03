@@ -1018,7 +1018,6 @@ class Main_window(Tk):
 
         # Todo:
         #   Improve the way the projects are saved
-        #   Warning when two names are equal
 
         # empty threads
         self._stop_event.set()
