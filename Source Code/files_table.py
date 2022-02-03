@@ -23,7 +23,7 @@ in_fibre = 'yellow'  # green
 out_fibre = 'red'  # 2A7DDE
 
 
-class Table(ttk.Frame):
+class Files_table(ttk.Frame):
 
     def __init__(self, root):
 

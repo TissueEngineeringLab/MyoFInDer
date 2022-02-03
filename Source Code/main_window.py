@@ -1,27 +1,27 @@
 # coding: utf-8
 
-from tkinter import ttk, filedialog, Canvas, Tk, IntVar, \
-    Toplevel, Scale, PhotoImage, Menu, StringVar, BooleanVar, messagebox
-from PIL import ImageTk, Image
+from tkinter import ttk, filedialog, Tk, IntVar, PhotoImage, Menu, StringVar, \
+    BooleanVar, messagebox
 from platform import system, release
-
-if system() == "Windows":
-  from ctypes import windll
-
-from table import Table
-from imagewindow import Zoom_Advanced
 from shutil import rmtree
 from webbrowser import open_new
-
-from nucleiFibreSegmentation import Fiber_segmentation
-
 from threading import Thread, BoundedSemaphore, active_count, Event
 from time import sleep
 from json import load, dump
 from functools import partial, wraps
-from dataclasses import dataclass, field
 from pathlib import Path
-from screeninfo import get_monitors
+
+from structure_classes import Settings
+from save_popup import Save_popup
+from warning_window import Warning_window
+from project_name_window import Project_name_window
+from settings_window import Settings_window
+from splash_window import Splash_window
+from files_table import Files_table
+from image_canvas import Image_canvas
+
+if system() == "Windows":
+  from ctypes import windll
 
 # set better resolution
 if system() == "Windows" and int(release()) >= 8:
@@ -36,429 +36,11 @@ def _save_before_closing(func):
     return wrapper
 
 
-@dataclass
-class Settings:
-    fibre_colour: StringVar = field(
-        default_factory=partial(StringVar, value="Green", name='fibre_colour'))
-    nuclei_colour: StringVar = field(
-        default_factory=partial(StringVar, value="Blue", name='nuclei_colour'))
-    auto_save_time: IntVar = field(
-        default_factory=partial(IntVar, value=-1, name='auto_save_time'))
-    save_altered_images: BooleanVar = field(
-        default_factory=partial(BooleanVar, value=False, name='save_altered'))
-    do_fibre_counting: BooleanVar = field(
-        default_factory=partial(BooleanVar, value=False, name='fibre_count'))
-    n_threads: IntVar = field(
-        default_factory=partial(IntVar, value=3, name='n_threads'))
-    small_objects_threshold: IntVar = field(
-        default_factory=partial(IntVar, value=400, name='small_objects'))
-    blue_channel_bool: BooleanVar = field(
-        default_factory=partial(BooleanVar, value=True, name='blue_channel'))
-    green_channel_bool: BooleanVar = field(
-        default_factory=partial(BooleanVar, value=True, name='green_channel'))
-    red_channel_bool: BooleanVar = field(
-        default_factory=partial(BooleanVar, value=False, name='red_channel'))
-    show_nuclei: BooleanVar = field(
-        default_factory=partial(BooleanVar, value=True, name='show_nuclei'))
-    show_fibres: BooleanVar = field(
-        default_factory=partial(BooleanVar, value=False, name='show_fibres'))
-
-
-class Saving_popup(Toplevel):
-
-    def __init__(self, main_window, directory):
-        super().__init__(main_window)
-
-        self.title("Saving....")
-        ttk.Label(self, text="Saving to '" + directory.name + "' ..."). \
-            pack(anchor='center', expand=False, fill='none', padx=10, pady=10)
-
-        self.update()
-
-
-class Warning_window(Toplevel):
-
-    def __init__(self, main_window, return_var):
-        super().__init__(main_window)
-
-        self._main_window = main_window
-        self._return_var = return_var
-
-        self.resizable(False, False)
-        self.grab_set()
-
-        self.title("Hold on!")
-        self.bind('<Destroy>', self._cancel)
-
-        self._set_layout()
-        self.update()
-
-    def _set_layout(self):
-        ttk.Label(self,
-                  text="Are you sure about closing an unsaved project ?"). \
-            pack(anchor='n', expand=False, fill='none', side='top',
-                 padx=20, pady=20)
-
-        # create the buttons
-        ttk.Button(self, text='Save Before Continuing',
-                   command=self._save, width=40). \
-            pack(anchor='n', expand=False, fill='none', side='top',
-                 padx=20, pady=7)
-        ttk.Button(self, text='Continue Without Saving',
-                   command=self._ignore,
-                   width=40). \
-            pack(anchor='n', expand=False, fill='none', side='top',
-                 padx=20, pady=7)
-        ttk.Button(self, text='Cancel', command=self.destroy, width=40). \
-            pack(anchor='n', expand=False, fill='none', side='top',
-                 padx=20, pady=7)
-
-    def _save(self):
-        self._return_var.set(2)
-
-    def _ignore(self):
-        self._return_var.set(1)
-
-    def _cancel(self, *_, **__):
-        self._return_var.set(0)
-
-
-class Project_name_window(Toplevel):
-
-    def __init__(self, main_window, return_var):
-        super().__init__(main_window)
-
-        self._main_window = main_window
-        self._return_var = return_var
-
-        self._projects_path = self._main_window.projects_path
-
-        self._warning_var = StringVar(value='')
-
-        self.resizable(False, False)
-        self.grab_set()
-
-        self.bind("<Destroy>", self._cancel)
-        self.title("Saving the Current Project")
-
-        self._set_layout()
-        self.update()
-        self._check_project_name_entry(self._name_entry.get())
-
-    def _set_layout(self):
-
-        ask_label = ttk.Label(self,
-                              text='Choose a name for your '
-                                   'current Project :')
-        ask_label.pack(anchor='n', expand=False, fill='none', side='top',
-                       padx=20, pady=10)
-
-        # set the warning label (gives warnings when the name is bad)
-        self._warning_var.set('')
-        warning_label = ttk.Label(self,
-                                  textvariable=self._warning_var,
-                                  foreground='red')
-        warning_label.pack(anchor='n', expand=False, fill='none', side='top',
-                           padx=20, pady=7)
-        validate_command = warning_label.register(
-            self._check_project_name_entry)
-
-        # set the entry box to input the name
-        self._name_entry = ttk.Entry(
-            self, validate='key', state='normal',
-            width=30,
-            validatecommand=(validate_command, '%P'))
-        self._name_entry.pack(anchor='n', expand=False, fill='none',
-                              side='top', padx=20, pady=7)
-        self._name_entry.focus()
-        self._name_entry.icursor(len(self._name_entry.get()))
-
-        # save button
-        self._folder_name_window_save_button = ttk.Button(
-            self, text='Save', width=30, command=self._enter_pressed)
-        self._folder_name_window_save_button.pack(
-            anchor='n', expand=False, fill='none', side='top', padx=20,
-            pady=7)
-        self.bind('<Return>', self._enter_pressed)
-
-    def _check_project_name_entry(self, new_entry):
-
-        # check if it is a valid name
-        if '/' in new_entry or '.' in new_entry or not new_entry:
-            self._folder_name_window_save_button['state'] = 'disabled'
-            if len(new_entry) > 0:
-                self._warning_var.set('This is not a valid projectname !')
-            else:
-                self._warning_var.set('')
-            return True
-
-        # check if it already exists
-        if (self._projects_path / new_entry).is_dir():
-            self._warning_var.set('This project already exists')
-            self._folder_name_window_save_button['state'] = 'disabled'
-            return True
-
-        # no warnings
-        self._warning_var.set('')
-        self._folder_name_window_save_button['state'] = 'enabled'
-        return True
-
-    def _enter_pressed(self, *_, **__):
-
-        # if the window exists and the save button is enabled
-        if self._folder_name_window_save_button['state'] == 'enabled':
-            self._return_var.set(1)
-
-    def _cancel(self, *_, **__):
-        self._return_var.set(0)
-
-    def return_name(self):
-        return self._name_entry.get()
-
-
-class Settings_window(Toplevel):
-
-    def __init__(self, main_window):
-        super().__init__(main_window)
-
-        self._main_window = main_window
-        self._settings = self._main_window.settings
-
-        self.resizable(False, False)
-        self.grab_set()
-
-        self.title("Settings")
-
-        self._set_layout()
-        self.update()
-        self._center()
-
-    def _set_layout(self):
-        frame = ttk.Frame(self, padding="20 20 20 20")
-        frame.grid(sticky='NESW')
-
-        # nuclei colour
-        ttk.Label(frame, text="Nuclei Colour :").grid(column=0, row=0,
-                                                      sticky='NE',
-                                                      padx=(0, 10))
-        nuclei_colour_r1 = ttk.Radiobutton(
-            frame, text="Blue Channel", variable=self._settings.nuclei_colour,
-            value="Blue")
-        nuclei_colour_r1.grid(column=1, row=0, sticky='NW')
-        nuclei_colour_r2 = ttk.Radiobutton(
-            frame, text="Green Channel", variable=self._settings.nuclei_colour,
-            value="Green")
-        nuclei_colour_r2.grid(column=1, row=1, sticky='NW')
-        nuclei_colour_r3 = ttk.Radiobutton(
-            frame, text="Red Channel", variable=self._settings.nuclei_colour,
-            value="Red")
-        nuclei_colour_r3.grid(column=1, row=2, sticky='NW')
-
-        # fibre colour
-        ttk.Label(frame, text="Fibre Colour :").grid(
-            column=0, row=3, sticky='NE', pady=(10, 0), padx=(0, 10))
-        fibre_colour_r1 = ttk.Radiobutton(
-            frame, text="Blue Channel", variable=self._settings.fibre_colour,
-            value="Blue")
-        fibre_colour_r1.grid(column=1, row=3, sticky='NW', pady=(10, 0))
-        fibre_colour_r2 = ttk.Radiobutton(
-            frame, text="Green Channel", variable=self._settings.fibre_colour,
-            value="Green")
-        fibre_colour_r2.grid(column=1, row=4, sticky='NW')
-        fibre_colour_r3 = ttk.Radiobutton(
-            frame, text="Red Channel", variable=self._settings.fibre_colour,
-            value="Red")
-        fibre_colour_r3.grid(column=1, row=5, sticky='NW')
-
-        # autosave timer
-        ttk.Label(frame, text='Autosave Interval :').grid(
-            column=0, row=6, sticky='NE', pady=(10, 0), padx=(0, 10))
-        ttk.Radiobutton(
-            frame, text="5 Minutes", variable=self._settings.auto_save_time,
-            value=5 * 60).grid(column=1, row=6, sticky='NW', pady=(10, 0))
-        ttk.Radiobutton(
-            frame, text="15 Minutes", variable=self._settings.auto_save_time,
-            value=15 * 60).grid(column=1, row=7, sticky='NW')
-        ttk.Radiobutton(
-            frame, text="30 Minutes", variable=self._settings.auto_save_time,
-            value=30 * 60).grid(column=1, row=8, sticky='NW')
-        ttk.Radiobutton(
-            frame, text="60 Minutes", variable=self._settings.auto_save_time,
-            value=60 * 60).grid(column=1, row=9, sticky='NW')
-        ttk.Radiobutton(
-            frame, text="Never", variable=self._settings.auto_save_time,
-            value=-1).grid(column=1, row=10, sticky='NW')
-
-        # save altered images
-        ttk.Label(frame, text='Save Altered Images :').grid(
-            column=0, row=11, sticky='NE', pady=(10, 0), padx=(0, 10))
-        ttk.Radiobutton(
-            frame, text="On", variable=self._settings.save_altered_images,
-            value=1).grid(column=1, row=11, sticky='NW', pady=(10, 0))
-        ttk.Radiobutton(
-            frame, text="Off", variable=self._settings.save_altered_images,
-            value=0).grid(column=1, row=12, sticky='NW')
-
-        # fibre counting
-        ttk.Label(frame, text='Count Fibres :').grid(
-            column=0, row=13, sticky='NE', pady=(10, 0), padx=(0, 10))
-        ttk.Radiobutton(
-            frame, text="On", variable=self._settings.do_fibre_counting,
-            value=1).grid(column=1, row=13, sticky='NW', pady=(10, 0))
-        ttk.Radiobutton(
-            frame, text="Off", variable=self._settings.do_fibre_counting,
-            value=0).grid(column=1, row=14, sticky='NW')
-
-        # multithreading
-        ttk.Label(frame, text='Number of Threads :').grid(
-            column=0, row=15, sticky='E', pady=(10, 0), padx=(0, 10))
-
-        thread_slider_frame = ttk.Frame(frame)
-
-        ttk.Label(thread_slider_frame, textvariable=self._settings.n_threads,
-                  width=3).\
-            pack(side='left', anchor='w', fill='none', expand=False,
-                 padx=(0, 20))
-
-        Scale(thread_slider_frame, from_=1, to=6, orient="horizontal",
-              variable=self._settings.n_threads, showvalue=False, length=150,
-              tickinterval=1).\
-            pack(side='left', anchor='w', fill='none', expand=False)
-
-        thread_slider_frame.grid(column=1, row=15, sticky='NW', pady=(10, 0))
-
-        # small objects threshold
-        ttk.Label(frame, text='Dead cells size Threshold :').grid(
-            column=0, row=16, sticky='E', pady=(10, 0), padx=(0, 10))
-
-        threshold_slider_frame = ttk.Frame(frame)
-
-        ttk.Label(threshold_slider_frame,
-                  textvariable=self._settings.small_objects_threshold,
-                  width=3). \
-            pack(side='left', anchor='w', fill='none', expand=False,
-                 padx=(0, 20))
-
-        Scale(threshold_slider_frame, from_=10, to=1000,
-              variable=self._settings.small_objects_threshold,
-              orient="horizontal", length=150, showvalue=False,
-              tickinterval=300). \
-            pack(side='left', anchor='w', fill='none', expand=False)
-
-        threshold_slider_frame.grid(column=1, row=16, sticky='NW',
-                                    pady=(10, 0))
-
-    def _center(self):
-        monitors = get_monitors()
-        candidates = [monitor for monitor in monitors if
-                      0 <= self.winfo_x() - monitor.x <= monitor.width and
-                      0 <= self.winfo_y() - monitor.y <= monitor.height]
-        current_monitor = candidates[0] if candidates else monitors[0]
-        scr_width = current_monitor.width
-        scr_height = current_monitor.height
-        x_offset = current_monitor.x
-        y_offset = current_monitor.y
-        height = self.winfo_height()
-        width = self.winfo_width()
-
-        self.geometry('+%d+%d' % (x_offset + (scr_width - width) / 2,
-                                  y_offset + (scr_height - height) / 2))
-
-
-class Splash(Tk):
-
-    def __init__(self):
-        super().__init__()
-        self.overrideredirect(True)
-        self.grab_set()
-
-        self._image = Image.open("movedim.png")
-
-    def resize_image(self):
-        size_factor = 0.35
-
-        monitors = get_monitors()
-        candidates = [monitor for monitor in monitors if
-                      0 <= self.winfo_x() - monitor.x <= monitor.width and
-                      0 <= self.winfo_y() - monitor.y <= monitor.height]
-        current_monitor = candidates[0] if candidates else monitors[0]
-        scr_width = current_monitor.width
-        scr_height = current_monitor.height
-        x_offset = current_monitor.x
-        y_offset = current_monitor.y
-        img_ratio = self._image.width / self._image.height
-        scr_ratio = scr_width / scr_height
-
-        if img_ratio > scr_ratio:
-            self._image = self._image.resize(
-                (int(scr_width * size_factor),
-                 int(scr_width * size_factor / img_ratio)),
-                Image.ANTIALIAS)
-            self.geometry('%dx%d+%d+%d' % (
-                int(scr_width * size_factor),
-                int(scr_width * size_factor / img_ratio),
-                x_offset + scr_width * (1 - size_factor) / 2,
-                y_offset + (scr_height - int(scr_width * size_factor /
-                                             img_ratio)) / 2))
-
-        else:
-            self._image = self._image.resize(
-                (int(scr_height * size_factor * img_ratio),
-                 int(scr_height * size_factor)),
-                Image.ANTIALIAS)
-            self.geometry('%dx%d+%d+%d' % (
-                int(scr_height * size_factor * img_ratio),
-                int(scr_height * size_factor),
-                x_offset + (scr_width - int(scr_height * size_factor *
-                                            img_ratio)) / 2,
-                y_offset + scr_height * (1 - size_factor) / 2))
-
-    def display(self):
-        image_tk = ImageTk.PhotoImage(self._image)
-        self._canvas = Canvas(self, bg="brown")
-        self._canvas.create_image(0, 0, image=image_tk, anchor="nw")
-        self._canvas.create_text(
-            20, int(0.70 * self._image.height),
-            anchor='w',
-            text="Cellen Tellen - A P&O project by Quentin De Rore, Ibrahim El"
-                 " Kaddouri, Emiel Vanspranghels and Henri Vermeersch, "
-                 "assisted by Desmond Kabus, Rebecca Wüst and Maria Olenic",
-            fill="white",
-            font='Helvetica 7 bold',
-            width=self._image.width - 40)
-
-        self._loading_label = self._canvas.create_text(
-            20, int(0.9 * self._image.height),
-            anchor="w",
-            text='Importing dependencies...',
-            fill="white",
-            font='Helvetica 7 bold',
-            width=self._image.width - 40)
-
-        self._canvas.pack(fill="both", expand=True)
-        self.update()
-
-        sleep(1)
-
-        self._canvas.itemconfig(self._loading_label,
-                                text="Initialising Mesmer...")
-        self.update()
-        segmentation = Fiber_segmentation()
-
-        self._canvas.itemconfig(self._loading_label,
-                                text="Starting program...")
-        self.update()
-
-        sleep(1)
-
-        return segmentation
-
-
 class Main_window(Tk):
 
     def __init__(self):
 
-        splash = Splash()
+        splash = Splash_window()
         splash.resize_image()
         self._segmentation = splash.display()
 
@@ -475,7 +57,7 @@ class Main_window(Tk):
         self._base_path = Path(__file__).parent
         self.projects_path = self._base_path / 'Projects'
 
-        icon = PhotoImage(file=self._base_path / "icon.png")
+        icon = PhotoImage(file=self._base_path / "project_icon.png")
         self.iconphoto(True, icon)
 
         self._load_settings()
@@ -484,10 +66,10 @@ class Main_window(Tk):
         self._set_menu()
         self._set_layout()
 
-        self._image_canvas = Zoom_Advanced(self._frm, self)
-        self._nuclei_table = Table(self._aux_frame)
-        self._image_canvas.set_table(self._nuclei_table)
-        self._nuclei_table.set_image_canvas(self._image_canvas)
+        self._image_canvas = Image_canvas(self._frm, self)
+        self._files_table = Files_table(self._aux_frame)
+        self._image_canvas.set_table(self._files_table)
+        self._files_table.set_image_canvas(self._image_canvas)
         self._save_settings(autosave_time=True)
 
         self.update()
@@ -785,7 +367,7 @@ class Main_window(Tk):
     def _create_empty_project(self):
 
         # reset everything
-        self._nuclei_table.reset()
+        self._files_table.reset()
         self._image_canvas.reset()
 
         # set the save button
@@ -826,12 +408,12 @@ class Main_window(Tk):
             Path.mkdir(directory)
 
         # create saving popup
-        saving_popup = Saving_popup(self, directory)
+        saving_popup = Save_popup(self, directory)
         sleep(1)
 
         save_altered = self.settings.save_altered_images.get() or \
             directory == self._auto_save_path
-        self._nuclei_table.save_project(directory, save_altered)
+        self._files_table.save_project(directory, save_altered)
 
         # destroy the popup
         saving_popup.destroy()
@@ -865,10 +447,10 @@ class Main_window(Tk):
             self._add_to_recent_projects(directory)
 
         # load the project
-        self._nuclei_table.load_project(directory)
+        self._files_table.load_project(directory)
 
         # if there are images loaded
-        if self._nuclei_table.filenames:
+        if self._files_table.filenames:
             self._process_images_button['state'] = 'enabled'
         else:
             self._process_images_button['state'] = 'disabled'
@@ -926,7 +508,7 @@ class Main_window(Tk):
 
         # if unsaved, show the window
         if self._save_button['state'] == 'enabled' and \
-                self._nuclei_table.filenames:
+                self._files_table.filenames:
 
             # create
             return_var = IntVar()
@@ -990,7 +572,7 @@ class Main_window(Tk):
         self._file_menu.entryconfig("New Empty Project", state="disabled")
         self._file_menu.entryconfig("Load From Explorer", state="disabled")
 
-        self._nuclei_table.enable_close_buttons(False)
+        self._files_table.enable_close_buttons(False)
 
     def _enable_buttons(self):
 
@@ -1009,7 +591,7 @@ class Main_window(Tk):
         self._file_menu.entryconfig("New Empty Project", state="normal")
         self._file_menu.entryconfig("Load From Explorer", state="normal")
 
-        self._nuclei_table.enable_close_buttons(True)
+        self._files_table.enable_close_buttons(True)
 
     def _stop_processing(self, force=True):
 
@@ -1043,7 +625,7 @@ class Main_window(Tk):
     def _process_images(self):
 
         # get the file_names
-        file_names = self._nuclei_table.filenames
+        file_names = self._files_table.filenames
 
         # switch off process button
         self._processed_images_count.set(0)
@@ -1082,8 +664,8 @@ class Main_window(Tk):
                 return
 
             # send the output to the table
-            self._nuclei_table.input_processed_data(nuclei_out, nuclei_in,
-                                                    fibre_positions, file)
+            self._files_table.input_processed_data(nuclei_out, nuclei_in,
+                                                   fibre_positions, file)
 
             # close if necessary
             self._processed_images_count.set(
@@ -1116,7 +698,7 @@ class Main_window(Tk):
             self._process_images_button["state"] = 'enabled'
 
             # add them to the table
-            self._nuclei_table.add_images(file_names)
+            self._files_table.add_images(file_names)
             self.set_unsaved_status()
 
     def _set_autosave_time(self):
@@ -1190,8 +772,3 @@ class Main_window(Tk):
     @staticmethod
     def _open_github():
         open_new("https://github.com/Quentinderore2/Cellen-Tellen")
-
-
-if __name__ == "__main__":
-
-    Main_window()

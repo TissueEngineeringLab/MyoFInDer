@@ -3,6 +3,8 @@
 from dataclasses import dataclass, field
 from typing import Optional, List
 from tkinter.ttk import Button
+from functools import partial
+from tkinter import StringVar, IntVar, BooleanVar
 
 in_fibre = 'yellow'  # green
 out_fibre = 'red'  # 2A7DDE
@@ -125,3 +127,31 @@ class Fibres:
 
     def __len__(self):
         return len(self.fibres)
+
+
+@dataclass
+class Settings:
+    fibre_colour: StringVar = field(
+        default_factory=partial(StringVar, value="Green", name='fibre_colour'))
+    nuclei_colour: StringVar = field(
+        default_factory=partial(StringVar, value="Blue", name='nuclei_colour'))
+    auto_save_time: IntVar = field(
+        default_factory=partial(IntVar, value=-1, name='auto_save_time'))
+    save_altered_images: BooleanVar = field(
+        default_factory=partial(BooleanVar, value=False, name='save_altered'))
+    do_fibre_counting: BooleanVar = field(
+        default_factory=partial(BooleanVar, value=False, name='fibre_count'))
+    n_threads: IntVar = field(
+        default_factory=partial(IntVar, value=3, name='n_threads'))
+    small_objects_threshold: IntVar = field(
+        default_factory=partial(IntVar, value=400, name='small_objects'))
+    blue_channel_bool: BooleanVar = field(
+        default_factory=partial(BooleanVar, value=True, name='blue_channel'))
+    green_channel_bool: BooleanVar = field(
+        default_factory=partial(BooleanVar, value=True, name='green_channel'))
+    red_channel_bool: BooleanVar = field(
+        default_factory=partial(BooleanVar, value=False, name='red_channel'))
+    show_nuclei: BooleanVar = field(
+        default_factory=partial(BooleanVar, value=True, name='show_nuclei'))
+    show_fibres: BooleanVar = field(
+        default_factory=partial(BooleanVar, value=False, name='show_fibres'))

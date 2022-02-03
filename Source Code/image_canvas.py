@@ -17,7 +17,7 @@ in_fibre = 'yellow'  # green
 out_fibre = 'red'  # 2A7DDE
 
 
-class Zoom_Advanced(ttk.Frame):
+class Image_canvas(ttk.Frame):
     """ Advanced zoom of the image """
     def __init__(self, mainframe, main_window):
         """ Initialize the main Frame """

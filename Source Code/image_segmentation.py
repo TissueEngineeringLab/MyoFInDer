@@ -11,7 +11,7 @@ numpy_color_to_int = {"Blue": 0,
                       "Red": 2}
 
 
-class Fiber_segmentation:
+class Image_segmentation:
 
     def __init__(self):
         self._app = Mesmer()
