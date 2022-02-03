@@ -549,8 +549,8 @@ class Table(ttk.Frame):
 
             # set the filename
             file_name = file.name
-            if len(file_name) >= 59:
-                file_name = '...' + file_name[-59:]
+            if len(file_name) >= 44:
+                file_name = '...' + file_name[-41:]
 
             padding = 10
             name_text = self._canvas.create_text(
