@@ -11,7 +11,8 @@ from numpy import zeros
 from platform import system
 from functools import partial
 from copy import deepcopy
-from structure_classes import Nucleus, Fibre, Nuclei, Fibres
+
+from .structure_classes import Nucleus, Fibre, Nuclei, Fibres
 
 in_fibre = 'yellow'  # green
 out_fibre = 'red'  # 2A7DDE

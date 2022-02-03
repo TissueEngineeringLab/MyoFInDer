@@ -10,7 +10,8 @@ from typing import List, Dict
 from copy import deepcopy
 from functools import partial
 from pickle import dump, load
-from structure_classes import Nucleus, Fibre, Nuclei, Fibres, Labels, Lines, \
+
+from .structure_classes import Nucleus, Fibre, Nuclei, Fibres, Labels, Lines, \
     Table_element
 
 # color codes

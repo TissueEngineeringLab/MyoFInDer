@@ -11,14 +11,14 @@ from json import load, dump
 from functools import partial, wraps
 from pathlib import Path
 
-from structure_classes import Settings
-from save_popup import Save_popup
-from warning_window import Warning_window
-from project_name_window import Project_name_window
-from settings_window import Settings_window
-from splash_window import Splash_window
-from files_table import Files_table
-from image_canvas import Image_canvas
+from .structure_classes import Settings
+from .save_popup import Save_popup
+from .warning_window import Warning_window
+from .project_name_window import Project_name_window
+from .settings_window import Settings_window
+from .splash_window import Splash_window
+from .files_table import Files_table
+from .image_canvas import Image_canvas
 
 if system() == "Windows":
   from ctypes import windll
@@ -405,7 +405,7 @@ class Main_window(Tk):
 
         # create the folder
         if not directory.is_dir():
-            Path.mkdir(directory)
+            Path.mkdir(directory, parents=True)
 
         # create saving popup
         saving_popup = Save_popup(self, directory)
