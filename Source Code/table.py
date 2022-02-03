@@ -3,13 +3,13 @@
 from tkinter import ttk, Canvas, messagebox
 from xlsxwriter import Workbook
 from shutil import copyfile, rmtree
-from numpy import load, asarray, save
 from cv2 import imread, line, ellipse, imwrite
 from pathlib import Path
 from platform import system
 from typing import List, Dict
 from copy import deepcopy
 from functools import partial
+from pickle import dump, load
 from structure_classes import Nucleus, Fibre, Nuclei, Fibres, Labels, Lines, \
     Table_element
 
@@ -89,27 +89,29 @@ class Table(ttk.Frame):
         # reset
         self.reset()
 
-        data = load(str(directory / 'data.npy'),
-                    allow_pickle=True).tolist()
-        if isinstance(data, list):
-            for item in data:
-                if len(item) == 4:
-                    if isinstance(item[0], str) and \
-                            isinstance(item[1], list) and \
-                            isinstance(item[2], list) and \
-                            isinstance(item[3], list):
-                        if (directory / 'Original Images' / item[0]).is_file():
-                            self.filenames.append(
-                                directory / 'Original Images' / item[0])
-                            self._nuclei[directory / 'Original Images' /
-                                         item[0]] = Nuclei(
-                                [Nucleus(x, y, None, out_fibre) for x, y in
-                                 item[1]] +
-                                [Nucleus(x, y, None, in_fibre) for x, y in
-                                 item[2]])
-                            self._fibres[directory / 'Original Images' /
-                                         item[0]] = Fibres(
-                                [Fibre(x, y, None, None) for x, y in item[3]])
+        with open(directory / 'data.pickle', 'rb') as save_file:
+            saved_filenames, saved_nuclei, saved_fibres = load(save_file)
+
+        self.filenames = [directory / 'Original Images' / name
+                          for name in saved_filenames
+                          if (directory / 'Original Images' / name).is_file()]
+
+        for name, nuclei in saved_nuclei.items():
+            if (directory / 'Original Images' / name).is_file():
+                self._nuclei[directory / 'Original Images' / name] = nuclei
+
+        for nuclei in self._nuclei.values():
+            for nucleus in nuclei:
+                nucleus.tk_obj = None
+
+        for name, fibres in saved_fibres.items():
+            if (directory / 'Original Images' / name).is_file():
+                self._fibres[directory / 'Original Images' / name] = fibres
+
+        for fibres in self._fibres.values():
+            for fibre in fibres:
+                fibre.h_line = None
+                fibre.v_line = None
 
         # make the table
         self._make_table()
@@ -131,21 +133,17 @@ class Table(ttk.Frame):
 
     def _save_data(self, directory: Path):
 
-        # make array
-        to_save = []
-        for file in self.filenames:
-            nuc_out = [(nuc.x_pos, nuc.y_pos) for nuc in self._nuclei[file]
-                       if nuc.color == out_fibre]
-            nuc_in = [(nuc.x_pos, nuc.y_pos) for nuc in self._nuclei[file]
-                      if nuc.color == in_fibre]
-            fib = [(fib.x_pos, fib.y_pos) for fib in self._fibres[file]]
-            to_save.append([file.name,
-                            nuc_out,
-                            nuc_in,
-                            fib])
+        save_nuclei = {}
+        for file, nuclei in self._nuclei.items():
+            save_nuclei[file.name] = nuclei
 
-        # convert to numpy
-        save(str(directory / 'data'), asarray(to_save))
+        save_fibres = {}
+        for file, fibres in self._fibres.items():
+            save_fibres[file.name] = fibres
+
+        with open(directory / 'data.pickle', 'wb+') as save_file:
+            dump(([file.name for file in self.filenames], save_nuclei,
+                  save_fibres), save_file, protocol=4)
 
     def _save_originals(self, directory: Path):
 

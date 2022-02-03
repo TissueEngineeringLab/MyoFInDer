@@ -527,7 +527,7 @@ class Main_window(Tk):
                 self.projects_path / proj for proj in recent['recent_projects']
                 if proj
                 and (self.projects_path / proj).is_dir()
-                and (self.projects_path / proj / 'data.npy').is_file()]
+                and (self.projects_path / proj / 'data.pickle').is_file()]
             self._recent_projects = list(dict.fromkeys(self._recent_projects))
         else:
             self._recent_projects = []
@@ -850,7 +850,7 @@ class Main_window(Tk):
 
             directory = Path(folder)
 
-        if not directory.is_dir() or not (directory / 'data.npy').is_file()\
+        if not directory.is_dir() or not (directory / 'data.pickle').is_file()\
                 or not directory.parent == self.projects_path:
             messagebox.showerror("Error while loading",
                                  "This isn't a valid Cellen-tellen project !")
@@ -1015,9 +1015,6 @@ class Main_window(Tk):
 
         if not force and (active_count() > 2 or self._stop_event.is_set()):
             return
-
-        # Todo:
-        #   Improve the way the projects are saved
 
         # empty threads
         self._stop_event.set()
