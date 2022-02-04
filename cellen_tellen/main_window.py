@@ -11,12 +11,12 @@ from pickle import load, dump
 from functools import partial, wraps
 from pathlib import Path
 
-from .structure_classes import Settings
-from .save_popup import Save_popup
-from .warning_window import Warning_window
-from .project_name_window import Project_name_window
-from .settings_window import Settings_window
-from .splash_window import Splash_window
+from .tools import Settings
+from .tools import Save_popup
+from .tools import Warning_window
+from .tools import Project_name_window
+from .tools import Settings_window
+from .tools import Splash_window
 from .files_table import Files_table
 from .image_canvas import Image_canvas
 
@@ -40,7 +40,10 @@ class Main_window(Tk):
 
     def __init__(self):
 
-        splash = Splash_window()
+        self.base_path = Path(__file__).parent
+        self.projects_path = self.base_path / 'Projects'
+
+        splash = Splash_window(self)
         splash.resize_image()
         self._segmentation = splash.display()
 
@@ -54,10 +57,7 @@ class Main_window(Tk):
         else:
             self.attributes('-zoomed', True)
 
-        self._base_path = Path(__file__).parent
-        self.projects_path = self._base_path / 'Projects'
-
-        icon = PhotoImage(file=self._base_path / 'app_images' /
+        icon = PhotoImage(file=self.base_path / 'app_images' /
                           "project_icon.png")
         self.iconphoto(True, icon)
 
@@ -91,8 +91,8 @@ class Main_window(Tk):
             self._save_button['text'] = 'Save As'
 
     def _load_settings(self):
-        if (self._base_path / 'settings' / 'settings.pickle').is_file():
-            with open(self._base_path / 'settings' /
+        if (self.base_path / 'settings' / 'settings.pickle').is_file():
+            with open(self.base_path / 'settings' /
                       'settings.pickle', 'rb') as param_file:
                 settings = load(param_file)
         else:
@@ -102,8 +102,8 @@ class Main_window(Tk):
         for key, value in settings.items():
             getattr(self.settings, key).set(value)
 
-        if (self._base_path / 'settings' / 'recent_projects.pickle').is_file():
-            with open(self._base_path / 'settings' /
+        if (self.base_path / 'settings' / 'recent_projects.pickle').is_file():
+            with open(self.base_path / 'settings' /
                       'recent_projects.pickle', 'rb') as recent_projects:
                 recent = load(recent_projects)
 
@@ -327,14 +327,14 @@ class Main_window(Tk):
         settings = {key: value.get() for key, value in
                     self.settings.__dict__.items()}
 
-        if not (self._base_path / 'settings').is_dir():
-            Path.mkdir(self._base_path / 'settings')
+        if not (self.base_path / 'settings').is_dir():
+            Path.mkdir(self.base_path / 'settings')
 
-        with open(self._base_path / 'settings' /
+        with open(self.base_path / 'settings' /
                   'settings.pickle', 'wb+') as param_file:
             dump(settings, param_file, protocol=4)
 
-        with open(self._base_path / 'settings' /
+        with open(self.base_path / 'settings' /
                   'recent_projects.pickle', 'wb+') as recent_projects_file:
             dump({'recent_projects': [str(path.name) for path in
                                       self._recent_projects]},

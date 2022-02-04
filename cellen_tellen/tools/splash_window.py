@@ -4,19 +4,18 @@ from tkinter import Tk, Canvas
 from PIL import ImageTk, Image
 from screeninfo import get_monitors
 from time import sleep
-from pathlib import Path
 
-from .image_segmentation import Image_segmentation
+from ..image_segmentation import Image_segmentation
 
 
 class Splash_window(Tk):
 
-    def __init__(self):
+    def __init__(self, main_window):
         super().__init__()
         self.overrideredirect(True)
         self.grab_set()
 
-        self._image = Image.open(Path(__file__).parent / 'app_images' /
+        self._image = Image.open(main_window.base_path / 'app_images' /
                                  "splash_background.png")
 
     def resize_image(self):
