@@ -7,7 +7,7 @@ from shutil import rmtree
 from webbrowser import open_new
 from threading import Thread, BoundedSemaphore, active_count, Event
 from time import sleep
-from json import load, dump
+from pickle import load, dump
 from functools import partial, wraps
 from pathlib import Path
 
@@ -91,8 +91,8 @@ class Main_window(Tk):
             self._save_button['text'] = 'Save As'
 
     def _load_settings(self):
-        if (self._base_path / 'settings.py').is_file():
-            with open(self._base_path / 'settings.py', 'r') as param_file:
+        if (self._base_path / 'settings.pickle').is_file():
+            with open(self._base_path / 'settings.pickle', 'rb') as param_file:
                 settings = load(param_file)
         else:
             settings = {}
@@ -101,9 +101,9 @@ class Main_window(Tk):
         for key, value in settings.items():
             getattr(self.settings, key).set(value)
 
-        if (self._base_path / 'recent_projects.py').is_file():
+        if (self._base_path / 'recent_projects.pickle').is_file():
             with open(self._base_path /
-                      'recent_projects.py', 'r') as recent_projects:
+                      'recent_projects.pickle', 'rb') as recent_projects:
                 recent = load(recent_projects)
 
             self._recent_projects = [
@@ -326,14 +326,14 @@ class Main_window(Tk):
         settings = {key: value.get() for key, value in
                     self.settings.__dict__.items()}
 
-        with open(self._base_path / 'settings.py', 'w') as param_file:
-            dump(settings, param_file)
+        with open(self._base_path / 'settings.pickle', 'wb+') as param_file:
+            dump(settings, param_file, protocol=4)
 
         with open(self._base_path /
-                  'recent_projects.py', 'w') as recent_projects_file:
+                  'recent_projects.pickle', 'wb+') as recent_projects_file:
             dump({'recent_projects': [str(path.name) for path in
                                       self._recent_projects]},
-                 recent_projects_file)
+                 recent_projects_file, protocol=4)
 
     def _delete_current_project(self):
 
