@@ -57,7 +57,8 @@ class Main_window(Tk):
         self._base_path = Path(__file__).parent
         self.projects_path = self._base_path / 'Projects'
 
-        icon = PhotoImage(file=self._base_path / "project_icon.png")
+        icon = PhotoImage(file=self._base_path / 'app_images' /
+                          "project_icon.png")
         self.iconphoto(True, icon)
 
         self._load_settings()

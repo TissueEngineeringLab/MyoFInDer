@@ -16,7 +16,7 @@ class Splash_window(Tk):
         self.overrideredirect(True)
         self.grab_set()
 
-        self._image = Image.open(Path(__file__).parent /
+        self._image = Image.open(Path(__file__).parent / 'app_images' /
                                  "splash_background.png")
 
     def resize_image(self):
