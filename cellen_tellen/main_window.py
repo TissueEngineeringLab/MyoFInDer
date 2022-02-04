@@ -91,8 +91,9 @@ class Main_window(Tk):
             self._save_button['text'] = 'Save As'
 
     def _load_settings(self):
-        if (self._base_path / 'settings.pickle').is_file():
-            with open(self._base_path / 'settings.pickle', 'rb') as param_file:
+        if (self._base_path / 'settings' / 'settings.pickle').is_file():
+            with open(self._base_path / 'settings' /
+                      'settings.pickle', 'rb') as param_file:
                 settings = load(param_file)
         else:
             settings = {}
@@ -101,8 +102,8 @@ class Main_window(Tk):
         for key, value in settings.items():
             getattr(self.settings, key).set(value)
 
-        if (self._base_path / 'recent_projects.pickle').is_file():
-            with open(self._base_path /
+        if (self._base_path / 'settings' / 'recent_projects.pickle').is_file():
+            with open(self._base_path / 'settings' /
                       'recent_projects.pickle', 'rb') as recent_projects:
                 recent = load(recent_projects)
 
@@ -326,10 +327,14 @@ class Main_window(Tk):
         settings = {key: value.get() for key, value in
                     self.settings.__dict__.items()}
 
-        with open(self._base_path / 'settings.pickle', 'wb+') as param_file:
+        if not (self._base_path / 'settings').is_dir():
+            Path.mkdir(self._base_path / 'settings')
+
+        with open(self._base_path / 'settings' /
+                  'settings.pickle', 'wb+') as param_file:
             dump(settings, param_file, protocol=4)
 
-        with open(self._base_path /
+        with open(self._base_path / 'settings' /
                   'recent_projects.pickle', 'wb+') as recent_projects_file:
             dump({'recent_projects': [str(path.name) for path in
                                       self._recent_projects]},
