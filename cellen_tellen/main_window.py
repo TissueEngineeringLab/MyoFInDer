@@ -41,6 +41,8 @@ class Main_window(Tk):
     def __init__(self):
 
         self.base_path = Path(__file__).parent
+        if Path(__file__).name.endswith(".pyc"):
+            self.base_path = self.base_path.parent
         self.projects_path = self.base_path.parent / 'Projects'
         self._settings_path = self.base_path / 'settings'
 
@@ -69,7 +71,7 @@ class Main_window(Tk):
         self._set_layout()
 
         self._image_canvas = Image_canvas(self._frm, self)
-        self._files_table = Files_table(self._aux_frame)
+        self._files_table = Files_table(self._aux_frame, self.projects_path)
         self._image_canvas.set_table(self._files_table)
         self._files_table.set_image_canvas(self._image_canvas)
         self._save_settings(autosave_time=True)

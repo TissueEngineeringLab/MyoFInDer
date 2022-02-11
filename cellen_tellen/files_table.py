@@ -25,13 +25,13 @@ out_fibre = 'red'  # 2A7DDE
 
 class Files_table(ttk.Frame):
 
-    def __init__(self, root):
+    def __init__(self, root, projects_path):
 
         super().__init__(root)
 
         # initialise the canvas and scrollbar
         self._row_height = 50
-        self._projects_path = Path(__file__).parent.parent / 'Projects'
+        self._projects_path = projects_path
 
         self._set_layout()
         self._set_bindings()
