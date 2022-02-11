@@ -41,7 +41,7 @@ class Main_window(Tk):
     def __init__(self):
 
         self.base_path = Path(__file__).parent
-        self.projects_path = self.base_path / 'Projects'
+        self.projects_path = self.base_path.parent / 'Projects'
 
         splash = Splash_window(self)
         splash.resize_image()
