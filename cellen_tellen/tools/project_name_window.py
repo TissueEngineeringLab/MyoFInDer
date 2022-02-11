@@ -8,10 +8,9 @@ class Project_name_window(Toplevel):
     def __init__(self, main_window, return_var):
         super().__init__(main_window)
 
-        self._main_window = main_window
         self._return_var = return_var
 
-        self._projects_path = self._main_window.projects_path
+        self._projects_path = main_window.projects_path
 
         self._warning_var = StringVar(value='')
 
