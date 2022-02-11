@@ -130,3 +130,9 @@ dmypy.json
 
 # Pycharm
 .idea/
+
+# Settings files
+cellen_tellen/settings
+
+# Projects files
+cellen_tellen/Projects
