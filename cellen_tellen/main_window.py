@@ -21,7 +21,7 @@ from .files_table import Files_table
 from .image_canvas import Image_canvas
 
 if system() == "Windows":
-  from ctypes import windll
+    from ctypes import windll
 
 # set better resolution
 if system() == "Windows" and int(release()) >= 8:
@@ -62,6 +62,7 @@ class Main_window(Tk):
 
         icon = PhotoImage(file=self.base_path / 'app_images' /
                           "project_icon.png")
+        self.iconphoto(False, icon)
         self.iconphoto(True, icon)
 
         self._load_settings()
