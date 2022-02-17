@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from tkinter import Toplevel, ttk
+from screeninfo import get_monitors
 
 
 class Warning_window(Toplevel):
@@ -19,6 +20,7 @@ class Warning_window(Toplevel):
 
         self._set_layout()
         self.update()
+        self._center()
 
     def _set_layout(self):
         ttk.Label(self,
@@ -39,6 +41,22 @@ class Warning_window(Toplevel):
         ttk.Button(self, text='Cancel', command=self.destroy, width=40). \
             pack(anchor='n', expand=False, fill='none', side='top',
                  padx=20, pady=7)
+
+    def _center(self):
+        monitors = get_monitors()
+        candidates = [monitor for monitor in monitors if
+                      0 <= self.winfo_x() - monitor.x <= monitor.width and
+                      0 <= self.winfo_y() - monitor.y <= monitor.height]
+        current_monitor = candidates[0] if candidates else monitors[0]
+        scr_width = current_monitor.width
+        scr_height = current_monitor.height
+        x_offset = current_monitor.x
+        y_offset = current_monitor.y
+        height = self.winfo_height()
+        width = self.winfo_width()
+
+        self.geometry('+%d+%d' % (x_offset + (scr_width - width) / 2,
+                                  y_offset + (scr_height - height) / 2))
 
     def _save(self):
         self._return_var.set(2)
