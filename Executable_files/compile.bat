@@ -6,5 +6,5 @@ if errorlevel 1 (
 ) else (
     :: To be tested and completed
     cd ..
-    pyinstaller run.py --name cellen-tellen
+    pyinstaller run.py --name cellen-tellen --paths .\venv\Lib\site-packages\ --hidden-import sklearn.utils._typedefs --hidden-import sklearn.neighbors._partition_nodes --add-data ".\cellen_tellen\app_images\;app_images"
 )
