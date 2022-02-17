@@ -246,11 +246,9 @@ class Main_window(Tk):
         self._load_button.pack(fill="x", anchor="w", side='left', padx=3,
                                pady=5)
         self._button_style = ttk.Style()
-        self._button_style.configure('my.TButton', font=('TKDefaultFont', 11))
         self._process_images_button = ttk.Button(self._button_frame,
                                                  text="Process Images",
                                                  command=self._process_images,
-                                                 style='my.TButton',
                                                  state='disabled')
         self._process_images_button.pack(fill="x", anchor="w", side='left',
                                          padx=3, pady=5)
