@@ -91,22 +91,25 @@ class Files_table(ttk.Frame):
         with open(directory / 'data.pickle', 'rb') as save_file:
             saved_filenames, saved_nuclei, saved_fibres = load(save_file)
 
+        # Loading the names of the images and checking the images exist
         self.filenames = [directory / 'Original Images' / name
                           for name in saved_filenames
                           if (directory / 'Original Images' / name).is_file()]
 
+        # Adding the nuclei to the nuclei dict
         for name, nuclei in saved_nuclei.items():
-            if (directory / 'Original Images' / name).is_file():
-                self._nuclei[directory / 'Original Images' / name] = nuclei
+            self._nuclei[directory / 'Original Images' / name] = nuclei
 
+        # Making sure the tk_obj field is empty
         for nuclei in self._nuclei.values():
             for nucleus in nuclei:
                 nucleus.tk_obj = None
 
+        # Adding the fibres to the fibres dict
         for name, fibres in saved_fibres.items():
-            if (directory / 'Original Images' / name).is_file():
-                self._fibres[directory / 'Original Images' / name] = fibres
+            self._fibres[directory / 'Original Images' / name] = fibres
 
+        # Making sure the h_line and v_line fields are empty
         for fibres in self._fibres.values():
             for fibre in fibres:
                 fibre.h_line = None
