@@ -27,6 +27,11 @@ if system() == "Windows":
 if system() == "Windows" and int(release()) >= 8:
     windll.shcore.SetProcessDpiAwareness(True)
 
+# Todo:
+#   Improve the fibre detection and display
+#   Change the color of the dots according to the selected channel
+#   Improve the .xlsx report
+
 
 def _save_before_closing(func):
     @wraps(func)
