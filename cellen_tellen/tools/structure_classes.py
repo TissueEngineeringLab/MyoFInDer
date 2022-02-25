@@ -1,17 +1,20 @@
 # coding: utf-8
 
 from dataclasses import dataclass, field
-from typing import Optional, List
+from typing import Optional, List, Any, NoReturn
 from tkinter.ttk import Button
 from functools import partial
 from tkinter import StringVar, IntVar, BooleanVar
 
-in_fibre = 'yellow'  # green
-out_fibre = 'red'  # 2A7DDE
+# Possible colors for the nuclei
+in_fibre = 'yellow'
+out_fibre = 'red'
 
 
 @dataclass
 class Labels:
+    """Class holding the label values for one image."""
+
     name: int
     nuclei: int
     positive: int
@@ -22,6 +25,8 @@ class Labels:
 
 @dataclass
 class Lines:
+    """Class holding the canvas line elements for one image."""
+
     half_line: int
     full_line: int
     index_line: int
@@ -29,6 +34,8 @@ class Lines:
 
 @dataclass
 class Table_element:
+    """Class holding all the canvas elements for one image."""
+
     labels: Labels
     lines: Lines
     rect: int
@@ -37,12 +44,17 @@ class Table_element:
 
 @dataclass
 class Nucleus:
+    """Class holding the data associated with a single nucleus."""
+
     x_pos: float
     y_pos: float
     tk_obj: Optional[int]
     color: str
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
+        """Two nuclei are considered equal if and only if their x and y
+        positions are equal."""
+
         if not isinstance(other, Nucleus):
             raise NotImplemented("Only two nuclei can be compared together")
         return self.x_pos == other.x_pos and self.y_pos == other.y_pos
@@ -50,12 +62,17 @@ class Nucleus:
 
 @dataclass
 class Fibre:
+    """Class holding the data associated with a single fibre."""
+
     x_pos: float
     y_pos: float
     h_line: Optional[int]
     v_line: Optional[int]
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
+        """Two fibres are considered equal if and only if their x and y
+        positions are equal."""
+
         if not isinstance(other, Fibre):
             raise NotImplemented("Only two fibres can be compared together")
         return self.x_pos == other.x_pos and self.y_pos == other.y_pos
@@ -63,14 +80,20 @@ class Fibre:
 
 @dataclass
 class Nuclei:
+    """Class for managing the data of all the nuclei in one image."""
+
     nuclei: List[Nucleus] = field(default_factory=list)
 
     _current_index: int = -1
 
-    def append(self, nuc):
+    def append(self, nuc: Nucleus) -> NoReturn:
+        """Adds a nucleus to the list of nuclei."""
+
         self.nuclei.append(nuc)
 
-    def remove(self, nuc):
+    def remove(self, nuc: Nucleus) -> NoReturn:
+        """Removes a given nucleus from the list of nuclei."""
+
         try:
             self.nuclei.remove(nuc)
         except ValueError:
@@ -79,7 +102,9 @@ class Nuclei:
     def __iter__(self):
         return self
 
-    def __next__(self):
+    def __next__(self) -> Nucleus:
+        """Iterates through the nuclei until there's no nucleus left."""
+
         try:
             self._current_index += 1
             return self.nuclei[self._current_index]
@@ -88,27 +113,39 @@ class Nuclei:
             raise StopIteration
 
     @property
-    def nuclei_in_count(self):
+    def nuclei_in_count(self) -> int:
+        """Returns the number of nuclei inside fibres."""
+
         return len([nuc for nuc in self.nuclei if nuc.color == in_fibre])
 
     @property
-    def nuclei_out_count(self):
+    def nuclei_out_count(self) -> int:
+        """Returns the number of nuclei outside fibres."""
+
         return len([nuc for nuc in self.nuclei if nuc.color == out_fibre])
 
-    def __len__(self):
+    def __len__(self) -> int:
+        """Returns the number of nuclei."""
+
         return len(self.nuclei)
 
 
 @dataclass
 class Fibres:
+    """Class for managing the data of all the fibres in one image."""
+
     fibres: List[Fibre] = field(default_factory=list)
 
     _current_index: int = -1
 
-    def append(self, fib):
+    def append(self, fib: Fibre) -> NoReturn:
+        """Adds a fiber to the list of fibres."""
+
         self.fibres.append(fib)
 
-    def remove(self, fib):
+    def remove(self, fib: Fibre) -> NoReturn:
+        """Removes a given fiber from the list of fibres."""
+
         try:
             self.fibres.remove(fib)
         except ValueError:
@@ -118,6 +155,8 @@ class Fibres:
         return self
 
     def __next__(self):
+        """Iterates through the fibres until there's no fibre left."""
+
         try:
             self._current_index += 1
             return self.fibres[self._current_index]
@@ -125,12 +164,18 @@ class Fibres:
             self._current_index = -1
             raise StopIteration
 
-    def __len__(self):
+    def __len__(self) -> int:
+        """Returns the number of fibres."""
+
         return len(self.fibres)
 
 
 @dataclass
 class Settings:
+    """Class holding the current values of all the settings."""
+
+    # Here a default factory is needed so that the tkinter vars are not
+    # instantiated before the tkinter app is initialized
     fibre_colour: StringVar = field(
         default_factory=partial(StringVar, value="Green", name='fibre_colour'))
     nuclei_colour: StringVar = field(
