@@ -10,6 +10,7 @@ from time import sleep
 from pickle import load, dump
 from functools import partial, wraps
 from pathlib import Path
+from typing import Callable, NoReturn, Optional
 
 from .tools import Settings
 from .tools import Save_popup
@@ -20,11 +21,9 @@ from .tools import Splash_window
 from .files_table import Files_table
 from .image_canvas import Image_canvas
 
-if system() == "Windows":
-    from ctypes import windll
-
-# set better resolution
+# Sets a better resolution on recent Windows platforms
 if system() == "Windows" and int(release()) >= 8:
+    from ctypes import windll
     windll.shcore.SetProcessDpiAwareness(True)
 
 # Todo:
@@ -32,64 +31,88 @@ if system() == "Windows" and int(release()) >= 8:
 #   Change the color of the dots according to the selected channel
 #   Improve the .xlsx report
 #   Finish adding comments and docstrings
+#   Move imports to inside the splash window
+#   Handle 1 channel images
+#   Set up unit tests
 
 
-def _save_before_closing(func):
+def _save_before_closing(func: Callable) -> Callable:
+    """Decorator for warning the user when an action that may cause unwanted
+    data loss is triggered.
+
+    The user will then be proposed to save the work, continue anyway, or abort.
+    """
+
     @wraps(func)
     def wrapper(self, *args, **kwargs):
+
+        # The warning window will return False if the operation shouldn't be
+        # carried on
         if self._create_warning_window():
             func(self, *args, **kwargs)
     return wrapper
 
 
 class Main_window(Tk):
+    """The main window of the Cellen Tellen software.
 
-    def __init__(self):
+    It manages all the buttons, menus, events, and the secondary windows.
+    """
 
+    def __init__(self) -> None:
+        """Creates the splash window, then the main window, sets the layout and
+        the callbacks."""
+
+        # Sets the different paths used in the project
         self.base_path = Path(__file__).parent
         if Path(__file__).name.endswith(".pyc"):
             self.base_path = self.base_path.parent
         self.projects_path = self.base_path.parent / 'Projects'
         self._settings_path = self.base_path / 'settings'
 
+        # Generates a splash window while waiting for the modules to load
         splash = Splash_window(self)
         splash.resize_image()
         self._segmentation = splash.display()
-
         splash.destroy()
 
+        # Initializes the main window
         super().__init__()
-
         self.title("Cellen Tellen - New Project (Unsaved)")
         if system() == "Windows":
             self.state('zoomed')
         else:
             self.attributes('-zoomed', True)
 
+        # Sets the application icon
         icon = PhotoImage(file=self.base_path / 'app_images' /
                           "project_icon.png")
-        self.iconphoto(False, icon)
+        self.iconphoto(False, icon)  # Without it the icon is buggy in Windows
         self.iconphoto(True, icon)
 
+        # Sets the settings, variables, callbacks, menus and layout
         self._load_settings()
         self._set_variables()
         self._set_traces()
         self._set_menu()
         self._set_layout()
 
+        # Sets the image canvas and the files table
         self._image_canvas = Image_canvas(self._frm, self)
         self._files_table = Files_table(self._aux_frame, self.projects_path)
         self._image_canvas.nuclei_table = self._files_table
         self._files_table.image_canvas = self._image_canvas
+
         self._save_settings(autosave_time=True)
 
+        # Finishes the initialization and starts the event loop
         self.update()
         self.protocol("WM_DELETE_WINDOW", self._safe_destroy)
         self.mainloop()
 
-    def set_unsaved_status(self):
+    def set_unsaved_status(self) -> NoReturn:
+        """Sets the title and save button when a project is modified."""
 
-        # set the unsaved status
         if self._current_project is not None:
             self.title("Cellen Tellen - Project '" + self._current_project.name
                        + "' (Unsaved)")
@@ -100,7 +123,11 @@ class Main_window(Tk):
             self._save_button['state'] = 'enabled'
             self._save_button['text'] = 'Save As'
 
-    def _load_settings(self):
+    def _load_settings(self) -> NoReturn:
+        """Loads the settings from the settings file if any, otherwise sets
+        them to default."""
+
+        # Gets the settings from the settings.pickle file
         if (self._settings_path / 'settings.pickle').is_file():
             with open(self._settings_path /
                       'settings.pickle', 'rb') as param_file:
@@ -108,15 +135,19 @@ class Main_window(Tk):
         else:
             settings = {}
 
-        self.settings = Settings()
+        # Creates a Settings instance and sets the values
+        self.settings = Settings()  # The dfault values are pre-set in Settings
         for key, value in settings.items():
             getattr(self.settings, key).set(value)
 
+        # Gets the recent projects from the recent_projects.pickle file
         if (self._settings_path / 'recent_projects.pickle').is_file():
             with open(self._settings_path /
                       'recent_projects.pickle', 'rb') as recent_projects:
                 recent = load(recent_projects)
 
+            # Only the names are stored, the path must be completed
+            # Here we also make sure that the projects are valid
             self._recent_projects = [
                 self.projects_path / proj for proj in recent['recent_projects']
                 if proj
@@ -126,11 +157,17 @@ class Main_window(Tk):
         else:
             self._recent_projects = []
 
+        # Finally, saving the recent projects and the settings
         self._save_settings()
 
-    def _set_traces(self):
+    def _set_traces(self) -> NoReturn:
+        """Sets the callbacks triggered upon modification of the settings."""
+
+        # Making sure there's no conflict between the nuclei and fibres colors
         self.settings.fibre_colour.trace_add("write", self._nuclei_colour_sel)
         self.settings.nuclei_colour.trace_add("write", self._nuclei_colour_sel)
+
+        # Simply saving the settings upon modification
         self.settings.auto_save_time.trace_add("write",
                                                self._save_settings_callback)
         self.settings.save_altered_images.trace_add(
@@ -142,43 +179,47 @@ class Main_window(Tk):
         self.settings.n_threads.trace_add("write",
                                           self._save_settings_callback)
 
+        # Updates the display when an image has been processed
         self._processed_images_count.trace_add("write",
                                                self._update_processed_images)
 
-    def _set_variables(self):
+    def _set_variables(self) -> NoReturn:
+        """Sets the different variables used in the class."""
 
+        # Variables used when there's a conflict in the choice of colors for
+        # the fibres and nuclei
         self._previous_nuclei_colour = StringVar(
             value=self.settings.nuclei_colour.get())
         self._previous_fibre_colour = StringVar(
             value=self.settings.fibre_colour.get())
 
+        # This variable indicates whether the user adds nuclei or fibres when
+        # left-clicking on the image
         self.draw_nuclei = BooleanVar(value=True)
 
-        # threads
+        # Variables managing the threads execution
         self._processed_images_count = IntVar(value=0)
         self._img_to_process_count = 0
         self._stop_event = Event()
         self._thread_slider = None
         self._n_threads_running = 0
 
-        self._small_objects_slider = None
-
-        # automatic save
+        # Variables managing the automatic save
         self._auto_save_path = self.projects_path / 'AUTOSAVE'
         self._auto_save_job = None
 
-        self._max_recent_projects = 20
+        self._max_recent_projects = 20  # Maximum number of recent projects
+        self._current_project = None  # Path to the current project
 
-        # set the warning var for folder name input
-        self._warning_var = StringVar(value='')
-        self._name_entry = None
-        self._current_project = None
+    def _set_menu(self) -> NoReturn:
+        """Sets the menu bar."""
 
-    def _set_menu(self):
+        # Sets the overall menu bar
         self._menu_bar = Menu(self)
         self.config(menu=self._menu_bar)
         self._menu_bar.config(font=("TKDefaultFont", 12))
 
+        # Sets the file menu
         self._file_menu = Menu(self._menu_bar, tearoff=0)
         self._file_menu.add_command(label="New Empty Project",
                                     command=self._safe_empty_project)
@@ -209,45 +250,58 @@ class Main_window(Tk):
 
         self._menu_bar.add_cascade(label="File", menu=self._file_menu)
 
+        # Sets the settings menu
         self._settings_menu = Menu(self._menu_bar, tearoff=0)
         self._settings_menu.add_command(
             label="Settings", command=partial(Settings_window, self))
         self._menu_bar.add_cascade(label="Settings", menu=self._settings_menu)
 
+        # Sets the help menu
         self._help_menu = Menu(self._menu_bar, tearoff=0)
         self._help_menu.add_command(label="Help", command=self._open_github)
         self._menu_bar.add_cascade(label="Help", menu=self._help_menu)
 
+        # Sets the quit menu
         self._quit_menu = Menu(self._menu_bar, tearoff=0)
         self._quit_menu.add_command(label="Quit", command=self._safe_destroy)
         self._menu_bar.add_cascade(label="Quit", menu=self._quit_menu)
 
+        # Disables the recent project menu if there's no recent project
         if not self._recent_projects:
             self._file_menu.entryconfig("Recent Projects", state='disabled')
             return
 
+        # associate commands with the recent projects items
         for path in self._recent_projects:
             self._recent_projects_menu.add_command(
                 label="Load '" + path.name + "'",
                 command=partial(self._safe_load, path))
 
-    def _set_layout(self):
+    def _set_layout(self) -> NoReturn:
+        """Sets the overall layout of the window."""
+
+        # The main frame of the window
         self._frm = ttk.Frame()
         self._frm.pack(fill='both', expand=True)
 
+        # The frame containing the files table, the buttons and the checkboxes
         self._aux_frame = ttk.Frame(self._frm)
         self._aux_frame.pack(expand=False, fill="both",
                              anchor="e", side='right')
 
+        # The row of buttons
         self._button_frame = ttk.Frame(self._aux_frame)
         self._button_frame.pack(expand=False, fill="x", anchor='n', side='top')
 
+        # The first row of checkboxes
         self._tick_frame_1 = ttk.Frame(self._aux_frame)
         self._tick_frame_1.pack(expand=False, fill="x", anchor='n', side='top')
 
+        # The second row of checkboxes
         self._tick_frame_2 = ttk.Frame(self._aux_frame)
         self._tick_frame_2.pack(expand=False, fill="x", anchor='n', side='top')
 
+        # Creating the buttons
         self._load_button = ttk.Button(self._button_frame, text="Load Images",
                                        command=self._select_images)
         self._load_button.pack(fill="x", anchor="w", side='left', padx=3,
@@ -259,8 +313,18 @@ class Main_window(Tk):
                                                  state='disabled')
         self._process_images_button.pack(fill="x", anchor="w", side='left',
                                          padx=3, pady=5)
+        self._save_button = ttk.Button(self._button_frame, text='Save As',
+                                       command=self._save_button_pressed,
+                                       state='enabled')
+        self._save_button.pack(fill="x", anchor="w", side='left', padx=3,
+                               pady=5)
+        self._which_indicator_button = ttk.Button(
+            self._button_frame, text='Manual : Nuclei',
+            command=self._change_indications, state='enabled')
+        self._which_indicator_button.pack(fill="x", anchor="w", side='left',
+                                          padx=3, pady=5)
 
-        # image channel selection (which colour channels are displayed)
+        # Creating the checkboxes of the first row
         self._channels = ttk.Label(self._tick_frame_1, text="  Channels :   ")
         self._channels.pack(anchor="w", side="left", fill='x', padx=3, pady=5)
         self._blue_channel_check_button = ttk.Checkbutton(
@@ -282,7 +346,7 @@ class Main_window(Tk):
         self._red_channel_check_button.pack(anchor="w", side="left", fill='x',
                                             padx=3, pady=5)
 
-        # indicator selections (which indicators are shown)
+        # Creating the checkboxes of the second row
         self._indicator = ttk.Label(self._tick_frame_2, text="  Indicators : ")
         self._indicator.pack(anchor="w", side="left", fill='x', padx=3, pady=5)
         self._show_nuclei_check_button = ttk.Checkbutton(
@@ -296,25 +360,20 @@ class Main_window(Tk):
         self._show_fibres_check_button.pack(anchor="w", side="left", fill='x',
                                             padx=3, pady=5)
 
+        # Label displaying info during image processing
         self._processing_label = ttk.Label(self._aux_frame, text="")
         self._processing_label.pack(anchor="n", side="top", fill='x', padx=3,
                                     pady=5)
 
-        # save altered images and table
-        self._save_button = ttk.Button(self._button_frame, text='Save As',
-                                       command=self._save_button_pressed,
-                                       state='enabled')
-        self._save_button.pack(fill="x", anchor="w", side='left', padx=3,
-                               pady=5)
+    def _save_settings_callback(self, name: str, _, __) -> NoReturn:
+        """Saves the settings upon modification of one of them.
 
-        # set indicators
-        self._which_indicator_button = ttk.Button(
-            self._button_frame, text='Manual : Nuclei',
-            command=self._change_indications, state='enabled')
-        self._which_indicator_button.pack(fill="x", anchor="w", side='left',
-                                          padx=3, pady=5)
+        Some settings require a slightly different saving strategy.
 
-    def _save_settings_callback(self, name, _, __):
+        Args:
+            name: The name of the setting that was modified.
+        """
+
         if name == 'auto_save_time':
             self._save_settings(autosave_time=True)
         elif name == 'save_altered':
@@ -322,16 +381,25 @@ class Main_window(Tk):
         else:
             self._save_settings()
 
-    def _save_settings(self, autosave_time=False, enable_save=False):
+    def _save_settings(self,
+                       autosave_time: bool = False,
+                       enable_save: bool = False) -> NoReturn:
+        """Saves the settings and recent projects to .pickle files.
 
-        # enable save button if needed
+        Args:
+            autosave_time: If True, sets the autosave time before saving.
+            enable_save: If True, enables the save button
+        """
+
+        # Enables the save button if needed
         if enable_save:
             self._save_button['state'] = 'enabled'
 
-        # set the autosave timer
+        # Set the autosave timer
         if autosave_time:
             self._set_autosave_time()
 
+        # Saving the settings
         settings = {key: value.get() for key, value in
                     self.settings.__dict__.items()}
 
@@ -342,26 +410,29 @@ class Main_window(Tk):
                   'settings.pickle', 'wb+') as param_file:
             dump(settings, param_file, protocol=4)
 
+        # Saving the recent projects
         with open(self._settings_path /
                   'recent_projects.pickle', 'wb+') as recent_projects_file:
             dump({'recent_projects': [str(path.name) for path in
                                       self._recent_projects]},
                  recent_projects_file, protocol=4)
 
-    def _delete_current_project(self):
+    def _delete_current_project(self) -> NoReturn:
+        """Deletes the current project and all the associated files."""
 
         if self._current_project is None:
             return
 
+        # Security to prevent unwanted data loss
         ret = messagebox.askyesno('Hold on !',
                                   "Do you really want to delete the current "
                                   "project ?\nThis operation can't be undone.")
 
         if ret:
-            # delete the project
+            # Simply deletes all the project files
             rmtree(self._current_project)
 
-            # remove the load button
+            # Removes the project from the recent projects
             index = self._recent_projects.index(self._current_project)
             self._recent_projects_menu.delete(index)
             self._recent_projects.remove(self._current_project)
@@ -375,16 +446,17 @@ class Main_window(Tk):
                 self._file_menu.entryconfig("Load Automatic Save",
                                             state='disabled')
 
-            # create empty project
+            # Creates a new empty project
             self._create_empty_project()
 
-    def _create_empty_project(self):
+    def _create_empty_project(self) -> NoReturn:
+        """Creates a new empty project."""
 
-        # reset everything
+        # Resets the entire window
         self._files_table.reset()
         self._image_canvas.reset()
 
-        # set the save button
+        # Sets the buttons and the menu
         self._save_button['state'] = 'enabled'
         self._save_button['text'] = 'Save As'
         self._process_images_button['state'] = 'disabled'
@@ -392,50 +464,61 @@ class Main_window(Tk):
                                                           "Project"),
                                     state="disabled")
 
-        # set window title
+        # Sets the title
         self.title("Cellen Tellen - New Project (Unsaved)")
         self._current_project = None
 
-    def _save_project(self, directory: Path = None):
+    def _save_project(self, directory: Optional[Path] = None) -> None:
+        """Saves a project, its images and the associated data.
 
+        Args:
+            directory: The path to the folder where the project should be
+                saved.
+        """
+
+        # A call without a directory means an autosave
         if directory is None:
             if self.settings.auto_save_time.get() > 0:
                 directory = self._auto_save_path
             else:
                 return
 
+        # Setting the save button, the project title and the menu entries
         if directory != self._auto_save_path:
-
             self._set_title_and_button(directory)
-
-            # do the recent projects sh*t
             self._add_to_recent_projects(directory)
 
+        # Starting the next autosave job, as the current one ends now
         else:
-            # set the automatic save entry
             self._file_menu.entryconfig("Load Automatic Save", state='normal')
-            if self.settings.auto_save_time.get() > 0:  # recall the autosave
+            if self.settings.auto_save_time.get() > 0:
                 self._set_autosave_time()
 
-        # create the folder
+        # Creating the folder if needed
         if not directory.is_dir():
             Path.mkdir(directory, parents=True)
 
-        # create saving popup
+        # Displays a popup indicating the project is being saved
         saving_popup = Save_popup(self, directory)
         sleep(1)
 
+        # Actually saving the project
         save_altered = self.settings.save_altered_images.get() or \
             directory == self._auto_save_path
         self._files_table.save_project(directory, save_altered)
 
-        # destroy the popup
         saving_popup.destroy()
 
-    def _load_project(self, directory: Path = None):
+    def _load_project(self, directory: Optional[Path] = None) -> None:
+        """Loads a project, its images and its data.
 
+        Args:
+            directory: The path to the directory containing the project to
+                load.
+        """
+
+        # Choose the folder in a dialog window if it wasn't specified
         if directory is None:
-            # ask a folder
             folder = filedialog.askdirectory(
                 initialdir=self.projects_path,
                 mustexist=True,
@@ -446,63 +529,84 @@ class Main_window(Tk):
 
             directory = Path(folder)
 
+        # Checking that a valid project was selected
         if not directory.is_dir() or not (directory / 'data.pickle').is_file()\
                 or not directory.parent == self.projects_path:
             messagebox.showerror("Error while loading",
                                  "This isn't a valid Cellen-tellen project !")
             return
 
-        # set the save button
+        # Setting the save button, the project title and the menu entries
         self._set_title_and_button(directory)
-
-        # do the recent projects sh*t
         if directory != self._auto_save_path:
-
             self._add_to_recent_projects(directory)
 
-        # load the project
+        # Actually loading the project
         self._files_table.load_project(directory)
 
-        # if there are images loaded
+        # Enabling the process images button
         if self._files_table.filenames:
             self._process_images_button['state'] = 'enabled'
         else:
             self._process_images_button['state'] = 'disabled'
 
-    def _set_title_and_button(self, directory):
-        # set the save button
+    def _set_title_and_button(self, directory: Path) -> NoReturn:
+        """Sets the project title and the save button when loading or saving
+        a project.
+
+        Args:
+            directory: The path to the directory where the project is saved.
+        """
+
+        # Sets the save button
         self._save_button['state'] = 'disabled'
         self._save_button['text'] = 'Save'
+
+        # Sets the menu
         self._file_menu.entryconfig(
             self._file_menu.index("Delete Current Project"), state="normal")
 
-        # change the current project name
+        # Sets the project name
         self._current_project = directory
         self.title("Cellen Tellen - Project '" + directory.name + "'")
 
-    def _add_to_recent_projects(self, directory):
+    def _add_to_recent_projects(self, directory: Path) -> NoReturn:
+        """Sets the recent project menu entry when loading or saving a project.
 
+        Args:
+            directory: The path to the directory where the project is saved.
+        """
+
+        # First, remove the project from the recent projects
         if directory in self._recent_projects:
             index = self._recent_projects.index(directory)
             self._recent_projects_menu.delete(index)
             self._recent_projects.remove(directory)
 
+        # Then insert it again, likely in another position
         self._recent_projects_menu.insert_command(
             index=0, label="Load '" + directory.name + "'",
             command=partial(self._safe_load, directory))
         self._recent_projects.insert(0, directory)
         self._file_menu.entryconfig("Recent Projects", state='normal')
 
+        # Remove the last project if there are too many
         if len(self._recent_projects) > self._max_recent_projects:
-            # remove the last
             self._recent_projects_menu.delete(
                 self._recent_projects_menu.index("end"))
             self._recent_projects.pop()
 
         self._save_settings()
 
-    def _create_warning_window(self):
+    def _create_warning_window(self) -> bool:
+        """Creates a warning window in case the user triggers an action that
+        might cause unwanted data loss.
 
+        Also manages the situation when the user tries to exit the program
+        while images are being processed.
+        """
+
+        # Case when the user tries to exit while computations are running
         if active_count() > 1:
             ret = messagebox.askyesno(
                 'Hold on !',
@@ -512,73 +616,108 @@ class Main_window(Tk):
                 "(resources may take some time to be released even after "
                 "exiting)")
 
+            # Stopping the computation if asked to
             if ret:
                 self._stop_event.set()
+
+            # There's a possibility that the computation actually ended
             if active_count() > 1:
                 return bool(ret)
             else:
                 messagebox.showinfo('Update', "Looks like the computation is "
                                               "actually over now !")
 
-        # if unsaved, show the window
+        # If the project is unsaved, propose to save it
         if self._save_button['state'] == 'enabled' and \
                 self._files_table.filenames:
 
-            # create
+            # Creating the warning window and waiting for the user to choose
             return_var = IntVar()
             warning_window = Warning_window(self, return_var)
             self.wait_variable(return_var)
+
+            # Handling the different possible answers from the user
             ret = return_var.get()
+            # The user wants to save and proceed
             if ret == 2:
                 warning_window.destroy()
                 return self._save_button_pressed()
+            # the user wants to proceed without saving
             elif ret == 1:
                 warning_window.destroy()
                 return True
+            # The user cancelled its action
             else:
                 return False
 
         return True
 
-    def _save_button_pressed(self, force_save_as=False):
+    def _save_button_pressed(self, force_save_as: bool = False) -> bool:
+        """Method called when a save action is triggered by the user.
 
-        # save as if necessary
+        It may or may not lead to an actual save.
+
+        Args:
+            force_save_as: If True, saves the project as a new one even if it
+                already has a folder.
+        """
+
+        # Asks for a new project name if needed
         if force_save_as or self._current_project is None:
+            # Creating a project name window and waiting for the user to choose
             return_var = IntVar()
             name_window = Project_name_window(self, return_var)
             self.wait_variable(return_var)
             ret = return_var.get()
+            # A name was given
             if ret:
                 name = name_window.return_name()
                 name_window.destroy()
                 self._save_project(self.projects_path / name)
                 return True
+            # No name was given
             else:
                 return False
 
+        # Perform a normal save otherwise
         else:
-            # perform normal save
             self._save_project(self._current_project)
             return True
 
     @_save_before_closing
-    def _safe_destroy(self):
+    def _safe_destroy(self) -> None:
+        """Closes the main window, and displays a warning if there's unsaved
+        data."""
+
         self.destroy()
 
     @_save_before_closing
-    def _safe_empty_project(self):
+    def _safe_empty_project(self) -> None:
+        """Creates an empy project, and displays a warning if there's unsaved
+        data."""
+
         self._create_empty_project()
 
     @_save_before_closing
-    def _safe_load(self, path: Path = None):
+    def _safe_load(self, path: Optional[Path] = None) -> None:
+        """Loads an existing project, and displays a warning if there's unsaved
+        data.
+
+        Args:
+            path: The path to the project to load.
+        """
+
         self._load_project(path)
 
-    def _disable_buttons(self):
+    def _disable_buttons(self) -> NoReturn:
+        """Disables most of the buttons and menu entries when computing."""
 
+        # Disabling the buttons
         self._load_button['state'] = "disabled"
         self._save_button['state'] = "disabled"
         self._which_indicator_button['state'] = 'disabled'
 
+        # Disabling the menu entries
         self._file_menu.entryconfig("Load Automatic Save", state='disabled')
         self._file_menu.entryconfig("Recent Projects", state='disabled')
         self._file_menu.entryconfig("Delete Current Project", state="disabled")
@@ -586,14 +725,18 @@ class Main_window(Tk):
         self._file_menu.entryconfig("New Empty Project", state="disabled")
         self._file_menu.entryconfig("Load From Explorer", state="disabled")
 
+        # Disables the file table close buttons
         self._files_table.enable_close_buttons(False)
 
-    def _enable_buttons(self):
+    def _enable_buttons(self) -> NoReturn:
+        """Re-enables the buttons and menu entries once processing is over."""
 
+        # Re-enabling buttons
         self._load_button['state'] = "enabled"
         self.set_unsaved_status()
         self._set_indicators()
 
+        # Re-enabling menu entries
         if self._auto_save_path.is_dir():
             self._file_menu.entryconfig("Load Automatic Save", state='normal')
         if self._recent_projects:
@@ -605,20 +748,35 @@ class Main_window(Tk):
         self._file_menu.entryconfig("New Empty Project", state="normal")
         self._file_menu.entryconfig("Load From Explorer", state="normal")
 
+        # Re-enabling the file table close buttons
         self._files_table.enable_close_buttons(True)
 
-    def _stop_processing(self, force=True):
+    def _stop_processing(self, force: bool = True) -> None:
+        """Empties the queue of images waiting for processing, and waits for
+        the already started computations to end.
 
+        This method is also called by the processing threads to get back to
+        normal operation mode once the last image has been processed.
+
+        Args:
+            force: If False, means that this method is called from a thread and
+                won't have any effect unless it is the last thread running. If
+                True, it is called by the user and will have effects.
+        """
+
+        # If the calling thread is not the last one, do nothing
         if not force and (active_count() > 2 or self._stop_event.is_set()):
             return
 
-        # empty threads
+        # Sends a signal to stop the threads
         self._stop_event.set()
+        # Wait for all the running threads to finish
         if force:
             self._processing_label['text'] = "Stopping"
             i = 1
             while active_count() > 1:
                 self.update()
+                # Indicating the user how many threads are left
                 self._processing_label[
                     'text'] = "Stopping" + '.' * (i % 4) + ' ' * (4 - i % 4) \
                               + f"(waiting for {active_count() - 1} " \
@@ -626,6 +784,7 @@ class Main_window(Tk):
                 i += 1
                 sleep(1)
 
+        # Cleaning up the buttons and variables related to processing
         self._processed_images_count.set(0)
         self._img_to_process_count = 0
         self._process_images_button["state"] = 'enabled'
@@ -633,15 +792,18 @@ class Main_window(Tk):
         self._process_images_button.configure(command=self._process_images)
         self._processing_label['text'] = ""
 
+        # Putting the interface back into normal operation state
         self._enable_buttons()
         self.set_unsaved_status()
 
-    def _process_images(self):
+    def _process_images(self) -> NoReturn:
+        """Prepares the interface and then starts the threads for image
+        processing."""
 
-        # get the file_names
+        # Getting the names of the images to process
         file_names = self._files_table.filenames
 
-        # switch off process button
+        # Setting the buttons and variables related to processing
         self._processed_images_count.set(0)
         self._img_to_process_count = len(file_names)
         self._process_images_button['text'] = 'Stop Processing'
@@ -649,57 +811,78 @@ class Main_window(Tk):
         self._processing_label['text'] = "0 of " + str(len(file_names)) + \
                                          " Images Processed"
 
+        # Disabling most of the buttons and menu entries
         self._disable_buttons()
-
         self.update()
 
-        # start threading
+        # Starting the threads
         self._stop_event.clear()
         semaphore = BoundedSemaphore(value=self.settings.n_threads.get())
         for file in file_names:
             Thread(target=self._process_thread,
                    args=(file, semaphore, self._stop_event)).start()
 
-    def _process_thread(self, file: Path, semaphore: BoundedSemaphore,
-                        stop_event: Event):
+    def _process_thread(self,
+                        file: Path,
+                        semaphore: BoundedSemaphore,
+                        stop_event: Event) -> None:
+        """The target code for the processing threads.
 
+        It basically processes one image, then sends the result to the files
+        table.
+
+        Args:
+            file: The path to the image to process.
+            semaphore: This object ensures that only the number of threads set
+                by the n_threads setting can run simultaneously.
+            stop_event: Event indicating the threads that they should return.
+        """
+
+        # Return if the user asks to
         if stop_event.is_set():
             return
 
+        # Ensuring a limited number of threads run simultaneously
         with semaphore:
-            # get result
+            # Actually processes the image
             nuclei_out, nuclei_in, fibre_positions = \
                 self._segmentation(file, self.settings.nuclei_colour.get(),
                                    self.settings.fibre_colour.get(),
                                    self.settings.do_fibre_counting.get(),
                                    self.settings.small_objects_threshold.get())
 
+            # Return if the user asks to
             if stop_event.is_set():
                 return
 
-            # send the output to the table
+            # Sends the output to the table
             self._files_table.input_processed_data(nuclei_out, nuclei_in,
                                                    fibre_positions, file)
 
-            # close if necessary
+            # Updates the processed images count
             self._processed_images_count.set(
                 self._processed_images_count.get() + 1)
 
+        # Return if the user asks to
         if stop_event.is_set():
             return
 
+        # Puts the interface back to normal if this is the last thread running
         self._stop_processing(force=False)
 
-    def _update_processed_images(self, _, __, ___):
-        # change the label
+    def _update_processed_images(self, _, __, ___) -> NoReturn:
+        """Updates the display of the processed images count."""
+
         processed = self._processed_images_count.get()
         if processed:
             self._processing_label['text'] = str(processed) + \
                 " of " + str(self._img_to_process_count) + " Images Processed"
 
-    def _select_images(self):
+    def _select_images(self) -> NoReturn:
+        """Opens a dialog window for selecting the images to load, then adds
+        them in the files table."""
 
-        # get the filenames with a dialog box
+        # Getting the file names
         file_names = filedialog.askopenfilenames(
             filetypes=[('Image Files', ('.tif', '.png', '.jpg', '.jpeg',
                                         '.bmp', '.hdr'))],
@@ -708,53 +891,61 @@ class Main_window(Tk):
         if file_names:
             file_names = [Path(path) for path in file_names]
 
-            # enable the process image buttons
+            # Enables the process images button
             self._process_images_button["state"] = 'enabled'
 
-            # add them to the table
+            # Adds the images to the table
             self._files_table.add_images(file_names)
             self.set_unsaved_status()
 
-    def _set_autosave_time(self):
+    def _set_autosave_time(self) -> NoReturn:
+        """Schedules a save job according to the selected autosave time."""
 
-        # if a previous timer was set, cancel it
+        # Cancels any previous autosave job
         if self._auto_save_job is not None:
             self.after_cancel(self._auto_save_job)
         self._auto_save_job = None
 
-        # set a new timer if needed
+        # Schedule a new autosave job
         if self.settings.auto_save_time.get() > 0:
             self._auto_save_job = self.after(self.settings.auto_save_time.get()
                                              * 1000, self._save_project)
 
-    def _set_image_channels(self):
+    def _set_image_channels(self) -> NoReturn:
+        """Redraws the current image with the selected channels."""
+
         self._image_canvas.set_channels()
         self._save_settings()
 
-    def _set_indicators(self):
-        
+    def _set_indicators(self) -> NoReturn:
+        """Updates the display of fibres and nuclei according to the user
+        selection."""
+
+        # Getting the settings
         show_nuclei = self.settings.show_nuclei.get()
         show_fibres = self.settings.show_fibres.get()
         
-        # set the indicators
+        # Updating the display
         self._image_canvas.set_indicators()
         self._save_settings()
 
-        # set which indication
+        # Setting the which indicator button
         if show_fibres and not show_nuclei:
             self.draw_nuclei.set(False)
             self._which_indicator_button['text'] = 'Manual : Fibres'
             self._which_indicator_button['state'] = 'disabled'
-
         elif show_fibres and show_nuclei:
             self._which_indicator_button['state'] = 'enabled'
-
         if not show_fibres and show_nuclei:
             self.draw_nuclei.set(True)
             self._which_indicator_button['text'] = 'Manual : Nuclei'
             self._which_indicator_button['state'] = 'disabled'
 
-    def _change_indications(self):
+    def _change_indications(self) -> NoReturn:
+        """Chooses which between nuclei or fibres are drawn when left-clicking
+        on the image."""
+
+        # Sets the draw_nuclei variable and the which indicator button
         if self.draw_nuclei.get():
             self.draw_nuclei.set(False)
             self._which_indicator_button['text'] = 'Manual : Fibres'
@@ -762,9 +953,12 @@ class Main_window(Tk):
             self.draw_nuclei.set(True)
             self._which_indicator_button['text'] = 'Manual : Nuclei'
 
-    def _nuclei_colour_sel(self, _, __, ___):
+    def _nuclei_colour_sel(self, _, __, ___) -> NoReturn:
+        """Ensures there's no conflict in the chosen image channels for fibres
+        and nuclei."""
 
-        # if the two are the same, reset one
+        # Sets one of the channels back to its previous value in case of
+        # conflict
         if self.settings.nuclei_colour.get() == \
                 self.settings.fibre_colour.get():
             if self._previous_nuclei_colour.get() != \
@@ -776,13 +970,15 @@ class Main_window(Tk):
                 self.settings.nuclei_colour.set(
                     self._previous_fibre_colour.get())
 
-        # set the previous ones to the current one
+        # Sets the previous values variables
         self._previous_nuclei_colour.set(self.settings.nuclei_colour.get())
         self._previous_fibre_colour.set(self.settings.fibre_colour.get())
 
-        # save
+        # Finally, save
         self._save_settings()
 
     @staticmethod
-    def _open_github():
+    def _open_github() -> NoReturn:
+        """Opens the project repository in a browser."""
+
         open_new("https://github.com/Quentinderore2/Cellen-Tellen")

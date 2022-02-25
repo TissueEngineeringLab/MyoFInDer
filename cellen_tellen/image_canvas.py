@@ -1,8 +1,4 @@
-# -*- coding: utf-8 -*-
-# Advanced zoom example. Like in Google Maps.
-# It zooms only a tile, but not the whole image. So the zoomed tile occupies
-# constant memory and not crams it with a huge resized image for the large
-# zooms.
+# coding: utf-8
 
 from tkinter import Canvas, ttk
 from PIL import Image, ImageTk
