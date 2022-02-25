@@ -31,6 +31,7 @@ if system() == "Windows" and int(release()) >= 8:
 #   Improve the fibre detection and display
 #   Change the color of the dots according to the selected channel
 #   Improve the .xlsx report
+#   Finish adding comments and docstrings
 
 
 def _save_before_closing(func):
@@ -78,8 +79,8 @@ class Main_window(Tk):
 
         self._image_canvas = Image_canvas(self._frm, self)
         self._files_table = Files_table(self._aux_frame, self.projects_path)
-        self._image_canvas.set_table(self._files_table)
-        self._files_table.set_image_canvas(self._image_canvas)
+        self._image_canvas.nuclei_table = self._files_table
+        self._files_table.image_canvas = self._image_canvas
         self._save_settings(autosave_time=True)
 
         self.update()

@@ -24,7 +24,7 @@ class Image_canvas(ttk.Frame):
         """ Initialize the main Frame """
         super().__init__(mainframe)
 
-        self._nuclei_table = None
+        self.nuclei_table = None
         self._main_window = main_window
         self._settings = self._main_window.settings
         self._draw_nuclei = self._main_window.draw_nuclei
@@ -32,9 +32,6 @@ class Image_canvas(ttk.Frame):
         self._set_layout()
         self._set_bindings()
         self._set_variables()
-
-    def set_table(self, table_):
-        self._nuclei_table = table_
 
     def set_channels(self):
         self._set_image()
@@ -234,7 +231,7 @@ class Image_canvas(ttk.Frame):
                     else:
                         self._canvas.itemconfig(nuc.tk_obj, fill=out_fibre)
                         nuc.color = out_fibre
-                    self._nuclei_table.switch_nucleus(nuc)
+                    self.nuclei_table.switch_nucleus(nuc)
 
                 # otherwise, add a new nucleus
                 else:
@@ -243,7 +240,7 @@ class Image_canvas(ttk.Frame):
                                                          rel_y_scale,
                                                          out_fibre),
                                       out_fibre)
-                    self._nuclei_table.add_nucleus(new_nuc)
+                    self.nuclei_table.add_nucleus(new_nuc)
                     self._nuclei.append(new_nuc)
 
                 self._main_window.set_unsaved_status()
@@ -256,7 +253,7 @@ class Image_canvas(ttk.Frame):
                                     *self._draw_fibre(rel_x_scale,
                                                       rel_y_scale))
                     self._fibres.append(new_fib)
-                    self._nuclei_table.add_fibre(new_fib)
+                    self.nuclei_table.add_fibre(new_fib)
 
                     self._main_window.set_unsaved_status()
 
@@ -281,7 +278,7 @@ class Image_canvas(ttk.Frame):
                 if nuc is not None:
 
                     # delete it
-                    self._nuclei_table.remove_nucleus(nuc)
+                    self.nuclei_table.remove_nucleus(nuc)
 
                     self._canvas.delete(nuc.tk_obj)
                     self._nuclei.remove(nuc)
@@ -295,7 +292,7 @@ class Image_canvas(ttk.Frame):
                 if fib is not None:
 
                     # delete it
-                    self._nuclei_table.remove_fibre(fib)
+                    self.nuclei_table.remove_fibre(fib)
                     self._canvas.delete(fib.h_line)
                     self._canvas.delete(fib.v_line)
                     self._fibres.remove(fib)

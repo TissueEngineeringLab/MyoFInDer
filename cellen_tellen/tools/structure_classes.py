@@ -37,8 +37,8 @@ class Table_element:
 
 @dataclass
 class Nucleus:
-    x_pos: int
-    y_pos: int
+    x_pos: float
+    y_pos: float
     tk_obj: Optional[int]
     color: str
 
@@ -50,8 +50,8 @@ class Nucleus:
 
 @dataclass
 class Fibre:
-    x_pos: int
-    y_pos: int
+    x_pos: float
+    y_pos: float
     h_line: Optional[int]
     v_line: Optional[int]
 
