@@ -4,6 +4,11 @@ from tkinter import Toplevel, ttk, StringVar, IntVar
 from screeninfo import get_monitors
 from typing import NoReturn
 
+forbidden_chars = ['/', '\\', '>', '<', ':', '"', '|', '?', '*']
+forbidden_names = ['CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4',
+                   'COM5', 'COM6', 'COM7', 'COM8', 'COM9', 'LPT1', 'LPT2',
+                   'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9']
+
 
 class Project_name_window(Toplevel):
     """Popup window for choosing a name before saving a project."""
@@ -112,12 +117,18 @@ class Project_name_window(Toplevel):
 
         # First, check that there's no forbidden character or that the name is
         # not empty
-        if '/' in new_entry or '.' in new_entry or not new_entry:
+        if not new_entry or any(char in new_entry for char in forbidden_chars):
             self._folder_name_window_save_button['state'] = 'disabled'
             if len(new_entry) > 0:
                 self._warning_var.set('This is not a valid projectname !')
             else:
                 self._warning_var.set('')
+            return True
+
+        # Then, check that the name is not reserved
+        if any(new_entry == name for name in forbidden_names):
+            self._folder_name_window_save_button['state'] = 'disabled'
+            self._warning_var.set('This name is reserved by the OS !')
             return True
 
         # Then, if the name is fine, check that it is not already used
