@@ -1,23 +1,30 @@
 # coding: utf-8
 
-from tkinter import Canvas, ttk
+from tkinter import Canvas, ttk, Event
 from PIL import Image, ImageTk
 from cv2 import cvtColor, imread, COLOR_BGR2RGB
 from numpy import zeros
 from platform import system
 from functools import partial
 from copy import deepcopy
+from pathlib import Path
+from typing import NoReturn, Tuple, Optional
 
 from .tools import Nucleus, Fibre, Nuclei, Fibres
 
-in_fibre = 'yellow'  # green
-out_fibre = 'red'  # 2A7DDE
+# Possible colors for the nuclei
+in_fibre = 'yellow'
+out_fibre = 'red'
 
 
 class Image_canvas(ttk.Frame):
-    """ Advanced zoom of the image """
-    def __init__(self, mainframe, main_window):
-        """ Initialize the main Frame """
+    """This class manages the display of one image, its nuclei and its
+    fibers."""
+
+    def __init__(self, mainframe: ttk.Frame, main_window) -> None:
+        """Initializes the frame, the layout, the callbacks and the
+        variables."""
+
         super().__init__(mainframe)
 
         self.nuclei_table = None
@@ -29,169 +36,245 @@ class Image_canvas(ttk.Frame):
         self._set_bindings()
         self._set_variables()
 
-    def set_channels(self):
+    def set_channels(self) -> NoReturn:
+        """Reloads the image after the user changed the selected channels."""
+
         self._set_image()
         self._show_image()
 
-    def set_indicators(self):
+    def set_indicators(self) -> NoReturn:
+        """Redraws the nuclei and/or fibres after the user changed the elements
+        to display."""
 
+        # Deletes all the elements in the canvas
         self._delete_nuclei()
         self._delete_fibres()
 
-        # nuclei
+        # Draw the nuclei
         if self._settings.show_nuclei.get():
-            # draw
             for nuc in self._nuclei:
                 nuc.tk_obj = self._draw_nucleus(nuc.x_pos,
                                                 nuc.y_pos,
                                                 nuc.color)
 
-        # fibers
+        # Draw the fibers
         if self._settings.show_fibres.get():
-
-            # draw
             for fibre in self._fibres:
                 fibre.h_line,  fibre.v_line = \
                     self._draw_fibre(fibre.x_pos, fibre.y_pos)
 
-    def load_image(self, path, nuclei, fibres):
+    def load_image(self,
+                   path: Path,
+                   nuclei: Nuclei,
+                   fibres: Fibres) -> NoReturn:
+        """Loads and displays an image and its fibres and nuclei.
 
-        # reset image
+        Args:
+            path: The path to the image to load.
+            nuclei: The Nuclei object containing the position and color of the
+                nuclei to draw on top of the image.
+            fibres: The Fibres object containing the position of the fibres to
+                draw on top of the image.
+        """
+
+        # First, reset the canvas
         self.reset()
-
-        # remove all the previous nuclei
         self._delete_nuclei()
         self._delete_fibres()
 
-        # load the image
+        # Then, load and display the image
         self._image_path = path
         self._set_image()
         self._resize_to_canvas()
         self._show_image()
 
+        # Deep copy to have independent objects
         self._nuclei = deepcopy(nuclei)
 
+        # Drawing the nuclei
         if self._settings.show_nuclei.get():
             for nuc in self._nuclei:
                 nuc.tk_obj = self._draw_nucleus(nuc.x_pos, nuc.y_pos,
                                                 nuc.color)
 
+        # Deep copy to have independent objects
         self._fibres = deepcopy(fibres)
 
-        # fibres
+        # Drawing the fibres
         if self._settings.show_fibres.get():
             for fib in self._fibres:
                 fib.h_line, fib.v_line = self._draw_fibre(fib.x_pos, fib.y_pos)
 
-    def reset(self):
-        # reset the canvas
-        self._image = None  # open image
-        self._img_scale = 1.0  # scale for the canvas image
+    def reset(self) -> NoReturn:
+        """Resets every object in the canvas: the image, the nuclei and the
+        fibres."""
+
+        # Resetting the variables
+        self._image = None
+        self._img_scale = 1.0
         self._can_scale = 1.0
-        self._delta = 1.3  # zoom delta
         self._current_zoom = 0
+
+        # Removing the fibres and nuclei from the canvas
         self._delete_nuclei()
         self._delete_fibres()
+
+        # Resetting the fibres and nuclei objects
         self._nuclei = Nuclei()
         self._fibres = Fibres()
+
+        # removing the image from the canvas
         if self._image_id is not None:
             self._canvas.delete(self._image_id)
         self._image_id = None
-        # Put image into container rectangle and use it to set proper
-        # coordinates to the image
-
-        # show
-        self._show_image()
     
-    def _delete_nuclei(self):
+    def _delete_nuclei(self) -> NoReturn:
+        """Removes all nuclei from the canvas, but doesn't delete the nuclei
+        objects."""
+
         for nuc in self._nuclei:
             self._canvas.delete(nuc.tk_obj)
     
-    def _delete_fibres(self):
+    def _delete_fibres(self) -> NoReturn:
+        """Removes all fibres from the canvas, but doesn't delete the fibres
+         objects."""
+
         for fibre in self._fibres:
             self._canvas.delete(fibre.h_line)
             self._canvas.delete(fibre.v_line)
 
-    def _set_layout(self):
+    def _set_layout(self) -> NoReturn:
+        """Creates the frame, canvas and scrollbar objects, places them and
+        displays them."""
+
+        # Creating the architecture
         self.pack(expand=True, fill="both", anchor="w", side="left",
                   padx=5, pady=5)
         self._hbar_frame = ttk.Frame(self)
         self._hbar_frame.pack(expand=False, fill="x", anchor="s",
                               side="bottom")
 
-        # Create canvas and put image on it
+        # Creating the canvas
         self._canvas = Canvas(self,
                               highlightthickness=3,
                               highlightbackground="black")
         self._canvas.configure(scrollregion=self._canvas.bbox('all'))
         self._canvas.pack(expand=True, fill="both", side='left')
 
+        # Creating the vertical scrollbar
         self._vbar = ttk.Scrollbar(self, orient="vertical")
         self._vbar.pack(fill='y', side='right')
         self._vbar.config(command=self._canvas.yview)
-        self._canvas.config(yscrollcommand=self._vbar.set)
 
+        # Creating the horizontal scrollbar
         self._hbar = ttk.Scrollbar(self._hbar_frame, orient="horizontal")
         self._hbar.pack(fill='x')
         self._hbar.config(command=self._canvas.xview)
-        self._canvas.config(xscrollcommand=self._hbar.set)
 
+        # Linking the scrollbars to the canvas
+        self._canvas.config(yscrollcommand=self._vbar.set)
+        self._canvas.config(xscrollcommand=self._hbar.set)
         self._canvas.configure(xscrollincrement='1', yscrollincrement='1')
 
-        self._canvas.update()  # wait till canvas is create
+        # Finally, applying the changes
+        self._canvas.update()
 
-    def _set_bindings(self):
-        # Bind events to the Canvas
-        self._canvas.bind('<Configure>', self._show_image)  # canvas is resized
+    def _set_bindings(self) -> NoReturn:
+        """Sets the actions to perform for the different user inputs."""
+
+        self._canvas.bind('<Configure>', self._show_image)
         self._canvas.bind('<ButtonPress-2>', self._move_from)
         self._canvas.bind('<B2-Motion>', self._move_to)
 
+        # Different mousewheel management in Linux and Windows
         if system() == "Linux":
             self._canvas.bind('<4>', self._zoom)
             self._canvas.bind('<5>', self._zoom)
         else:
             self._canvas.bind('<MouseWheel>', self._zoom)
 
+        # Moving with the arrow keys
         self.bind_all('<Left>', partial(self._arrows, arrow_index=0))
         self.bind_all('<Right>', partial(self._arrows, arrow_index=1))
         self.bind_all('<Up>', partial(self._arrows, arrow_index=2))
         self.bind_all('<Down>', partial(self._arrows, arrow_index=3))
 
+        # Zooming in and out with keyboard keys
         self.bind_all('=', partial(self._zoom, delta=1, mouse=False))
         self.bind_all('+', partial(self._zoom, delta=1, mouse=False))
         self.bind_all('-', partial(self._zoom, delta=-1, mouse=False))
         self.bind_all('_', partial(self._zoom, delta=-1, mouse=False))
 
+        # Clicking with the mouse
         self._canvas.bind('<ButtonPress-1>', self._left_click)
         self._canvas.bind('<ButtonPress-3>', self._right_click)
 
-    def _set_variables(self):
-        self._image = None  # open image
+    def _set_variables(self) -> NoReturn:
+        """Sets the variables used in this class."""
+
+        self._image = None
         self._image_path = None
-        self._img_scale = 1.0  # scale for the canvas image
+        self._img_scale = 1.0
         self._can_scale = 1.0
-        self._delta = 1.3  # zoom delta
+        self._delta = 1.3
         self._current_zoom = 0
         self._nuclei = Nuclei()
         self._fibres = Fibres()
         self._image_id = None
 
-    def _draw_nucleus(self, unscaled_x, unscaled_y, color):
+    def _draw_nucleus(self,
+                      unscaled_x: float,
+                      unscaled_y: float,
+                      color: str) -> int:
+        """Draws a single nucleus on the canvas.
 
+        Args:
+            unscaled_x: The x position of the nucleus on the raw image, in
+                pixels.
+            unscaled_y: The y position of the nucleus on the raw image, in
+                pixels.
+            color: The color of the nucleus.
+
+        Returns:
+            The index tkinter attributed to the nucleus it just drew.
+        """
+
+        # Adjusting the radius to the scale
         radius = max(int(3.0 * self._can_scale), 1)
 
+        # Adjusting the position to the scale
         x = unscaled_x * self._img_scale
         y = unscaled_y * self._img_scale
+
+        # Actually drawing the nucleus
         return self._canvas.create_oval(
             x - radius, y - radius, x + radius, y + radius,
             fill=color, outline='#fff', width=0)
 
-    def _draw_fibre(self, unscaled_x, unscaled_y):
+    def _draw_fibre(self,
+                    unscaled_x: float,
+                    unscaled_y: float) -> Tuple[int, int]:
+        """Draws a single fiber on the canvas.
 
+        Args:
+            unscaled_x: The x position of the fibre on the raw image, in
+                pixels.
+            unscaled_y: The y position of the fibre on the raw image, in
+                pixels.
+
+        Returns:
+            The indexes tkinter attributed to the two lines of the fiber it
+            just drew.
+        """
+
+        # Adjusting the length to the scale
         square_size = max(int(10.0 * self._can_scale), 1)
 
+        # Adjusting the position to the scale
         x = unscaled_x * self._img_scale
         y = unscaled_y * self._img_scale
+
+        # Actually drawing the fibre
         hor_line = self._canvas.create_line(x + square_size, y,
                                             x - square_size, y,
                                             width=2,
@@ -201,26 +284,35 @@ class Image_canvas(ttk.Frame):
                                             fill='red')
         return hor_line, ver_line
 
-    def _left_click(self, event):
+    def _left_click(self, event: Event) -> None:
+        """Upon left click, either adds a new nucleus or a fiber, or switches
+        the color of an existing nucleus.
+
+        Args:
+            event: The tkinter event associated with the left click.
+        """
 
         if self._image is not None:
 
+            # Do nothing if the click is outside the image
             can_x = self._canvas.canvasx(event.x)
             can_y = self._canvas.canvasy(event.y)
-
             if can_x >= self._image.width * self._img_scale or \
                     can_y >= self._image.height * self._img_scale:
                 return
 
-            # coordinaten tov de foto
+            # Getting the position of the click on the unscaled image
             rel_x_scale = can_x / self._img_scale
             rel_y_scale = can_y / self._img_scale
 
+            # Case when the nuclei mode is selected
             if self._draw_nuclei.get() and self._settings.show_nuclei.get():
-                # find a close nuclei
+
+                # Trying to find a close nucleus
                 nuc = self._find_closest_nucleus(rel_x_scale, rel_y_scale)
+
+                # One close nucleus found, inverting it colour
                 if nuc is not None:
-                    # convert the nucleus from blue to green
                     if nuc.color == out_fibre:
                         self._canvas.itemconfig(nuc.tk_obj, fill=in_fibre)
                         nuc.color = in_fibre
@@ -229,7 +321,7 @@ class Image_canvas(ttk.Frame):
                         nuc.color = out_fibre
                     self.nuclei_table.switch_nucleus(nuc)
 
-                # otherwise, add a new nucleus
+                # No close nucleus found, adding a new one
                 else:
                     new_nuc = Nucleus(rel_x_scale, rel_y_scale,
                                       self._draw_nucleus(rel_x_scale,
@@ -239,11 +331,16 @@ class Image_canvas(ttk.Frame):
                     self.nuclei_table.add_nucleus(new_nuc)
                     self._nuclei.append(new_nuc)
 
+                # Setting the unsaved status
                 self._main_window.set_unsaved_status()
 
+            # Case when the fibre mode is selected
             elif self._settings.show_fibres.get():
-                # find a close fibre
+
+                # Trying to find a close fibre
                 fib = self._find_closest_fibre(rel_x_scale, rel_y_scale)
+
+                # No close fibre found, adding a new one
                 if fib is None:
                     new_fib = Fibre(rel_x_scale, rel_y_scale,
                                     *self._draw_fibre(rel_x_scale,
@@ -251,103 +348,164 @@ class Image_canvas(ttk.Frame):
                     self._fibres.append(new_fib)
                     self.nuclei_table.add_fibre(new_fib)
 
+                    # Setting the unsaved status
                     self._main_window.set_unsaved_status()
 
-    def _right_click(self, event):
+    def _right_click(self, event: Event) -> None:
+        """Upon right click, deletes a nucleus or a fiber.
+
+        Args:
+            event: The tkinter event associated with the right click.
+        """
 
         if self._image is not None:
 
+            # Do nothing if the click is outside the image
             can_x = self._canvas.canvasx(event.x)
             can_y = self._canvas.canvasy(event.y)
-
             if can_x >= self._image.width * self._img_scale or \
                     can_y >= self._image.height * self._img_scale:
                 return
 
-            # coordinaten tov de foto
+            # Getting the position of the click on the unscaled image
             rel_x_scale = can_x / self._img_scale
             rel_y_scale = can_y / self._img_scale
 
-            # find a close nuclei
+            # Case when the nuclei mode is selected
             if self._draw_nuclei.get() and self._settings.show_nuclei.get():
+
+                # Trying to find a close nucleus
                 nuc = self._find_closest_nucleus(rel_x_scale, rel_y_scale)
+
+                # One close nucleus found, deleting it
                 if nuc is not None:
-
-                    # delete it
                     self.nuclei_table.remove_nucleus(nuc)
-
                     self._canvas.delete(nuc.tk_obj)
                     self._nuclei.remove(nuc)
 
+                    # Setting the unsaved status
                     self._main_window.set_unsaved_status()
 
+            # Case when the fibre mode is selected
             elif self._settings.show_fibres.get():
 
-                # find the closest fibre
+                # Trying to find a close fibre
                 fib = self._find_closest_fibre(rel_x_scale, rel_y_scale)
-                if fib is not None:
 
-                    # delete it
+                # One close fibre found, deleting it
+                if fib is not None:
                     self.nuclei_table.remove_fibre(fib)
                     self._canvas.delete(fib.h_line)
                     self._canvas.delete(fib.v_line)
                     self._fibres.remove(fib)
 
+                    # Setting the unsaved status
                     self._main_window.set_unsaved_status()
 
-    def _find_closest_fibre(self, x, y):
-        # find the closest fiber
+    def _find_closest_fibre(self, x: float, y: float) -> Optional[Fibre]:
+        """Searches for a close fiber among the existing fibers.
+
+        Args:
+            x: The x position where to search for a fiber.
+            y: The y position where to search for a fiber.
+
+        Returns:
+            The Fiber object closest to the given coordinates, if any close
+            enough fiber was found.
+        """
+
+        # Adjusting the search radius to the scale
         radius = max(9.0 * self._can_scale / self._img_scale, 9.0)
+
         closest_fib = None
         closest_distance = None
+
+        # Iterating over the fibers
         for fib in self._fibres:
+            # Keeping only those within the radius of search
             if abs(x - fib.x_pos) <= radius and abs(y - fib.y_pos) <= radius:
                 dis_sq = (fib.x_pos - x) ** 2 + (fib.y_pos - y) ** 2
+                # Keeping only the closest one
                 if closest_distance is None or dis_sq < closest_distance:
                     closest_fib = fib
                     closest_distance = dis_sq
+
         return closest_fib if closest_fib is not None else None
 
-    def _find_closest_nucleus(self, x, y):
-        # find the closest nucleus
+    def _find_closest_nucleus(self, x: float, y: float) -> Optional[Nucleus]:
+        """Searches for a close nucleus among the existing nuclei.
+
+        Args:
+            x: The x position where to search for a nucleus.
+            y: The y position where to search for a nucleus.
+
+        Returns:
+            The Nucleus object closest to the given coordinates, if any close
+            enough nucleus was found.
+        """
+
+        # Adjusting the search radius to the scale
         radius = max(3.0 * self._can_scale / self._img_scale, 3.0)
+
         closest_nuc = None
         closest_distance = None
+
+        # Iterating over the nuclei
         for nuc in self._nuclei:
+            # Keeping only those within the radius of search
             if abs(x - nuc.x_pos) <= radius and abs(y - nuc.y_pos) <= radius:
                 dis_sq = (nuc.x_pos - x) ** 2 + (nuc.y_pos - y) ** 2
+                # Keeping only the closest one
                 if closest_distance is None or dis_sq < closest_distance:
                     closest_distance = dis_sq
                     closest_nuc = nuc
+
         return closest_nuc if closest_nuc is not None else None
 
-    def _set_image(self):
-        # load the image with the correct channels
+    def _set_image(self) -> NoReturn:
+        """Loads an image and keeps only the desired channels."""
+
         if self._image_path:
+            # Loading the image
             cv_img = cvtColor(imread(str(self._image_path)), COLOR_BGR2RGB)
+
+            # Keeping only the necessary channels
             if not self._settings.red_channel_bool.get():
                 cv_img[:, :, 0] = zeros([cv_img.shape[0], cv_img.shape[1]])
             if not self._settings.green_channel_bool.get():
                 cv_img[:, :, 1] = zeros([cv_img.shape[0], cv_img.shape[1]])
             if not self._settings.blue_channel_bool.get():
                 cv_img[:, :, 2] = zeros([cv_img.shape[0], cv_img.shape[1]])
-            image_in = Image.fromarray(cv_img)
 
+            image_in = Image.fromarray(cv_img)
             self._image = image_in
 
-    def _resize_to_canvas(self):
+    def _resize_to_canvas(self) -> NoReturn:
+        """Resizes an image to the current size of the canvas."""
+
+        # Getting the different parameters of interest
         can_width = self._canvas.winfo_width()
         can_height = self._canvas.winfo_height()
         can_ratio = can_width / can_height
         img_ratio = self._image.width / self._image.height
+
+        # Calculating the new image width
         if img_ratio >= can_ratio:
             resize_width = can_width
         else:
             resize_width = int(can_height * img_ratio)
 
+        # Deducing the new image scale
         self._img_scale = resize_width / self._image.width
 
-    def _arrows(self, _, arrow_index):
+    def _arrows(self, _: Event, arrow_index: int) -> NoReturn:
+        """Scrolls the image upon pressing on the arrow keys.
+
+        Args:
+            _: The event associated with the arrow press.
+            arrow_index: The index attributed to the arrow, to differentiate
+                them easily.
+        """
 
         if arrow_index == 0:
             self._canvas.xview_scroll(-1, "units")
@@ -358,22 +516,41 @@ class Image_canvas(ttk.Frame):
         elif arrow_index == 3:
             self._canvas.yview_scroll(1, "units")
 
-        self._show_image()  # redraw the image
+        # Redraw the image
+        self._show_image()
 
-    def _move_from(self, event):
-        """ Remember previous coordinates for scrolling with the mouse """
+    def _move_from(self, event: Event) -> NoReturn:
+        """Stores the previous coordinates for scrolling with the mouse."""
+
         if self._image is not None:
             self._canvas.scan_mark(event.x, event.y)
-            self._show_image()  # redraw the image
+            self._show_image()
 
-    def _move_to(self, event):
-        """ Drag (move) canvas to the new position """
+    def _move_to(self, event: Event) -> NoReturn:
+        """Drags the canvas to a new position."""
+
         if self._image is not None:
             self._canvas.scan_dragto(event.x, event.y, gain=1)
-            self._show_image()  # redraw the image
+            self._show_image()
 
-    def _zoom(self, event, delta=None, mouse=True):
+    def _zoom(self,
+              event: Event,
+              delta: Optional[int] = None,
+              mouse: bool = True) -> None:
+        """Zooms in or out of the image.
+
+        Args:
+            event: The tkinter event associated with the scrolling command.
+            delta: If positive, zooms in, if negative, zooms out.
+            mouse: Does the zoom command come from the mouse wheel ? If yes,
+                zoom to the current position of the mouse, else to the top left
+                corner of the image.
+        """
+
         if self._image is not None:
+
+            # Linux mousewheel events do not hold information about the delta,
+            # so we need to set it manually
             if delta is None:
                 if system() == "Linux":
                     delta = 1 if event.num == 4 else -1
@@ -381,52 +558,82 @@ class Image_canvas(ttk.Frame):
                     delta = int(event.delta / abs(event.delta))
 
             scale = 1.0
+            # Setting the point whee to zoom on the image
             x_can = self._canvas.canvasx(event.x) if mouse else 0
             y_can = self._canvas.canvasy(event.y) if mouse else 0
-            # Respond to Linux (event.num) or Windows (event.delta) wheel event
-            if delta < 0:  # scroll down
+
+            # Zooming out
+            if delta < 0:
+                # Limit to 4 zooms out
                 if self._current_zoom < -4:
-                    return  # image is less than 30 pixels
+                    return
+
+                # Setting the new image and canvas scales
                 self._img_scale /= self._delta
                 self._can_scale /= self._delta
                 scale /= self._delta
                 self._current_zoom -= 1
 
+                # Scrolling the canvas to keep the mouse on the same point
                 self._canvas.xview_scroll(int((1 / self._delta - 1) * x_can),
                                           "units")
                 self._canvas.yview_scroll(int((1 / self._delta - 1) * y_can),
                                           "units")
 
-            elif delta > 0:  # scroll up
+            # Zooming in
+            elif delta > 0:
+                # Limit to 4 zooms in
                 if self._current_zoom > 4:
-                    return  # Arbitrary zoom limit
+                    return
+
+                # Setting the new image and canvas scales
                 self._img_scale *= self._delta
                 self._can_scale *= self._delta
                 scale *= self._delta
                 self._current_zoom += 1
-            self._canvas.scale('all', 0, 0, scale, scale)  # rescale all the
-            # elements in the image
+
+            # Rescaling the canvas
+            self._canvas.scale('all', 0, 0, scale, scale)
+            # Updating the image
             self._show_image(x=x_can if delta > 0 else None,
                              y=y_can if delta > 0 else None)
 
-    def _show_image(self, *_, x=None, y=None):
+    def _show_image(self,
+                    *_: Event,
+                    x: Optional[float] = None,
+                    y: Optional[float] = None) -> None:
+        """Displays the image on the canvas.
+
+        Args:
+            *_: Ignores the event in case the command was issued by one.
+            x: The x position of the mouse, where to zoom.
+            y: The y position of the mouse, where to zoom.
+        """
+
         if self._image is not None:
+            # Resizing the image to the canvas size
             scaled_x = int(self._image.width * self._img_scale)
             scaled_y = int(self._image.height * self._img_scale)
             image = self._image.resize((scaled_x, scaled_y))
+
+            # Actually displaying the image in the canvas
             image_tk = ImageTk.PhotoImage(image)
             self._image_id = self._canvas.create_image(0, 0, anchor='nw',
                                                        image=image_tk)
-            self._canvas.lower(self._image_id)  # set image into background
+            self._canvas.lower(self._image_id)
             self._canvas.image_tk = image_tk
             self._canvas.configure(scrollregion=(0, 0, scaled_x, scaled_y))
 
+            # Moving the image to the top left corner if it doesn't fill the
+            # canvas
             if scaled_x < self._canvas.winfo_width() or \
                     scaled_y < self._canvas.winfo_height():
                 self._canvas.xview_moveto(0),
                 self._canvas.yview_moveto(0)
                 return
 
+            # Scrolling the canvas to keep the mouse on the same point in case
+            # we were zooming in
             if x is not None or y is not None:
                 self._canvas.xview_scroll(int((self._delta - 1) * x), "units")
                 self._canvas.yview_scroll(int((self._delta - 1) * y), "units")
