@@ -6,8 +6,6 @@ from screeninfo import get_monitors
 from time import sleep
 from typing import NoReturn
 
-from ..image_segmentation import Image_segmentation
-
 
 class Splash_window(Tk):
     """Window displayed while loading the software.
@@ -70,7 +68,7 @@ class Splash_window(Tk):
                                             img_ratio)) / 2,
                 y_offset + scr_height * (1 - size_factor) / 2))
 
-    def display(self) -> Image_segmentation:
+    def display(self):
         """Sets the layout of the window, displays it, and loads the modules.
 
         Returns:
@@ -106,11 +104,11 @@ class Splash_window(Tk):
         self._canvas.pack(fill="both", expand=True)
         self.update()
 
-        sleep(1)
+        from ..image_segmentation import Image_segmentation
 
         # Load the image segmentation and update the display
         self._canvas.itemconfig(self._loading_label,
-                                text="Initialising Mesmer...")
+                                text="Initializing Mesmer...")
         self.update()
         segmentation = Image_segmentation()
 
