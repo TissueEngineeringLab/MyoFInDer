@@ -2,30 +2,43 @@
 
 from tkinter import Toplevel, ttk, Scale
 from screeninfo import get_monitors
+from typing import NoReturn
 
 
 class Settings_window(Toplevel):
+    """Popup window for setting the parameters of the software."""
 
-    def __init__(self, main_window):
+    def __init__(self, main_window) -> None:
+        """Creates the window, arranges its layout and displays it.
+
+        Args:
+            main_window: The main window of the project.
+        """
+
         super().__init__(main_window)
 
+        # Setting the variables
         self._main_window = main_window
         self._settings = self._main_window.settings
 
+        # Setting window properties
         self.resizable(False, False)
         self.grab_set()
-
         self.title("Settings")
 
+        # Finish setting up the window
         self._set_layout()
         self.update()
         self._center()
 
-    def _set_layout(self):
+    def _set_layout(self) -> NoReturn:
+        """Creates the buttons and sliders, places them and displays them."""
+
+        # General layout
         frame = ttk.Frame(self, padding="20 20 20 20")
         frame.grid(sticky='NESW')
 
-        # nuclei colour
+        # Buttons for selecting the nuclei channel
         ttk.Label(frame, text="Nuclei Colour :").grid(column=0, row=0,
                                                       sticky='NE',
                                                       padx=(0, 10))
@@ -42,7 +55,7 @@ class Settings_window(Toplevel):
             value="Red")
         nuclei_colour_r3.grid(column=1, row=2, sticky='NW')
 
-        # fibre colour
+        # Buttons for selecting the fibres channel
         ttk.Label(frame, text="Fibre Colour :").grid(
             column=0, row=3, sticky='NE', pady=(10, 0), padx=(0, 10))
         fibre_colour_r1 = ttk.Radiobutton(
@@ -58,7 +71,7 @@ class Settings_window(Toplevel):
             value="Red")
         fibre_colour_r3.grid(column=1, row=5, sticky='NW')
 
-        # autosave timer
+        # Buttons to set the autosave timer
         ttk.Label(frame, text='Autosave Interval :').grid(
             column=0, row=6, sticky='NE', pady=(10, 0), padx=(0, 10))
         ttk.Radiobutton(
@@ -77,7 +90,7 @@ class Settings_window(Toplevel):
             frame, text="Never", variable=self._settings.auto_save_time,
             value=-1).grid(column=1, row=10, sticky='NW')
 
-        # save altered images
+        # Buttons to chose whether to save the altered images or not
         ttk.Label(frame, text='Save Altered Images :').grid(
             column=0, row=11, sticky='NE', pady=(10, 0), padx=(0, 10))
         ttk.Radiobutton(
@@ -87,7 +100,7 @@ class Settings_window(Toplevel):
             frame, text="Off", variable=self._settings.save_altered_images,
             value=0).grid(column=1, row=12, sticky='NW')
 
-        # fibre counting
+        # Buttons to chose whether to count the fibers or not
         ttk.Label(frame, text='Count Fibres :').grid(
             column=0, row=13, sticky='NE', pady=(10, 0), padx=(0, 10))
         ttk.Radiobutton(
@@ -97,7 +110,7 @@ class Settings_window(Toplevel):
             frame, text="Off", variable=self._settings.do_fibre_counting,
             value=0).grid(column=1, row=14, sticky='NW')
 
-        # multithreading
+        # Slider to adjust the simultaneous number of threads
         ttk.Label(frame, text='Number of Threads :').grid(
             column=0, row=15, sticky='E', pady=(10, 0), padx=(0, 10))
 
@@ -115,7 +128,7 @@ class Settings_window(Toplevel):
 
         thread_slider_frame.grid(column=1, row=15, sticky='NW', pady=(10, 0))
 
-        # small objects threshold
+        # Slider to adjust the small objects threshold
         ttk.Label(frame, text='Dead cells size Threshold :').grid(
             column=0, row=16, sticky='E', pady=(10, 0), padx=(0, 10))
 
@@ -136,12 +149,17 @@ class Settings_window(Toplevel):
         threshold_slider_frame.grid(column=1, row=16, sticky='NW',
                                     pady=(10, 0))
 
-    def _center(self):
+    def _center(self) -> NoReturn:
+        """Centers the popup window on the currently used monitor."""
+
+        # Getting the current monitor
         monitors = get_monitors()
         candidates = [monitor for monitor in monitors if
                       0 <= self.winfo_x() - monitor.x <= monitor.width and
                       0 <= self.winfo_y() - monitor.y <= monitor.height]
         current_monitor = candidates[0] if candidates else monitors[0]
+
+        # Getting the parameters of interest
         scr_width = current_monitor.width
         scr_height = current_monitor.height
         x_offset = current_monitor.x
@@ -149,5 +167,6 @@ class Settings_window(Toplevel):
         height = self.winfo_height()
         width = self.winfo_width()
 
+        # Actually centering the window
         self.geometry('+%d+%d' % (x_offset + (scr_width - width) / 2,
                                   y_offset + (scr_height - height) / 2))

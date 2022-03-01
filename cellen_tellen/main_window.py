@@ -34,6 +34,7 @@ if system() == "Windows" and int(release()) >= 8:
 #   Move imports to inside the splash window
 #   Handle 1 channel images
 #   Set up unit tests
+#   Update the list of forbidden characters in project names
 
 
 def _save_before_closing(func: Callable) -> Callable:
