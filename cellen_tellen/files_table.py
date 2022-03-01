@@ -6,10 +6,11 @@ from shutil import copyfile, rmtree
 from cv2 import imread, line, ellipse, imwrite
 from pathlib import Path
 from platform import system
-from typing import List, Dict, NoReturn, Tuple
+from typing import List, Dict, NoReturn, Tuple, Union
 from copy import deepcopy
 from functools import partial
 from pickle import dump, load
+from numpy import ndarray
 
 from .tools import Nucleus, Fibre, Nuclei, Fibres, Labels, Lines, Table_element
 
@@ -234,13 +235,15 @@ class Files_table(ttk.Frame):
             # Redrawing the canvas
             self._make_table()
 
-    def input_processed_data(self,
-                             nuclei_negative_positions: List[Tuple[float,
-                                                                   float]],
-                             nuclei_positive_positions: List[Tuple[float,
-                                                                   float]],
-                             fibre_centres: List[Tuple[float, float]],
-                             file: Path) -> NoReturn:
+    def input_processed_data(
+            self,
+            nuclei_negative_positions: List[Tuple[Union[float, ndarray],
+                                                  Union[float, ndarray]]],
+            nuclei_positive_positions: List[Tuple[Union[float, ndarray],
+                                                  Union[float, ndarray]]],
+            fibre_centres: List[Tuple[Union[float, ndarray],
+                                      Union[float, ndarray]]],
+            file: Path) -> NoReturn:
         """Adds the nuclei and fibres positions to the frame after they've been
         computed.
 
