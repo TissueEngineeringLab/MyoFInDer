@@ -369,44 +369,43 @@ class Files_table(ttk.Frame):
         # Bold style for a nicer layout
         bold = workbook.add_format({'bold': True, 'align': 'center'})
 
-        # Writing the names of the images
+        # Writing the labels
         worksheet.write(0, 0, "Image names", bold)
-        max_size = 11
-        for i, file in enumerate(self.filenames):
-            name = file.name
-            worksheet.write(i + 2, 0, name)
-            max_size = max(len(name), max_size)
-        worksheet.set_column(0, 0, width=max_size)
-
-        # Writing the total number of nuclei
         worksheet.write(0, 1, "Total number of nuclei", bold)
+        worksheet.write(0, 2, "Number of tropomyosin positive nuclei", bold)
+        worksheet.write(0, 3, "Fusion index", bold)
+        worksheet.write(0, 4, "Number of Fibres", bold)
+
+        # Setting the column widths
+        worksheet.set_column(
+            0, 0, width=max(11, max(len(file.name) for file in self.filenames)
+                            if self.filenames else 0))
         worksheet.set_column(1, 1, width=22)
+        worksheet.set_column(2, 2, width=37)
+        worksheet.set_column(3, 3, width=17)
+        worksheet.set_column(4, 4, width=16)
+
         for i, file in enumerate(self.filenames):
+            # Writing the names of the images
+            worksheet.write(i + 2, 0, file.name)
+
+            # Writing the total number of nuclei
             worksheet.write(i + 2, 1, len(self._nuclei[file]))
 
-        # Writing the number of nuclei in fibres
-        worksheet.write(0, 2, "Number of tropomyosin positive nuclei", bold)
-        worksheet.set_column(2, 2, width=37)
-        for i, file in enumerate(self.filenames):
+            # Writing the number of nuclei in fibres
             worksheet.write(i + 2, 2, self._nuclei[file].nuclei_in_count)
 
-        # Writing the ratio of nuclei in over the total number of nuclei
-        worksheet.write(0, 3, "Fusion index", bold)
-        worksheet.set_column(3, 3, width=17)
-        for i, file in enumerate(self.filenames):
+            # Writing the ratio of nuclei in over the total number of nuclei
             if self._nuclei[file].nuclei_out_count > 0:
                 worksheet.write(i + 2, 3, self._nuclei[file].nuclei_in_count /
                                 len(self._nuclei[file]))
             else:
                 worksheet.write(i + 2, 3, 'NA')
 
-        # Writing the total number of fibres
-        worksheet.write(0, 4, "Number of Fibres", bold)
-        worksheet.set_column(4, 4, width=16)
-        for i, file in enumerate(self.filenames):
+            # Writing the total number of fibres
             worksheet.write(i + 2, 4, len(self._fibres[file]))
 
-        # Writing the average of the above values
+        # Writing the average for each column
         average_line = 3 + len(self.filenames)
         last_data_line = 2 + len(self.filenames)
         worksheet.write(average_line, 0, "Average", bold)
