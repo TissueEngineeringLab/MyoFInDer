@@ -29,7 +29,6 @@ if system() == "Windows" and int(release()) >= 8:
 # Todo:
 #   Improve the fibre detection and display
 #   Change the color of the dots according to the selected channel
-#   Improve the .xlsx report
 #   Handle 1 channel images
 #   Set up unit tests
 

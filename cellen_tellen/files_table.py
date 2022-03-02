@@ -406,6 +406,16 @@ class Files_table(ttk.Frame):
         for i, file in enumerate(self.filenames):
             worksheet.write(i + 2, 4, len(self._fibres[file]))
 
+        # Writing the average of the above values
+        average_line = 3 + len(self.filenames)
+        last_data_line = 2 + len(self.filenames)
+        worksheet.write(average_line, 0, "Average", bold)
+        if self.filenames:
+            worksheet.write(average_line, 1, f"=AVERAGE(B3:B{last_data_line})")
+            worksheet.write(average_line, 2, f"=AVERAGE(C3:C{last_data_line})")
+            worksheet.write(average_line, 3, f"=AVERAGE(D3:D{last_data_line})")
+            worksheet.write(average_line, 4, f"=AVERAGE(E3:E{last_data_line})")
+
         workbook.close()
 
     def _save_altered_images(self, directory: Path) -> NoReturn:
