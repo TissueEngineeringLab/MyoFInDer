@@ -44,15 +44,15 @@ class Settings_window(Toplevel):
                                                       padx=(0, 10))
         nuclei_colour_r1 = ttk.Radiobutton(
             frame, text="Blue Channel", variable=self._settings.nuclei_colour,
-            value="Blue")
+            value="blue")
         nuclei_colour_r1.grid(column=1, row=0, sticky='NW')
         nuclei_colour_r2 = ttk.Radiobutton(
             frame, text="Green Channel", variable=self._settings.nuclei_colour,
-            value="Green")
+            value="green")
         nuclei_colour_r2.grid(column=1, row=1, sticky='NW')
         nuclei_colour_r3 = ttk.Radiobutton(
             frame, text="Red Channel", variable=self._settings.nuclei_colour,
-            value="Red")
+            value="red")
         nuclei_colour_r3.grid(column=1, row=2, sticky='NW')
 
         # Buttons for selecting the fibres channel
@@ -60,15 +60,15 @@ class Settings_window(Toplevel):
             column=0, row=3, sticky='NE', pady=(10, 0), padx=(0, 10))
         fibre_colour_r1 = ttk.Radiobutton(
             frame, text="Blue Channel", variable=self._settings.fibre_colour,
-            value="Blue")
+            value="blue")
         fibre_colour_r1.grid(column=1, row=3, sticky='NW', pady=(10, 0))
         fibre_colour_r2 = ttk.Radiobutton(
             frame, text="Green Channel", variable=self._settings.fibre_colour,
-            value="Green")
+            value="green")
         fibre_colour_r2.grid(column=1, row=4, sticky='NW')
         fibre_colour_r3 = ttk.Radiobutton(
             frame, text="Red Channel", variable=self._settings.fibre_colour,
-            value="Red")
+            value="red")
         fibre_colour_r3.grid(column=1, row=5, sticky='NW')
 
         # Buttons to set the autosave timer

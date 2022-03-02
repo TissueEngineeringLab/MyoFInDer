@@ -6,10 +6,6 @@ from tkinter.ttk import Button
 from functools import partial
 from tkinter import StringVar, IntVar, BooleanVar
 
-# Possible colors for the nuclei
-in_fibre = 'yellow'
-out_fibre = 'red'
-
 
 @dataclass
 class Labels:
@@ -116,13 +112,13 @@ class Nuclei:
     def nuclei_in_count(self) -> int:
         """Returns the number of nuclei inside fibres."""
 
-        return len([nuc for nuc in self.nuclei if nuc.color == in_fibre])
+        return len([nuc for nuc in self.nuclei if nuc.color == 'in'])
 
     @property
     def nuclei_out_count(self) -> int:
         """Returns the number of nuclei outside fibres."""
 
-        return len([nuc for nuc in self.nuclei if nuc.color == out_fibre])
+        return len([nuc for nuc in self.nuclei if nuc.color == 'out'])
 
     def __len__(self) -> int:
         """Returns the number of nuclei."""
@@ -177,9 +173,9 @@ class Settings:
     # Here a default factory is needed so that the tkinter vars are not
     # instantiated before the tkinter app is initialized
     fibre_colour: StringVar = field(
-        default_factory=partial(StringVar, value="Green", name='fibre_colour'))
+        default_factory=partial(StringVar, value="green", name='fibre_colour'))
     nuclei_colour: StringVar = field(
-        default_factory=partial(StringVar, value="Blue", name='nuclei_colour'))
+        default_factory=partial(StringVar, value="blue", name='nuclei_colour'))
     auto_save_time: IntVar = field(
         default_factory=partial(IntVar, value=-1, name='auto_save_time'))
     save_altered_images: BooleanVar = field(

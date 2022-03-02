@@ -12,10 +12,6 @@ from typing import NoReturn, Tuple, Optional
 
 from .tools import Nucleus, Fibre, Nuclei, Fibres
 
-# Possible colors for the nuclei
-in_fibre = 'yellow'
-out_fibre = 'red'
-
 
 class Image_canvas(ttk.Frame):
     """This class manages the display of one image, its nuclei and its
@@ -53,9 +49,10 @@ class Image_canvas(ttk.Frame):
         # Draw the nuclei
         if self._settings.show_nuclei.get():
             for nuc in self._nuclei:
-                nuc.tk_obj = self._draw_nucleus(nuc.x_pos,
-                                                nuc.y_pos,
-                                                nuc.color)
+                nuc.tk_obj = self._draw_nucleus(
+                    nuc.x_pos, nuc.y_pos,
+                    self.nuc_color_in if nuc.color == 'in'
+                    else self.nuc_color_out)
 
         # Draw the fibers
         if self._settings.show_fibres.get():
@@ -94,8 +91,10 @@ class Image_canvas(ttk.Frame):
         # Drawing the nuclei
         if self._settings.show_nuclei.get():
             for nuc in self._nuclei:
-                nuc.tk_obj = self._draw_nucleus(nuc.x_pos, nuc.y_pos,
-                                                nuc.color)
+                nuc.tk_obj = self._draw_nucleus(
+                    nuc.x_pos, nuc.y_pos,
+                    self.nuc_color_in if nuc.color == 'in'
+                    else self.nuc_color_out)
 
         # Deep copy to have independent objects
         self._fibres = deepcopy(fibres)
@@ -127,6 +126,65 @@ class Image_canvas(ttk.Frame):
         if self._image_id is not None:
             self._canvas.delete(self._image_id)
         self._image_id = None
+
+    @property
+    def nuc_color_out(self) -> str:
+        """Returns the color of the nuclei outside of fibres, that depends on
+        the selected channels.
+
+        The color returned is the RGB color that is neither the one of nuclei
+        nor the one of fibers.
+        """
+
+        num_to_color = {0: 'blue', 1: '#32CD32', 2: 'red'}
+        color_to_num = {'blue': 0, 'green': 1, 'red': 2}
+
+        fibre_num = color_to_num[self._settings.fibre_colour.get()]
+        nuclei_num = color_to_num[self._settings.nuclei_colour.get()]
+
+        if not (fibre_num == 2 and nuclei_num == 0):
+            return num_to_color[3 - fibre_num - nuclei_num]
+        else:
+            return 'red'
+
+    @property
+    def nuc_color_in(self) -> str:
+        """Returns the color of the nuclei inside fibres, that depends on the
+        selected channels."""
+
+        if self._settings.nuclei_colour.get() == 'green':
+            if self._settings.fibre_colour.get() == 'red':
+                return 'magenta'
+            else:
+                return 'blue'
+
+        elif self._settings.nuclei_colour.get() == 'red':
+            if self._settings.fibre_colour.get() == 'blue':
+                return '#646464'
+            else:
+                return 'white'
+
+        return 'yellow'
+
+    @property
+    def fib_color(self) -> str:
+        """returns the color of the fibres, that depends on the selected
+        channels."""
+
+        if self._settings.fibre_colour.get() == 'green':
+            return 'magenta'
+
+        elif self._settings.fibre_colour.get() == 'blue':
+            if self._settings.nuclei_colour.get() == 'green':
+                return 'magenta'
+            else:
+                return 'white'
+
+        elif self._settings.nuclei_colour.get() == 'green':
+            return 'cyan'
+
+        else:
+            return '#FFA500'
     
     def _delete_nuclei(self) -> NoReturn:
         """Removes all nuclei from the canvas, but doesn't delete the nuclei
@@ -278,10 +336,10 @@ class Image_canvas(ttk.Frame):
         hor_line = self._canvas.create_line(x + square_size, y,
                                             x - square_size, y,
                                             width=2,
-                                            fill='red')
+                                            fill=self.fib_color)
         ver_line = self._canvas.create_line(x, y + square_size, x,
                                             y - square_size, width=2,
-                                            fill='red')
+                                            fill=self.fib_color)
         return hor_line, ver_line
 
     def _left_click(self, event: Event) -> None:
@@ -313,12 +371,14 @@ class Image_canvas(ttk.Frame):
 
                 # One close nucleus found, inverting it colour
                 if nuc is not None:
-                    if nuc.color == out_fibre:
-                        self._canvas.itemconfig(nuc.tk_obj, fill=in_fibre)
-                        nuc.color = in_fibre
+                    if nuc.color == 'out':
+                        self._canvas.itemconfig(
+                            nuc.tk_obj, fill=self.nuc_color_in)
+                        nuc.color = 'in'
                     else:
-                        self._canvas.itemconfig(nuc.tk_obj, fill=out_fibre)
-                        nuc.color = out_fibre
+                        self._canvas.itemconfig(
+                            nuc.tk_obj, fill=self.nuc_color_out)
+                        nuc.color = 'out'
                     self.nuclei_table.switch_nucleus(nuc)
 
                 # No close nucleus found, adding a new one
@@ -326,8 +386,8 @@ class Image_canvas(ttk.Frame):
                     new_nuc = Nucleus(rel_x_scale, rel_y_scale,
                                       self._draw_nucleus(rel_x_scale,
                                                          rel_y_scale,
-                                                         out_fibre),
-                                      out_fibre)
+                                                         self.nuc_color_out),
+                                      'out')
                     self.nuclei_table.add_nucleus(new_nuc)
                     self._nuclei.append(new_nuc)
 

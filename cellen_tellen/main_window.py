@@ -28,7 +28,6 @@ if system() == "Windows" and int(release()) >= 8:
 
 # Todo:
 #   Improve the fibre detection and display
-#   Change the color of the dots according to the selected channel
 #   Handle 1 channel images
 #   Set up unit tests
 
@@ -971,8 +970,9 @@ class Main_window(Tk):
         self._previous_nuclei_colour.set(self.settings.nuclei_colour.get())
         self._previous_fibre_colour.set(self.settings.fibre_colour.get())
 
-        # Finally, save
+        # Finally, save and redraw the nuclei and fibers
         self._save_settings()
+        self._image_canvas.set_indicators()
 
     @staticmethod
     def _open_github() -> NoReturn:

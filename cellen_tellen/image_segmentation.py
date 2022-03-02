@@ -8,9 +8,9 @@ import cv2
 from typing import List, Tuple
 
 # Table for converting color strings to channels, assuming BGR images
-numpy_color_to_int = {"Blue": 0,
-                      "Green": 1,
-                      "Red": 2}
+numpy_color_to_int = {"blue": 0,
+                      "green": 1,
+                      "red": 2}
 
 
 class Image_segmentation:

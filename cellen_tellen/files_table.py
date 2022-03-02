@@ -20,10 +20,6 @@ background_selected = '#ABB2B9'
 label_line = '#646464'
 label_line_selected = 'black'
 
-# Colors of the nuclei
-in_fibre = 'yellow'
-out_fibre = 'red'
-
 
 class Files_table(ttk.Frame):
     """This frame stores and displays the different images of the project.
@@ -175,7 +171,7 @@ class Files_table(ttk.Frame):
 
         for nuc in self._nuclei[self._current_image]:
             if nuc == nucleus:
-                nuc.color = out_fibre if nuc.color == in_fibre else in_fibre
+                nuc.color = 'out' if nuc.color == 'in' else 'in'
         self._update_data(self._current_image)
 
     def reset(self) -> NoReturn:
@@ -260,9 +256,9 @@ class Files_table(ttk.Frame):
         # Adds the received nuclei to the Nuclei object
         self._nuclei[file] = Nuclei()
         for x, y in nuclei_negative_positions:
-            self._nuclei[file].append(Nucleus(x, y, None, out_fibre))
+            self._nuclei[file].append(Nucleus(x, y, None, 'out'))
         for x, y in nuclei_positive_positions:
-            self._nuclei[file].append(Nucleus(x, y, None, in_fibre))
+            self._nuclei[file].append(Nucleus(x, y, None, 'in'))
 
         # Adds the received fibres to the Fibres object
         self._fibres[file] = Fibres()
@@ -441,6 +437,18 @@ class Files_table(ttk.Frame):
             project_name: The path to the project folder.
         """
 
+        color_to_bgr = {'blue': (255, 0, 0),
+                        'green': (0, 255, 0),
+                        'red': (0, 0, 255),
+                        'yellow': (0, 255, 255),
+                        'cyan': (255, 255, 0),
+                        'magenta': (255, 0, 255),
+                        'black': (0, 0, 0),
+                        'white': (255, 255, 255),
+                        '#FFA500': (0, 165, 255),
+                        '#32CD32': (50, 205, 50),
+                        '#646464': (100, 100, 100)}
+
         # Reads the image
         cv_img = imread(str(project_name / "Original Images" / file.name))
         square_size = 20
@@ -449,19 +457,19 @@ class Files_table(ttk.Frame):
         for fib in self._fibres[file]:
             x, y = int(fib.x_pos), int(fib.y_pos)
             line(cv_img, (x + square_size, y), (x - square_size, y),
-                 (0, 0, 255), 4)
+                 color_to_bgr[self.image_canvas.fib_color], 4)
             line(cv_img, (x, y + square_size), (x, y - square_size),
-                 (0, 0, 255), 4)
+                 color_to_bgr[self.image_canvas.fib_color], 4)
 
         # Drawing the nuclei
         for nuc in self._nuclei[file]:
             centre = (int(nuc.x_pos), int(nuc.y_pos))
-            if nuc.color == out_fibre:
+            if nuc.color == 'out':
                 ellipse(cv_img, centre, (6, 6), 0, 0, 360,
-                        (0, 0, 255), -1)
+                        color_to_bgr[self.image_canvas.nuc_color_out], -1)
             else:
                 ellipse(cv_img, centre, (6, 6), 0, 0, 360,
-                        (0, 255, 255), -1)
+                        color_to_bgr[self.image_canvas.nuc_color_in], -1)
 
         # Now saving the image
         imwrite(str(project_name / "Altered Images" / file.name), cv_img)
