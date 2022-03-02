@@ -183,67 +183,68 @@ class Image_segmentation:
                                                cv2.CHAIN_APPROX_SIMPLE)
 
         # Iterating on the contours
-        for i, (contour, level) in enumerate(zip(contours, hierarchy[0])):
-            # Objects that have a parent are just holes
-            if level[3] == -1:
+        if hierarchy is not None:
+            for i, (contour, level) in enumerate(zip(contours, hierarchy[0])):
+                # Objects that have a parent are just holes
+                if level[3] == -1:
 
-                # Calculates the centroid of the contour
-                m = cv2.moments(contour)
-                cx = int(m['m10'] / m['m00'])
-                cy = int(m['m01'] / m['m00'])
+                    # Calculates the centroid of the contour
+                    m = cv2.moments(contour)
+                    cx = int(m['m10'] / m['m00'])
+                    cy = int(m['m01'] / m['m00'])
 
-                # Fill contours white on a black background
-                black_im = np.zeros(processed.shape, np.uint8)
-                cv2.drawContours(black_im, [contour], -1, 255, -1)
+                    # Fill contours white on a black background
+                    black_im = np.zeros(processed.shape, np.uint8)
+                    cv2.drawContours(black_im, [contour], -1, 255, -1)
 
-                # Fill all the holes black
-                holes = [con for con, lvl in zip(contours, hierarchy[0])
-                         if lvl[3] == i]
-                if holes:
-                    cv2.drawContours(black_im, holes, -1, 0, -1)
+                    # Fill all the holes black
+                    holes = [con for con, lvl in zip(contours, hierarchy[0])
+                             if lvl[3] == i]
+                    if holes:
+                        cv2.drawContours(black_im, holes, -1, 0, -1)
 
-                # Make a black contour to count border in the distance
-                # transform
-                black_im = np.vstack(
-                    [np.zeros(black_im.shape[1]).astype(np.uint8),
-                     black_im])
-                black_im = np.vstack(
-                    [black_im,
-                     np.zeros(black_im.shape[1]).astype(np.uint8)])
-                black_im = np.hstack(
-                    [np.zeros((black_im.shape[0], 1)).astype(np.uint8),
-                     black_im])
-                black_im = np.hstack(
-                    [black_im,
-                     np.zeros((black_im.shape[0], 1)).astype(np.uint8)])
+                    # Make a black contour to count border in the distance
+                    # transform
+                    black_im = np.vstack(
+                        [np.zeros(black_im.shape[1]).astype(np.uint8),
+                         black_im])
+                    black_im = np.vstack(
+                        [black_im,
+                         np.zeros(black_im.shape[1]).astype(np.uint8)])
+                    black_im = np.hstack(
+                        [np.zeros((black_im.shape[0], 1)).astype(np.uint8),
+                         black_im])
+                    black_im = np.hstack(
+                        [black_im,
+                         np.zeros((black_im.shape[0], 1)).astype(np.uint8)])
 
-                # Apply a distance transform
-                dist_transform = cv2.distanceTransform(black_im,
-                                                       cv2.DIST_L2, 3)
-                max_dist = np.max(dist_transform)
+                    # Apply a distance transform
+                    dist_transform = cv2.distanceTransform(black_im,
+                                                           cv2.DIST_L2, 3)
+                    max_dist = np.max(dist_transform)
 
-                # Cast the distance to an 8 bit image
-                cv2.normalize(dist_transform, dist_transform, 0, 255,
-                              cv2.NORM_MINMAX)
+                    # Cast the distance to an 8 bit image
+                    cv2.normalize(dist_transform, dist_transform, 0, 255,
+                                  cv2.NORM_MINMAX)
 
-                # All values above this one are in the top 20%
-                percent_80 = np.percentile(dist_transform[dist_transform >
-                                                          0.01], 80)
+                    # All values above this one are in the top 20%
+                    percent_80 = np.percentile(dist_transform[dist_transform >
+                                                              0.01], 80)
 
-                # Keep only the areas far from the fiber and image borders
-                top_20_percent = np.where(dist_transform >= percent_80)
+                    # Keep only the areas far from the fiber and image borders
+                    top_20_percent = np.where(dist_transform >= percent_80)
 
-                # Compromise between being close to the centroid and far
-                # from the borders
-                norm = (cx - top_20_percent[1]) ** 2 + \
-                       (cy - top_20_percent[0]) ** 2 - \
-                       (dist_transform[top_20_percent[0],
-                                       top_20_percent[1]] *
-                        max_dist / 255) ** 3
-                min_index = np.argmin(norm)
-                fibre_centres.append(
-                    ((top_20_percent[1][min_index] - 1) * 2,
-                     (top_20_percent[0][min_index] - 1) * 2))
+                    # Compromise between being close to the centroid and far
+                    # from the borders
+                    norm = (cx - top_20_percent[1]) ** 2 + \
+                           (cy - top_20_percent[0]) ** 2 - \
+                           (dist_transform[top_20_percent[0],
+                                           top_20_percent[1]] *
+                            max_dist / 255) ** 3
+                    min_index = np.argmin(norm)
+                    fibre_centres.append(
+                        ((top_20_percent[1][min_index] - 1) * 2,
+                         (top_20_percent[0][min_index] - 1) * 2))
 
         return fibre_centres
 
