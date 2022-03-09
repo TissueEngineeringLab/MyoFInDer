@@ -3,7 +3,7 @@
 from tkinter import ttk, Canvas, messagebox, Event
 from xlsxwriter import Workbook
 from shutil import copyfile, rmtree
-from cv2 import imread, line, ellipse, imwrite
+from cv2 import line, ellipse, imwrite
 from pathlib import Path
 from platform import system
 from typing import List, Dict, NoReturn, Tuple, Union
@@ -12,7 +12,8 @@ from functools import partial
 from pickle import dump, load
 from numpy import ndarray
 
-from .tools import Nucleus, Fibre, Nuclei, Fibres, Labels, Lines, Table_element
+from .tools import Nucleus, Fibre, Nuclei, Fibres, Labels, Lines, \
+    Table_element, check_image
 
 # Color codes used in the table
 background = '#EAECEE'
@@ -450,7 +451,7 @@ class Files_table(ttk.Frame):
                         '#646464': (100, 100, 100)}
 
         # Reads the image
-        cv_img = imread(str(project_name / "Original Images" / file.name))
+        cv_img, _ = check_image(project_name / "Original Images" / file.name)
         square_size = 20
 
         # Drawing the fibres

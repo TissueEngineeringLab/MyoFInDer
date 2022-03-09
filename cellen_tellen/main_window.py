@@ -28,7 +28,6 @@ if system() == "Windows" and int(release()) >= 8:
 
 # Todo:
 #   Improve the fibre detection and display
-#   Handle 1 channel images
 #   Set up unit tests
 
 

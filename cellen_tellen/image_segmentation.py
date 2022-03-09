@@ -7,6 +7,8 @@ from pathlib import Path
 import cv2
 from typing import List, Tuple
 
+from .tools import check_image
+
 # Table for converting color strings to channels, assuming BGR images
 numpy_color_to_int = {"blue": 0,
                       "green": 1,
@@ -52,7 +54,7 @@ class Image_segmentation:
                   numpy_color_to_int[fibre_color]]
 
         # Loads the image and keeps only the nuclei and fibres channels
-        image = cv2.imread(str(path))
+        image, _ = check_image(path)
         two_channel_image = np.array([image[:, :, colors]])
 
         # Default parameters

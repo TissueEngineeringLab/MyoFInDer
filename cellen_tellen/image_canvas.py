@@ -2,15 +2,13 @@
 
 from tkinter import Canvas, ttk, Event
 from PIL import Image, ImageTk
-from cv2 import cvtColor, imread, COLOR_BGR2RGB
-from numpy import zeros
 from platform import system
 from functools import partial
 from copy import deepcopy
 from pathlib import Path
 from typing import NoReturn, Tuple, Optional
 
-from .tools import Nucleus, Fibre, Nuclei, Fibres
+from .tools import Nucleus, Fibre, Nuclei, Fibres, check_image
 
 
 class Image_canvas(ttk.Frame):
@@ -526,16 +524,19 @@ class Image_canvas(ttk.Frame):
         """Loads an image and keeps only the desired channels."""
 
         if self._image_path:
+
             # Loading the image
-            cv_img = cvtColor(imread(str(self._image_path)), COLOR_BGR2RGB)
+            cv_img, zero_channel = check_image(
+                self._image_path,
+                self._main_window.base_path / 'app_images' / 'error_image.png')
 
             # Keeping only the necessary channels
             if not self._settings.red_channel_bool.get():
-                cv_img[:, :, 0] = zeros([cv_img.shape[0], cv_img.shape[1]])
+                cv_img[:, :, 0] = zero_channel
             if not self._settings.green_channel_bool.get():
-                cv_img[:, :, 1] = zeros([cv_img.shape[0], cv_img.shape[1]])
+                cv_img[:, :, 1] = zero_channel
             if not self._settings.blue_channel_bool.get():
-                cv_img[:, :, 2] = zeros([cv_img.shape[0], cv_img.shape[1]])
+                cv_img[:, :, 2] = zero_channel
 
             image_in = Image.fromarray(cv_img)
             self._image = image_in
