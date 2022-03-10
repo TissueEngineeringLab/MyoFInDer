@@ -10,9 +10,9 @@ from typing import List, Tuple, Any, Union
 from .tools import check_image
 
 # Table for converting color strings to channels, assuming BGR images
-numpy_color_to_int = {"blue": 0,
+numpy_color_to_int = {"red": 0,
                       "green": 1,
-                      "red": 2}
+                      "blue": 2}
 
 
 class Image_segmentation:

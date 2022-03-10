@@ -3,7 +3,7 @@
 from tkinter import ttk, Canvas, messagebox, Event
 from xlsxwriter import Workbook
 from shutil import copyfile, rmtree
-from cv2 import polylines, ellipse, imwrite
+from cv2 import polylines, ellipse, imwrite, cvtColor, COLOR_RGB2BGR
 from pathlib import Path
 from platform import system
 from typing import List, Dict, NoReturn, Tuple, Union
@@ -441,6 +441,7 @@ class Files_table(ttk.Frame):
 
         # Reads the image
         cv_img, _ = check_image(project_name / "Original Images" / file.name)
+        cv_img = cvtColor(cv_img, COLOR_RGB2BGR)
 
         # Aborting if the image cannot be loaded
         if cv_img is None:
