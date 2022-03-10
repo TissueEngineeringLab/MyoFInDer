@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from tkinter import ttk, filedialog, Tk, IntVar, PhotoImage, Menu, StringVar, \
-    BooleanVar, messagebox
+    messagebox
 from platform import system, release
 from shutil import rmtree
 from webbrowser import open_new
@@ -131,7 +131,7 @@ class Main_window(Tk):
             settings = {}
 
         # Creates a Settings instance and sets the values
-        self.settings = Settings()  # The dfault values are pre-set in Settings
+        self.settings = Settings()  # The default values are preset in Settings
         for key, value in settings.items():
             getattr(self.settings, key).set(value)
 
@@ -167,8 +167,8 @@ class Main_window(Tk):
                                                self._save_settings_callback)
         self.settings.save_altered_images.trace_add(
             "write", self._save_settings_callback)
-        self.settings.do_fibre_counting.trace_add("write",
-                                                  self._save_settings_callback)
+        self.settings.fibre_threshold.trace_add("write",
+                                                self._save_settings_callback)
         self.settings.small_objects_threshold.trace_add(
             "write", self._save_settings_callback)
         self.settings.n_threads.trace_add("write",
@@ -187,10 +187,6 @@ class Main_window(Tk):
             value=self.settings.nuclei_colour.get())
         self._previous_fibre_colour = StringVar(
             value=self.settings.fibre_colour.get())
-
-        # This variable indicates whether the user adds nuclei or fibres when
-        # left-clicking on the image
-        self.draw_nuclei = BooleanVar(value=True)
 
         # Variables managing the threads execution
         self._processed_images_count = IntVar(value=0)
@@ -299,25 +295,20 @@ class Main_window(Tk):
         # Creating the buttons
         self._load_button = ttk.Button(self._button_frame, text="Load Images",
                                        command=self._select_images)
-        self._load_button.pack(fill="x", anchor="w", side='left', padx=3,
-                               pady=5)
+        self._load_button.pack(fill="x", anchor="w", side='left', padx=10,
+                               pady=5, expand=True)
         self._button_style = ttk.Style()
         self._process_images_button = ttk.Button(self._button_frame,
                                                  text="Process Images",
                                                  command=self._process_images,
                                                  state='disabled')
         self._process_images_button.pack(fill="x", anchor="w", side='left',
-                                         padx=3, pady=5)
+                                         padx=10, pady=5, expand=True)
         self._save_button = ttk.Button(self._button_frame, text='Save As',
                                        command=self._save_button_pressed,
                                        state='enabled')
-        self._save_button.pack(fill="x", anchor="w", side='left', padx=3,
-                               pady=5)
-        self._which_indicator_button = ttk.Button(
-            self._button_frame, text='Manual : Nuclei',
-            command=self._change_indications, state='enabled')
-        self._which_indicator_button.pack(fill="x", anchor="w", side='left',
-                                          padx=3, pady=5)
+        self._save_button.pack(fill="x", anchor="w", side='left', padx=10,
+                               pady=5, expand=True)
 
         # Creating the checkboxes of the first row
         self._channels = ttk.Label(self._tick_frame_1, text="  Channels :   ")
@@ -710,7 +701,6 @@ class Main_window(Tk):
         # Disabling the buttons
         self._load_button['state'] = "disabled"
         self._save_button['state'] = "disabled"
-        self._which_indicator_button['state'] = 'disabled'
 
         # Disabling the menu entries
         self._file_menu.entryconfig("Load Automatic Save", state='disabled')
@@ -840,10 +830,10 @@ class Main_window(Tk):
         # Ensuring a limited number of threads run simultaneously
         with semaphore:
             # Actually processes the image
-            nuclei_out, nuclei_in, fibre_positions = \
+            nuclei_out, nuclei_in, fibre_contours, area = \
                 self._segmentation(file, self.settings.nuclei_colour.get(),
                                    self.settings.fibre_colour.get(),
-                                   self.settings.do_fibre_counting.get(),
+                                   self.settings.fibre_threshold.get(),
                                    self.settings.small_objects_threshold.get())
 
             # Return if the user asks to
@@ -852,7 +842,7 @@ class Main_window(Tk):
 
             # Sends the output to the table
             self._files_table.input_processed_data(nuclei_out, nuclei_in,
-                                                   fibre_positions, file)
+                                                   fibre_contours, area, file)
 
             # Updates the processed images count
             self._processed_images_count.set(
@@ -915,38 +905,10 @@ class Main_window(Tk):
     def _set_indicators(self) -> NoReturn:
         """Updates the display of fibres and nuclei according to the user
         selection."""
-
-        # Getting the settings
-        show_nuclei = self.settings.show_nuclei.get()
-        show_fibres = self.settings.show_fibres.get()
         
         # Updating the display
         self._image_canvas.set_indicators()
         self._save_settings()
-
-        # Setting the which indicator button
-        if show_fibres and not show_nuclei:
-            self.draw_nuclei.set(False)
-            self._which_indicator_button['text'] = 'Manual : Fibres'
-            self._which_indicator_button['state'] = 'disabled'
-        elif show_fibres and show_nuclei:
-            self._which_indicator_button['state'] = 'enabled'
-        if not show_fibres and show_nuclei:
-            self.draw_nuclei.set(True)
-            self._which_indicator_button['text'] = 'Manual : Nuclei'
-            self._which_indicator_button['state'] = 'disabled'
-
-    def _change_indications(self) -> NoReturn:
-        """Chooses which between nuclei or fibres are drawn when left-clicking
-        on the image."""
-
-        # Sets the draw_nuclei variable and the which indicator button
-        if self.draw_nuclei.get():
-            self.draw_nuclei.set(False)
-            self._which_indicator_button['text'] = 'Manual : Fibres'
-        else:
-            self.draw_nuclei.set(True)
-            self._which_indicator_button['text'] = 'Manual : Nuclei'
 
     def _nuclei_colour_sel(self, _, __, ___) -> NoReturn:
         """Ensures there's no conflict in the chosen image channels for fibres

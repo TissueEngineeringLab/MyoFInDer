@@ -3,14 +3,14 @@
 from tkinter import ttk, Canvas, messagebox, Event
 from xlsxwriter import Workbook
 from shutil import copyfile, rmtree
-from cv2 import line, ellipse, imwrite
+from cv2 import polylines, ellipse, imwrite
 from pathlib import Path
 from platform import system
 from typing import List, Dict, NoReturn, Tuple, Union
 from copy import deepcopy
 from functools import partial
 from pickle import dump, load
-from numpy import ndarray
+from numpy import ndarray, array
 
 from .tools import Nucleus, Fibre, Nuclei, Fibres, Labels, Lines, \
     Table_element, check_image
@@ -86,8 +86,7 @@ class Files_table(ttk.Frame):
         # Making sure the h_line and v_line fields are empty
         for fibres in self._fibres.values():
             for fibre in fibres:
-                fibre.h_line = None
-                fibre.v_line = None
+                fibre.polygon = None
 
         # Redrawing the canvas
         self._make_table()
@@ -119,27 +118,6 @@ class Files_table(ttk.Frame):
 
         # Finally, save the data
         self._save_data(directory)
-
-    def add_fibre(self, fibre: Fibre) -> NoReturn:
-        """Adds a Fibre to the Fibres object associated with the current image.
-
-        Args:
-            fibre: The Fibre object to add.
-        """
-
-        self._fibres[self._current_image].append(deepcopy(fibre))
-        self._update_data(self._current_image)
-
-    def remove_fibre(self, fibre: Fibre) -> NoReturn:
-        """Removes a Fibre from the Fibres object associated with the current
-        image.
-
-        Args:
-            fibre: The Fibre object to remove.
-        """
-
-        self._fibres[self._current_image].remove(fibre)
-        self._update_data(self._current_image)
 
     def add_nucleus(self, nucleus: Nucleus) -> NoReturn:
         """Adds a Nucleus to the Nuclei object associated with the current
@@ -238,8 +216,8 @@ class Files_table(ttk.Frame):
                                                   Union[float, ndarray]]],
             nuclei_positive_positions: List[Tuple[Union[float, ndarray],
                                                   Union[float, ndarray]]],
-            fibre_centres: List[Tuple[Union[float, ndarray],
-                                      Union[float, ndarray]]],
+            fibre_contours: Tuple[ndarray],
+            area: float,
             file: Path) -> NoReturn:
         """Adds the nuclei and fibres positions to the frame after they've been
         computed.
@@ -249,7 +227,8 @@ class Files_table(ttk.Frame):
                 fibres.
             nuclei_positive_positions: The positions of the nuclei inside the
                 fibres.
-            fibre_centres: The positions of the centers of the fibres.
+            fibre_contours: The positions of the contour points of the fibers.
+            area: The ratio of fiber area over the total image area.
             file: The path to the file whose nuclei and fibres have been
                 computed.
         """
@@ -262,9 +241,10 @@ class Files_table(ttk.Frame):
             self._nuclei[file].append(Nucleus(x, y, None, 'in'))
 
         # Adds the received fibres to the Fibres object
-        self._fibres[file] = Fibres()
-        for x, y in fibre_centres:
-            self._fibres[file].append(Fibre(x, y, None, None))
+        self._fibres[file] = Fibres(area=area)
+        for contour in fibre_contours:
+            contour = list(map(tuple, contour))
+            self._fibres[file].append(Fibre(None, contour))
 
         # Updates the display
         self._update_data(file)
@@ -371,7 +351,7 @@ class Files_table(ttk.Frame):
         worksheet.write(0, 1, "Total number of nuclei", bold)
         worksheet.write(0, 2, "Number of tropomyosin positive nuclei", bold)
         worksheet.write(0, 3, "Fusion index", bold)
-        worksheet.write(0, 4, "Number of Fibres", bold)
+        worksheet.write(0, 4, "Fiber area ratio", bold)
 
         # Setting the column widths
         worksheet.set_column(
@@ -399,8 +379,8 @@ class Files_table(ttk.Frame):
             else:
                 worksheet.write(i + 2, 3, 'NA')
 
-            # Writing the total number of fibres
-            worksheet.write(i + 2, 4, len(self._fibres[file]))
+            # Writing the percentage area of fibres
+            worksheet.write(i + 2, 4, f'{self._fibres[file].area * 100:.2f}')
 
         # Writing the average for each column
         average_line = 3 + len(self.filenames)
@@ -452,15 +432,13 @@ class Files_table(ttk.Frame):
 
         # Reads the image
         cv_img, _ = check_image(project_name / "Original Images" / file.name)
-        square_size = 20
 
         # Drawing the fibres
         for fib in self._fibres[file]:
-            x, y = int(fib.x_pos), int(fib.y_pos)
-            line(cv_img, (x + square_size, y), (x - square_size, y),
-                 color_to_bgr[self.image_canvas.fib_color], 4)
-            line(cv_img, (x, y + square_size), (x, y - square_size),
-                 color_to_bgr[self.image_canvas.fib_color], 4)
+            positions = array(fib.position)
+            positions = positions.reshape((-1, 1, 2))
+            polylines(cv_img, [positions], True,
+                      color_to_bgr[self.image_canvas.fib_color], 4)
 
         # Drawing the nuclei
         for nuc in self._nuclei[file]:
@@ -550,6 +528,7 @@ class Files_table(ttk.Frame):
 
         # To avoid repeated calls to the same attribute
         nuclei = self._nuclei[file]
+        fibres = self._fibres[file]
         items = self._items[file]
         total_nuclei = len(nuclei)
 
@@ -562,15 +541,14 @@ class Files_table(ttk.Frame):
         if total_nuclei > 0:
             self._canvas.itemconfig(
                 items.labels.ratio,
-                text="Ratio : {:.2f}%".format(
-                    100 * nuclei.nuclei_in_count /
-                    total_nuclei))
+                text=f'Ratio : '
+                     f'{int(100 * nuclei.nuclei_in_count / total_nuclei)}%')
         else:
             self._canvas.itemconfig(items.labels.ratio,
                                     text='Ratio : NA')
         self._canvas.itemconfig(
             items.labels.fiber,
-            text='Fibres : ' + str(len(self._fibres[file])))
+            text='Fibre area : ' + f'{int(fibres.area * 100)}%')
 
     def _motion(self, event: Event) -> NoReturn:
         """Modifies the display when the mose is being hovered over the
@@ -797,15 +775,15 @@ class Files_table(ttk.Frame):
                 padding, middle + int(self._row_height / 4),
                 text='error', anchor='nw', fill=label_line)
             positive_text = self._canvas.create_text(
-                padding + (width - 2 * padding) / 4,
+                (width - 2 * padding) / 4 - padding / 2,
                 middle + int(self._row_height / 4),
                 text='error', anchor='nw', fill=label_line)
             ratio_text = self._canvas.create_text(
-                padding + (width - 2 * padding) * 2 / 4,
+                (width - 2 * padding) * 2 / 4,
                 middle + int(self._row_height / 4),
                 text='error', anchor='nw', fill=label_line)
             fiber_text = self._canvas.create_text(
-                padding * 3 + (width - 2 * padding) * 3 / 4,
+                (width - 2 * padding) * 3 / 4,
                 middle + int(self._row_height / 4),
                 text='error', anchor='nw', fill=label_line)
 

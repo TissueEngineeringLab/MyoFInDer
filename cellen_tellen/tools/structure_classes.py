@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from dataclasses import dataclass, field
-from typing import Optional, List, Any, NoReturn
+from typing import Optional, List, Any, NoReturn, Tuple
 from tkinter.ttk import Button
 from functools import partial
 from tkinter import StringVar, IntVar, BooleanVar
@@ -60,18 +60,8 @@ class Nucleus:
 class Fibre:
     """Class holding the data associated with a single fibre."""
 
-    x_pos: float
-    y_pos: float
-    h_line: Optional[int]
-    v_line: Optional[int]
-
-    def __eq__(self, other: Any) -> bool:
-        """Two fibres are considered equal if and only if their x and y
-        positions are equal."""
-
-        if not isinstance(other, Fibre):
-            raise NotImplemented("Only two fibres can be compared together")
-        return self.x_pos == other.x_pos and self.y_pos == other.y_pos
+    polygon: Optional[int]
+    position: List[Tuple[float, float]] = field(default_factory=list)
 
 
 @dataclass
@@ -130,6 +120,7 @@ class Nuclei:
 class Fibres:
     """Class for managing the data of all the fibres in one image."""
 
+    area: float = field(default=0)
     fibres: List[Fibre] = field(default_factory=list)
 
     _current_index: int = -1
@@ -180,8 +171,8 @@ class Settings:
         default_factory=partial(IntVar, value=-1, name='auto_save_time'))
     save_altered_images: BooleanVar = field(
         default_factory=partial(BooleanVar, value=False, name='save_altered'))
-    do_fibre_counting: BooleanVar = field(
-        default_factory=partial(BooleanVar, value=False, name='fibre_count'))
+    fibre_threshold: IntVar = field(
+        default_factory=partial(IntVar, value=25, name='fibre_threshold'))
     n_threads: IntVar = field(
         default_factory=partial(IntVar, value=3, name='n_threads'))
     small_objects_threshold: IntVar = field(

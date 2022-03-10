@@ -6,9 +6,9 @@ from platform import system
 from functools import partial
 from copy import deepcopy
 from pathlib import Path
-from typing import NoReturn, Tuple, Optional
+from typing import NoReturn, Tuple, Optional, List
 
-from .tools import Nucleus, Fibre, Nuclei, Fibres, check_image
+from .tools import Nucleus, Nuclei, Fibres, check_image
 
 
 class Image_canvas(ttk.Frame):
@@ -24,7 +24,6 @@ class Image_canvas(ttk.Frame):
         self.nuclei_table = None
         self._main_window = main_window
         self._settings = self._main_window.settings
-        self._draw_nuclei = self._main_window.draw_nuclei
 
         self._set_layout()
         self._set_bindings()
@@ -55,8 +54,7 @@ class Image_canvas(ttk.Frame):
         # Draw the fibers
         if self._settings.show_fibres.get():
             for fibre in self._fibres:
-                fibre.h_line,  fibre.v_line = \
-                    self._draw_fibre(fibre.x_pos, fibre.y_pos)
+                fibre.polygon = self._draw_fibre(fibre.position)
 
     def load_image(self,
                    path: Path,
@@ -100,7 +98,7 @@ class Image_canvas(ttk.Frame):
         # Drawing the fibres
         if self._settings.show_fibres.get():
             for fib in self._fibres:
-                fib.h_line, fib.v_line = self._draw_fibre(fib.x_pos, fib.y_pos)
+                fib.polygon = self._draw_fibre(fib.position)
 
     def reset(self) -> NoReturn:
         """Resets every object in the canvas: the image, the nuclei and the
@@ -190,14 +188,13 @@ class Image_canvas(ttk.Frame):
 
         for nuc in self._nuclei:
             self._canvas.delete(nuc.tk_obj)
-    
+
     def _delete_fibres(self) -> NoReturn:
         """Removes all fibres from the canvas, but doesn't delete the fibres
          objects."""
 
         for fibre in self._fibres:
-            self._canvas.delete(fibre.h_line)
-            self._canvas.delete(fibre.v_line)
+            self._canvas.delete(fibre.polygon)
 
     def _set_layout(self) -> NoReturn:
         """Creates the frame, canvas and scrollbar objects, places them and
@@ -307,38 +304,33 @@ class Image_canvas(ttk.Frame):
             x - radius, y - radius, x + radius, y + radius,
             fill=color, outline='#fff', width=0)
 
-    def _draw_fibre(self,
-                    unscaled_x: float,
-                    unscaled_y: float) -> Tuple[int, int]:
+    def _draw_fibre(self, positions: List[Tuple[float,
+                                                float]]) -> int:
         """Draws a single fiber on the canvas.
 
         Args:
-            unscaled_x: The x position of the fibre on the raw image, in
-                pixels.
-            unscaled_y: The y position of the fibre on the raw image, in
-                pixels.
+            positions: List of all the points making together the polygon that
+                represents the fiber.
 
         Returns:
-            The indexes tkinter attributed to the two lines of the fiber it
-            just drew.
+            The index tkinter attributed to the polygon it just drew.
         """
 
         # Adjusting the length to the scale
-        square_size = max(int(10.0 * self._can_scale), 1)
+        line_width = max(int(3 * self._can_scale), 1)
 
-        # Adjusting the position to the scale
-        x = unscaled_x * self._img_scale
-        y = unscaled_y * self._img_scale
+        # Adjusting the positions to the scale
+        positions = [(self._img_scale * x, self._img_scale * y)
+                     for x, y in positions]
 
         # Actually drawing the fibre
-        hor_line = self._canvas.create_line(x + square_size, y,
-                                            x - square_size, y,
-                                            width=2,
-                                            fill=self.fib_color)
-        ver_line = self._canvas.create_line(x, y + square_size, x,
-                                            y - square_size, width=2,
-                                            fill=self.fib_color)
-        return hor_line, ver_line
+        positions = [val for pos in positions for val in pos]
+        polygon = self._canvas.create_polygon(*positions,
+                                              width=line_width,
+                                              outline=self.fib_color,
+                                              fill='')
+
+        return polygon
 
     def _left_click(self, event: Event) -> None:
         """Upon left click, either adds a new nucleus or a fiber, or switches
@@ -362,7 +354,7 @@ class Image_canvas(ttk.Frame):
             rel_y_scale = can_y / self._img_scale
 
             # Case when the nuclei mode is selected
-            if self._draw_nuclei.get() and self._settings.show_nuclei.get():
+            if self._settings.show_nuclei.get():
 
                 # Trying to find a close nucleus
                 nuc = self._find_closest_nucleus(rel_x_scale, rel_y_scale)
@@ -392,23 +384,6 @@ class Image_canvas(ttk.Frame):
                 # Setting the unsaved status
                 self._main_window.set_unsaved_status()
 
-            # Case when the fibre mode is selected
-            elif self._settings.show_fibres.get():
-
-                # Trying to find a close fibre
-                fib = self._find_closest_fibre(rel_x_scale, rel_y_scale)
-
-                # No close fibre found, adding a new one
-                if fib is None:
-                    new_fib = Fibre(rel_x_scale, rel_y_scale,
-                                    *self._draw_fibre(rel_x_scale,
-                                                      rel_y_scale))
-                    self._fibres.append(new_fib)
-                    self.nuclei_table.add_fibre(new_fib)
-
-                    # Setting the unsaved status
-                    self._main_window.set_unsaved_status()
-
     def _right_click(self, event: Event) -> None:
         """Upon right click, deletes a nucleus or a fiber.
 
@@ -430,7 +405,7 @@ class Image_canvas(ttk.Frame):
             rel_y_scale = can_y / self._img_scale
 
             # Case when the nuclei mode is selected
-            if self._draw_nuclei.get() and self._settings.show_nuclei.get():
+            if self._settings.show_nuclei.get():
 
                 # Trying to find a close nucleus
                 nuc = self._find_closest_nucleus(rel_x_scale, rel_y_scale)
@@ -443,52 +418,6 @@ class Image_canvas(ttk.Frame):
 
                     # Setting the unsaved status
                     self._main_window.set_unsaved_status()
-
-            # Case when the fibre mode is selected
-            elif self._settings.show_fibres.get():
-
-                # Trying to find a close fibre
-                fib = self._find_closest_fibre(rel_x_scale, rel_y_scale)
-
-                # One close fibre found, deleting it
-                if fib is not None:
-                    self.nuclei_table.remove_fibre(fib)
-                    self._canvas.delete(fib.h_line)
-                    self._canvas.delete(fib.v_line)
-                    self._fibres.remove(fib)
-
-                    # Setting the unsaved status
-                    self._main_window.set_unsaved_status()
-
-    def _find_closest_fibre(self, x: float, y: float) -> Optional[Fibre]:
-        """Searches for a close fiber among the existing fibers.
-
-        Args:
-            x: The x position where to search for a fiber.
-            y: The y position where to search for a fiber.
-
-        Returns:
-            The Fiber object closest to the given coordinates, if any close
-            enough fiber was found.
-        """
-
-        # Adjusting the search radius to the scale
-        radius = max(9.0 * self._can_scale / self._img_scale, 9.0)
-
-        closest_fib = None
-        closest_distance = None
-
-        # Iterating over the fibers
-        for fib in self._fibres:
-            # Keeping only those within the radius of search
-            if abs(x - fib.x_pos) <= radius and abs(y - fib.y_pos) <= radius:
-                dis_sq = (fib.x_pos - x) ** 2 + (fib.y_pos - y) ** 2
-                # Keeping only the closest one
-                if closest_distance is None or dis_sq < closest_distance:
-                    closest_fib = fib
-                    closest_distance = dis_sq
-
-        return closest_fib if closest_fib is not None else None
 
     def _find_closest_nucleus(self, x: float, y: float) -> Optional[Nucleus]:
         """Searches for a close nucleus among the existing nuclei.

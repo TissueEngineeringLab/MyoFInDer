@@ -5,7 +5,7 @@ import numpy as np
 import numpy.ma as ma
 from pathlib import Path
 import cv2
-from typing import List, Tuple
+from typing import List, Tuple, Any
 
 from .tools import check_image
 
@@ -27,11 +27,11 @@ class Image_segmentation:
                  path: Path,
                  nuclei_color: str,
                  fibre_color: str,
-                 count_fibres: bool,
+                 fibre_threshold: int,
                  small_objects_threshold: int) -> \
             Tuple[List[Tuple[np.ndarray, np.ndarray]],
                   List[Tuple[np.ndarray, np.ndarray]],
-                  List[Tuple[int, int]]]:
+                  Tuple[Any], float]:
         """Computes the nuclei positions and optionally the fibers positions.
 
         Also returns whether the nuclei are inside or outside the fibers.
@@ -40,13 +40,15 @@ class Image_segmentation:
             path: The path to the image to process.
             nuclei_color: The color of the nuclei, as a string.
             fibre_color: The color of the fibres, as a string.
-            count_fibres: if True, detects and counts the fibres.
+            fibre_threshold: The gray level threshold above which a pixel is
+                considered to be part of a fiber.
             small_objects_threshold: Objects whose area is lower than this
                 value (in pixels) will not be considered.
 
         Returns:
             The list of nuclei outside the fibres, the list of nuclei inside
-            the fibers, and the list of fibre centers.
+            the fibers, the list of fibre contours, and the ratio of fibre area
+            over the total area.
         """
 
         # Converting colors from string to int
@@ -89,57 +91,45 @@ class Image_segmentation:
         labeled_image = np.squeeze(labeled_image)
 
         # Getting the fibre mask
-        mask, mask_8bit = self._get_fibre_mask(image[:, :, colors[1]])
+        mask = self._get_fibre_mask(image[:, :, colors[1]], fibre_threshold)
 
-        # Getting the center of the fibers
-        fibre_centers = self._fibre_detection(mask_8bit) if count_fibres \
-            else []
+        # Calculating the area of fibers over the total area
+        area = np.count_nonzero(mask) / mask.shape[0] / mask.shape[1]
+
+        # Finding the contours of the fibers
+        mask_8_bits = (mask * 255).astype('uint8')
+        fibre_contours, _ = cv2.findContours(mask_8_bits, cv2.RETR_EXTERNAL,
+                                             cv2.CHAIN_APPROX_SIMPLE)
+        fibre_contours = tuple(map(np.squeeze, fibre_contours))
 
         # Getting the position of the nuclei
         nuclei_out, nuclei_in = self._get_nuclei_positions(labeled_image, mask)
 
-        return nuclei_out, nuclei_in, fibre_centers
+        return nuclei_out, nuclei_in, fibre_contours, area
 
     @staticmethod
-    def _get_fibre_mask(fibre_channel: np.ndarray) -> Tuple[np.ndarray,
-                                                            np.ndarray]:
+    def _get_fibre_mask(fibre_channel: np.ndarray,
+                        threshold: int) -> np.ndarray:
         """Applies several images processing methods to the fibre channel of
         the image to smoothen the outline.
 
         Args:
             fibre_channel: The channel of the image containing the fibres.
+            threshold: The gray level threshold above which a pixel is
+                considered to be part of a fiber.
 
         Returns:
-            A boolean mask containing the position of the fibres, and an 8-bits
-            image of the fibers.
+            A boolean mask containing the position of the fibres
         """
 
         # First, apply a base threshold
-        kernel = np.ones((5, 5), np.uint8)
-        _, binary_thresh = cv2.threshold(fibre_channel, 25, 255,
+        kernel = np.ones((10, 10), np.uint8)
+        _, binary_thresh = cv2.threshold(fibre_channel, threshold, 255,
                                          cv2.THRESH_BINARY)
 
         # Opening, to remove noise in the background
         processed = cv2.morphologyEx(binary_thresh,
                                      cv2.MORPH_OPEN, kernel)
-
-        # Find contours of the fibers
-        contours, _ = cv2.findContours(processed, cv2.RETR_TREE,
-                                       cv2.CHAIN_APPROX_SIMPLE)
-
-        # Correcting the obtained contours
-        for contour in contours:
-            # Fill if enclosing circle smaller than 100 pixels
-            if cv2.minEnclosingCircle(contour)[1] < 100:  # 100
-                cv2.drawContours(processed, [contour], -1, (0, 0, 0), -1)
-
-            # Fill if perimeter smaller than 200 pixels
-            elif cv2.arcLength(contour, True) < 200:
-                cv2.drawContours(processed, [contour], -1, (0, 0, 0), -1)
-
-            # Fill if enclosed area smaller than 1600 pixels
-            elif cv2.contourArea(contour) < 1600:
-                cv2.drawContours(processed, [contour], -1, (0, 0, 0), -1)
 
         # Closing, to remove noise inside the fibres
         processed = cv2.morphologyEx(processed, cv2.MORPH_CLOSE, kernel)
@@ -152,8 +142,9 @@ class Image_segmentation:
                                        cv2.CHAIN_APPROX_SIMPLE)
 
         for contour in contours:
-            # Fill hole if its area is smaller than 1600 pixels
-            if cv2.contourArea(contour) < 1600:
+            # Fill hole if its area is smaller than 0.5% of the image
+            if cv2.contourArea(contour) / \
+                    (fibre_channel.shape[0] * fibre_channel.shape[1]) < 5e-3:
                 cv2.drawContours(processed, [contour], -1, (0, 0, 0), -1)
 
         # Inverting black and white again
@@ -162,93 +153,7 @@ class Image_segmentation:
         # Creating a boolean mask, later used to generate a masked array
         mask = processed.astype(bool)
 
-        return mask, processed
-
-    @staticmethod
-    def _fibre_detection(mask_8bit: np.ndarray) -> List[Tuple[int, int]]:
-        """Applies several filters to the fiber channel of the image, and
-        determines a "center" for the detected fibers.
-
-        Args:
-            mask_8bit: The fiber channel of the image.
-
-        Returns:
-            A list containing the centers of the fibers.
-        """
-
-        fibre_centres = []
-        # Resizing the image to speed up the processing
-        processed = cv2.resize(mask_8bit, None, fx=0.5, fy=0.5)
-
-        # Finding the contours
-        contours, hierarchy = cv2.findContours(processed, cv2.RETR_CCOMP,
-                                               cv2.CHAIN_APPROX_SIMPLE)
-
-        # Iterating on the contours
-        if hierarchy is not None:
-            for i, (contour, level) in enumerate(zip(contours, hierarchy[0])):
-                # Objects that have a parent are just holes
-                if level[3] == -1:
-
-                    # Calculates the centroid of the contour
-                    m = cv2.moments(contour)
-                    cx = int(m['m10'] / m['m00'])
-                    cy = int(m['m01'] / m['m00'])
-
-                    # Fill contours white on a black background
-                    black_im = np.zeros(processed.shape, np.uint8)
-                    cv2.drawContours(black_im, [contour], -1, 255, -1)
-
-                    # Fill all the holes black
-                    holes = [con for con, lvl in zip(contours, hierarchy[0])
-                             if lvl[3] == i]
-                    if holes:
-                        cv2.drawContours(black_im, holes, -1, 0, -1)
-
-                    # Make a black contour to count border in the distance
-                    # transform
-                    black_im = np.vstack(
-                        [np.zeros(black_im.shape[1]).astype(np.uint8),
-                         black_im])
-                    black_im = np.vstack(
-                        [black_im,
-                         np.zeros(black_im.shape[1]).astype(np.uint8)])
-                    black_im = np.hstack(
-                        [np.zeros((black_im.shape[0], 1)).astype(np.uint8),
-                         black_im])
-                    black_im = np.hstack(
-                        [black_im,
-                         np.zeros((black_im.shape[0], 1)).astype(np.uint8)])
-
-                    # Apply a distance transform
-                    dist_transform = cv2.distanceTransform(black_im,
-                                                           cv2.DIST_L2, 3)
-                    max_dist = np.max(dist_transform)
-
-                    # Cast the distance to an 8 bit image
-                    cv2.normalize(dist_transform, dist_transform, 0, 255,
-                                  cv2.NORM_MINMAX)
-
-                    # All values above this one are in the top 20%
-                    percent_80 = np.percentile(dist_transform[dist_transform >
-                                                              0.01], 80)
-
-                    # Keep only the areas far from the fiber and image borders
-                    top_20_percent = np.where(dist_transform >= percent_80)
-
-                    # Compromise between being close to the centroid and far
-                    # from the borders
-                    norm = (cx - top_20_percent[1]) ** 2 + \
-                           (cy - top_20_percent[0]) ** 2 - \
-                           (dist_transform[top_20_percent[0],
-                                           top_20_percent[1]] *
-                            max_dist / 255) ** 3
-                    min_index = np.argmin(norm)
-                    fibre_centres.append(
-                        ((top_20_percent[1][min_index] - 1) * 2,
-                         (top_20_percent[0][min_index] - 1) * 2))
-
-        return fibre_centres
+        return mask
 
     @staticmethod
     def _get_nuclei_positions(labeled_image: np.ndarray,
@@ -256,7 +161,8 @@ class Image_segmentation:
                               fibre_threshold: float = 0.85) -> \
             Tuple[List[Tuple[np.ndarray, np.ndarray]],
                   List[Tuple[np.ndarray, np.ndarray]]]:
-        """
+        """Computes the center of the nuclei and determines whether they're
+        positive or not.
 
         Args:
             labeled_image: The image containing the nuclei.
