@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from tkinter import Canvas, ttk, Event
+from tkinter import Canvas, ttk, Event, messagebox
 from PIL import Image, ImageTk
 from platform import system
 from functools import partial
@@ -32,8 +32,8 @@ class Image_canvas(ttk.Frame):
     def set_channels(self) -> NoReturn:
         """Reloads the image after the user changed the selected channels."""
 
-        self._set_image()
-        self._show_image()
+        if self._set_image():
+            self._show_image()
 
     def set_indicators(self) -> NoReturn:
         """Redraws the nuclei and/or fibres after the user changed the elements
@@ -70,35 +70,46 @@ class Image_canvas(ttk.Frame):
                 draw on top of the image.
         """
 
-        # First, reset the canvas
-        self.reset()
-        self._delete_nuclei()
-        self._delete_fibres()
+        # First, checking that the image can be loaded
+        # Otherwise, all data would be lost !
+        if check_image(path)[0] is not None:
 
-        # Then, load and display the image
-        self._image_path = path
-        self._set_image()
-        self._resize_to_canvas()
-        self._show_image()
+            # First, reset the canvas
+            self.reset()
+            self._delete_nuclei()
+            self._delete_fibres()
 
-        # Deep copy to have independent objects
-        self._nuclei = deepcopy(nuclei)
+            # Then, load and display the image
+            self._image_path = path
+            self._set_image()
+            self._resize_to_canvas()
+            self._show_image()
 
-        # Drawing the nuclei
-        if self._settings.show_nuclei.get():
-            for nuc in self._nuclei:
-                nuc.tk_obj = self._draw_nucleus(
-                    nuc.x_pos, nuc.y_pos,
-                    self.nuc_color_in if nuc.color == 'in'
-                    else self.nuc_color_out)
+            # Deep copy to have independent objects
+            self._nuclei = deepcopy(nuclei)
 
-        # Deep copy to have independent objects
-        self._fibres = deepcopy(fibres)
+            # Drawing the nuclei
+            if self._settings.show_nuclei.get():
+                for nuc in self._nuclei:
+                    nuc.tk_obj = self._draw_nucleus(
+                        nuc.x_pos, nuc.y_pos,
+                        self.nuc_color_in if nuc.color == 'in'
+                        else self.nuc_color_out)
 
-        # Drawing the fibres
-        if self._settings.show_fibres.get():
-            for fib in self._fibres:
-                fib.polygon = self._draw_fibre(fib.position)
+            # Deep copy to have independent objects
+            self._fibres = deepcopy(fibres)
+
+            # Drawing the fibres
+            if self._settings.show_fibres.get():
+                for fib in self._fibres:
+                    fib.polygon = self._draw_fibre(fib.position)
+
+        # Informing the user that the image cannot be loaded
+        else:
+            messagebox.showerror(f'Error while loading the image !',
+                                 f'Check that the image at '
+                                 f'{path} still exists and '
+                                 f'that it is accessible.')
 
     def reset(self) -> NoReturn:
         """Resets every object in the canvas: the image, the nuclei and the
@@ -449,15 +460,24 @@ class Image_canvas(ttk.Frame):
 
         return closest_nuc if closest_nuc is not None else None
 
-    def _set_image(self) -> NoReturn:
-        """Loads an image and keeps only the desired channels."""
+    def _set_image(self) -> bool:
+        """Loads an image and keeps only the desired channels.
+
+        Returns:
+            False if the image couldn't be loaded, True otherwise
+        """
 
         if self._image_path:
 
             # Loading the image
-            cv_img, zero_channel = check_image(
-                self._image_path,
-                self._main_window.base_path / 'app_images' / 'error_image.png')
+            cv_img, zero_channel = check_image(self._image_path)
+            # Handling the case when the image cannot be loaded
+            if cv_img is None:
+                messagebox.showerror(f'Error while loading the image !',
+                                     f'Check that the image at '
+                                     f'{self._image_path} still exists and '
+                                     f'that it is accessible.')
+                return False
 
             # Keeping only the necessary channels
             if not self._settings.red_channel_bool.get():
@@ -469,6 +489,8 @@ class Image_canvas(ttk.Frame):
 
             image_in = Image.fromarray(cv_img)
             self._image = image_in
+
+        return True
 
     def _resize_to_canvas(self) -> NoReturn:
         """Resizes an image to the current size of the canvas."""

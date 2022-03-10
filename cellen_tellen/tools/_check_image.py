@@ -5,11 +5,11 @@ from cv2 import imread, cvtColor, IMREAD_ANYCOLOR, IMREAD_GRAYSCALE, \
     IMREAD_COLOR, COLOR_BGR2RGB
 from numpy import zeros, stack, concatenate, ndarray
 from re import findall
-from typing import Optional, Tuple
+from typing import Tuple, Union
 
 
-def check_image(image_path: Path,
-                error_path: Optional[Path] = None) -> Tuple[ndarray, ndarray]:
+def check_image(image_path: Path) -> Union[
+        Tuple[ndarray, ndarray], Tuple[None, None]]:
     """Function making sure that the loaded image has 3 channels and is 8-bits.
 
     It ignores the alpha channel if any, and can handle all the usual dtypes.
@@ -18,8 +18,6 @@ def check_image(image_path: Path,
 
     Args:
         image_path: The path to the image to load.
-        error_path: The path to the image displaying an error message. If not
-            given, an exception is raised instead of returning the error image.
 
     Returns:
         The loaded image as a 3-channel 8-bits array, and a 1-channel array of
@@ -28,6 +26,11 @@ def check_image(image_path: Path,
 
     # Loading the image
     cv_img = imread(str(image_path), IMREAD_ANYCOLOR)
+
+    # In case the file cannot be reached
+    if cv_img is None:
+        return None, None
+
     zero_channel = zeros([cv_img.shape[0], cv_img.shape[1]])
 
     # In this section, we ensure that the image is RGB
@@ -47,14 +50,9 @@ def check_image(image_path: Path,
         cv_img = imread(str(image_path), IMREAD_COLOR)
         cv_img = cvtColor(cv_img, COLOR_BGR2RGB)
 
-    # Unexpected image format, loading an error message image or raising
+    # If it's another format, returning None to indicate it wasn't successful
     else:
-        # Raising exception if asked to
-        if error_path is None:
-            raise ValueError("Unexpected format, couldn't load the image.")
-        cv_img = imread(str(error_path))
-        zero_channel = zeros([cv_img.shape[0], cv_img.shape[1]])
-        cv_img = cvtColor(cv_img, COLOR_BGR2RGB)
+        return None, None
 
     # Parsing the d_type string of the image
     try:
@@ -84,13 +82,8 @@ def check_image(image_path: Path,
                   (cv_img.max(initial=None) - cv_img.min(initial=None))
                   * 255).astype('uint8')
 
-    # If it's another format; displaying an error image or raising
+    # If it's another format, returning None to indicate it wasn't successful
     else:
-        # Raising exception if asked to
-        if error_path is None:
-            raise ValueError("Unexpected format, couldn't load the image.")
-        cv_img = imread(str(error_path))
-        zero_channel = zeros([cv_img.shape[0], cv_img.shape[1]])
-        cv_img = cvtColor(cv_img, COLOR_BGR2RGB)
+        return None, None
 
     return cv_img, zero_channel

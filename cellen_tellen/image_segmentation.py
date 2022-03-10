@@ -5,7 +5,7 @@ import numpy as np
 import numpy.ma as ma
 from pathlib import Path
 import cv2
-from typing import List, Tuple, Any
+from typing import List, Tuple, Any, Union
 
 from .tools import check_image
 
@@ -29,9 +29,9 @@ class Image_segmentation:
                  fibre_color: str,
                  fibre_threshold: int,
                  small_objects_threshold: int) -> \
-            Tuple[List[Tuple[np.ndarray, np.ndarray]],
+            Union[Tuple[List[Tuple[np.ndarray, np.ndarray]],
                   List[Tuple[np.ndarray, np.ndarray]],
-                  Tuple[Any], float]:
+                  Tuple[Any], float], Tuple[None, None, None, None]]:
         """Computes the nuclei positions and optionally the fibers positions.
 
         Also returns whether the nuclei are inside or outside the fibers.
@@ -57,6 +57,11 @@ class Image_segmentation:
 
         # Loads the image and keeps only the nuclei and fibres channels
         image, _ = check_image(path)
+
+        # The image couldn't be loaded
+        if image is None:
+            return None, None, None, None
+
         two_channel_image = np.array([image[:, :, colors]])
 
         # Default parameters

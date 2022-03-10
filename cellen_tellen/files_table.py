@@ -296,7 +296,7 @@ class Files_table(ttk.Frame):
             dump(([file.name for file in self.filenames], save_nuclei,
                   save_fibres), save_file, protocol=4)
 
-    def _save_originals(self, directory: Path) -> NoReturn:
+    def _save_originals(self, directory: Path) -> None:
         """Saves the original images in a sub-folder of Cellen-Tellen's Project
         folder.
 
@@ -313,7 +313,16 @@ class Files_table(ttk.Frame):
             # Saving only if the images are not saved yet
             if self._projects_path not in filename.parents:
                 new_path = directory / 'Original Images' / filename.name
-                copyfile(filename, new_path)
+
+                # Handling the case when the image cannot be loaded
+                try:
+                    copyfile(filename, new_path)
+                except FileNotFoundError:
+                    messagebox.showerror(f'Error while saving the image !',
+                                         f'Check that the image at '
+                                         f'{filename} still exists and '
+                                         f'that it is accessible.')
+                    return
 
                 # Updating the current image path if necessary
                 if self._current_image == filename:
@@ -432,6 +441,10 @@ class Files_table(ttk.Frame):
 
         # Reads the image
         cv_img, _ = check_image(project_name / "Original Images" / file.name)
+
+        # Aborting if the image cannot be loaded
+        if cv_img is None:
+            return
 
         # Drawing the fibres
         for fib in self._fibres[file]:

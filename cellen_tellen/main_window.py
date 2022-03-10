@@ -27,7 +27,6 @@ if system() == "Windows" and int(release()) >= 8:
     windll.shcore.SetProcessDpiAwareness(True)
 
 # Todo:
-#   Improve the fibre detection and display
 #   Set up unit tests
 
 
@@ -835,6 +834,15 @@ class Main_window(Tk):
                                    self.settings.fibre_colour.get(),
                                    self.settings.fibre_threshold.get(),
                                    self.settings.small_objects_threshold.get())
+
+            # The image couldn't be loaded
+            if nuclei_out is None:
+                messagebox.showerror(f'Error while loading the image !',
+                                     f'Check that the image at '
+                                     f'{file} still exists and '
+                                     f'that it is accessible.')
+                self._stop_processing(force=False)
+                return
 
             # Return if the user asks to
             if stop_event.is_set():
