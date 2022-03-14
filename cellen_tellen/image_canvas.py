@@ -274,7 +274,6 @@ class Image_canvas(ttk.Frame):
     def _set_bindings(self) -> NoReturn:
         """Sets the actions to perform for the different user inputs."""
 
-        self._canvas.bind('<Configure>', self.show_image)
         self._canvas.bind('<ButtonPress-2>', self._move_from)
         self._canvas.bind('<B2-Motion>', self._move_to)
 
@@ -355,7 +354,7 @@ class Image_canvas(ttk.Frame):
             The index tkinter attributed to the polygon it just drew.
         """
 
-        # Adjusting the length to the scale
+        # Adjusting the width to the scale
         line_width = max(int(3 * self._can_scale), 1)
 
         # Adjusting the positions to the scale
@@ -392,7 +391,7 @@ class Image_canvas(ttk.Frame):
             rel_x_scale = can_x / self._img_scale
             rel_y_scale = can_y / self._img_scale
 
-            # Case when the nuclei mode is selected
+            # Do nothing if the nuclei are not being displayed
             if self._settings.show_nuclei.get():
 
                 # Trying to find a close nucleus
@@ -443,7 +442,7 @@ class Image_canvas(ttk.Frame):
             rel_x_scale = can_x / self._img_scale
             rel_y_scale = can_y / self._img_scale
 
-            # Case when the nuclei mode is selected
+            # Do nothing if the nuclei are not being displayed
             if self._settings.show_nuclei.get():
 
                 # Trying to find a close nucleus
@@ -541,22 +540,17 @@ class Image_canvas(ttk.Frame):
 
         self._canvas.configure(xscrollincrement='1', yscrollincrement='1')
 
-        # Redraw the image
-        self.show_image()
-
     def _move_from(self, event: Event) -> NoReturn:
         """Stores the previous coordinates for scrolling with the mouse."""
 
         if self._image is not None:
             self._canvas.scan_mark(event.x, event.y)
-            self.show_image()
 
     def _move_to(self, event: Event) -> NoReturn:
         """Drags the canvas to a new position."""
 
         if self._image is not None:
             self._canvas.scan_dragto(event.x, event.y, gain=1)
-            self.show_image()
 
     def _zoom(self,
               event: Event,
