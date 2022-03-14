@@ -187,16 +187,11 @@ class Image_canvas(ttk.Frame):
         else:
             return '#FFA500'
 
-    def show_image(self,
-                   *_: Event,
-                   x: Optional[float] = None,
-                   y: Optional[float] = None) -> None:
+    def show_image(self, *_: Event) -> NoReturn:
         """Displays the image on the canvas.
 
         Args:
             *_: Ignores the event in case the command was issued by one.
-            x: The x position of the mouse, where to zoom.
-            y: The y position of the mouse, where to zoom.
         """
 
         if self._image is not None:
@@ -226,13 +221,6 @@ class Image_canvas(ttk.Frame):
                     scaled_y < self._canvas.winfo_height():
                 self._canvas.xview_moveto(0),
                 self._canvas.yview_moveto(0)
-                return
-
-            # Scrolling the canvas to keep the mouse on the same point in case
-            # we were zooming in
-            if x is not None or y is not None:
-                self._canvas.xview_scroll(int((self._delta - 1) * x), "units")
-                self._canvas.yview_scroll(int((self._delta - 1) * y), "units")
     
     def _delete_nuclei(self) -> NoReturn:
         """Removes all nuclei from the canvas, but doesn't delete the nuclei
@@ -633,5 +621,12 @@ class Image_canvas(ttk.Frame):
             # Rescaling the canvas
             self._canvas.scale('all', 0, 0, scale, scale)
             # Updating the image
-            self.show_image(x=x_can if delta > 0 else None,
-                            y=y_can if delta > 0 else None)
+            self.show_image()
+
+            # Scrolling the canvas to keep the mouse on the same point in case
+            # we were zooming in and the image is bigger than the canvas
+            if delta > 0 and self._current_zoom > 0:
+                self._canvas.xview_scroll(int((self._delta - 1) * x_can),
+                                          "units")
+                self._canvas.yview_scroll(int((self._delta - 1) * y_can),
+                                          "units")
