@@ -907,7 +907,7 @@ class Main_window(Tk):
     def _set_image_channels(self) -> NoReturn:
         """Redraws the current image with the selected channels."""
 
-        self._image_canvas.set_channels()
+        self._image_canvas.show_image()
         self._save_settings()
 
     def _set_indicators(self) -> NoReturn:

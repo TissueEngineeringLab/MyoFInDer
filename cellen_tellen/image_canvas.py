@@ -29,11 +29,6 @@ class Image_canvas(ttk.Frame):
         self._set_bindings()
         self._set_variables()
 
-    def set_channels(self) -> NoReturn:
-        """Reloads the image after the user changed the selected channels."""
-
-        self._show_image()
-
     def set_indicators(self) -> NoReturn:
         """Redraws the nuclei and/or fibres after the user changed the elements
         to display."""
@@ -82,7 +77,7 @@ class Image_canvas(ttk.Frame):
             self._image_path = path
             self._set_image()
             self._resize_to_canvas()
-            self._show_image()
+            self.show_image()
 
             # Deep copy to have independent objects
             self._nuclei = deepcopy(nuclei)
@@ -191,6 +186,53 @@ class Image_canvas(ttk.Frame):
 
         else:
             return '#FFA500'
+
+    def show_image(self,
+                   *_: Event,
+                   x: Optional[float] = None,
+                   y: Optional[float] = None) -> None:
+        """Displays the image on the canvas.
+
+        Args:
+            *_: Ignores the event in case the command was issued by one.
+            x: The x position of the mouse, where to zoom.
+            y: The y position of the mouse, where to zoom.
+        """
+
+        if self._image is not None:
+
+            # Keeping only the channels the user wants
+            multiplier = (self._settings.red_channel_bool.get(), 0, 0, 0,
+                          0, self._settings.green_channel_bool.get(), 0, 0,
+                          0, 0, self._settings.blue_channel_bool.get(), 0)
+            image = self._image.convert("RGB", multiplier)
+
+            # Resizing the image to the canvas size
+            scaled_x = int(image.width * self._img_scale)
+            scaled_y = int(image.height * self._img_scale)
+            image = image.resize((scaled_x, scaled_y))
+
+            # Actually displaying the image in the canvas
+            image_tk = ImageTk.PhotoImage(image)
+            self._image_id = self._canvas.create_image(0, 0, anchor='nw',
+                                                       image=image_tk)
+            self._canvas.lower(self._image_id)
+            self._canvas.image_tk = image_tk
+            self._canvas.configure(scrollregion=(0, 0, scaled_x, scaled_y))
+
+            # Moving the image to the top left corner if it doesn't fill the
+            # canvas
+            if scaled_x < self._canvas.winfo_width() or \
+                    scaled_y < self._canvas.winfo_height():
+                self._canvas.xview_moveto(0),
+                self._canvas.yview_moveto(0)
+                return
+
+            # Scrolling the canvas to keep the mouse on the same point in case
+            # we were zooming in
+            if x is not None or y is not None:
+                self._canvas.xview_scroll(int((self._delta - 1) * x), "units")
+                self._canvas.yview_scroll(int((self._delta - 1) * y), "units")
     
     def _delete_nuclei(self) -> NoReturn:
         """Removes all nuclei from the canvas, but doesn't delete the nuclei
@@ -245,7 +287,7 @@ class Image_canvas(ttk.Frame):
     def _set_bindings(self) -> NoReturn:
         """Sets the actions to perform for the different user inputs."""
 
-        self._canvas.bind('<Configure>', self._show_image)
+        self._canvas.bind('<Configure>', self.show_image)
         self._canvas.bind('<ButtonPress-2>', self._move_from)
         self._canvas.bind('<B2-Motion>', self._move_to)
 
@@ -513,21 +555,21 @@ class Image_canvas(ttk.Frame):
             self._canvas.yview_scroll(1, "units")
 
         # Redraw the image
-        self._show_image()
+        self.show_image()
 
     def _move_from(self, event: Event) -> NoReturn:
         """Stores the previous coordinates for scrolling with the mouse."""
 
         if self._image is not None:
             self._canvas.scan_mark(event.x, event.y)
-            self._show_image()
+            self.show_image()
 
     def _move_to(self, event: Event) -> NoReturn:
         """Drags the canvas to a new position."""
 
         if self._image is not None:
             self._canvas.scan_dragto(event.x, event.y, gain=1)
-            self._show_image()
+            self.show_image()
 
     def _zoom(self,
               event: Event,
@@ -591,52 +633,5 @@ class Image_canvas(ttk.Frame):
             # Rescaling the canvas
             self._canvas.scale('all', 0, 0, scale, scale)
             # Updating the image
-            self._show_image(x=x_can if delta > 0 else None,
-                             y=y_can if delta > 0 else None)
-
-    def _show_image(self,
-                    *_: Event,
-                    x: Optional[float] = None,
-                    y: Optional[float] = None) -> None:
-        """Displays the image on the canvas.
-
-        Args:
-            *_: Ignores the event in case the command was issued by one.
-            x: The x position of the mouse, where to zoom.
-            y: The y position of the mouse, where to zoom.
-        """
-
-        if self._image is not None:
-
-            # Keeping only the channels the user wants
-            multiplier = (self._settings.red_channel_bool.get(), 0, 0, 0,
-                          0, self._settings.green_channel_bool.get(), 0, 0,
-                          0, 0, self._settings.blue_channel_bool.get(), 0)
-            image = self._image.convert("RGB", multiplier)
-
-            # Resizing the image to the canvas size
-            scaled_x = int(image.width * self._img_scale)
-            scaled_y = int(image.height * self._img_scale)
-            image = image.resize((scaled_x, scaled_y))
-
-            # Actually displaying the image in the canvas
-            image_tk = ImageTk.PhotoImage(image)
-            self._image_id = self._canvas.create_image(0, 0, anchor='nw',
-                                                       image=image_tk)
-            self._canvas.lower(self._image_id)
-            self._canvas.image_tk = image_tk
-            self._canvas.configure(scrollregion=(0, 0, scaled_x, scaled_y))
-
-            # Moving the image to the top left corner if it doesn't fill the
-            # canvas
-            if scaled_x < self._canvas.winfo_width() or \
-                    scaled_y < self._canvas.winfo_height():
-                self._canvas.xview_moveto(0),
-                self._canvas.yview_moveto(0)
-                return
-
-            # Scrolling the canvas to keep the mouse on the same point in case
-            # we were zooming in
-            if x is not None or y is not None:
-                self._canvas.xview_scroll(int((self._delta - 1) * x), "units")
-                self._canvas.yview_scroll(int((self._delta - 1) * y), "units")
+            self.show_image(x=x_can if delta > 0 else None,
+                            y=y_can if delta > 0 else None)
