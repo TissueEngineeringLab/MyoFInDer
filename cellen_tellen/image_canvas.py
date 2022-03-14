@@ -287,10 +287,10 @@ class Image_canvas(ttk.Frame):
             self._canvas.bind('<MouseWheel>', self._zoom)
 
         # Moving with the arrow keys
-        self.bind_all('<Left>', partial(self._arrows, arrow_index=0))
-        self.bind_all('<Right>', partial(self._arrows, arrow_index=1))
-        self.bind_all('<Up>', partial(self._arrows, arrow_index=2))
-        self.bind_all('<Down>', partial(self._arrows, arrow_index=3))
+        self.bind_all('<Left>', self._arrows)
+        self.bind_all('<Right>', self._arrows)
+        self.bind_all('<Up>', self._arrows)
+        self.bind_all('<Down>', self._arrows)
 
         # Zooming in and out with keyboard keys
         self.bind_all('=', partial(self._zoom, delta=1, mouse=False))
@@ -524,23 +524,25 @@ class Image_canvas(ttk.Frame):
         # Deducing the new image scale
         self._img_scale = resize_width / self._image.width
 
-    def _arrows(self, _: Event, arrow_index: int) -> NoReturn:
+    def _arrows(self, event: Event) -> NoReturn:
         """Scrolls the image upon pressing on the arrow keys.
 
         Args:
-            _: The event associated with the arrow press.
-            arrow_index: The index attributed to the arrow, to differentiate
-                them easily.
+            event: The event associated with the arrow press.
         """
 
-        if arrow_index == 0:
+        self._canvas.configure(xscrollincrement='10', yscrollincrement='10')
+
+        if event.keysym == 'Left':
             self._canvas.xview_scroll(-1, "units")
-        elif arrow_index == 1:
+        elif event.keysym == 'Right':
             self._canvas.xview_scroll(1, "units")
-        elif arrow_index == 2:
+        elif event.keysym == 'Up':
             self._canvas.yview_scroll(-1, "units")
-        elif arrow_index == 3:
+        elif event.keysym == 'Down':
             self._canvas.yview_scroll(1, "units")
+
+        self._canvas.configure(xscrollincrement='1', yscrollincrement='1')
 
         # Redraw the image
         self.show_image()
@@ -584,7 +586,7 @@ class Image_canvas(ttk.Frame):
                     delta = int(event.delta / abs(event.delta))
 
             scale = 1.0
-            # Setting the point whee to zoom on the image
+            # Setting the point where to zoom on the image
             x_can = self._canvas.canvasx(event.x) if mouse else 0
             y_can = self._canvas.canvasy(event.y) if mouse else 0
 
