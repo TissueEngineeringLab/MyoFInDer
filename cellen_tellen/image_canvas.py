@@ -76,7 +76,6 @@ class Image_canvas(ttk.Frame):
             # Then, load and display the image
             self._image_path = path
             self._set_image()
-            self._resize_to_canvas()
             self.show_image()
 
             # Deep copy to have independent objects
@@ -490,7 +489,8 @@ class Image_canvas(ttk.Frame):
         return closest_nuc if closest_nuc is not None else None
 
     def _set_image(self) -> None:
-        """Simply loads an image."""
+        """Simply loads an image and resizes it to the current size of the
+        canvas."""
 
         if self._image_path:
 
@@ -506,23 +506,20 @@ class Image_canvas(ttk.Frame):
 
             self._image = Image.fromarray(cv_img)
 
-    def _resize_to_canvas(self) -> NoReturn:
-        """Resizes an image to the current size of the canvas."""
+            # Getting the different parameters of interest
+            can_width = self._canvas.winfo_width()
+            can_height = self._canvas.winfo_height()
+            can_ratio = can_width / can_height
+            img_ratio = self._image.width / self._image.height
 
-        # Getting the different parameters of interest
-        can_width = self._canvas.winfo_width()
-        can_height = self._canvas.winfo_height()
-        can_ratio = can_width / can_height
-        img_ratio = self._image.width / self._image.height
+            # Calculating the new image width
+            if img_ratio >= can_ratio:
+                resize_width = can_width
+            else:
+                resize_width = int(can_height * img_ratio)
 
-        # Calculating the new image width
-        if img_ratio >= can_ratio:
-            resize_width = can_width
-        else:
-            resize_width = int(can_height * img_ratio)
-
-        # Deducing the new image scale
-        self._img_scale = resize_width / self._image.width
+            # Deducing the new image scale
+            self._img_scale = resize_width / self._image.width
 
     def _arrows(self, event: Event) -> NoReturn:
         """Scrolls the image upon pressing on the arrow keys.
