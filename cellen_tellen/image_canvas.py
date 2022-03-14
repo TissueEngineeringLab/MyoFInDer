@@ -32,8 +32,7 @@ class Image_canvas(ttk.Frame):
     def set_channels(self) -> NoReturn:
         """Reloads the image after the user changed the selected channels."""
 
-        if self._set_image():
-            self._show_image()
+        self._show_image()
 
     def set_indicators(self) -> NoReturn:
         """Redraws the nuclei and/or fibres after the user changed the elements
@@ -460,37 +459,22 @@ class Image_canvas(ttk.Frame):
 
         return closest_nuc if closest_nuc is not None else None
 
-    def _set_image(self) -> bool:
-        """Loads an image and keeps only the desired channels.
-
-        Returns:
-            False if the image couldn't be loaded, True otherwise
-        """
+    def _set_image(self) -> None:
+        """Simply loads an image."""
 
         if self._image_path:
 
             # Loading the image
-            cv_img, zero_channel = check_image(self._image_path)
+            cv_img = check_image(self._image_path)
             # Handling the case when the image cannot be loaded
             if cv_img is None:
                 messagebox.showerror(f'Error while loading the image !',
                                      f'Check that the image at '
                                      f'{self._image_path} still exists and '
                                      f'that it is accessible.')
-                return False
+                return
 
-            # Keeping only the necessary channels
-            if not self._settings.red_channel_bool.get():
-                cv_img[:, :, 0] = zero_channel
-            if not self._settings.green_channel_bool.get():
-                cv_img[:, :, 1] = zero_channel
-            if not self._settings.blue_channel_bool.get():
-                cv_img[:, :, 2] = zero_channel
-
-            image_in = Image.fromarray(cv_img)
-            self._image = image_in
-
-        return True
+            self._image = Image.fromarray(cv_img)
 
     def _resize_to_canvas(self) -> NoReturn:
         """Resizes an image to the current size of the canvas."""
@@ -623,10 +607,17 @@ class Image_canvas(ttk.Frame):
         """
 
         if self._image is not None:
+
+            # Keeping only the channels the user wants
+            multiplier = (self._settings.red_channel_bool.get(), 0, 0, 0,
+                          0, self._settings.green_channel_bool.get(), 0, 0,
+                          0, 0, self._settings.blue_channel_bool.get(), 0)
+            image = self._image.convert("RGB", multiplier)
+
             # Resizing the image to the canvas size
-            scaled_x = int(self._image.width * self._img_scale)
-            scaled_y = int(self._image.height * self._img_scale)
-            image = self._image.resize((scaled_x, scaled_y))
+            scaled_x = int(image.width * self._img_scale)
+            scaled_y = int(image.height * self._img_scale)
+            image = image.resize((scaled_x, scaled_y))
 
             # Actually displaying the image in the canvas
             image_tk = ImageTk.PhotoImage(image)

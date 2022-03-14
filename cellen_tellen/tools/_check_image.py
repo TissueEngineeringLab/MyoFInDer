@@ -5,11 +5,10 @@ from cv2 import imread, cvtColor, IMREAD_ANYCOLOR, IMREAD_GRAYSCALE, \
     IMREAD_COLOR, COLOR_BGR2RGB
 from numpy import zeros, stack, concatenate, ndarray
 from re import findall
-from typing import Tuple, Union
+from typing import Optional
 
 
-def check_image(image_path: Path) -> Union[
-        Tuple[ndarray, ndarray], Tuple[None, None]]:
+def check_image(image_path: Path) -> Optional[ndarray]:
     """Function making sure that the loaded image has 3 channels and is 8-bits.
 
     It ignores the alpha channel if any, and can handle all the usual dtypes.
@@ -20,8 +19,8 @@ def check_image(image_path: Path) -> Union[
         image_path: The path to the image to load.
 
     Returns:
-        The loaded image as a 3-channel 8-bits array, and a 1-channel array of
-        the same shape containing only zeros.
+        The loaded image as a 3-channel 8-bits array, or None if the loading
+        wasn't successful.
     """
 
     # Loading the image
@@ -29,7 +28,7 @@ def check_image(image_path: Path) -> Union[
 
     # In case the file cannot be reached
     if cv_img is None:
-        return None, None
+        return None
 
     zero_channel = zeros([cv_img.shape[0], cv_img.shape[1]])
 
@@ -52,7 +51,7 @@ def check_image(image_path: Path) -> Union[
 
     # If it's another format, returning None to indicate it wasn't successful
     else:
-        return None, None
+        return None
 
     # Parsing the d_type string of the image
     try:
@@ -84,6 +83,6 @@ def check_image(image_path: Path) -> Union[
 
     # If it's another format, returning None to indicate it wasn't successful
     else:
-        return None, None
+        return None
 
-    return cv_img, zero_channel
+    return cv_img

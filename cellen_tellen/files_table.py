@@ -440,7 +440,7 @@ class Files_table(ttk.Frame):
                         '#646464': (100, 100, 100)}
 
         # Reads the image
-        cv_img, _ = check_image(project_name / "Original Images" / file.name)
+        cv_img = check_image(project_name / "Original Images" / file.name)
         cv_img = cvtColor(cv_img, COLOR_RGB2BGR)
 
         # Aborting if the image cannot be loaded

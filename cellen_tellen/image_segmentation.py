@@ -56,7 +56,7 @@ class Image_segmentation:
                   numpy_color_to_int[fibre_color]]
 
         # Loads the image and keeps only the nuclei and fibres channels
-        image, _ = check_image(path)
+        image = check_image(path)
 
         # The image couldn't be loaded
         if image is None:
