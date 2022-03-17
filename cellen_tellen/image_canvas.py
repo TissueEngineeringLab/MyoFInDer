@@ -122,7 +122,7 @@ class Image_canvas(ttk.Frame):
         self._nuclei = Nuclei()
         self._fibres = Fibres()
 
-        # removing the image from the canvas
+        # Removing the image from the canvas
         if self._image_id is not None:
             self._canvas.delete(self._image_id)
         self._image_id = None
@@ -144,6 +144,7 @@ class Image_canvas(ttk.Frame):
 
         if not (fibre_num == 2 and nuclei_num == 0):
             return num_to_color[3 - fibre_num - nuclei_num]
+        # Special case when the fibre channel is red and the nuclei are blue
         else:
             return 'red'
 
@@ -180,11 +181,11 @@ class Image_canvas(ttk.Frame):
             else:
                 return 'white'
 
-        elif self._settings.nuclei_colour.get() == 'green':
-            return 'cyan'
-
-        else:
-            return '#FFA500'
+        elif self._settings.fibre_colour.get() == 'red':
+            if self._settings.nuclei_colour.get() == 'green':
+                return 'cyan'
+            else:
+                return '#FFA500'
 
     def show_image(self, *_: Event) -> NoReturn:
         """Displays the image on the canvas.

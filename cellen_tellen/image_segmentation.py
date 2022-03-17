@@ -129,11 +129,11 @@ class Image_segmentation:
 
         # First, apply a base threshold
         kernel = np.ones((10, 10), np.uint8)
-        _, binary_thresh = cv2.threshold(fibre_channel, threshold, 255,
-                                         cv2.THRESH_BINARY)
+        _, processed = cv2.threshold(fibre_channel, threshold, 255,
+                                     cv2.THRESH_BINARY)
 
         # Opening, to remove noise in the background
-        processed = cv2.morphologyEx(binary_thresh,
+        processed = cv2.morphologyEx(processed,
                                      cv2.MORPH_OPEN, kernel)
 
         # Closing, to remove noise inside the fibres
@@ -195,8 +195,7 @@ class Image_segmentation:
         for i in range(1, nb_nuc + 1):
 
             nucleus_y, nucleus_x = np.where(labeled_image == i)
-            center_x = np.mean(nucleus_x)
-            center_y = np.mean(nucleus_y)
+            center_x, center_y = np.mean(nucleus_x), np.mean(nucleus_y)
 
             in_fibre = ma.count_masked(masked_image[nucleus_y, nucleus_x])
             if in_fibre < fibre_threshold * nucleus_x.shape[0]:

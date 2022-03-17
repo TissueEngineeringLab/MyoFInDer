@@ -28,6 +28,7 @@ if system() == "Windows" and int(release()) >= 8:
 
 # Todo:
 #   Set up unit tests
+#   Improve software distribution
 
 
 def _save_before_closing(func: Callable) -> Callable:
@@ -830,7 +831,8 @@ class Main_window(Tk):
         with semaphore:
             # Actually processes the image
             nuclei_out, nuclei_in, fibre_contours, area = \
-                self._segmentation(file, self.settings.nuclei_colour.get(),
+                self._segmentation(file,
+                                   self.settings.nuclei_colour.get(),
                                    self.settings.fibre_colour.get(),
                                    self.settings.fibre_threshold.get(),
                                    self.settings.small_objects_threshold.get())
@@ -947,4 +949,4 @@ class Main_window(Tk):
     def _open_github() -> NoReturn:
         """Opens the project repository in a browser."""
 
-        open_new("https://github.com/Quentinderore2/Cellen-Tellen")
+        open_new("https://github.com/WeisLeDocto/Cellen-Tellen")

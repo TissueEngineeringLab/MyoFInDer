@@ -89,7 +89,8 @@ class Files_table(ttk.Frame):
                 fibre.polygon = None
 
         # Redrawing the canvas
-        self._make_table()
+        if self.filenames:
+            self._make_table()
 
     def save_project(self, directory: Path, save_altered: bool) -> NoReturn:
         """Saves a project.
@@ -825,9 +826,6 @@ class Files_table(ttk.Frame):
         self._canvas.config(scrollregion=(0, 0, width, self._table_height))
 
         # Highlighting the selected image
-        if self.filenames:
-            if self._current_image is None:
-                self._current_image = self._index_to_img[0]
-            self._select_image(self._img_to_index[self._current_image])
-        else:
-            self.image_canvas.reset()
+        if self._current_image is None:
+            self._current_image = self._index_to_img[0]
+        self._select_image(self._img_to_index[self._current_image])
