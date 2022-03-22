@@ -136,3 +136,7 @@ cellen_tellen/settings
 
 # Projects files
 Projects/
+
+# Build from AdvancedInstaller
+Executable_files/Cellen-Tellen-cache
+Executable_files/Cellen-Tellen-SetupFiles
