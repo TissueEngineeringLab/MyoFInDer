@@ -103,7 +103,7 @@ class Image_segmentation:
 
         # Finding the contours of the fibers
         mask_8_bits = (mask * 255).astype('uint8')
-        fibre_contours, _ = cv2.findContours(mask_8_bits, cv2.RETR_EXTERNAL,
+        fibre_contours, _ = cv2.findContours(mask_8_bits, cv2.RETR_LIST,
                                              cv2.CHAIN_APPROX_SIMPLE)
         fibre_contours = tuple(map(np.squeeze, fibre_contours))
 
