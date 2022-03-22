@@ -4,7 +4,7 @@ from tkinter import Toplevel, ttk, StringVar, IntVar
 from screeninfo import get_monitors
 from typing import NoReturn
 
-forbidden_chars = ['/', '\\', '>', '<', ':', '"', '|', '?', '*']
+forbidden_chars = ['/', '\\', '>', '<', ':', '"', '|', '?', '*', '.']
 forbidden_names = ['CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4',
                    'COM5', 'COM6', 'COM7', 'COM8', 'COM9', 'LPT1', 'LPT2',
                    'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9']
@@ -49,7 +49,7 @@ class Project_name_window(Toplevel):
         # Setting the message label
         ask_label = ttk.Label(self,
                               text='Choose a name for your '
-                                   'current Project :')
+                                   'current project :')
         ask_label.pack(anchor='n', expand=False, fill='none', side='top',
                        padx=20, pady=10)
 
