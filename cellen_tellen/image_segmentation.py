@@ -5,7 +5,7 @@ import numpy as np
 import numpy.ma as ma
 from pathlib import Path
 import cv2
-from typing import List, Tuple, Any, Union
+from typing import List, Tuple, Any
 
 from .tools import check_image
 
@@ -29,9 +29,8 @@ class Image_segmentation:
                  fibre_color: str,
                  fibre_threshold: int,
                  small_objects_threshold: int) -> \
-            Union[Tuple[List[Tuple[np.ndarray, np.ndarray]],
-                  List[Tuple[np.ndarray, np.ndarray]],
-                  Tuple[Any], float], Tuple[None, None, None, None]]:
+            (Path, List[Tuple[np.ndarray, np.ndarray]],
+             List[Tuple[np.ndarray, np.ndarray]], Tuple[Any], float):
         """Computes the nuclei positions and optionally the fibers positions.
 
         Also returns whether the nuclei are inside or outside the fibers.
@@ -60,7 +59,8 @@ class Image_segmentation:
 
         # The image couldn't be loaded
         if image is None:
-            return None, None, None, None
+            raise IOError("Could not load the image for segmentation, "
+                          "aborting !")
 
         two_channel_image = np.array([image[:, :, colors]])
 
@@ -110,7 +110,7 @@ class Image_segmentation:
         # Getting the position of the nuclei
         nuclei_out, nuclei_in = self._get_nuclei_positions(labeled_image, mask)
 
-        return nuclei_out, nuclei_in, fibre_contours, area
+        return path, nuclei_out, nuclei_in, fibre_contours, area
 
     @staticmethod
     def _get_fibre_mask(fibre_channel: np.ndarray,
@@ -164,8 +164,8 @@ class Image_segmentation:
     def _get_nuclei_positions(labeled_image: np.ndarray,
                               mask: np.ndarray,
                               fibre_threshold: float = 0.85) -> \
-            Tuple[List[Tuple[np.ndarray, np.ndarray]],
-                  List[Tuple[np.ndarray, np.ndarray]]]:
+            (List[Tuple[np.ndarray, np.ndarray]],
+             List[Tuple[np.ndarray, np.ndarray]]):
         """Computes the center of the nuclei and determines whether they're
         positive or not.
 

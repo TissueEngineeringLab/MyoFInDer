@@ -5,7 +5,8 @@ from tkinter import ttk, filedialog, Tk, IntVar, PhotoImage, Menu, StringVar, \
 from platform import system, release
 from shutil import rmtree
 from webbrowser import open_new
-from threading import Thread, BoundedSemaphore, active_count, Event
+from threading import Thread, Event
+from queue import Empty, Queue
 from time import sleep
 from pickle import load, dump
 from functools import partial, wraps
@@ -29,6 +30,8 @@ if system() == "Windows" and int(release()) >= 8:
 # Todo:
 #   Set up unit tests
 #   Improve software distribution
+#   Add a nuclei threshold
+#   Configure CTRL+S
 
 
 def _save_before_closing(func: Callable) -> Callable:
@@ -171,8 +174,6 @@ class Main_window(Tk):
                                                 self._save_settings_callback)
         self.settings.small_objects_threshold.trace_add(
             "write", self._save_settings_callback)
-        self.settings.n_threads.trace_add("write",
-                                          self._save_settings_callback)
 
         # Updates the display when an image has been processed
         self._processed_images_count.trace_add("write",
@@ -188,12 +189,15 @@ class Main_window(Tk):
         self._previous_fibre_colour = StringVar(
             value=self.settings.fibre_colour.get())
 
-        # Variables managing the threads execution
+        # Variables managing the processing thread
         self._processed_images_count = IntVar(value=0)
         self._img_to_process_count = 0
+        self._stop_thread = False
         self._stop_event = Event()
-        self._thread_slider = None
-        self._n_threads_running = 0
+        self._stop_event.set()
+        self._queue = Queue(maxsize=0)
+        self._thread = Thread(target=self._process_thread)
+        self._thread.start()
 
         # Variables managing the automatic save
         self._auto_save_path = self.projects_path / 'AUTOSAVE'
@@ -593,7 +597,7 @@ class Main_window(Tk):
         """
 
         # Case when the user tries to exit while computations are running
-        if active_count() > 1:
+        if not self._queue.empty():
             ret = messagebox.askyesno(
                 'Hold on !',
                 "The program is still computing !\n"
@@ -602,16 +606,11 @@ class Main_window(Tk):
                 "(resources may take some time to be released even after "
                 "exiting)")
 
-            # Stopping the computation if asked to
+            # Trying to stop the computation if requested
             if ret:
-                self._stop_event.set()
+                self._stop_thread = True
 
-            # There's a possibility that the computation actually ended
-            if active_count() > 1:
-                return bool(ret)
-            else:
-                messagebox.showinfo('Update', "Looks like the computation is "
-                                              "actually over now !")
+            return ret
 
         # If the project is unsaved, propose to save it
         if self._save_button['state'] == 'enabled' and \
@@ -672,8 +671,12 @@ class Main_window(Tk):
 
     @_save_before_closing
     def _safe_destroy(self) -> None:
-        """Closes the main window, and displays a warning if there's unsaved
-        data."""
+        """Stops the computation thread, closes the main window, and displays
+        a warning if there's unsaved data."""
+
+        self._stop_thread = True
+        sleep(0.5)
+        self._thread.join(timeout=1)
 
         self.destroy()
 
@@ -738,36 +741,45 @@ class Main_window(Tk):
 
     def _stop_processing(self, force: bool = True) -> None:
         """Empties the queue of images waiting for processing, and waits for
-        the already started computations to end.
+        the already started computation to end.
 
-        This method is also called by the processing threads to get back to
-        normal operation mode once the last image has been processed.
+        This method is called when the user clicks on the Stop Processing
+        button of the GUI. It is also called regularly by the processing thread
+        so that the GUI gets back to normal operation mode once the last image
+        has been processed.
 
         Args:
-            force: If False, means that this method is called from a thread and
-                won't have any effect unless it is the last thread running. If
-                True, it is called by the user and will have effects.
+            force: If False, means that this method is called from the
+                processing thread and won't have any effect unless the last
+                image was just computed. If True, it is called by the user and
+                will have effect.
         """
 
-        # If the calling thread is not the last one, do nothing
-        if not force and (active_count() > 2 or self._stop_event.is_set()):
+        # If called from the thread and there are images left to process, abort
+        if not force and not self._queue.empty():
             return
 
-        # Sends a signal to stop the threads
+        # If called from the thread but GUI already back to normal, abort
+        if not force and self._stop_event.is_set():
+            return
+
+        # Sends a stop signal to the processing thread
         self._stop_event.set()
-        # Wait for all the running threads to finish
+
+        # Wait for the job queue to be empty and then resets the GUI
         if force:
             self._processing_label['text'] = "Stopping"
+            self._process_images_button["state"] = 'disabled'
             i = 1
-            while active_count() > 1:
+            while not self._queue.empty():
                 self.update()
-                # Indicating the user how many threads are left
+                # Indicating the user how many processes are left
                 self._processing_label[
-                    'text'] = "Stopping" + '.' * (i % 4) + ' ' * (4 - i % 4) \
-                              + f"(waiting for {active_count() - 1} " \
-                                f"thread(s) to finish)"
+                    'text'] = f"Stopping {'.' * (i % 4)}{' ' * (4 - i % 4)}" \
+                              f"(waiting for the current computation to " \
+                              f"finish)"
                 i += 1
-                sleep(1)
+                sleep(0.5)
 
         # Cleaning up the buttons and variables related to processing
         self._processed_images_count.set(0)
@@ -782,8 +794,8 @@ class Main_window(Tk):
         self.set_unsaved_status()
 
     def _process_images(self) -> NoReturn:
-        """Prepares the interface and then starts the threads for image
-        processing."""
+        """Prepares the interface and then sends to images to process to the
+        processing thread."""
 
         # Getting the names of the images to process
         file_names = self._files_table.filenames
@@ -793,85 +805,96 @@ class Main_window(Tk):
         self._img_to_process_count = len(file_names)
         self._process_images_button['text'] = 'Stop Processing'
         self._process_images_button.configure(command=self._stop_processing)
-        self._processing_label['text'] = "0 of " + str(len(file_names)) + \
-                                         " Images Processed"
+        self._processing_label['text'] = f"0 of {len(file_names)} Images " \
+                                         f"Processed "
 
         # Disabling most of the buttons and menu entries
         self._disable_buttons()
         self.update()
 
-        # Starting the threads
+        # Sending the jobs to the processing thread
         self._stop_event.clear()
-        semaphore = BoundedSemaphore(value=self.settings.n_threads.get())
         for file in file_names:
-            Thread(target=self._process_thread,
-                   args=(file, semaphore, self._stop_event)).start()
+            self._queue.put_nowait(
+                (file,
+                 self.settings.nuclei_colour.get(),
+                 self.settings.fibre_colour.get(),
+                 self.settings.fibre_threshold.get(),
+                 self.settings.small_objects_threshold.get()))
 
-    def _process_thread(self,
-                        file: Path,
-                        semaphore: BoundedSemaphore,
-                        stop_event: Event) -> None:
-        """The target code for the processing threads.
+    def _process_thread(self) -> None:
+        """"""
 
-        It basically processes one image, then sends the result to the files
-        table.
+        # Looping forever until the stop_thread flag is raised
+        while not self._stop_thread:
 
-        Args:
-            file: The path to the image to process.
-            semaphore: This object ensures that only the number of threads set
-                by the n_threads setting can run simultaneously.
-            stop_event: Event indicating the threads that they should return.
-        """
+            # If the stop_event is set, we just have to discard all the jobs
+            if self._stop_event.is_set():
+                while not self._queue.empty():
+                    try:
+                        self._queue.get_nowait()
+                    except Empty:
+                        pass
 
-        # Return if the user asks to
-        if stop_event.is_set():
-            return
+                sleep(1)
 
-        # Ensuring a limited number of threads run simultaneously
-        with semaphore:
-            # Actually processes the image
-            nuclei_out, nuclei_in, fibre_contours, area = \
-                self._segmentation(file,
-                                   self.settings.nuclei_colour.get(),
-                                   self.settings.fibre_colour.get(),
-                                   self.settings.fibre_threshold.get(),
-                                   self.settings.small_objects_threshold.get())
+            # Case when there are jobs to handle
+            elif not self._queue.empty():
+                # Acquiring the next job in the queue
+                try:
+                    path, nuclei_color, fibre_color, fibre_threshold, \
+                        small_objects_threshold = self._queue.get_nowait()
+                except Empty:
+                    sleep(1)
+                    continue
 
-            # The image couldn't be loaded
-            if nuclei_out is None:
-                messagebox.showerror(f'Error while loading the image !',
-                                     f'Check that the image at '
-                                     f'{file} still exists and '
-                                     f'that it is accessible.')
+                # Not processing if the user wants to stop the computation
+                if self._stop_event.is_set():
+                    continue
+
+                try:
+                    # Now processing the image
+                    file, nuclei_out, nuclei_in, fibre_contours, area = \
+                        self._segmentation(path,
+                                           nuclei_color,
+                                           fibre_color,
+                                           fibre_threshold,
+                                           small_objects_threshold)
+
+                    # Not updating if the user wants to stop the computation
+                    if self._stop_event.is_set():
+                        continue
+
+                    # Updating the image data with the result of the processing
+                    self._files_table.input_processed_data(nuclei_out,
+                                                           nuclei_in,
+                                                           fibre_contours,
+                                                           area, file)
+
+                    # Updating the processed images count
+                    self._processed_images_count.set(
+                        self._processed_images_count.get() + 1)
+
+                # Displaying any error in an error window
+                except (Exception,) as exc:
+                    messagebox.showerror("Error !",
+                                         f"An error occurred while processing "
+                                         f"the images !\nError : {exc}")
+
+            # To lazily get the GUI back to normal once all the jobs are
+            # completed
+            else:
                 self._stop_processing(force=False)
-                return
-
-            # Return if the user asks to
-            if stop_event.is_set():
-                return
-
-            # Sends the output to the table
-            self._files_table.input_processed_data(nuclei_out, nuclei_in,
-                                                   fibre_contours, area, file)
-
-            # Updates the processed images count
-            self._processed_images_count.set(
-                self._processed_images_count.get() + 1)
-
-        # Return if the user asks to
-        if stop_event.is_set():
-            return
-
-        # Puts the interface back to normal if this is the last thread running
-        self._stop_processing(force=False)
+                sleep(1)
 
     def _update_processed_images(self, _, __, ___) -> NoReturn:
         """Updates the display of the processed images count."""
 
         processed = self._processed_images_count.get()
         if processed:
-            self._processing_label['text'] = str(processed) + \
-                " of " + str(self._img_to_process_count) + " Images Processed"
+            self._processing_label['text'] = f"{processed} of " \
+                                             f"{self._img_to_process_count} " \
+                                             f"Images Processed"
 
     def _select_images(self) -> NoReturn:
         """Opens a dialog window for selecting the images to load, then adds

@@ -173,8 +173,6 @@ class Settings:
         default_factory=partial(BooleanVar, value=False, name='save_altered'))
     fibre_threshold: IntVar = field(
         default_factory=partial(IntVar, value=25, name='fibre_threshold'))
-    n_threads: IntVar = field(
-        default_factory=partial(IntVar, value=3, name='n_threads'))
     small_objects_threshold: IntVar = field(
         default_factory=partial(IntVar, value=400, name='small_objects'))
     blue_channel_bool: BooleanVar = field(

@@ -121,27 +121,9 @@ class Settings_window(Toplevel):
         fiber_threshold_slider_frame.grid(column=1, row=13, sticky='NW',
                                           pady=(10, 0))
 
-        # Slider to adjust the simultaneous number of threads
-        ttk.Label(frame, text='Number of Threads :').grid(
-            column=0, row=14, sticky='E', pady=(10, 0), padx=(0, 10))
-
-        thread_slider_frame = ttk.Frame(frame)
-
-        ttk.Label(thread_slider_frame, textvariable=self._settings.n_threads,
-                  width=3).\
-            pack(side='left', anchor='w', fill='none', expand=False,
-                 padx=(0, 20))
-
-        Scale(thread_slider_frame, from_=1, to=6, orient="horizontal",
-              variable=self._settings.n_threads, showvalue=False, length=150,
-              tickinterval=1).\
-            pack(side='left', anchor='w', fill='none', expand=False)
-
-        thread_slider_frame.grid(column=1, row=14, sticky='NW', pady=(10, 0))
-
         # Slider to adjust the small objects threshold
         ttk.Label(frame, text='Dead cells size Threshold :').grid(
-            column=0, row=15, sticky='E', pady=(10, 0), padx=(0, 10))
+            column=0, row=14, sticky='E', pady=(10, 0), padx=(0, 10))
 
         threshold_slider_frame = ttk.Frame(frame)
 
@@ -157,7 +139,7 @@ class Settings_window(Toplevel):
               tickinterval=300). \
             pack(side='left', anchor='w', fill='none', expand=False)
 
-        threshold_slider_frame.grid(column=1, row=15, sticky='NW',
+        threshold_slider_frame.grid(column=1, row=14, sticky='NW',
                                     pady=(10, 0))
 
     def _center(self) -> NoReturn:
