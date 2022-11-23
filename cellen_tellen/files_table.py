@@ -736,8 +736,10 @@ class Files_table(ttk.Frame):
         elif self._current_image == file:
             if index + 1 in self._index_to_img:
                 self._current_image = self._index_to_img[index + 1]
-            else:
+            elif self._index_to_img:
                 self._current_image = self._index_to_img[index - 1]
+            else:
+                self._current_image = None
 
         # Re-drawing the canvas
         self._make_table()
@@ -826,6 +828,9 @@ class Files_table(ttk.Frame):
         self._canvas.config(scrollregion=(0, 0, width, self._table_height))
 
         # Highlighting the selected image
-        if self._current_image is None:
-            self._current_image = self._index_to_img[0]
-        self._select_image(self._img_to_index[self._current_image])
+        if self._index_to_img:
+            if self._current_image is None:
+                self._current_image = self._index_to_img[0]
+            self._select_image(self._img_to_index[self._current_image])
+        else:
+            self.image_canvas.reset()
