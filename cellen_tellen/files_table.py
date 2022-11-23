@@ -6,7 +6,7 @@ from shutil import copyfile, rmtree
 from cv2 import polylines, ellipse, imwrite, cvtColor, COLOR_RGB2BGR
 from pathlib import Path
 from platform import system
-from typing import List, Dict, NoReturn, Tuple, Union
+from typing import List, Dict, Tuple, Union
 from copy import deepcopy
 from functools import partial
 from pickle import dump, load
@@ -49,7 +49,7 @@ class Files_table(ttk.Frame):
         self._set_bindings()
         self._set_variables()
 
-    def load_project(self, directory: Path) -> NoReturn:
+    def load_project(self, directory: Path) -> None:
         """Loads an existing project.
 
         Gets the images names and paths, the fibres positions, and the nuclei
@@ -92,7 +92,7 @@ class Files_table(ttk.Frame):
         if self.filenames:
             self._make_table()
 
-    def save_project(self, directory: Path, save_altered: bool) -> NoReturn:
+    def save_project(self, directory: Path, save_altered: bool) -> None:
         """Saves a project.
 
         Saves the images names and paths, the fibres positions, the nuclei
@@ -120,7 +120,7 @@ class Files_table(ttk.Frame):
         # Finally, save the data
         self._save_data(directory)
 
-    def add_nucleus(self, nucleus: Nucleus) -> NoReturn:
+    def add_nucleus(self, nucleus: Nucleus) -> None:
         """Adds a Nucleus to the Nuclei object associated with the current
         image.
 
@@ -131,7 +131,7 @@ class Files_table(ttk.Frame):
         self._nuclei[self._current_image].append(deepcopy(nucleus))
         self._update_data(self._current_image)
 
-    def remove_nucleus(self, nucleus: Nucleus) -> NoReturn:
+    def remove_nucleus(self, nucleus: Nucleus) -> None:
         """Removes a Nucleus from the Nuclei object associated with the current
         image.
 
@@ -142,7 +142,7 @@ class Files_table(ttk.Frame):
         self._nuclei[self._current_image].remove(nucleus)
         self._update_data(self._current_image)
 
-    def switch_nucleus(self, nucleus: Nucleus) -> NoReturn:
+    def switch_nucleus(self, nucleus: Nucleus) -> None:
         """Switches the color of a nucleus.
 
         Args:
@@ -154,7 +154,7 @@ class Files_table(ttk.Frame):
                 nuc.color = 'out' if nuc.color == 'in' else 'in'
         self._update_data(self._current_image)
 
-    def reset(self) -> NoReturn:
+    def reset(self) -> None:
         """Resets everything in the frame.
 
         Removes the existing images, as well as the nuclei and fibres.
@@ -174,7 +174,7 @@ class Files_table(ttk.Frame):
         self._fibres: Dict[Path, Fibres] = {}
         self.filenames: List[Path] = []
 
-    def add_images(self, filenames: List[Path]) -> NoReturn:
+    def add_images(self, filenames: List[Path]) -> None:
         """Adds images to the current frame.
 
         The new images are added under the existing list of images.
@@ -219,7 +219,7 @@ class Files_table(ttk.Frame):
                                                   Union[float, ndarray]]],
             fibre_contours: Tuple[ndarray],
             area: float,
-            file: Path) -> NoReturn:
+            file: Path) -> None:
         """Adds the nuclei and fibres positions to the frame after they've been
         computed.
 
@@ -257,7 +257,7 @@ class Files_table(ttk.Frame):
                 self._nuclei[self._current_image],
                 self._fibres[self._current_image])
 
-    def enable_close_buttons(self, enable: bool) -> NoReturn:
+    def enable_close_buttons(self, enable: bool) -> None:
         """Enables or disables the close buttons of the images.
 
         They should be disabled when the program is computing, as the images
@@ -272,7 +272,7 @@ class Files_table(ttk.Frame):
         for item in self._items.values():
             item.button['state'] = state
 
-    def _save_data(self, directory: Path) -> NoReturn:
+    def _save_data(self, directory: Path) -> None:
         """Saves the names of the images, the positions of the fibres and the
         positions and colors of the nuclei.
 
@@ -342,7 +342,7 @@ class Files_table(ttk.Frame):
                 self._img_to_index.pop(filename)
                 self.filenames[i] = new_path
 
-    def _save_table(self, directory: Path) -> NoReturn:
+    def _save_table(self, directory: Path) -> None:
         """Saves a .xlsx file containing stats about the images of the project.
 
         Args:
@@ -404,8 +404,8 @@ class Files_table(ttk.Frame):
 
         workbook.close()
 
-    def _save_altered_images(self, directory: Path) -> NoReturn:
-        """Saves the images with the nuclei and fibres drawn on thepm.
+    def _save_altered_images(self, directory: Path) -> None:
+        """Saves the images with the nuclei and fibres drawn on them.
 
         Args:
             directory: The path to the project folder.
@@ -420,7 +420,7 @@ class Files_table(ttk.Frame):
         for file in self.filenames:
             self._draw_nuclei_save(file, directory)
 
-    def _draw_nuclei_save(self, file: Path, project_name: Path) -> NoReturn:
+    def _draw_nuclei_save(self, file: Path, project_name: Path) -> None:
         """Draws fibres and nuclei on an images and then saves it.
 
         Args:
@@ -468,7 +468,7 @@ class Files_table(ttk.Frame):
         # Now saving the image
         imwrite(str(project_name / "Altered Images" / file.name), cv_img)
 
-    def _set_layout(self) -> NoReturn:
+    def _set_layout(self) -> None:
         """Sets the layout of the frame by creating the canvas and the
         scrollbar."""
 
@@ -490,7 +490,7 @@ class Files_table(ttk.Frame):
 
         self.update()
 
-    def _set_bindings(self) -> NoReturn:
+    def _set_bindings(self) -> None:
         """Sets the actions associated with the user inputs."""
 
         # Different wheel management in Windows and Linux
@@ -503,7 +503,7 @@ class Files_table(ttk.Frame):
         self._canvas.bind('<ButtonPress-1>', self._left_click)
         self._canvas.bind_all('<Motion>', self._motion)
 
-    def _set_variables(self) -> NoReturn:
+    def _set_variables(self) -> None:
         """Method to centralize the instantiation of the attributes."""
 
         # Attributes holding the data
@@ -521,7 +521,7 @@ class Files_table(ttk.Frame):
         self._index_to_img = {}
         self._img_to_index = {}
 
-    def _on_wheel(self, event: Event) -> NoReturn:
+    def _on_wheel(self, event: Event) -> None:
         """Scrolls the canvas up or down upon wheel motion."""
 
         # Different wheel management in Windows and Linux
@@ -534,7 +534,7 @@ class Files_table(ttk.Frame):
         if self._table_height > self._canvas.winfo_height():
             self._canvas.yview_scroll(-delta, "units")
 
-    def _update_data(self, file: Path) -> NoReturn:
+    def _update_data(self, file: Path) -> None:
         """Updates the display when data about an image has changed.
 
         Args:
@@ -565,7 +565,7 @@ class Files_table(ttk.Frame):
             items.labels.fiber,
             text='Fibre area : ' + f'{int(fibres.area * 100)}%')
 
-    def _motion(self, event: Event) -> NoReturn:
+    def _motion(self, event: Event) -> None:
         """Modifies the display when the mose is being hovered over the
         canvas."""
 
@@ -587,7 +587,7 @@ class Files_table(ttk.Frame):
                 self._un_hover(self._hovering_index)
                 self._hovering_index = None
 
-    def _hover(self, index: int) -> NoReturn:
+    def _hover(self, index: int) -> None:
         """Highlights a canvas entry that is being hovered.
 
         Args:
@@ -598,7 +598,7 @@ class Files_table(ttk.Frame):
         self._hovering_index = index
         self._set_aesthetics(index, selected=True, hover=True)
 
-    def _un_hover(self, index: int) -> NoReturn:
+    def _un_hover(self, index: int) -> None:
         """Un-highlights a canvas entry that is not hovered anymore.
 
         Args:
@@ -609,12 +609,12 @@ class Files_table(ttk.Frame):
         if index != self._img_to_index[self._current_image]:
             self._set_aesthetics(index, selected=False, hover=True)
 
-    def _unselect_image(self, index: int) -> NoReturn:
+    def _unselect_image(self, index: int) -> None:
         """Un-selects an image in the canvas."""
 
         self._set_aesthetics(index, selected=False, hover=False)
 
-    def _select_image(self, index: int) -> NoReturn:
+    def _select_image(self, index: int) -> None:
         """Selects an image in the canvas.
 
         This image is re-loaded.
@@ -629,7 +629,7 @@ class Files_table(ttk.Frame):
     def _set_aesthetics(self,
                         index: int,
                         selected: bool,
-                        hover: bool) -> NoReturn:
+                        hover: bool) -> None:
         """Sets the display of the canvas when loading or selecting images, or
         when hovering.
 
@@ -678,7 +678,7 @@ class Files_table(ttk.Frame):
         self._canvas.itemconfig(self._items[file].labels.fiber,
                                 fill=line_color)
 
-    def _left_click(self, event: Event) -> NoReturn:
+    def _left_click(self, event: Event) -> None:
         """Selects a new image or reloads the current."""
 
         # Does nothing if clicking in a blank area
@@ -744,7 +744,7 @@ class Files_table(ttk.Frame):
         # Re-drawing the canvas
         self._make_table()
 
-    def _make_table(self) -> NoReturn:
+    def _make_table(self) -> None:
         """Draws the entire canvas."""
 
         width = self._canvas.winfo_width()

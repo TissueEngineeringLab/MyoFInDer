@@ -2,7 +2,6 @@
 
 from tkinter import Toplevel, ttk, StringVar, IntVar
 from screeninfo import get_monitors
-from typing import NoReturn
 
 forbidden_chars = ['/', '\\', '>', '<', ':', '"', '|', '?', '*', '.']
 forbidden_names = ['CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4',
@@ -43,7 +42,7 @@ class Project_name_window(Toplevel):
         self._center()
         self._check_project_name_entry(self._name_entry.get())
 
-    def _set_layout(self) -> NoReturn:
+    def _set_layout(self) -> None:
         """Creates the labels and the entry, places them and displays them."""
 
         # Setting the message label
@@ -81,7 +80,7 @@ class Project_name_window(Toplevel):
             pady=7)
         self.bind('<Return>', self._enter_pressed)
 
-    def _center(self) -> NoReturn:
+    def _center(self) -> None:
         """Centers the popup window on the currently used monitor."""
 
         # Getting the current monitor
@@ -142,13 +141,13 @@ class Project_name_window(Toplevel):
         self._folder_name_window_save_button['state'] = 'enabled'
         return True
 
-    def _enter_pressed(self, *_, **__) -> NoReturn:
+    def _enter_pressed(self, *_, **__) -> None:
         """Simply sets the return flag to 1 in case the user presses save."""
 
         if self._folder_name_window_save_button['state'] == 'enabled':
             self._return_var.set(1)
 
-    def _cancel(self, *_, **__) -> NoReturn:
+    def _cancel(self, *_, **__) -> None:
         """Simply sets the return flag to 0 in case the user closes the
         window."""
 

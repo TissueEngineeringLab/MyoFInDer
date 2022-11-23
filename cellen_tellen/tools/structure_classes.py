@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from dataclasses import dataclass, field
-from typing import Optional, List, Any, NoReturn, Tuple
+from typing import Optional, List, Any, Tuple
 from tkinter.ttk import Button
 from functools import partial
 from tkinter import StringVar, IntVar, BooleanVar
@@ -72,12 +72,12 @@ class Nuclei:
 
     _current_index: int = -1
 
-    def append(self, nuc: Nucleus) -> NoReturn:
+    def append(self, nuc: Nucleus) -> None:
         """Adds a nucleus to the list of nuclei."""
 
         self.nuclei.append(nuc)
 
-    def remove(self, nuc: Nucleus) -> NoReturn:
+    def remove(self, nuc: Nucleus) -> None:
         """Removes a given nucleus from the list of nuclei."""
 
         try:
@@ -125,12 +125,12 @@ class Fibres:
 
     _current_index: int = -1
 
-    def append(self, fib: Fibre) -> NoReturn:
+    def append(self, fib: Fibre) -> None:
         """Adds a fiber to the list of fibres."""
 
         self.fibres.append(fib)
 
-    def remove(self, fib: Fibre) -> NoReturn:
+    def remove(self, fib: Fibre) -> None:
         """Removes a given fiber from the list of fibres."""
 
         try:

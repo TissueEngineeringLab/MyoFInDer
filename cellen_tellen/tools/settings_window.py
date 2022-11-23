@@ -2,7 +2,6 @@
 
 from tkinter import Toplevel, ttk, Scale
 from screeninfo import get_monitors
-from typing import NoReturn
 
 
 class Settings_window(Toplevel):
@@ -31,7 +30,7 @@ class Settings_window(Toplevel):
         self.update()
         self._center()
 
-    def _set_layout(self) -> NoReturn:
+    def _set_layout(self) -> None:
         """Creates the buttons and sliders, places them and displays them."""
 
         # General layout
@@ -142,7 +141,7 @@ class Settings_window(Toplevel):
         threshold_slider_frame.grid(column=1, row=14, sticky='NW',
                                     pady=(10, 0))
 
-    def _center(self) -> NoReturn:
+    def _center(self) -> None:
         """Centers the popup window on the currently used monitor."""
 
         # Getting the current monitor

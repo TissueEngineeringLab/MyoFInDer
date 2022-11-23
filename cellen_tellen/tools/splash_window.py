@@ -4,7 +4,6 @@ from tkinter import Tk, Canvas
 from PIL import ImageTk, Image
 from screeninfo import get_monitors
 from time import sleep
-from typing import NoReturn
 
 
 class Splash_window(Tk):
@@ -23,7 +22,7 @@ class Splash_window(Tk):
         self._image = Image.open(main_window.base_path / 'app_images' /
                                  "splash_background.png")
 
-    def resize_image(self) -> NoReturn:
+    def resize_image(self) -> None:
         """Centers the window on the monitor currently in use."""
 
         size_factor = 0.35

@@ -6,7 +6,7 @@ from platform import system
 from functools import partial
 from copy import deepcopy
 from pathlib import Path
-from typing import NoReturn, Tuple, Optional, List
+from typing import Tuple, Optional, List
 
 from .tools import Nucleus, Nuclei, Fibres, check_image
 
@@ -29,7 +29,7 @@ class Image_canvas(ttk.Frame):
         self._set_bindings()
         self._set_variables()
 
-    def set_indicators(self) -> NoReturn:
+    def set_indicators(self) -> None:
         """Redraws the nuclei and/or fibres after the user changed the elements
         to display."""
 
@@ -53,7 +53,7 @@ class Image_canvas(ttk.Frame):
     def load_image(self,
                    path: Path,
                    nuclei: Nuclei,
-                   fibres: Fibres) -> NoReturn:
+                   fibres: Fibres) -> None:
         """Loads and displays an image and its fibres and nuclei.
 
         Args:
@@ -104,7 +104,7 @@ class Image_canvas(ttk.Frame):
                                  f'{path} still exists and '
                                  f'that it is accessible.')
 
-    def reset(self) -> NoReturn:
+    def reset(self) -> None:
         """Resets every object in the canvas: the image, the nuclei and the
         fibres."""
 
@@ -187,7 +187,7 @@ class Image_canvas(ttk.Frame):
             else:
                 return '#FFA500'
 
-    def show_image(self, *_: Event) -> NoReturn:
+    def show_image(self, *_: Event) -> None:
         """Displays the image on the canvas.
 
         Args:
@@ -222,21 +222,21 @@ class Image_canvas(ttk.Frame):
                 self._canvas.xview_moveto(0),
                 self._canvas.yview_moveto(0)
     
-    def _delete_nuclei(self) -> NoReturn:
+    def _delete_nuclei(self) -> None:
         """Removes all nuclei from the canvas, but doesn't delete the nuclei
         objects."""
 
         for nuc in self._nuclei:
             self._canvas.delete(nuc.tk_obj)
 
-    def _delete_fibres(self) -> NoReturn:
+    def _delete_fibres(self) -> None:
         """Removes all fibres from the canvas, but doesn't delete the fibres
          objects."""
 
         for fibre in self._fibres:
             self._canvas.delete(fibre.polygon)
 
-    def _set_layout(self) -> NoReturn:
+    def _set_layout(self) -> None:
         """Creates the frame, canvas and scrollbar objects, places them and
         displays them."""
 
@@ -272,7 +272,7 @@ class Image_canvas(ttk.Frame):
         # Finally, applying the changes
         self._canvas.update()
 
-    def _set_bindings(self) -> NoReturn:
+    def _set_bindings(self) -> None:
         """Sets the actions to perform for the different user inputs."""
 
         self._canvas.bind('<ButtonPress-2>', self._move_from)
@@ -301,7 +301,7 @@ class Image_canvas(ttk.Frame):
         self._canvas.bind('<ButtonPress-1>', self._left_click)
         self._canvas.bind('<ButtonPress-3>', self._right_click)
 
-    def _set_variables(self) -> NoReturn:
+    def _set_variables(self) -> None:
         """Sets the variables used in this class."""
 
         self._image = None
@@ -521,7 +521,7 @@ class Image_canvas(ttk.Frame):
             # Deducing the new image scale
             self._img_scale = resize_width / self._image.width
 
-    def _arrows(self, event: Event) -> NoReturn:
+    def _arrows(self, event: Event) -> None:
         """Scrolls the image upon pressing on the arrow keys.
 
         Args:
@@ -541,13 +541,13 @@ class Image_canvas(ttk.Frame):
 
         self._canvas.configure(xscrollincrement='1', yscrollincrement='1')
 
-    def _move_from(self, event: Event) -> NoReturn:
+    def _move_from(self, event: Event) -> None:
         """Stores the previous coordinates for scrolling with the mouse."""
 
         if self._image is not None:
             self._canvas.scan_mark(event.x, event.y)
 
-    def _move_to(self, event: Event) -> NoReturn:
+    def _move_to(self, event: Event) -> None:
         """Drags the canvas to a new position."""
 
         if self._image is not None:

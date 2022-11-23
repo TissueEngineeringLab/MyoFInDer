@@ -3,7 +3,6 @@
 from tkinter import Toplevel, ttk, Tk
 from screeninfo import get_monitors
 from pathlib import Path
-from typing import NoReturn
 
 
 class Save_popup(Toplevel):
@@ -23,7 +22,7 @@ class Save_popup(Toplevel):
         self.update()
         self._center()
 
-    def _center(self) -> NoReturn:
+    def _center(self) -> None:
         """Centers the popup window on the currently used monitor."""
 
         # Getting the current monitor

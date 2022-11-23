@@ -11,7 +11,7 @@ from time import sleep
 from pickle import load, dump
 from functools import partial, wraps
 from pathlib import Path
-from typing import Callable, NoReturn, Optional
+from typing import Callable, Optional
 
 from .tools import Settings
 from .tools import Save_popup
@@ -108,7 +108,7 @@ class Main_window(Tk):
         self.protocol("WM_DELETE_WINDOW", self._safe_destroy)
         self.mainloop()
 
-    def set_unsaved_status(self) -> NoReturn:
+    def set_unsaved_status(self) -> None:
         """Sets the title and save button when a project is modified."""
 
         if self._current_project is not None:
@@ -121,7 +121,7 @@ class Main_window(Tk):
             self._save_button['state'] = 'enabled'
             self._save_button['text'] = 'Save As'
 
-    def _load_settings(self) -> NoReturn:
+    def _load_settings(self) -> None:
         """Loads the settings from the settings file if any, otherwise sets
         them to default."""
 
@@ -158,7 +158,7 @@ class Main_window(Tk):
         # Finally, saving the recent projects and the settings
         self._save_settings()
 
-    def _set_traces(self) -> NoReturn:
+    def _set_traces(self) -> None:
         """Sets the callbacks triggered upon modification of the settings."""
 
         # Making sure there's no conflict between the nuclei and fibres colors
@@ -179,7 +179,7 @@ class Main_window(Tk):
         self._processed_images_count.trace_add("write",
                                                self._update_processed_images)
 
-    def _set_variables(self) -> NoReturn:
+    def _set_variables(self) -> None:
         """Sets the different variables used in the class."""
 
         # Variables used when there's a conflict in the choice of colors for
@@ -206,7 +206,7 @@ class Main_window(Tk):
         self._max_recent_projects = 20  # Maximum number of recent projects
         self._current_project = None  # Path to the current project
 
-    def _set_menu(self) -> NoReturn:
+    def _set_menu(self) -> None:
         """Sets the menu bar."""
 
         # Sets the overall menu bar
@@ -272,7 +272,7 @@ class Main_window(Tk):
                 label="Load '" + path.name + "'",
                 command=partial(self._safe_load, path))
 
-    def _set_layout(self) -> NoReturn:
+    def _set_layout(self) -> None:
         """Sets the overall layout of the window."""
 
         # The main frame of the window
@@ -355,7 +355,7 @@ class Main_window(Tk):
         self._processing_label.pack(anchor="n", side="top", fill='x', padx=3,
                                     pady=5)
 
-    def _save_settings_callback(self, name: str, _, __) -> NoReturn:
+    def _save_settings_callback(self, name: str, _, __) -> None:
         """Saves the settings upon modification of one of them.
 
         Some settings require a slightly different saving strategy.
@@ -373,7 +373,7 @@ class Main_window(Tk):
 
     def _save_settings(self,
                        autosave_time: bool = False,
-                       enable_save: bool = False) -> NoReturn:
+                       enable_save: bool = False) -> None:
         """Saves the settings and recent projects to .pickle files.
 
         Args:
@@ -407,7 +407,7 @@ class Main_window(Tk):
                                       self._recent_projects]},
                  recent_projects_file, protocol=4)
 
-    def _delete_current_project(self) -> NoReturn:
+    def _delete_current_project(self) -> None:
         """Deletes the current project and all the associated files."""
 
         if self._current_project is None:
@@ -439,7 +439,7 @@ class Main_window(Tk):
             # Creates a new empty project
             self._create_empty_project()
 
-    def _create_empty_project(self) -> NoReturn:
+    def _create_empty_project(self) -> None:
         """Creates a new empty project."""
 
         # Resets the entire window
@@ -540,7 +540,7 @@ class Main_window(Tk):
         else:
             self._process_images_button['state'] = 'disabled'
 
-    def _set_title_and_button(self, directory: Path) -> NoReturn:
+    def _set_title_and_button(self, directory: Path) -> None:
         """Sets the project title and the save button when loading or saving
         a project.
 
@@ -560,7 +560,7 @@ class Main_window(Tk):
         self._current_project = directory
         self.title("Cellen Tellen - Project '" + directory.name + "'")
 
-    def _add_to_recent_projects(self, directory: Path) -> NoReturn:
+    def _add_to_recent_projects(self, directory: Path) -> None:
         """Sets the recent project menu entry when loading or saving a project.
 
         Args:
@@ -698,7 +698,7 @@ class Main_window(Tk):
 
         self._load_project(path)
 
-    def _disable_buttons(self) -> NoReturn:
+    def _disable_buttons(self) -> None:
         """Disables most of the buttons and menu entries when computing."""
 
         # Disabling the buttons
@@ -716,7 +716,7 @@ class Main_window(Tk):
         # Disables the file table close buttons
         self._files_table.enable_close_buttons(False)
 
-    def _enable_buttons(self) -> NoReturn:
+    def _enable_buttons(self) -> None:
         """Re-enables the buttons and menu entries once processing is over."""
 
         # Re-enabling buttons
@@ -793,7 +793,7 @@ class Main_window(Tk):
         self._enable_buttons()
         self.set_unsaved_status()
 
-    def _process_images(self) -> NoReturn:
+    def _process_images(self) -> None:
         """Prepares the interface and then sends to images to process to the
         processing thread."""
 
@@ -887,7 +887,7 @@ class Main_window(Tk):
                 self._stop_processing(force=False)
                 sleep(1)
 
-    def _update_processed_images(self, _, __, ___) -> NoReturn:
+    def _update_processed_images(self, _, __, ___) -> None:
         """Updates the display of the processed images count."""
 
         processed = self._processed_images_count.get()
@@ -896,7 +896,7 @@ class Main_window(Tk):
                                              f"{self._img_to_process_count} " \
                                              f"Images Processed"
 
-    def _select_images(self) -> NoReturn:
+    def _select_images(self) -> None:
         """Opens a dialog window for selecting the images to load, then adds
         them in the files table."""
 
@@ -916,7 +916,7 @@ class Main_window(Tk):
             self._files_table.add_images(file_names)
             self.set_unsaved_status()
 
-    def _set_autosave_time(self) -> NoReturn:
+    def _set_autosave_time(self) -> None:
         """Schedules a save job according to the selected autosave time."""
 
         # Cancels any previous autosave job
@@ -929,13 +929,13 @@ class Main_window(Tk):
             self._auto_save_job = self.after(self.settings.auto_save_time.get()
                                              * 1000, self._save_project)
 
-    def _set_image_channels(self) -> NoReturn:
+    def _set_image_channels(self) -> None:
         """Redraws the current image with the selected channels."""
 
         self._image_canvas.show_image()
         self._save_settings()
 
-    def _set_indicators(self) -> NoReturn:
+    def _set_indicators(self) -> None:
         """Updates the display of fibres and nuclei according to the user
         selection."""
         
@@ -943,7 +943,7 @@ class Main_window(Tk):
         self._image_canvas.set_indicators()
         self._save_settings()
 
-    def _nuclei_colour_sel(self, _, __, ___) -> NoReturn:
+    def _nuclei_colour_sel(self, _, __, ___) -> None:
         """Ensures there's no conflict in the chosen image channels for fibres
         and nuclei."""
 
@@ -969,7 +969,7 @@ class Main_window(Tk):
         self._image_canvas.set_indicators()
 
     @staticmethod
-    def _open_github() -> NoReturn:
+    def _open_github() -> None:
         """Opens the project repository in a browser."""
 
         open_new("https://github.com/WeisLeDocto/Cellen-Tellen")

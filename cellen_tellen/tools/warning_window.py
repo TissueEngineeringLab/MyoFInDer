@@ -2,7 +2,6 @@
 
 from tkinter import Toplevel, ttk, IntVar
 from screeninfo import get_monitors
-from typing import NoReturn
 
 
 class Warning_window(Toplevel):
@@ -34,7 +33,7 @@ class Warning_window(Toplevel):
         self.update()
         self._center()
 
-    def _set_layout(self) -> NoReturn:
+    def _set_layout(self) -> None:
         """Creates the labels and the buttons, places them and displays
         them."""
 
@@ -58,7 +57,7 @@ class Warning_window(Toplevel):
             pack(anchor='n', expand=False, fill='none', side='top',
                  padx=20, pady=7)
 
-    def _center(self) -> NoReturn:
+    def _center(self) -> None:
         """Centers the popup window on the currently used monitor."""
 
         # Getting the current monitor
@@ -80,19 +79,19 @@ class Warning_window(Toplevel):
         self.geometry('+%d+%d' % (x_offset + (scr_width - width) / 2,
                                   y_offset + (scr_height - height) / 2))
 
-    def _save(self) -> NoReturn:
+    def _save(self) -> None:
         """Simply sets the return flag to 2 in case the user wants to save
         before continuing."""
 
         self._return_var.set(2)
 
-    def _ignore(self) -> NoReturn:
+    def _ignore(self) -> None:
         """Simply sets the return flag to 1 in case the user wants to continue
         without saving."""
 
         self._return_var.set(1)
 
-    def _cancel(self, *_, **__) -> NoReturn:
+    def _cancel(self, *_, **__) -> None:
         """Simply sets the return flag to 0 in case the user cancels or closes
         the window."""
 
