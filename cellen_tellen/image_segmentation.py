@@ -101,7 +101,9 @@ class Image_segmentation:
         labeled_image = np.squeeze(labeled_image)
 
         # Getting the fibre mask
-        mask = self._get_fibre_mask(image[:, :, colors[1]], fibre_threshold)
+        mask = self._get_fibre_mask(image[:, :, colors[1]],
+                                    image[:, :, colors[0]],
+                                    fibre_threshold)
 
         # Calculating the area of fibers over the total area
         area = np.count_nonzero(mask) / mask.shape[0] / mask.shape[1]
@@ -113,18 +115,21 @@ class Image_segmentation:
         fibre_contours = tuple(map(np.squeeze, fibre_contours))
 
         # Getting the position of the nuclei
-        nuclei_out, nuclei_in = self._get_nuclei_positions(labeled_image, mask)
+        nuclei_out, nuclei_in = self._get_nuclei_positions(labeled_image,
+                                                           mask, 0.4)
 
         return path, nuclei_out, nuclei_in, fibre_contours, area
 
     @staticmethod
     def _get_fibre_mask(fibre_channel: np.ndarray,
+                        nuclei_channel: np.ndarray,
                         threshold: int) -> np.ndarray:
         """Applies several images processing methods to the fibre channel of
         the image to smoothen the outline.
 
         Args:
             fibre_channel: The channel of the image containing the fibres.
+            nuclei_channel: The channel of the image containing the nuclei.
             threshold: The gray level threshold above which a pixel is
                 considered to be part of a fiber.
 
@@ -133,7 +138,7 @@ class Image_segmentation:
         """
 
         # First, apply a base threshold
-        kernel = np.ones((10, 10), np.uint8)
+        kernel = np.ones((4, 4), np.uint8)
         _, processed = cv2.threshold(fibre_channel, threshold, 255,
                                      cv2.THRESH_BINARY)
 
@@ -152,10 +157,12 @@ class Image_segmentation:
                                        cv2.CHAIN_APPROX_SIMPLE)
 
         for contour in contours:
-            # Fill hole if its area is smaller than 0.5% of the image
-            if cv2.contourArea(contour) / \
-                    (fibre_channel.shape[0] * fibre_channel.shape[1]) < 5e-3:
-                cv2.drawContours(processed, [contour], -1, (0, 0, 0), -1)
+
+            mask = np.zeros_like(processed)
+            cv2.drawContours(mask, contour, -1, 255, -1)
+
+            if np.average(nuclei_channel[mask == 255]) > 50:
+                cv2.drawContours(processed, contour, -1, 0, -1)
 
         # Inverting black and white again
         processed = cv2.bitwise_not(processed)
