@@ -204,12 +204,12 @@ class Files_table(ttk.Frame):
         # Adding the new images to the frame
         if filenames:
             self.filenames += filenames
-            for file in filenames:
-                self._nuclei[file] = Nuclei()
-                self._fibres[file] = Fibres()
+        for file in filenames:
+            self._nuclei[file] = Nuclei()
+            self._fibres[file] = Fibres()
 
-            # Redrawing the canvas
-            self._make_table()
+        # Redrawing the canvas
+        self._make_table()
 
     def input_processed_data(
             self,
