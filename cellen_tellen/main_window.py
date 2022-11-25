@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from tkinter import ttk, filedialog, Tk, IntVar, PhotoImage, Menu, StringVar, \
-    messagebox
+    messagebox, Checkbutton, BooleanVar
 from platform import system, release
 from shutil import rmtree
 from webbrowser import open_new
@@ -29,6 +29,7 @@ if system() == "Windows" and int(release()) >= 8:
 
 # Todo:
 #   Set up unit tests
+#   Improve the architecture of the file table
 
 
 def _save_before_closing(func: Callable) -> Callable:
@@ -94,7 +95,9 @@ class Main_window(Tk):
 
         # Sets the image canvas and the files table
         self._image_canvas = Image_canvas(self._frm, self)
-        self._files_table = Files_table(self._aux_frame, self.projects_path)
+        self._files_table = Files_table(self._aux_frame,
+                                        self.projects_path,
+                                        self)
         self._image_canvas.nuclei_table = self._files_table
         self._files_table.image_canvas = self._image_canvas
 
@@ -118,6 +121,12 @@ class Main_window(Tk):
             self.title("Cellen Tellen - New Project (Unsaved)")
             self._save_button['state'] = 'enabled'
             self._save_button['text'] = 'Save As'
+
+    def update_master_check(self) -> None:
+        """Updates the master checkbox according to the states of the
+        checkboxes of all the files menu entries."""
+
+        self._master_check_var.set(self._files_table.all_checked)
 
     def _load_settings(self) -> None:
         """Loads the settings from the settings file if any, otherwise sets
@@ -188,6 +197,9 @@ class Main_window(Tk):
             value=self.settings.nuclei_colour.get())
         self._previous_fibre_colour = StringVar(
             value=self.settings.fibre_colour.get())
+
+        # The variables associated with the master checkbox
+        self._master_check_var = BooleanVar(value=True)
 
         # Variables managing the processing thread
         self._processed_images_count = IntVar(value=0)
@@ -296,6 +308,10 @@ class Main_window(Tk):
         self._tick_frame_2 = ttk.Frame(self._aux_frame)
         self._tick_frame_2.pack(expand=False, fill="x", anchor='n', side='top')
 
+        self._text_button_frame = ttk.Frame(self._aux_frame)
+        self._text_button_frame.pack(anchor="n", side="top", fill='x', padx=3,
+                                     pady=5)
+
         # Creating the buttons
         self._load_button = ttk.Button(self._button_frame, text="Load Images",
                                        command=self._select_images)
@@ -351,9 +367,23 @@ class Main_window(Tk):
                                             padx=3, pady=5)
 
         # Label displaying info during image processing
-        self._processing_label = ttk.Label(self._aux_frame, text="")
-        self._processing_label.pack(anchor="n", side="top", fill='x', padx=3,
-                                    pady=5)
+        self._processing_label = ttk.Label(self._text_button_frame, text="")
+        self._processing_label.pack(anchor="w", side="left", fill='x',
+                                    padx=(9, 0))
+
+        self._delete_all_button = ttk.Button(self._text_button_frame,
+                                             text='X', width=2,
+                                             command=self._delete_many_files)
+        self._delete_all_button.pack(anchor="e", side="right", fill='none',
+                                     padx=(0, 15))
+
+        self._check_img = PhotoImage(width=1, height=1)
+        self._select_all_button = Checkbutton(self._text_button_frame,
+                                              image=self._check_img,
+                                              width=6, height=24,
+                                              command=self._invert_checkboxes,
+                                              variable=self._master_check_var)
+        self._select_all_button.pack(anchor="e", side="right", fill='none')
 
     def _save_settings_callback(self, name: str, _, __) -> None:
         """Saves the settings upon modification of one of them.
@@ -706,6 +736,8 @@ class Main_window(Tk):
         # Disabling the buttons
         self._load_button['state'] = "disabled"
         self._save_button['state'] = "disabled"
+        self._select_all_button['state'] = 'disabled'
+        self._delete_all_button['state'] = 'disabled'
 
         # Disabling the menu entries
         self._file_menu.entryconfig("Load Automatic Save", state='disabled')
@@ -716,13 +748,15 @@ class Main_window(Tk):
         self._file_menu.entryconfig("Load From Explorer", state="disabled")
 
         # Disables the file table close buttons
-        self._files_table.enable_close_buttons(False)
+        self._files_table.enable_buttons(False)
 
     def _enable_buttons(self) -> None:
         """Re-enables the buttons and menu entries once processing is over."""
 
         # Re-enabling buttons
         self._load_button['state'] = "enabled"
+        self._select_all_button['state'] = 'normal'
+        self._delete_all_button['state'] = 'enabled'
         self.set_unsaved_status()
         self._set_indicators()
 
@@ -739,7 +773,7 @@ class Main_window(Tk):
         self._file_menu.entryconfig("Load From Explorer", state="normal")
 
         # Re-enabling the file table close buttons
-        self._files_table.enable_close_buttons(True)
+        self._files_table.enable_buttons(True)
 
     def _stop_processing(self, force: bool = True) -> None:
         """Empties the queue of images waiting for processing, and waits for
@@ -800,7 +834,11 @@ class Main_window(Tk):
         processing thread."""
 
         # Getting the names of the images to process
-        file_names = self._files_table.filenames
+        file_names = self._files_table.checked_files
+
+        # If all checkboxes are unchecked, do nothing
+        if not file_names:
+            return
 
         # Setting the buttons and variables related to processing
         self._processed_images_count.set(0)
@@ -979,6 +1017,43 @@ class Main_window(Tk):
         # Finally, save and redraw the nuclei and fibers
         self._save_settings()
         self._image_canvas.set_indicators()
+
+    def _invert_checkboxes(self) -> None:
+        """Called when clicking on the master checkbox.
+
+        If all the boxes are checked, unchecks them all, otherwise checks them
+        all.
+        """
+
+        if self._files_table.all_checked:
+            for item in self._files_table.items.values():
+                item.check.var.set(False)
+        else:
+            for item in self._files_table.items.values():
+                item.check.var.set(True)
+
+    def _delete_many_files(self) -> None:
+        """Called when hitting the master delete button.
+
+        Deletes all the files in the files table whose checkboxes are checked.
+        """
+
+        # Getting the list of files to delete, and checking it's not empty
+        to_delete = self._files_table.checked_files
+        if not to_delete:
+            return
+
+        # Confirming that the files should be deleted
+        ret = messagebox.askyesno('Hold on !',
+                                  f"Do you really want to remove "
+                                  f"{len(to_delete)} files ?\nAll the unsaved "
+                                  f"data will be lost.")
+        if not ret:
+            return
+
+        # Actually deleting the files
+        for file in to_delete:
+            self._files_table.delete_image(file, security=False)
 
     @staticmethod
     def _open_github() -> None:

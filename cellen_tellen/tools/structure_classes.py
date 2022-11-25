@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Optional, List, Any, Tuple
 from tkinter.ttk import Button
 from functools import partial
-from tkinter import StringVar, IntVar, BooleanVar
+from tkinter import StringVar, IntVar, BooleanVar, Checkbutton, PhotoImage
 
 
 @dataclass
@@ -29,6 +29,15 @@ class Lines:
 
 
 @dataclass
+class Check:
+    """Class holding the objects managing the checkboxes in the canvas."""
+
+    box: Checkbutton
+    var: BooleanVar
+    img:  PhotoImage
+
+
+@dataclass
 class Table_element:
     """Class holding all the canvas elements for one image."""
 
@@ -36,6 +45,7 @@ class Table_element:
     lines: Lines
     rect: int
     button: Button
+    check: Check
 
 
 @dataclass

@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from tkinter import ttk, Canvas, messagebox, Event
+from tkinter import ttk, Canvas, messagebox, Event, BooleanVar, Checkbutton, \
+    PhotoImage
 from xlsxwriter import Workbook
 from shutil import copyfile, rmtree
 from cv2 import polylines, ellipse, imwrite, cvtColor, COLOR_RGB2BGR
@@ -13,7 +14,7 @@ from pickle import dump, load
 from numpy import ndarray, array
 
 from .tools import Nucleus, Fibre, Nuclei, Fibres, Labels, Lines, \
-    Table_element, check_image
+    Table_element, check_image, Check
 
 # Color codes used in the table
 background = '#EAECEE'
@@ -31,18 +32,21 @@ class Files_table(ttk.Frame):
 
     def __init__(self,
                  root: ttk.Frame,
-                 projects_path: Path) -> None:
+                 projects_path: Path,
+                 main_window) -> None:
         """Sets the appearance of the frame.
 
         Args:
             root: The parent frame in which this one is included.
             projects_path: The path to the Projects folder.
+            main_window: the main window of the GUI.
         """
 
         super().__init__(root)
 
         self._row_height = 50  # The height of a row in pixels
         self._projects_path = projects_path
+        self._main_window = main_window
 
         # Setting the appearance
         self._set_layout()
@@ -165,7 +169,7 @@ class Files_table(ttk.Frame):
             self._canvas.delete(item)
 
         # Emptying the different lists, dicts and variables
-        self._items: Dict[Path, Table_element] = {}
+        self.items: Dict[Path, Table_element] = {}
         self._index_to_img = {}
         self._img_to_index = {}
         self._current_image = None
@@ -186,7 +190,7 @@ class Files_table(ttk.Frame):
         # Deleting every element in the canvas
         for item in self._canvas.find_all():
             self._canvas.delete(item)
-        self._items: Dict[Path, Table_element] = {}
+        self.items: Dict[Path, Table_element] = {}
 
         # Making sure there's no conflict between the new and previous images
         for file in filenames:
@@ -257,8 +261,8 @@ class Files_table(ttk.Frame):
                 self._nuclei[self._current_image],
                 self._fibres[self._current_image])
 
-    def enable_close_buttons(self, enable: bool) -> None:
-        """Enables or disables the close buttons of the images.
+    def enable_buttons(self, enable: bool) -> None:
+        """Enables or disables the close buttons and checkboxes of the images.
 
         They should be disabled when the program is computing, as the images
         shouldn't be removed at this moment.
@@ -267,10 +271,84 @@ class Files_table(ttk.Frame):
             enable: Whether the buttons should be enabled or disabled.
         """
 
-        state = 'enabled' if enable else 'disabled'
+        button_state = 'enabled' if enable else 'disabled'
+        check_state = 'normal' if enable else 'disabled'
 
-        for item in self._items.values():
-            item.button['state'] = state
+        for item in self.items.values():
+            item.button['state'] = button_state
+            item.check.box['state'] = check_state
+
+    @property
+    def all_checked(self) -> bool:
+        """Returns True when all the checkboxes of the images are set."""
+
+        # If there's no image, default is True
+        if not self.items:
+            return True
+
+        return all(item.check.var.get() for item in self.items.values())
+
+    @property
+    def checked_files(self) -> List[Path]:
+        """Returns the paths to the files whose checkboxes are checked."""
+
+        return [path for path, item in self.items.items()
+                if item.check.var.get()]
+
+    def delete_image(self, file: Path, security: bool = True) -> None:
+        """Removes an image from the canvas.
+
+        Args:
+            file: The path to the image to be removed.
+            security: If True, no warning message is displayed before
+                deleting the file.
+        """
+
+        # Security to prevent unwanted deletions
+        if security:
+            ret = messagebox.askyesno('Hold on !',
+                                      f"Do you really want to remove "
+                                      f"{file.name} ?\nAll the unsaved data "
+                                      f"will be lost.")
+            if not ret:
+                return
+
+        # Un-hovering the current entry, which should be the one to delete
+        if self._hovering_index is not None:
+            self._un_hover(self._hovering_index)
+            self._hovering_index = None
+
+        # Cleaning the canvas
+        for item in self._canvas.find_all():
+            self._canvas.delete(item)
+
+        # Removing any reference to the image being deleted
+        self.items.pop(file)
+        self._index_to_img.pop(self._img_to_index[file])
+        index = self._img_to_index.pop(file)
+        self._nuclei.pop(file)
+        self._fibres.pop(file)
+        self.filenames.remove(file)
+
+        # No entry left in the canvas
+        if not self.filenames:
+            self._current_image = None
+            self._hovering_index = None
+
+        # Selecting the new current image in case it was the one to delete
+        elif self._current_image == file:
+            if index + 1 in self._index_to_img:
+                self._current_image = self._index_to_img[index + 1]
+            elif self._index_to_img:
+                self._current_image = self._index_to_img[index - 1]
+            else:
+                self._current_image = None
+
+        # Re-drawing the canvas
+        self._make_table()
+
+        # Updating the master checkbox
+        self._main_window.update_master_check()
 
     def _save_data(self, directory: Path) -> None:
         """Saves the names of the images, the positions of the fibres and the
@@ -330,8 +408,8 @@ class Files_table(ttk.Frame):
                     self._current_image = new_path
 
                 # Updating the paths to the image that was just saved
-                self._items[new_path] = self._items[filename]
-                self._items.pop(filename)
+                self.items[new_path] = self.items[filename]
+                self.items.pop(filename)
                 self._fibres[new_path] = self._fibres[filename]
                 self._fibres.pop(filename)
                 self._nuclei[new_path] = self._nuclei[filename]
@@ -517,7 +595,7 @@ class Files_table(ttk.Frame):
 
         # Other attributes
         self.image_canvas = None
-        self._items: Dict[Path, Table_element] = {}
+        self.items: Dict[Path, Table_element] = {}
         self._index_to_img = {}
         self._img_to_index = {}
 
@@ -544,7 +622,7 @@ class Files_table(ttk.Frame):
         # To avoid repeated calls to the same attribute
         nuclei = self._nuclei[file]
         fibres = self._fibres[file]
-        items = self._items[file]
+        items = self.items[file]
         total_nuclei = len(nuclei)
 
         # Updating the labels
@@ -649,33 +727,33 @@ class Files_table(ttk.Frame):
 
         # Cannot set the upper line if first entry in canvas
         if index > 0:
-            self._canvas.itemconfig(self._items[self._index_to_img[index - 1]].
+            self._canvas.itemconfig(self.items[self._index_to_img[index - 1]].
                                     lines.full_line, fill=line_color)
 
         # The rectangle isn't affected by hovering
         if not hover:
-            self._canvas.itemconfig(self._items[file].rect,
+            self._canvas.itemconfig(self.items[file].rect,
                                     fill=rect_color)
 
         # Setting all the items of the entry
-        self._canvas.itemconfig(self._items[file].lines.half_line,
+        self._canvas.itemconfig(self.items[file].lines.half_line,
                                 fill=line_color)
-        self._canvas.itemconfig(self._items[file].lines.full_line,
+        self._canvas.itemconfig(self.items[file].lines.full_line,
                                 fill=line_color)
-        self._canvas.itemconfig(self._items[file].lines.index_line,
+        self._canvas.itemconfig(self.items[file].lines.index_line,
                                 fill=line_color)
 
-        self._canvas.itemconfig(self._items[file].labels.name,
+        self._canvas.itemconfig(self.items[file].labels.name,
                                 fill=line_color)
-        self._canvas.itemconfig(self._items[file].labels.nuclei,
+        self._canvas.itemconfig(self.items[file].labels.nuclei,
                                 fill=line_color)
-        self._canvas.itemconfig(self._items[file].labels.ratio,
+        self._canvas.itemconfig(self.items[file].labels.ratio,
                                 fill=line_color)
-        self._canvas.itemconfig(self._items[file].labels.positive,
+        self._canvas.itemconfig(self.items[file].labels.positive,
                                 fill=line_color)
-        self._canvas.itemconfig(self._items[file].labels.index,
+        self._canvas.itemconfig(self.items[file].labels.index,
                                 fill=line_color)
-        self._canvas.itemconfig(self._items[file].labels.fiber,
+        self._canvas.itemconfig(self.items[file].labels.fiber,
                                 fill=line_color)
 
     def _left_click(self, event: Event) -> None:
@@ -696,54 +774,6 @@ class Files_table(ttk.Frame):
 
         return self._row_height * 2 * len(self.filenames)
 
-    def _delete_image(self, file: Path) -> None:
-        """Removes an image from the canvas.
-
-        Args:
-            file: The path to the image to be removed.
-        """
-
-        # Security to prevent unwanted deletions
-        ret = messagebox.askyesno('Hold on !',
-                                  f"Do you really want to remove {file.name} ?"
-                                  f"\nAll the unsaved data will be lost.")
-        if not ret:
-            return
-
-        # Un-hovering the current entry, which should be the one to delete
-        if self._hovering_index is not None:
-            self._un_hover(self._hovering_index)
-            self._hovering_index = None
-
-        # Cleaning the canvas
-        for item in self._canvas.find_all():
-            self._canvas.delete(item)
-
-        # Removing any reference to the image being deleted
-        self._items.pop(file)
-        self._index_to_img.pop(self._img_to_index[file])
-        index = self._img_to_index.pop(file)
-        self._nuclei.pop(file)
-        self._fibres.pop(file)
-        self.filenames.remove(file)
-
-        # No entry left in the canvas
-        if not self.filenames:
-            self._current_image = None
-            self._hovering_index = None
-
-        # Selecting the new current image in case it was the one to delete
-        elif self._current_image == file:
-            if index + 1 in self._index_to_img:
-                self._current_image = self._index_to_img[index + 1]
-            elif self._index_to_img:
-                self._current_image = self._index_to_img[index - 1]
-            else:
-                self._current_image = None
-
-        # Re-drawing the canvas
-        self._make_table()
-
     def _make_table(self) -> None:
         """Draws the entire canvas."""
 
@@ -761,9 +791,19 @@ class Files_table(ttk.Frame):
             full_line = self._canvas.create_line(
                 -1, bottom, width, bottom, width=3, fill=label_line)
 
+            # Creating the button for removing the file
             button = ttk.Button(self._canvas, text="X", width=2,
-                                command=partial(self._delete_image, file))
+                                command=partial(self.delete_image, file))
             self._canvas.create_window(width - 17, top + 16, window=button)
+
+            # Creating the checkbox for processing or not the image
+            check_var = BooleanVar(self._canvas, True)
+            img = PhotoImage(width=1, height=1)
+            checkbox = Checkbutton(
+                self._canvas, variable=check_var,
+                image=img, width=6, height=24,
+                command=self._main_window.update_master_check)
+            self._canvas.create_window(width - 47, top + 16, window=checkbox)
 
             # Drawing the rectangle
             rect = self._canvas.create_rectangle(
@@ -780,14 +820,15 @@ class Files_table(ttk.Frame):
 
             # Setting the file name
             file_name = file.name
-            if len(file_name) >= 44:
-                file_name = '...' + file_name[-41:]
+            if len(file_name) >= 39:
+                file_name = '...' + file_name[-36:]
 
             # Setting the text
             padding = 10
             name_text = self._canvas.create_text(
-                60, top + int(self._row_height / 4),
-                text=file_name, anchor='nw', fill=label_line)
+                54, top + int(self._row_height / 4),
+                text=file_name, anchor='nw', fill=label_line,
+                width=width - 117)
             nuclei_text = self._canvas.create_text(
                 padding, middle + int(self._row_height / 4),
                 text='error', anchor='nw', fill=label_line)
@@ -805,17 +846,20 @@ class Files_table(ttk.Frame):
                 text='error', anchor='nw', fill=label_line)
 
             # Adding the drawn objects to the items dict
-            self._items[file] = (Table_element(Labels(name_text,
-                                                      nuclei_text,
-                                                      positive_text,
-                                                      ratio_text,
-                                                      index_text,
-                                                      fiber_text),
-                                               Lines(half_line,
-                                                     full_line,
-                                                     index_line),
-                                               rect,
-                                               button))
+            self.items[file] = Table_element(Labels(name_text,
+                                                    nuclei_text,
+                                                    positive_text,
+                                                    ratio_text,
+                                                    index_text,
+                                                    fiber_text),
+                                             Lines(half_line,
+                                                   full_line,
+                                                   index_line),
+                                             rect,
+                                             button,
+                                             Check(checkbox,
+                                                   check_var,
+                                                   img))
 
             # Associating the path to the index
             self._index_to_img[i] = file
