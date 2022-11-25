@@ -826,7 +826,14 @@ class Main_window(Tk):
                  self.settings.small_objects_threshold.get()))
 
     def _process_thread(self) -> None:
-        """"""
+        """Main loop of the thread in charge of processing the images.
+
+        Discards all the received jobs when the stop event is set.
+        Otherwise, handles sequentially all the received jobs until the job
+        queue is exhausted or until told to stop.
+        Also periodically calls stop_processing so that the interface is rest
+        after the last job in the queue was handled.
+        """
 
         # Looping forever until the stop_thread flag is raised
         while not self._stop_thread:
