@@ -28,6 +28,7 @@ class Image_segmentation:
                  nuclei_color: str,
                  fibre_color: str,
                  fibre_threshold: int,
+                 nuclei_threshold: int,
                  small_objects_threshold: int) -> \
             (Path, List[Tuple[np.ndarray, np.ndarray]],
              List[Tuple[np.ndarray, np.ndarray]], Tuple[Any], float):
@@ -41,6 +42,8 @@ class Image_segmentation:
             fibre_color: The color of the fibres, as a string.
             fibre_threshold: The gray level threshold above which a pixel is
                 considered to be part of a fiber.
+            nuclei_threshold: The gray level threshold above which a detected
+                nucleus is considered to be valid.
             small_objects_threshold: Objects whose area is lower than this
                 value (in pixels) will not be considered.
 
@@ -68,6 +71,10 @@ class Image_segmentation:
               (image[:, :, 2] > 50)] = (0, 0, 0)
 
         two_channel_image = np.array([image[:, :, colors]])
+        nuclei_channel = image[:, :, colors[0]]
+        fibre_channel = image[:, :, colors[1]]
+
+        del image
 
         # Default parameters
         maxima_threshold = 0.05
@@ -97,13 +104,17 @@ class Image_segmentation:
                 'fill_holes_threshold': fill_holes_threshold,
                 'radius': radius})
 
+        del two_channel_image
+
         # Removing useless axes on the output
         labeled_image = np.squeeze(labeled_image)
 
         # Getting the fibre mask
-        mask = self._get_fibre_mask(image[:, :, colors[1]],
-                                    image[:, :, colors[0]],
+        mask = self._get_fibre_mask(fibre_channel,
+                                    nuclei_channel,
                                     fibre_threshold)
+
+        del fibre_channel
 
         # Calculating the area of fibers over the total area
         area = np.count_nonzero(mask) / mask.shape[0] / mask.shape[1]
@@ -115,8 +126,8 @@ class Image_segmentation:
         fibre_contours = tuple(map(np.squeeze, fibre_contours))
 
         # Getting the position of the nuclei
-        nuclei_out, nuclei_in = self._get_nuclei_positions(labeled_image,
-                                                           mask, 0.4)
+        nuclei_out, nuclei_in = self._get_nuclei_positions(
+            labeled_image, mask, nuclei_channel, 0.4)
 
         return path, nuclei_out, nuclei_in, fibre_contours, area
 
@@ -175,7 +186,9 @@ class Image_segmentation:
     @staticmethod
     def _get_nuclei_positions(labeled_image: np.ndarray,
                               mask: np.ndarray,
-                              fibre_threshold: float = 0.85) -> \
+                              nuclei_channel: np.ndarray,
+                              fibre_threshold: float = 0.85,
+                              nuclei_threshold: int = 50) -> \
             (List[Tuple[np.ndarray, np.ndarray]],
              List[Tuple[np.ndarray, np.ndarray]]):
         """Computes the center of the nuclei and determines whether they're
@@ -184,6 +197,7 @@ class Image_segmentation:
         Args:
             labeled_image: The image containing the nuclei.
             mask: The boolean mask of the fibers.
+            nuclei_channel: The channel of the image containing the nuclei.
             fibre_threshold: Fraction of area above which a nucleus is
                 considered to be inside a fiber.
 
@@ -202,13 +216,19 @@ class Image_segmentation:
         # Each gray level on the nuclei image corresponds to one nucleus
         nb_nuc = np.max(labeled_image)
 
-        # For each nucleus, getting its center and calculating whether it is
-        # inside or outside a fiber
+        # Iterating through the detected nuclei
         for i in range(1, nb_nuc + 1):
 
+            # Getting a list of the detected pixels
             nucleus_y, nucleus_x = np.where(labeled_image == i)
             center_x, center_y = np.mean(nucleus_x), np.mean(nucleus_y)
 
+            # Aborting for the current nucleus if it's not bright enough
+            if np.average(nuclei_channel[nucleus_y,
+                                         nucleus_x]) < nuclei_threshold:
+                continue
+
+            # Determining whether the nucleus is positive or negative
             in_fibre = ma.count_masked(masked_image[nucleus_y, nucleus_x])
             if in_fibre < fibre_threshold * nucleus_x.shape[0]:
                 nuclei_out_fibre.append((center_x, center_y))

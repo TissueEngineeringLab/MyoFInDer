@@ -29,7 +29,6 @@ if system() == "Windows" and int(release()) >= 8:
 
 # Todo:
 #   Set up unit tests
-#   Add a nuclei threshold
 
 
 def _save_before_closing(func: Callable) -> Callable:
@@ -171,6 +170,8 @@ class Main_window(Tk):
             "write", self._save_settings_callback)
         self.settings.fibre_threshold.trace_add("write",
                                                 self._save_settings_callback)
+        self.settings.nuclei_threshold.trace_add("write",
+                                                 self._save_settings_callback)
         self.settings.small_objects_threshold.trace_add(
             "write", self._save_settings_callback)
 
@@ -821,6 +822,7 @@ class Main_window(Tk):
                  self.settings.nuclei_colour.get(),
                  self.settings.fibre_colour.get(),
                  self.settings.fibre_threshold.get(),
+                 self.settings.nuclei_threshold.get(),
                  self.settings.small_objects_threshold.get()))
 
     def _process_thread(self) -> None:
@@ -844,6 +846,7 @@ class Main_window(Tk):
                 # Acquiring the next job in the queue
                 try:
                     path, nuclei_color, fibre_color, fibre_threshold, \
+                        nuclei_threshold, \
                         small_objects_threshold = self._queue.get_nowait()
                 except Empty:
                     sleep(1)
@@ -860,6 +863,7 @@ class Main_window(Tk):
                                            nuclei_color,
                                            fibre_color,
                                            fibre_threshold,
+                                           nuclei_threshold,
                                            small_objects_threshold)
 
                     # Not updating if the user wants to stop the computation
