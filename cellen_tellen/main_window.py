@@ -29,9 +29,7 @@ if system() == "Windows" and int(release()) >= 8:
 
 # Todo:
 #   Set up unit tests
-#   Improve software distribution
 #   Add a nuclei threshold
-#   Configure CTRL+S
 
 
 def _save_before_closing(func: Callable) -> Callable:
@@ -105,6 +103,7 @@ class Main_window(Tk):
 
         # Finishes the initialization and starts the event loop
         self.update()
+        self.bind_all('<Control-s>', self._save_button_pressed)
         self.protocol("WM_DELETE_WINDOW", self._safe_destroy)
         self.mainloop()
 
@@ -637,8 +636,10 @@ class Main_window(Tk):
 
         return True
 
-    def _save_button_pressed(self, force_save_as: bool = False) -> bool:
-        """Method called when a save action is triggered by the user.
+    def _save_button_pressed(self, _: Optional[Event] = None,
+                             force_save_as: bool = False) -> bool:
+        """Method called when a save action is triggered by the user or when
+        CTRL+S is hit..
 
         It may or may not lead to an actual save.
 
