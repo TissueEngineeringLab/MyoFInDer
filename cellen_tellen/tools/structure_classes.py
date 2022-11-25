@@ -39,6 +39,60 @@ class Table_element:
 
 
 @dataclass
+class Selection_box:
+    """Class holding the data associated with the selection box of the image
+    canvas."""
+
+    x_start: Optional[int] = None
+    y_start: Optional[int] = None
+    x_end: Optional[int] = None
+    y_end: Optional[int] = None
+    tk_obj: Optional[int] = None
+
+    def __bool__(self) -> bool:
+        """Returns True if all four corners of the selection box have been
+        defined, else False."""
+
+        return all(item is not None for item in (self.x_start, self.y_start,
+                                                 self.x_end, self.y_end))
+
+    def is_inside(self, x: float, y: float) -> bool:
+        """Checks whether a given point is inside or outside the selection box.
+
+        Args:
+            x: The x coordinate of the point to check.
+            y: The y coordinate of the point to check.
+
+        Returns:
+            True if the given coordinates lie inside the selection box, False
+            otherwise.
+        """
+
+        if not bool(self):
+            return False
+
+        x_min = min(self.x_start, self.x_end)
+        x_max = max(self.x_start, self.x_end)
+        y_min = min(self.y_start, self.y_end)
+        y_max = max(self.y_start, self.y_end)
+
+        return (x_min <= x <= x_max) and (y_min <= y <= y_max)
+
+    @property
+    def started(self) -> bool:
+        """Returns True if the first corner of the selection box has been
+        defined, else False."""
+
+        return self.x_start is not None and self.y_start is not None
+
+    @property
+    def area(self) -> int:
+        """Returns the area of the selection box."""
+
+        return abs((self.x_end - self.x_start) * (self.y_end - self.y_start))
+
+
+@dataclass
 class Nucleus:
     """Class holding the data associated with a single nucleus."""
 

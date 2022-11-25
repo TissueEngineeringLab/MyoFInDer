@@ -8,7 +8,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Tuple, Optional, List
 
-from .tools import Nucleus, Nuclei, Fibres, check_image
+from .tools import Nucleus, Nuclei, Fibres, check_image, Selection_box
 
 
 class Image_canvas(ttk.Frame):
@@ -42,8 +42,8 @@ class Image_canvas(ttk.Frame):
             for nuc in self._nuclei:
                 nuc.tk_obj = self._draw_nucleus(
                     nuc.x_pos, nuc.y_pos,
-                    self.nuc_color_in if nuc.color == 'in'
-                    else self.nuc_color_out)
+                    self.nuc_col_in if nuc.color == 'in'
+                    else self.nuc_col_out)
 
         # Draw the fibers
         if self._settings.show_fibres.get():
@@ -86,8 +86,8 @@ class Image_canvas(ttk.Frame):
                 for nuc in self._nuclei:
                     nuc.tk_obj = self._draw_nucleus(
                         nuc.x_pos, nuc.y_pos,
-                        self.nuc_color_in if nuc.color == 'in'
-                        else self.nuc_color_out)
+                        self.nuc_col_in if nuc.color == 'in'
+                        else self.nuc_col_out)
 
             # Deep copy to have independent objects
             self._fibres = deepcopy(fibres)
@@ -127,8 +127,11 @@ class Image_canvas(ttk.Frame):
             self._canvas.delete(self._image_id)
         self._image_id = None
 
+        # Resetting the selection box
+        self._selection_box = Selection_box()
+
     @property
-    def nuc_color_out(self) -> str:
+    def nuc_col_out(self) -> str:
         """Returns the color of the nuclei outside of fibres, that depends on
         the selected channels.
 
@@ -149,7 +152,7 @@ class Image_canvas(ttk.Frame):
             return 'red'
 
     @property
-    def nuc_color_in(self) -> str:
+    def nuc_col_in(self) -> str:
         """Returns the color of the nuclei inside fibres, that depends on the
         selected channels."""
 
@@ -298,8 +301,12 @@ class Image_canvas(ttk.Frame):
         self.bind_all('_', partial(self._zoom, delta=-1, mouse=False))
 
         # Clicking with the mouse
-        self._canvas.bind('<ButtonPress-1>', self._left_click)
-        self._canvas.bind('<ButtonPress-3>', self._right_click)
+        self._canvas.bind('<ButtonRelease-1>', self._left_release)
+        self._canvas.bind('<ButtonRelease-3>', self._right_release)
+        self._canvas.bind('<ButtonPress-1>', self._click)
+        self._canvas.bind('<ButtonPress-3>', self._click)
+        self._canvas.bind('<B1-Motion>', self._motion)
+        self._canvas.bind('<B3-Motion>', self._motion)
 
     def _set_variables(self) -> None:
         """Sets the variables used in this class."""
@@ -313,6 +320,7 @@ class Image_canvas(ttk.Frame):
         self._nuclei = Nuclei()
         self._fibres = Fibres()
         self._image_id = None
+        self._selection_box = Selection_box()
 
     def _draw_nucleus(self,
                       unscaled_x: float,
@@ -371,7 +379,138 @@ class Image_canvas(ttk.Frame):
 
         return polygon
 
-    def _left_click(self, event: Event) -> None:
+    def _draw_box(self) -> int:
+        """Draws the selection box for either inverting the nuclei or deleting
+        them."""
+
+        # Adjusting the width of the line to the scale
+        line_width = max(int(3 * self._can_scale), 1)
+
+        # Creating the rectangle
+        return self._canvas.create_rectangle(
+            (self._selection_box.x_start * self._img_scale,
+             self._selection_box.y_start * self._img_scale,
+             self._selection_box.x_end * self._img_scale,
+             self._selection_box.y_end * self._img_scale),
+            fill='', outline='#888', width=line_width)
+
+    def _click(self, event: Event) -> None:
+        """Binding method for a left or right click event.
+
+        Checks whether the click is inside the displayed image, and if so
+        stores its coordinates for potentially displaying later a selection
+        box.
+
+        Args:
+            event: The tkinter event associated with the left or right click.
+        """
+
+        # Do nothing if there's no image displayed
+        if self._image is not None:
+
+            # The coordinates of the click on the unscaled image
+            abs_x = self._canvas.canvasx(event.x) / self._img_scale
+            abs_y = self._canvas.canvasy(event.y) / self._img_scale
+
+            # Do something only if the click is inside the image
+            if abs_x < self._image.width and abs_y < self._image.height:
+
+                # Saving the position of the click
+                self._selection_box.x_start = abs_x
+                self._selection_box.y_start = abs_y
+
+    def _motion(self, event: Event) -> None:
+        """Binding method for a mouse motion event while either the left or
+        the right click is being pressed.
+
+        If all the conditions are met, is simply draws or updates the selection
+        box.
+
+        Args:
+            event: The tkinter event associated with the mouse motion.
+        """
+
+        # Do nothing if there's no image displayed
+        # Also nothing if the selection box wasn't initialized on first click
+        if self._image is not None and self._selection_box.started:
+
+            # The coordinates of the event on the unscaled image
+            abs_x = self._canvas.canvasx(event.x) / self._img_scale
+            abs_y = self._canvas.canvasy(event.y) / self._img_scale
+
+            # Do something only if the event is inside the image
+            if abs_x < self._image.width and abs_y < self._image.height:
+
+                # Saving the end position of the selection box
+                self._selection_box.x_end = abs_x
+                self._selection_box.y_end = abs_y
+
+                # Drawing the selection box if it is not already displayed
+                if self._selection_box.tk_obj is None:
+                    self._selection_box.tk_obj = self._draw_box()
+
+                # Otherwise just updating the displayed selection box
+                else:
+                    self._canvas.coords(
+                        self._selection_box.tk_obj,
+                        (self._selection_box.x_start * self._img_scale,
+                         self._selection_box.y_start * self._img_scale,
+                         self._selection_box.x_end * self._img_scale,
+                         self._selection_box.y_end * self._img_scale))
+
+    def _left_release(self, event: Event) -> None:
+        """Binding method for a left mouse button release event.
+
+        It simply decides if this event should be handled as a single click or
+        if a selection box was drawn.
+
+        Args:
+            event: The tkinter event associated with the left mouse button
+                release.
+        """
+
+        # Selection box is only considered if it exists and if it's big enough
+        if self._selection_box and \
+                self._selection_box.area * self._img_scale ** 2 > 25:
+            self._left_release_box(event)
+        # Otherwise the event is treated as a sole click
+        else:
+            self._left_release_nucleus(event)
+
+        # Cleans up all the selection box related objects before returning
+        if self._selection_box.tk_obj is not None:
+            self._canvas.delete(self._selection_box.tk_obj)
+        self._selection_box = Selection_box()
+
+    def _left_release_box(self, event: Event) -> None:
+        """Method called when the user releases the left mouse button after
+        drawing a selection box.
+
+        It inverts all the nuclei found inside the selection box.
+
+        Args:
+            event: The tkinter event associated with the left mouse button
+                release.
+        """
+
+        # Do nothing if there's no image displayed
+        if self._image is not None:
+
+            # The coordinates of the click on the unscaled image
+            abs_x = self._canvas.canvasx(event.x) / self._img_scale
+            abs_y = self._canvas.canvasy(event.y) / self._img_scale
+
+            # Update coordinates only if the click is inside the image
+            if abs_x < self._image.width and abs_y < self._image.height:
+                self._selection_box.x_end = abs_x
+                self._selection_box.y_end = abs_y
+
+            # Inverting all the nuclei found inside the selection box
+            for nuc in self._nuclei:
+                if self._selection_box.is_inside(nuc.x_pos, nuc.y_pos):
+                    self._invert_nucleus(nuc)
+
+    def _left_release_nucleus(self, event: Event) -> None:
         """Upon left click, either adds a new nucleus or a fiber, or switches
         the color of an existing nucleus.
 
@@ -379,84 +518,117 @@ class Image_canvas(ttk.Frame):
             event: The tkinter event associated with the left click.
         """
 
+        # Do nothing if there's no image displayed
         if self._image is not None:
 
-            # Do nothing if the click is outside the image
-            can_x = self._canvas.canvasx(event.x)
-            can_y = self._canvas.canvasy(event.y)
-            if can_x >= self._image.width * self._img_scale or \
-                    can_y >= self._image.height * self._img_scale:
-                return
+            # The coordinates of the click on the unscaled image
+            abs_x = self._canvas.canvasx(event.x) / self._img_scale
+            abs_y = self._canvas.canvasy(event.y) / self._img_scale
 
-            # Getting the position of the click on the unscaled image
-            rel_x_scale = can_x / self._img_scale
-            rel_y_scale = can_y / self._img_scale
+            # Do something only if the event is inside the image
+            if abs_x < self._image.width and abs_y < self._image.height:
 
-            # Do nothing if the nuclei are not being displayed
-            if self._settings.show_nuclei.get():
+                # Do nothing if the nuclei are not being displayed
+                if self._settings.show_nuclei.get():
 
-                # Trying to find a close nucleus
-                nuc = self._find_closest_nucleus(rel_x_scale, rel_y_scale)
+                    # Trying to find a close nucleus
+                    nuc = self._find_closest_nucleus(abs_x, abs_y)
 
-                # One close nucleus found, inverting it colour
-                if nuc is not None:
-                    if nuc.color == 'out':
-                        self._canvas.itemconfig(
-                            nuc.tk_obj, fill=self.nuc_color_in)
-                        nuc.color = 'in'
+                    # One close nucleus found, inverting it colour
+                    if nuc is not None:
+                        self._invert_nucleus(nuc)
+
+                    # No close nucleus found, adding a new one
                     else:
-                        self._canvas.itemconfig(
-                            nuc.tk_obj, fill=self.nuc_color_out)
-                        nuc.color = 'out'
-                    self.nuclei_table.switch_nucleus(nuc)
+                        self._add_nucleus(abs_x, abs_y)
 
-                # No close nucleus found, adding a new one
-                else:
-                    new_nuc = Nucleus(rel_x_scale, rel_y_scale,
-                                      self._draw_nucleus(rel_x_scale,
-                                                         rel_y_scale,
-                                                         self.nuc_color_out),
-                                      'out')
-                    self.nuclei_table.add_nucleus(new_nuc)
-                    self._nuclei.append(new_nuc)
+    def _right_release(self, event: Event) -> None:
+        """Binding method for a right mouse button release event.
 
-                # Setting the unsaved status
-                self._main_window.set_unsaved_status()
-
-    def _right_click(self, event: Event) -> None:
-        """Upon right click, deletes a nucleus or a fiber.
+        It simply decides if this event should be handled as a single click or
+        if a selection box was drawn.
 
         Args:
-            event: The tkinter event associated with the right click.
+            event: The tkinter event associated with the right mouse button
+                release.
         """
 
+        # Selection box is only considered if it exists and if it's big enough
+        if self._selection_box and \
+                self._selection_box.area * self._img_scale ** 2 > 25:
+            self._right_release_box(event)
+        # Otherwise the event is treated as a sole click
+        else:
+            self._right_release_nucleus(event)
+
+        # Cleans up all the selection box related objects before returning
+        if self._selection_box.tk_obj is not None:
+            self._canvas.delete(self._selection_box.tk_obj)
+        self._selection_box = Selection_box()
+
+    def _right_release_box(self, event: Event) -> None:
+        """Method called when the user releases the right mouse button after
+        drawing a selection box.
+
+        It deletes all the nuclei found inside the selection box.
+
+        Args:
+            event: The tkinter event associated with the right mouse button
+                release.
+        """
+
+        # Do nothing if there's no image displayed
         if self._image is not None:
 
-            # Do nothing if the click is outside the image
-            can_x = self._canvas.canvasx(event.x)
-            can_y = self._canvas.canvasy(event.y)
-            if can_x >= self._image.width * self._img_scale or \
-                    can_y >= self._image.height * self._img_scale:
-                return
+            # The coordinates of the click on the unscaled image
+            abs_x = self._canvas.canvasx(event.x) / self._img_scale
+            abs_y = self._canvas.canvasy(event.y) / self._img_scale
 
-            # Getting the position of the click on the unscaled image
-            rel_x_scale = can_x / self._img_scale
-            rel_y_scale = can_y / self._img_scale
+            # Update coordinates only if the click is inside the image
+            if abs_x < self._image.width and abs_y < self._image.height:
+                self._selection_box.x_end = abs_x
+                self._selection_box.y_end = abs_y
 
-            # Do nothing if the nuclei are not being displayed
-            if self._settings.show_nuclei.get():
+            to_delete = list()
+            # Detecting all the nuclei to delete
+            for nuc in self._nuclei:
+                if self._selection_box.is_inside(nuc.x_pos, nuc.y_pos):
+                    to_delete.append(nuc)
+            # Actually deleting the detected nuclei
+            for nuc in to_delete:
+                self._delete_nucleus(nuc)
 
-                # Trying to find a close nucleus
-                nuc = self._find_closest_nucleus(rel_x_scale, rel_y_scale)
+    def _right_release_nucleus(self, event: Event) -> None:
+        """Method called when the user releases the right mouse button but did
+        not draw a selection box.
 
-                # One close nucleus found, deleting it
-                if nuc is not None:
-                    self.nuclei_table.remove_nucleus(nuc)
-                    self._canvas.delete(nuc.tk_obj)
-                    self._nuclei.remove(nuc)
+        Tries to find a nucleus close to the click, and if one was found
+        deletes it.
 
-                    # Setting the unsaved status
-                    self._main_window.set_unsaved_status()
+        Args:
+            event: The tkinter event associated with the right mouse button
+                release.
+        """
+
+        # Do nothing if there's no image displayed
+        if self._image is not None:
+
+            # The coordinates of the click on the unscaled image
+            abs_x = self._canvas.canvasx(event.x) / self._img_scale
+            abs_y = self._canvas.canvasy(event.y) / self._img_scale
+
+            # Do something only if the click is inside the image
+            if abs_x < self._image.width and abs_y < self._image.height:
+
+                # Do nothing if the nuclei are not being displayed
+                if self._settings.show_nuclei.get():
+
+                    # Trying to find a close nucleus
+                    nuc = self._find_closest_nucleus(abs_x, abs_y)
+
+                    # One close nucleus found, deleting it
+                    if nuc is not None:
+                        self._delete_nucleus(nuc)
 
     def _find_closest_nucleus(self, x: float, y: float) -> Optional[Nucleus]:
         """Searches for a close nucleus among the existing nuclei.
@@ -487,6 +659,70 @@ class Image_canvas(ttk.Frame):
                     closest_nuc = nuc
 
         return closest_nuc if closest_nuc is not None else None
+
+    def _add_nucleus(self, abs_x: float, abs_y: float) -> None:
+        """Creates a Nucleus object, displays it and saves it to the nuclei
+        table.
+
+        Also sets the unsaved status for the current project.
+
+        Args:
+            abs_x: The x position of the nucleus on the unscaled image
+            abs_y: The y position of the nucleus on the unscaled image
+        """
+
+        # Creating the nucleus and displaying it
+        new_nuc = Nucleus(abs_x, abs_y,
+                          self._draw_nucleus(abs_x, abs_y,
+                                             self.nuc_col_out),
+                          'out')
+
+        # Adding the nucleus to the nuclei table and to the current nuclei
+        self.nuclei_table.add_nucleus(new_nuc)
+        self._nuclei.append(new_nuc)
+
+        # Setting the unsaved status
+        self._main_window.set_unsaved_status()
+
+    def _invert_nucleus(self, nuc: Nucleus) -> None:
+        """Inverts the color and status of a given nucleus.
+
+        Also sets the unsaved status for the current project.
+
+        Args:
+            nuc: The Nucleus object to invert
+        """
+
+        # Updating the display
+        if nuc.color == 'out':
+            self._canvas.itemconfig(nuc.tk_obj, fill=self.nuc_col_in)
+            nuc.color = 'in'
+        else:
+            self._canvas.itemconfig(nuc.tk_obj, fill=self.nuc_col_out)
+            nuc.color = 'out'
+
+        # Updating the nuclei table
+        self.nuclei_table.switch_nucleus(nuc)
+
+        # Setting the unsaved status
+        self._main_window.set_unsaved_status()
+
+    def _delete_nucleus(self, nuc: Nucleus) -> None:
+        """Deletes a given Nucleus and all the references to it.
+
+        Also sets the unsaved status for the current project.
+
+        Args:
+            nuc: The Nucleus object to delete
+        """
+
+        # Deleting all the references to the nucleus to delete
+        self.nuclei_table.remove_nucleus(nuc)
+        self._canvas.delete(nuc.tk_obj)
+        self._nuclei.remove(nuc)
+
+        # Setting the unsaved status
+        self._main_window.set_unsaved_status()
 
     def _set_image(self) -> None:
         """Simply loads an image and resizes it to the current size of the

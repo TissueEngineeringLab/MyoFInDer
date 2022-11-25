@@ -460,10 +460,10 @@ class Files_table(ttk.Frame):
             centre = (int(nuc.x_pos), int(nuc.y_pos))
             if nuc.color == 'out':
                 ellipse(cv_img, centre, (6, 6), 0, 0, 360,
-                        color_to_bgr[self.image_canvas.nuc_color_out], -1)
+                        color_to_bgr[self.image_canvas.nuc_col_out], -1)
             else:
                 ellipse(cv_img, centre, (6, 6), 0, 0, 360,
-                        color_to_bgr[self.image_canvas.nuc_color_in], -1)
+                        color_to_bgr[self.image_canvas.nuc_col_in], -1)
 
         # Now saving the image
         imwrite(str(project_name / "Altered Images" / file.name), cv_img)
