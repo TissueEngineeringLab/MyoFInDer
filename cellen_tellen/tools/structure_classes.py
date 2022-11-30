@@ -1,10 +1,121 @@
 # coding: utf-8
 
 from dataclasses import dataclass, field
-from typing import Optional, List, Any, Tuple
+from typing import Optional, List, Any, Tuple, Iterator, Union
 from tkinter.ttk import Button
 from functools import partial
 from tkinter import StringVar, IntVar, BooleanVar, Checkbutton, PhotoImage
+from pathlib import Path
+
+
+@dataclass
+class Nucleus:
+    """Class holding the data associated with a single nucleus."""
+
+    x_pos: float
+    y_pos: float
+    tk_obj: Optional[int]
+    color: str
+
+    def __eq__(self, other: Any) -> bool:
+        """Two nuclei are considered equal if and only if their x and y
+        positions are equal."""
+
+        if not isinstance(other, Nucleus):
+            raise NotImplemented("Only two nuclei can be compared together")
+        return self.x_pos == other.x_pos and self.y_pos == other.y_pos
+
+
+@dataclass
+class Fibre:
+    """Class holding the data associated with a single fibre."""
+
+    polygon: Optional[int]
+    position: List[Tuple[float, float]] = field(default_factory=list)
+
+
+@dataclass
+class Nuclei:
+    """Class for managing the data of all the nuclei in one image."""
+
+    nuclei: List[Nucleus] = field(default_factory=list)
+
+    def append(self, nuc: Nucleus) -> None:
+        """Adds a nucleus to the list of nuclei."""
+
+        self.nuclei.append(nuc)
+
+    def remove(self, nuc: Nucleus) -> None:
+        """Removes a given nucleus from the list of nuclei."""
+
+        try:
+            self.nuclei.remove(nuc)
+        except ValueError:
+            raise ValueError("No matching nucleus to delete")
+
+    def reset(self) -> None:
+        """Deletes all the saved Nucleus objects."""
+
+        self.nuclei = list()
+
+    def __iter__(self) -> Iterator[Nucleus]:
+        """Returns an iterator over the saved Nucleus objects."""
+
+        return iter(self.nuclei)
+
+    @property
+    def nuclei_in_count(self) -> int:
+        """Returns the number of nuclei inside fibres."""
+
+        return len([nuc for nuc in self.nuclei if nuc.color == 'in'])
+
+    @property
+    def nuclei_out_count(self) -> int:
+        """Returns the number of nuclei outside fibres."""
+
+        return len([nuc for nuc in self.nuclei if nuc.color == 'out'])
+
+    def __len__(self) -> int:
+        """Returns the number of nuclei."""
+
+        return len(self.nuclei)
+
+
+@dataclass
+class Fibres:
+    """Class for managing the data of all the fibres in one image."""
+
+    area: float = field(default=0)
+    fibres: List[Fibre] = field(default_factory=list)
+
+    def append(self, fib: Fibre) -> None:
+        """Adds a fiber to the list of fibres."""
+
+        self.fibres.append(fib)
+
+    def remove(self, fib: Fibre) -> None:
+        """Removes a given fiber from the list of fibres."""
+
+        try:
+            self.fibres.remove(fib)
+        except ValueError:
+            raise ValueError("No matching fibre to delete")
+
+    def reset(self) -> None:
+        """Deletes all the saved Fibre objects."""
+
+        self.fibres = list()
+        self.area = 0
+
+    def __iter__(self) -> Iterator[Fibre]:
+        """Returns an iterator over the stored Fibre objects."""
+
+        return iter(self.fibres)
+
+    def __len__(self) -> int:
+        """Returns the number of fibres."""
+
+        return len(self.fibres)
 
 
 @dataclass
@@ -38,7 +149,7 @@ class Check:
 
 
 @dataclass
-class Table_element:
+class Graphical_element:
     """Class holding all the canvas elements for one image."""
 
     labels: Labels
@@ -46,6 +157,133 @@ class Table_element:
     rect: int
     button: Button
     check: Check
+
+
+@dataclass
+class Table_entry:
+    """Class holding all the information associated with one image."""
+
+    path: Union[Path, str]
+    nuclei: Nuclei
+    fibres: Fibres
+    graph_elt: Optional[Graphical_element] = None
+
+    @property
+    def save_version(self):
+        """Returns a simpler version of the current class, with no canvas
+        object and with the path truncated to only the file name."""
+
+        return Table_entry(path=self.path.name,
+                           nuclei=self.nuclei,
+                           fibres=self.fibres,
+                           graph_elt=None)
+
+
+@dataclass
+class Table_items:
+    """Class storing all the Table_entry classes of the opened project.
+
+    It also implements many helper functions for simplifying the code in the
+    rest of the project.
+    """
+
+    entries: List[Table_entry] = field(default_factory=list)
+    current_path: Optional[Path] = None
+
+    def __getitem__(self, item: Path) -> Table_entry:
+        """Returns the Table_entry object whose path corresponds to the given
+        one."""
+
+        # Searches for the first (hopefully the only) entry with a given path
+        for entry in self.entries:
+            if entry.path == item:
+                return entry
+
+        # In the (unlikely) case when there's no entry for the requested path
+        raise KeyError
+
+    def __iter__(self) -> Iterator[Table_entry]:
+        """Returns an iterator over the stored Table_entry objects."""
+
+        return iter(self.entries)
+
+    def __bool__(self) -> bool:
+        """Returns True if there's at least one stored Table_entry, False
+        otherwise."""
+
+        return bool(self.entries)
+
+    def __len__(self) -> int:
+        """Returns the number of stored Table_entry objects."""
+
+        return len(self.entries)
+
+    @property
+    def file_names(self) -> List[Path]:
+        """Returns a list of all the paths of the stored Table_entry
+        objects."""
+
+        return [entry.path for entry in self]
+
+    @property
+    def current_entry(self) -> Optional[Table_entry]:
+        """Returns the Table_entry instance corresponding to the currently
+        displayed image."""
+
+        if self.current_path is None:
+            return
+
+        return self[self.current_path]
+
+    @property
+    def current_index(self) -> Optional[int]:
+        """Returns the index of the Table_entry instance corresponding to the
+        currently displayed image in the list of files."""
+
+        if self.current_path is None:
+            return
+
+        return self.index(self.current_path)
+
+    @property
+    def save_version(self):
+        """Returns a simpler version of the current class, with no canvas
+        object and with the paths of the Table_entry objects truncated to only
+        the file name."""
+
+        return Table_items(entries=[entry.save_version for entry
+                                    in self.entries],
+                           current_path=None)
+
+    def reset(self) -> None:
+        """Deletes all the stored Table_entry objects."""
+
+        self.entries = list()
+        self.current_path = None
+
+    def append(self, entry: Table_entry) -> None:
+        """Adds a Table_entry object to the list of the stored ones."""
+
+        self.entries.append(entry)
+
+    def remove(self, path: Path) -> None:
+        """Removes the Table_entry object corresponding to the given path from
+        the list of the stored ones."""
+
+        try:
+            self.entries.remove(self[path])
+        except KeyError:
+            raise ValueError(f"No table entry associated with the path {path}")
+
+    def index(self, path: Path) -> int:
+        """Returns the position of the Table_entry corresponding to the given
+        path in the list of all the stored Table_entry objects."""
+
+        for i, entry in enumerate(self):
+            if entry.path == path:
+                return i
+
+        raise ValueError(f"No table entry associated with the path {path}")
 
 
 @dataclass
@@ -100,125 +338,6 @@ class Selection_box:
         """Returns the area of the selection box."""
 
         return abs((self.x_end - self.x_start) * (self.y_end - self.y_start))
-
-
-@dataclass
-class Nucleus:
-    """Class holding the data associated with a single nucleus."""
-
-    x_pos: float
-    y_pos: float
-    tk_obj: Optional[int]
-    color: str
-
-    def __eq__(self, other: Any) -> bool:
-        """Two nuclei are considered equal if and only if their x and y
-        positions are equal."""
-
-        if not isinstance(other, Nucleus):
-            raise NotImplemented("Only two nuclei can be compared together")
-        return self.x_pos == other.x_pos and self.y_pos == other.y_pos
-
-
-@dataclass
-class Fibre:
-    """Class holding the data associated with a single fibre."""
-
-    polygon: Optional[int]
-    position: List[Tuple[float, float]] = field(default_factory=list)
-
-
-@dataclass
-class Nuclei:
-    """Class for managing the data of all the nuclei in one image."""
-
-    nuclei: List[Nucleus] = field(default_factory=list)
-
-    _current_index: int = -1
-
-    def append(self, nuc: Nucleus) -> None:
-        """Adds a nucleus to the list of nuclei."""
-
-        self.nuclei.append(nuc)
-
-    def remove(self, nuc: Nucleus) -> None:
-        """Removes a given nucleus from the list of nuclei."""
-
-        try:
-            self.nuclei.remove(nuc)
-        except ValueError:
-            raise ValueError("No matching nucleus to delete")
-
-    def __iter__(self):
-        return self
-
-    def __next__(self) -> Nucleus:
-        """Iterates through the nuclei until there's no nucleus left."""
-
-        try:
-            self._current_index += 1
-            return self.nuclei[self._current_index]
-        except IndexError:
-            self._current_index = -1
-            raise StopIteration
-
-    @property
-    def nuclei_in_count(self) -> int:
-        """Returns the number of nuclei inside fibres."""
-
-        return len([nuc for nuc in self.nuclei if nuc.color == 'in'])
-
-    @property
-    def nuclei_out_count(self) -> int:
-        """Returns the number of nuclei outside fibres."""
-
-        return len([nuc for nuc in self.nuclei if nuc.color == 'out'])
-
-    def __len__(self) -> int:
-        """Returns the number of nuclei."""
-
-        return len(self.nuclei)
-
-
-@dataclass
-class Fibres:
-    """Class for managing the data of all the fibres in one image."""
-
-    area: float = field(default=0)
-    fibres: List[Fibre] = field(default_factory=list)
-
-    _current_index: int = -1
-
-    def append(self, fib: Fibre) -> None:
-        """Adds a fiber to the list of fibres."""
-
-        self.fibres.append(fib)
-
-    def remove(self, fib: Fibre) -> None:
-        """Removes a given fiber from the list of fibres."""
-
-        try:
-            self.fibres.remove(fib)
-        except ValueError:
-            raise ValueError("No matching fibre to delete")
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        """Iterates through the fibres until there's no fibre left."""
-
-        try:
-            self._current_index += 1
-            return self.fibres[self._current_index]
-        except IndexError:
-            self._current_index = -1
-            raise StopIteration
-
-    def __len__(self) -> int:
-        """Returns the number of fibres."""
-
-        return len(self.fibres)
 
 
 @dataclass

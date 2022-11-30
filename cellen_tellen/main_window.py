@@ -29,7 +29,7 @@ if system() == "Windows" and int(release()) >= 8:
 
 # Todo:
 #   Set up unit tests
-#   Improve the architecture of the file table
+#   Create a structure for the canvas of the files table
 
 
 def _save_before_closing(func: Callable) -> Callable:
@@ -565,7 +565,7 @@ class Main_window(Tk):
         self._files_table.load_project(directory)
 
         # Enabling the process images button
-        if self._files_table.filenames:
+        if self._files_table.table_items:
             self._process_images_button['state'] = 'enabled'
         else:
             self._process_images_button['state'] = 'disabled'
@@ -644,7 +644,7 @@ class Main_window(Tk):
 
         # If the project is unsaved, propose to save it
         if self._save_button['state'] == 'enabled' and \
-                self._files_table.filenames:
+                self._files_table.table_items:
 
             # Creating the warning window and waiting for the user to choose
             return_var = IntVar()
@@ -1026,11 +1026,11 @@ class Main_window(Tk):
         """
 
         if self._files_table.all_checked:
-            for item in self._files_table.items.values():
-                item.check.var.set(False)
+            for item in self._files_table.table_items:
+                item.graph_elt.check.var.set(False)
         else:
-            for item in self._files_table.items.values():
-                item.check.var.set(True)
+            for item in self._files_table.table_items:
+                item.graph_elt.check.var.set(True)
 
     def _delete_many_files(self) -> None:
         """Called when hitting the master delete button.

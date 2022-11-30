@@ -7,14 +7,14 @@ from shutil import copyfile, rmtree
 from cv2 import polylines, ellipse, imwrite, cvtColor, COLOR_RGB2BGR
 from pathlib import Path
 from platform import system
-from typing import List, Dict, Tuple, Union
+from typing import List, Tuple
 from copy import deepcopy
 from functools import partial
 from pickle import dump, load
 from numpy import ndarray, array
 
 from .tools import Nucleus, Fibre, Nuclei, Fibres, Labels, Lines, \
-    Table_element, check_image, Check
+    Graphical_element, check_image, Check, Table_items, Table_entry
 
 # Color codes used in the table
 background = '#EAECEE'
@@ -63,37 +63,31 @@ class Files_table(ttk.Frame):
             directory: The path to the directory where the project to load is.
         """
 
-        self.reset()  # First, resetting
+        # First, resetting the project
+        self.reset()
 
-        # Loading the nuclei and fibres data
+        # Loading the simple version of the stored data
         with open(directory / 'data.pickle', 'rb') as save_file:
-            saved_filenames, saved_nuclei, saved_fibres = load(save_file)
+            table_items = load(save_file)
 
-        # Loading the names of the images and checking the images exist
-        self.filenames = [directory / 'Original Images' / name
-                          for name in saved_filenames
-                          if (directory / 'Original Images' / name).is_file()]
+        # Keeping only the data corresponding to existing images
+        self.table_items = Table_items(
+            entries=[entry for entry in table_items if
+                     (directory / 'Original Images' / entry.path).is_file()])
 
-        # Adding the nuclei to the nuclei dict
-        for name, nuclei in saved_nuclei.items():
-            self._nuclei[directory / 'Original Images' / name] = nuclei
+        # Completing the paths to match that of the directory to load
+        for entry in self.table_items:
+            entry.path = directory / 'Original Images' / entry.path
 
-        # Making sure the tk_obj field is empty
-        for nuclei in self._nuclei.values():
-            for nucleus in nuclei:
+        # Removing any reference to Tkinter objects
+        for entry in self.table_items:
+            for nucleus in entry.nuclei:
                 nucleus.tk_obj = None
-
-        # Adding the fibres to the fibres dict
-        for name, fibres in saved_fibres.items():
-            self._fibres[directory / 'Original Images' / name] = fibres
-
-        # Making sure the h_line and v_line fields are empty
-        for fibres in self._fibres.values():
-            for fibre in fibres:
+            for fibre in entry.fibres:
                 fibre.polygon = None
 
         # Redrawing the canvas
-        if self.filenames:
+        if self.table_items:
             self._make_table()
 
     def save_project(self, directory: Path, save_altered: bool) -> None:
@@ -132,8 +126,8 @@ class Files_table(ttk.Frame):
             nucleus: The Nucleus object to add.
         """
 
-        self._nuclei[self._current_image].append(deepcopy(nucleus))
-        self._update_data(self._current_image)
+        self.table_items.current_entry.nuclei.append(deepcopy(nucleus))
+        self._update_data(self.table_items.current_entry)
 
     def remove_nucleus(self, nucleus: Nucleus) -> None:
         """Removes a Nucleus from the Nuclei object associated with the current
@@ -143,8 +137,8 @@ class Files_table(ttk.Frame):
             nucleus: The Nucleus object to remove.
         """
 
-        self._nuclei[self._current_image].remove(nucleus)
-        self._update_data(self._current_image)
+        self.table_items.current_entry.nuclei.remove(nucleus)
+        self._update_data(self.table_items.current_entry)
 
     def switch_nucleus(self, nucleus: Nucleus) -> None:
         """Switches the color of a nucleus.
@@ -153,10 +147,10 @@ class Files_table(ttk.Frame):
             nucleus: The Nucleus object whose color should be switched.
         """
 
-        for nuc in self._nuclei[self._current_image]:
+        for nuc in self.table_items.current_entry.nuclei:
             if nuc == nucleus:
                 nuc.color = 'out' if nuc.color == 'in' else 'in'
-        self._update_data(self._current_image)
+        self._update_data(self.table_items.current_entry)
 
     def reset(self) -> None:
         """Resets everything in the frame.
@@ -168,15 +162,9 @@ class Files_table(ttk.Frame):
         for item in self._canvas.find_all():
             self._canvas.delete(item)
 
-        # Emptying the different lists, dicts and variables
-        self.items: Dict[Path, Table_element] = {}
-        self._index_to_img = {}
-        self._img_to_index = {}
-        self._current_image = None
+        # Deleting all the stored data
+        self.table_items.reset()
         self._hovering_index = None
-        self._nuclei: Dict[Path, Nuclei] = {}
-        self._fibres: Dict[Path, Fibres] = {}
-        self.filenames: List[Path] = []
 
     def add_images(self, filenames: List[Path]) -> None:
         """Adds images to the current frame.
@@ -190,37 +178,34 @@ class Files_table(ttk.Frame):
         # Deleting every element in the canvas
         for item in self._canvas.find_all():
             self._canvas.delete(item)
-        self.items: Dict[Path, Table_element] = {}
 
         # Making sure there's no conflict between the new and previous images
         for file in filenames:
-            if file in self.filenames:
+            if file in self.table_items.file_names:
                 messagebox.showerror("Error while loading files",
                                      f"The file {file.name} is already opened,"
                                      f"ignoring.")
                 filenames.remove(file)
-            elif file.name in [file_.name for file_ in self.filenames]:
+            elif file.name in [file_.name for file_
+                               in self.table_items.file_names]:
                 messagebox.showerror("Error while  loading files",
                                      f"A file with the same name ({file.name})"
                                      f"is already opened, ignoring.")
                 filenames.remove(file)
 
         # Adding the new images to the frame
-        if filenames:
-            self.filenames += filenames
         for file in filenames:
-            self._nuclei[file] = Nuclei()
-            self._fibres[file] = Fibres()
+            self.table_items.append(Table_entry(path=file,
+                                                nuclei=Nuclei(),
+                                                fibres=Fibres()))
 
         # Redrawing the canvas
         self._make_table()
 
     def input_processed_data(
             self,
-            nuclei_negative_positions: List[Tuple[Union[float, ndarray],
-                                                  Union[float, ndarray]]],
-            nuclei_positive_positions: List[Tuple[Union[float, ndarray],
-                                                  Union[float, ndarray]]],
+            nuclei_negative_positions: List[Tuple[float, float]],
+            nuclei_positive_positions: List[Tuple[float, float]],
             fibre_contours: Tuple[ndarray],
             area: float,
             file: Path) -> None:
@@ -238,28 +223,29 @@ class Files_table(ttk.Frame):
                 computed.
         """
 
-        # Adds the received nuclei to the Nuclei object
-        self._nuclei[file] = Nuclei()
+        # Adds the received nuclei to the Nuclei object and draws them
+        self.table_items[file].nuclei.reset()
         for x, y in nuclei_negative_positions:
-            self._nuclei[file].append(Nucleus(x, y, None, 'out'))
+            self.table_items[file].nuclei.append(Nucleus(x, y, None, 'out'))
         for x, y in nuclei_positive_positions:
-            self._nuclei[file].append(Nucleus(x, y, None, 'in'))
+            self.table_items[file].nuclei.append(Nucleus(x, y, None, 'in'))
 
-        # Adds the received fibres to the Fibres object
-        self._fibres[file] = Fibres(area=area)
+        # Adds the received fibres to the Fibres object and draws them
+        self.table_items[file].fibres.reset()
+        self.table_items[file].fibres.area = area
         for contour in fibre_contours:
             contour = list(map(tuple, contour))
-            self._fibres[file].append(Fibre(None, contour))
+            self.table_items[file].fibres.append(Fibre(None, contour))
 
         # Updates the display
-        self._update_data(file)
+        self._update_data(self.table_items[file])
 
-        # Refreshes the display if necessary
-        if file == self._current_image:
+        # Refreshes the image display if necessary
+        if file == self.table_items.current_path:
             self.image_canvas.load_image(
-                self._current_image,
-                self._nuclei[self._current_image],
-                self._fibres[self._current_image])
+                self.table_items.current_path,
+                self.table_items.current_entry.nuclei,
+                self.table_items.current_entry.fibres)
 
     def enable_buttons(self, enable: bool) -> None:
         """Enables or disables the close buttons and checkboxes of the images.
@@ -274,26 +260,27 @@ class Files_table(ttk.Frame):
         button_state = 'enabled' if enable else 'disabled'
         check_state = 'normal' if enable else 'disabled'
 
-        for item in self.items.values():
-            item.button['state'] = button_state
-            item.check.box['state'] = check_state
+        for entry in self.table_items:
+            entry.graph_elt.button['state'] = button_state
+            entry.graph_elt.check.box['state'] = check_state
 
     @property
     def all_checked(self) -> bool:
         """Returns True when all the checkboxes of the images are set."""
 
         # If there's no image, default is True
-        if not self.items:
+        if not self.table_items:
             return True
 
-        return all(item.check.var.get() for item in self.items.values())
+        return all(entry.graph_elt.check.var.get() for entry
+                   in self.table_items)
 
     @property
     def checked_files(self) -> List[Path]:
         """Returns the paths to the files whose checkboxes are checked."""
 
-        return [path for path, item in self.items.items()
-                if item.check.var.get()]
+        return [entry.path for entry in self.table_items
+                if entry.graph_elt.check.var.get()]
 
     def delete_image(self, file: Path, security: bool = True) -> None:
         """Removes an image from the canvas.
@@ -323,26 +310,22 @@ class Files_table(ttk.Frame):
             self._canvas.delete(item)
 
         # Removing any reference to the image being deleted
-        self.items.pop(file)
-        self._index_to_img.pop(self._img_to_index[file])
-        index = self._img_to_index.pop(file)
-        self._nuclei.pop(file)
-        self._fibres.pop(file)
-        self.filenames.remove(file)
+        index = self.table_items.index(file)
+        self.table_items.remove(file)
 
-        # No entry left in the canvas
-        if not self.filenames:
-            self._current_image = None
+        # If there's no entry left in the canvas
+        if not self.table_items:
+            self.table_items.current_path = None
             self._hovering_index = None
 
         # Selecting the new current image in case it was the one to delete
-        elif self._current_image == file:
-            if index + 1 in self._index_to_img:
-                self._current_image = self._index_to_img[index + 1]
-            elif self._index_to_img:
-                self._current_image = self._index_to_img[index - 1]
-            else:
-                self._current_image = None
+        elif self.table_items.current_path == file:
+            try:
+                self.table_items.current_path = self.table_items.\
+                    entries[index].path
+            except IndexError:
+                self.table_items.current_path = self.table_items.\
+                    entries[index - 1].path
 
         # Re-drawing the canvas
         self._make_table()
@@ -360,20 +343,8 @@ class Files_table(ttk.Frame):
             directory: The directory where the file should be saved.
         """
 
-        # Preparing the dict of nuclei before saving
-        save_nuclei = {}
-        for file, nuclei in self._nuclei.items():
-            save_nuclei[file.name] = nuclei
-
-        # Preparing the dict of fibres before saving
-        save_fibres = {}
-        for file, fibres in self._fibres.items():
-            save_fibres[file.name] = fibres
-
-        # Actually saving the data
         with open(directory / 'data.pickle', 'wb+') as save_file:
-            dump(([file.name for file in self.filenames], save_nuclei,
-                  save_fibres), save_file, protocol=4)
+            dump(self.table_items.save_version, save_file, protocol=4)
 
     def _save_originals(self, directory: Path) -> None:
         """Saves the original images in a sub-folder of Cellen-Tellen's Project
@@ -388,37 +359,27 @@ class Files_table(ttk.Frame):
             Path.mkdir(directory / 'Original Images')
 
         # Actually saving the images
-        for i, filename in enumerate(self.filenames):
+        for item in self.table_items:
             # Saving only if the images are not saved yet
-            if self._projects_path not in filename.parents:
-                new_path = directory / 'Original Images' / filename.name
+            if self._projects_path not in item.path.parents:
+                new_path = directory / 'Original Images' / item.path.name
 
                 # Handling the case when the image cannot be loaded
                 try:
-                    copyfile(filename, new_path)
+                    copyfile(item.path, new_path)
                 except FileNotFoundError:
                     messagebox.showerror(f'Error while saving the image !',
                                          f'Check that the image at '
-                                         f'{filename} still exists and '
+                                         f'{item.path} still exists and '
                                          f'that it is accessible.')
-                    return
+                    continue
 
                 # Updating the current image path if necessary
-                if self._current_image == filename:
-                    self._current_image = new_path
+                if self.table_items.current_path == item.path:
+                    self.table_items.current_path = new_path
 
-                # Updating the paths to the image that was just saved
-                self.items[new_path] = self.items[filename]
-                self.items.pop(filename)
-                self._fibres[new_path] = self._fibres[filename]
-                self._fibres.pop(filename)
-                self._nuclei[new_path] = self._nuclei[filename]
-                self._nuclei.pop(filename)
-                index = self._img_to_index[filename]
-                self._index_to_img[index] = new_path
-                self._img_to_index[new_path] = index
-                self._img_to_index.pop(filename)
-                self.filenames[i] = new_path
+                # Changing the saved path for the image
+                item.path = new_path
 
     def _save_table(self, directory: Path) -> None:
         """Saves a .xlsx file containing stats about the images of the project.
@@ -443,38 +404,39 @@ class Files_table(ttk.Frame):
 
         # Setting the column widths
         worksheet.set_column(
-            0, 0, width=max(11, max(len(file.name) for file in self.filenames)
-                            if self.filenames else 0))
+            0, 0, width=max(11, max(len(file.name) for file
+                                    in self.table_items.file_names)
+                            if self.table_items else 0))
         worksheet.set_column(1, 1, width=22)
         worksheet.set_column(2, 2, width=37)
         worksheet.set_column(3, 3, width=17)
         worksheet.set_column(4, 4, width=16)
 
-        for i, file in enumerate(self.filenames):
+        for i, item in enumerate(self.table_items):
             # Writing the names of the images
-            worksheet.write(i + 2, 0, file.name)
+            worksheet.write(i + 2, 0, item.path.name)
 
             # Writing the total number of nuclei
-            worksheet.write(i + 2, 1, len(self._nuclei[file]))
+            worksheet.write(i + 2, 1, len(item.nuclei))
 
             # Writing the number of nuclei in fibres
-            worksheet.write(i + 2, 2, self._nuclei[file].nuclei_in_count)
+            worksheet.write(i + 2, 2, item.nuclei.nuclei_in_count)
 
             # Writing the ratio of nuclei in over the total number of nuclei
-            if self._nuclei[file].nuclei_out_count > 0:
-                worksheet.write(i + 2, 3, self._nuclei[file].nuclei_in_count /
-                                len(self._nuclei[file]))
+            if item.nuclei.nuclei_out_count > 0:
+                worksheet.write(i + 2, 3, item.nuclei.nuclei_in_count /
+                                len(item.nuclei))
             else:
                 worksheet.write(i + 2, 3, 'NA')
 
             # Writing the percentage area of fibres
-            worksheet.write(i + 2, 4, f'{self._fibres[file].area * 100:.2f}')
+            worksheet.write(i + 2, 4, f'{item.fibres.area * 100:.2f}')
 
         # Writing the average for each column
-        average_line = 3 + len(self.filenames)
-        last_data_line = 2 + len(self.filenames)
+        average_line = 3 + len(self.table_items)
+        last_data_line = 2 + len(self.table_items)
         worksheet.write(average_line, 0, "Average", bold)
-        if self.filenames:
+        if self.table_items:
             worksheet.write(average_line, 1, f"=AVERAGE(B3:B{last_data_line})")
             worksheet.write(average_line, 2, f"=AVERAGE(C3:C{last_data_line})")
             worksheet.write(average_line, 3, f"=AVERAGE(D3:D{last_data_line})")
@@ -495,14 +457,16 @@ class Files_table(ttk.Frame):
         Path.mkdir(directory / 'Altered Images')
 
         # Saves the images
-        for file in self.filenames:
-            self._draw_nuclei_save(file, directory)
+        for entry in self.table_items:
+            self._draw_nuclei_save(entry, directory)
 
-    def _draw_nuclei_save(self, file: Path, project_name: Path) -> None:
+    def _draw_nuclei_save(self,
+                          entry: Table_entry,
+                          project_name: Path) -> None:
         """Draws fibres and nuclei on an images and then saves it.
 
         Args:
-            file: The path to the original image.
+            entry: The table entry whose image to save.
             project_name: The path to the project folder.
         """
 
@@ -519,7 +483,8 @@ class Files_table(ttk.Frame):
                         '#646464': (100, 100, 100)}
 
         # Reads the image
-        cv_img = check_image(project_name / "Original Images" / file.name)
+        cv_img = check_image(project_name / "Original Images" /
+                             entry.path.name)
         cv_img = cvtColor(cv_img, COLOR_RGB2BGR)
 
         # Aborting if the image cannot be loaded
@@ -527,14 +492,14 @@ class Files_table(ttk.Frame):
             return
 
         # Drawing the fibres
-        for fib in self._fibres[file]:
+        for fib in entry.fibres:
             positions = array(fib.position)
             positions = positions.reshape((-1, 1, 2))
             polylines(cv_img, [positions], True,
                       color_to_bgr[self.image_canvas.fib_color], 4)
 
         # Drawing the nuclei
-        for nuc in self._nuclei[file]:
+        for nuc in entry.nuclei:
             centre = (int(nuc.x_pos), int(nuc.y_pos))
             if nuc.color == 'out':
                 ellipse(cv_img, centre, (6, 6), 0, 0, 360,
@@ -544,7 +509,7 @@ class Files_table(ttk.Frame):
                         color_to_bgr[self.image_canvas.nuc_col_in], -1)
 
         # Now saving the image
-        imwrite(str(project_name / "Altered Images" / file.name), cv_img)
+        imwrite(str(project_name / "Altered Images" / entry.path.name), cv_img)
 
     def _set_layout(self) -> None:
         """Sets the layout of the frame by creating the canvas and the
@@ -584,20 +549,13 @@ class Files_table(ttk.Frame):
     def _set_variables(self) -> None:
         """Method to centralize the instantiation of the attributes."""
 
-        # Attributes holding the data
-        self._nuclei: Dict[Path, Nuclei] = {}
-        self._fibres: Dict[Path, Fibres] = {}
-        self.filenames = []
-
         # Attributes managing the display
-        self._current_image = None
         self._hovering_index = None
 
         # Other attributes
         self.image_canvas = None
-        self.items: Dict[Path, Table_element] = {}
-        self._index_to_img = {}
-        self._img_to_index = {}
+
+        self.table_items = Table_items()
 
     def _on_wheel(self, event: Event) -> None:
         """Scrolls the canvas up or down upon wheel motion."""
@@ -612,17 +570,17 @@ class Files_table(ttk.Frame):
         if self._table_height > self._canvas.winfo_height():
             self._canvas.yview_scroll(-delta, "units")
 
-    def _update_data(self, file: Path) -> None:
+    def _update_data(self, entry: Table_entry) -> None:
         """Updates the display when data about an image has changed.
 
         Args:
-            file: The path to the image whose data should be updated.
+            entry: The path to the image whose data should be updated.
         """
 
         # To avoid repeated calls to the same attribute
-        nuclei = self._nuclei[file]
-        fibres = self._fibres[file]
-        items = self.items[file]
+        nuclei = entry.nuclei
+        fibres = entry.fibres
+        items = entry.graph_elt
         total_nuclei = len(nuclei)
 
         # Updating the labels
@@ -647,7 +605,7 @@ class Files_table(ttk.Frame):
         """Modifies the display when the mose is being hovered over the
         canvas."""
 
-        if self.filenames:
+        if self.table_items:
             # Case when the mouse is on the canvas
             if 0 < self._canvas.canvasy(event.y) < self._table_height and \
                     event.widget == self._canvas:
@@ -684,7 +642,7 @@ class Files_table(ttk.Frame):
                 dict.
         """
 
-        if index != self._img_to_index[self._current_image]:
+        if index != self.table_items.current_index:
             self._set_aesthetics(index, selected=False, hover=True)
 
     def _unselect_image(self, index: int) -> None:
@@ -698,10 +656,9 @@ class Files_table(ttk.Frame):
         This image is re-loaded.
         """
 
-        file = self._index_to_img[index]
-        self.image_canvas.load_image(file,
-                                     self._nuclei[file], self._fibres[file])
-        self._current_image = file
+        entry = self.table_items.entries[index]
+        self.image_canvas.load_image(entry.path, entry.nuclei, entry.fibres)
+        self.table_items.current_path = entry.path
         self._set_aesthetics(index, selected=True, hover=False)
 
     def _set_aesthetics(self,
@@ -723,38 +680,28 @@ class Files_table(ttk.Frame):
         line_color = label_line_selected if selected else label_line
         rect_color = background_selected if selected else background
 
-        file = self._index_to_img[index]
+        items = self.table_items.entries[index].graph_elt
 
         # Cannot set the upper line if first entry in canvas
         if index > 0:
-            self._canvas.itemconfig(self.items[self._index_to_img[index - 1]].
+            self._canvas.itemconfig(self.table_items.entries[index].graph_elt.
                                     lines.full_line, fill=line_color)
 
         # The rectangle isn't affected by hovering
         if not hover:
-            self._canvas.itemconfig(self.items[file].rect,
-                                    fill=rect_color)
+            self._canvas.itemconfig(items.rect, fill=rect_color)
 
         # Setting all the items of the entry
-        self._canvas.itemconfig(self.items[file].lines.half_line,
-                                fill=line_color)
-        self._canvas.itemconfig(self.items[file].lines.full_line,
-                                fill=line_color)
-        self._canvas.itemconfig(self.items[file].lines.index_line,
-                                fill=line_color)
+        self._canvas.itemconfig(items.lines.half_line, fill=line_color)
+        self._canvas.itemconfig(items.lines.full_line, fill=line_color)
+        self._canvas.itemconfig(items.lines.index_line, fill=line_color)
 
-        self._canvas.itemconfig(self.items[file].labels.name,
-                                fill=line_color)
-        self._canvas.itemconfig(self.items[file].labels.nuclei,
-                                fill=line_color)
-        self._canvas.itemconfig(self.items[file].labels.ratio,
-                                fill=line_color)
-        self._canvas.itemconfig(self.items[file].labels.positive,
-                                fill=line_color)
-        self._canvas.itemconfig(self.items[file].labels.index,
-                                fill=line_color)
-        self._canvas.itemconfig(self.items[file].labels.fiber,
-                                fill=line_color)
+        self._canvas.itemconfig(items.labels.name, fill=line_color)
+        self._canvas.itemconfig(items.labels.nuclei, fill=line_color)
+        self._canvas.itemconfig(items.labels.ratio, fill=line_color)
+        self._canvas.itemconfig(items.labels.positive, fill=line_color)
+        self._canvas.itemconfig(items.labels.index, fill=line_color)
+        self._canvas.itemconfig(items.labels.fiber, fill=line_color)
 
     def _left_click(self, event: Event) -> None:
         """Selects a new image or reloads the current."""
@@ -762,7 +709,7 @@ class Files_table(ttk.Frame):
         # Does nothing if clicking in a blank area
         if self._canvas.canvasy(event.y) < self._table_height:
             # Unselects previous image
-            self._unselect_image(self._img_to_index[self._current_image])
+            self._unselect_image(self.table_items.current_index)
 
             # Selects new image
             self._select_image(int(self._canvas.canvasy(event.y) /
@@ -772,14 +719,14 @@ class Files_table(ttk.Frame):
     def _table_height(self) -> int:
         """The height of all the canvas entries in pixels."""
 
-        return self._row_height * 2 * len(self.filenames)
+        return self._row_height * 2 * len(self.table_items)
 
     def _make_table(self) -> None:
         """Draws the entire canvas."""
 
         width = self._canvas.winfo_width()
         # The canvas is built iteratively
-        for i, file in enumerate(self.filenames):
+        for i, entry in enumerate(self.table_items):
             # Defining the top, middle and bottom position
             top = 2 * i * self._row_height
             middle = (2 * i + 1) * self._row_height
@@ -793,7 +740,7 @@ class Files_table(ttk.Frame):
 
             # Creating the button for removing the file
             button = ttk.Button(self._canvas, text="X", width=2,
-                                command=partial(self.delete_image, file))
+                                command=partial(self.delete_image, entry.path))
             self._canvas.create_window(width - 17, top + 16, window=button)
 
             # Creating the checkbox for processing or not the image
@@ -819,7 +766,7 @@ class Files_table(ttk.Frame):
                 50, top, 50, middle, width=1, fill=label_line)
 
             # Setting the file name
-            file_name = file.name
+            file_name = entry.path.name
             if len(file_name) >= 39:
                 file_name = '...' + file_name[-36:]
 
@@ -846,35 +793,32 @@ class Files_table(ttk.Frame):
                 text='error', anchor='nw', fill=label_line)
 
             # Adding the drawn objects to the items dict
-            self.items[file] = Table_element(Labels(name_text,
-                                                    nuclei_text,
-                                                    positive_text,
-                                                    ratio_text,
-                                                    index_text,
-                                                    fiber_text),
-                                             Lines(half_line,
-                                                   full_line,
-                                                   index_line),
-                                             rect,
-                                             button,
-                                             Check(checkbox,
-                                                   check_var,
-                                                   img))
-
-            # Associating the path to the index
-            self._index_to_img[i] = file
-            self._img_to_index[file] = i
+            entry.graph_elt = Graphical_element(Labels(name_text,
+                                                       nuclei_text,
+                                                       positive_text,
+                                                       ratio_text,
+                                                       index_text,
+                                                       fiber_text),
+                                                Lines(half_line,
+                                                      full_line,
+                                                      index_line),
+                                                rect,
+                                                button,
+                                                Check(checkbox,
+                                                      check_var,
+                                                      img))
 
             # Updating the displayed text according to the data
-            self._update_data(file)
+            self._update_data(entry)
 
         # Setting the scroll region
         self._canvas.config(scrollregion=(0, 0, width, self._table_height))
 
         # Highlighting the selected image
-        if self._index_to_img:
-            if self._current_image is None:
-                self._current_image = self._index_to_img[0]
-            self._select_image(self._img_to_index[self._current_image])
+        if self.table_items:
+            if self.table_items.current_path is None:
+                self.table_items.current_path = self.table_items.\
+                    entries[0].path
+            self._select_image(self.table_items.current_index)
         else:
             self.image_canvas.reset()
