@@ -1043,17 +1043,8 @@ class Main_window(Tk):
         if not to_delete:
             return
 
-        # Confirming that the files should be deleted
-        ret = messagebox.askyesno('Hold on !',
-                                  f"Do you really want to remove "
-                                  f"{len(to_delete)} files ?\nAll the unsaved "
-                                  f"data will be lost.")
-        if not ret:
-            return
-
         # Actually deleting the files
-        for file in to_delete:
-            self._files_table.delete_image(file, security=False)
+        self._files_table.delete_image(tuple(to_delete))
 
     @staticmethod
     def _open_github() -> None:

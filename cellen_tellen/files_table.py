@@ -261,44 +261,55 @@ class Files_table(ttk.Frame):
         return [entry.path for entry in self.table_items
                 if entry.graph_elt.button_var.get()]
 
-    def delete_image(self, file: Path, security: bool = True) -> None:
-        """Removes an image from the canvas.
+    def delete_image(self, to_delete: Tuple[Path]) -> None:
+        """Removes images from the canvas, and discards all the associated
+        data.
+
+        Also handles the update of the index of the image currently displayed.
 
         Args:
-            file: The path to the image to be removed.
-            security: If True, no warning message is displayed before
-                deleting the file.
+            to_delete: A tuple containing the paths to the images to remove
+                from the canvas.
         """
 
         # Security to prevent unwanted deletions
-        if security:
+        if len(to_delete) == 1:
             ret = messagebox.askyesno('Hold on !',
                                       f"Do you really want to remove "
-                                      f"{file.name} ?\nAll the unsaved data "
-                                      f"will be lost.")
-            if not ret:
-                return
+                                      f"{to_delete[0].name} ?\n"
+                                      f"All the unsaved data will be lost.")
+
+        else:
+            ret = messagebox.askyesno('Hold on !',
+                                      f"Do you really want to remove "
+                                      f"{len(to_delete)} files ?\n"
+                                      f"All the unsaved data will be lost.")
+        if not ret:
+            return
 
         # Cleaning up the canvas
         self.table_items.reset_graphics()
 
-        # Removing any reference to the image being deleted
-        index = self.table_items.index(file)
-        self.table_items.remove(file)
+        # Iterating over the files to delete
+        for file in to_delete:
 
-        # If there's no entry left in the canvas, resetting the image
-        if not self.table_items:
-            self.table_items.current_index = None
-            self.image_canvas.reset()
+            # Removing any reference to the image being deleted
+            index = self.table_items.index(file)
+            self.table_items.remove(file)
 
-        # Selecting a new current image in case the prev one was just deleted
-        elif self.table_items.current_index == index:
-            if len(self.table_items) <= index:
-                self.table_items.current_index = len(self.table_items) - 1
+            # If there's no entry left in the canvas, resetting the image
+            if not self.table_items:
+                self.table_items.current_index = None
+                self.image_canvas.reset()
 
-        # Updating the current index if an image was deleted at a lower index
-        elif self.table_items.current_index > index:
-            self.table_items.current_index -= 1
+            # Selecting a new current image if the prev one was just deleted
+            elif self.table_items.current_index == index:
+                if len(self.table_items) <= index:
+                    self.table_items.current_index = len(self.table_items) - 1
+
+            # Updating the current index if a lower index image was deleted
+            elif self.table_items.current_index > index:
+                self.table_items.current_index -= 1
 
         # Re-drawing the canvas
         self._make_table()
@@ -600,7 +611,7 @@ class Files_table(ttk.Frame):
                 canvas=self._scroll_window,
                 number=i,
                 name=file_name,
-                delete_cmd=partial(self.delete_image, entry.path),
+                delete_cmd=partial(self.delete_image, (entry.path,)),
                 check_cmd=self._main_window.update_master_check,
                 scroll_cmd=self._on_wheel,
                 select_cmd=self._select_image)
