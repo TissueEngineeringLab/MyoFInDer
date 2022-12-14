@@ -106,6 +106,7 @@
     <ROW Directory="Brazil_Dir" Directory_Parent="zoneinfo_1_Dir" DefaultDir="Brazil"/>
     <ROW Directory="Canada_1_Dir" Directory_Parent="tzdata_Dir" DefaultDir="Canada"/>
     <ROW Directory="Canada_Dir" Directory_Parent="zoneinfo_1_Dir" DefaultDir="Canada"/>
+    <ROW Directory="CellenTellen_Dir" Directory_Parent="appsecurityexcluded_Dir" DefaultDir="CELLEN~1|Cellen Tellen"/>
     <ROW Directory="Chile_1_Dir" Directory_Parent="tzdata_Dir" DefaultDir="Chile"/>
     <ROW Directory="Chile_Dir" Directory_Parent="zoneinfo_1_Dir" DefaultDir="Chile"/>
     <ROW Directory="CommonHTML_Dir" Directory_Parent="output_Dir" DefaultDir="COMMON~1|CommonHTML"/>
@@ -180,7 +181,7 @@
     <ROW Directory="Pacific_Dir" Directory_Parent="zoneinfo_1_Dir" DefaultDir="Pacific"/>
     <ROW Directory="PlainSource_Dir" Directory_Parent="output_Dir" DefaultDir="PLAINS~1|PlainSource"/>
     <ROW Directory="PreviewHTML_Dir" Directory_Parent="output_Dir" DefaultDir="PREVIE~1|PreviewHTML"/>
-    <ROW Directory="Projects_Dir" Directory_Parent="APPDIR" DefaultDir="Projects"/>
+    <ROW Directory="Projects_Dir" Directory_Parent="CellenTellen_Dir" DefaultDir="Projects"/>
     <ROW Directory="Regular_10_Dir" Directory_Parent="SansSerif_Dir" DefaultDir="Regular"/>
     <ROW Directory="Regular_11_Dir" Directory_Parent="Script_Dir" DefaultDir="Regular"/>
     <ROW Directory="Regular_12_Dir" Directory_Parent="Shapes_Dir" DefaultDir="Regular"/>
@@ -252,6 +253,7 @@
     <ROW Directory="US_Dir" Directory_Parent="zoneinfo_1_Dir" DefaultDir="US"/>
     <ROW Directory="Variants_1_Dir" Directory_Parent="STIXWeb_2_Dir" DefaultDir="Variants"/>
     <ROW Directory="Variants_Dir" Directory_Parent="STIXWeb_1_Dir" DefaultDir="Variants"/>
+    <ROW Directory="WindowsVolume" Directory_Parent="TARGETDIR" DefaultDir="WINDOW~1|WindowsVolume" IsPseudoRoot="1"/>
     <ROW Directory="__1_Dir" Directory_Parent="stdlib_Dir" DefaultDir="3"/>
     <ROW Directory="__2_Dir" Directory_Parent="stdlib_Dir" DefaultDir="3.7"/>
     <ROW Directory="__3_Dir" Directory_Parent="stdlib_Dir" DefaultDir="3.9"/>
@@ -301,6 +303,7 @@
     <ROW Directory="apl_Dir" Directory_Parent="mode_1_Dir" DefaultDir="apl"/>
     <ROW Directory="app_images_Dir" Directory_Parent="cellentellen_Dir" DefaultDir="APP_IM~1|app_images"/>
     <ROW Directory="apps_Dir" Directory_Parent="djangostubs_1_Dir" DefaultDir="apps"/>
+    <ROW Directory="appsecurityexcluded_Dir" Directory_Parent="WindowsVolume" DefaultDir="APPSEC~1|appsecurityexcluded"/>
     <ROW Directory="ar_Dir" Directory_Parent="localization_Dir" DefaultDir="ar"/>
     <ROW Directory="arpack_Dir" Directory_Parent="_eigen_Dir" DefaultDir="arpack"/>
     <ROW Directory="asciiarmor_Dir" Directory_Parent="mode_1_Dir" DefaultDir="ASCIIA~1|asciiarmor"/>
@@ -351,7 +354,7 @@
     <ROW Directory="cachetools_Dir" Directory_Parent="and3_1_Dir" DefaultDir="CACHET~1|cachetools"/>
     <ROW Directory="cdo_Dir" Directory_Parent="localization_Dir" DefaultDir="cdo"/>
     <ROW Directory="ce_Dir" Directory_Parent="localization_Dir" DefaultDir="ce"/>
-    <ROW Directory="cellentellen_Dir" Directory_Parent="APPDIR" DefaultDir="CELLEN~1|cellen-tellen"/>
+    <ROW Directory="cellentellen_Dir" Directory_Parent="CellenTellen_Dir" DefaultDir="CELLEN~1|cellen-tellen"/>
     <ROW Directory="celltoolbarpresets_Dir" Directory_Parent="js_5_Dir" DefaultDir="CELLTO~1|celltoolbarpresets"/>
     <ROW Directory="certifi_Dir" Directory_Parent="cellentellen_Dir" DefaultDir="certifi"/>
     <ROW Directory="characteristic_Dir" Directory_Parent="and3_1_Dir" DefaultDir="CHARAC~1|characteristic"/>
