@@ -1,11 +1,13 @@
 # coding: utf-8
 
 from dataclasses import dataclass, field
-from typing import Optional, List, Any, Tuple, Iterator, Union
-from tkinter.ttk import Button
+from typing import Optional, List, Any, Tuple, Iterator, Union, Callable
+from tkinter.ttk import Button, Separator, Label
 from functools import partial
-from tkinter import StringVar, IntVar, BooleanVar, Checkbutton, PhotoImage
+from tkinter import StringVar, IntVar, BooleanVar, Checkbutton, PhotoImage, \
+    Frame, Event, EventType
 from pathlib import Path
+from platform import system
 
 
 @dataclass
@@ -118,45 +120,200 @@ class Fibres:
         return len(self.fibres)
 
 
-@dataclass
-class Labels:
-    """Class holding the label values for one image."""
-
-    name: int
-    nuclei: int
-    positive: int
-    ratio: int
-    index: int
-    fiber: int
-
-
-@dataclass
-class Lines:
-    """Class holding the canvas line elements for one image."""
-
-    half_line: int
-    full_line: int
-    index_line: int
-
-
-@dataclass
-class Check:
-    """Class holding the objects managing the checkboxes in the canvas."""
-
-    box: Checkbutton
-    var: BooleanVar
-    img:  PhotoImage
-
-
-@dataclass
-class Graphical_element:
+class Graphical_element(Frame):
     """Class holding all the canvas elements for one image."""
 
-    labels: Labels
-    lines: Lines
-    rect: int
-    button: Button
-    check: Check
+    def __init__(self,
+                 canvas: Frame,
+                 number: int,
+                 name: str,
+                 delete_cmd: Callable,
+                 check_cmd: Callable,
+                 scroll_cmd: Callable,
+                 select_cmd: Callable) -> None:
+        """Sets the args, the attributes, the layout and the bindings.
+
+        Args:
+            canvas: The parent canvas in which the Frame is contained.
+            number: The index of the Frame in the list of opened files.
+            name: The name of the associated file, as displayed in the
+                interface.
+            delete_cmd: The callback command associated with the delete button.
+            check_cmd: The callback command associated with the checkbox check.
+            scroll_cmd: The callback command to call when a scroll action is
+                performed.
+            select_cmd: The callback command to call when a mouse click action
+                is performed.
+        """
+
+        super().__init__(canvas)
+
+        # Saving some attributes for later
+        self._scroll_cmd = scroll_cmd
+        self._select_cmd = select_cmd
+        self._number = number
+
+        # Instantiating variables
+        self.selected = BooleanVar(self, value=False)
+        self.button_var = BooleanVar(self, value=True)
+
+        # Displaying the layout
+        self._set_layout(number=number,
+                         name=name,
+                         delete_cmd=delete_cmd,
+                         check_cmd=check_cmd)
+        self.config(highlightthickness=3)
+        self.config(highlightbackground='grey')
+
+        # Adding traces and bindings
+        self.selected.trace_add('write', self._select_trace)
+        self.bind('<Enter>', self._hover)
+        self.bind('<Leave>', self._hover)
+        self._bind_wheel(self)
+        self._bind_button(self)
+
+    def _select_trace(self, _: str, __: str, ___: str) -> None:
+        """A simple wrapper for calling the _hover method when the value of the
+        selected boolean var is modified."""
+
+        e = Event()
+        e.type = None
+        self._hover(e)
+
+    def _bind_wheel(self, obj) -> None:
+        """Method binding the mouse wheel action of an object to the
+        associated scroll callback."""
+
+        # Different wheel management in Windows and Linux
+        if system() == "Linux":
+            obj.bind('<4>', self._scroll_cmd)
+            obj.bind('<5>', self._scroll_cmd)
+        else:
+            obj.bind('<MouseWheel>', self._scroll_cmd)
+
+    def _bind_button(self, obj) -> None:
+        """Method binding the mouse click action of an object to the
+        associated click callback."""
+
+        obj.bind('<ButtonPress-1>', partial(self._select_cmd,
+                                            index=self._number))
+
+    def _set_layout(self,
+                    number: int,
+                    name: str,
+                    delete_cmd: Callable,
+                    check_cmd: Callable) -> None:
+        """Sets the layout of the Frame.
+
+        Args:
+            number: The index of the Frame in the list of opened files.
+            name: The name of the associated file, as displayed in the
+                interface.
+            delete_cmd: The callback command associated with the delete button.
+            check_cmd: The callback command associated with the checkbox check.
+        """
+
+        self.pack(expand=True, fill='x', pady=0, padx=0,
+                  side='top', anchor='n')
+
+        # The upper half of the frame
+        self.frame_up = Frame(self)
+        self.frame_up.pack(expand=True, fill='x', side='top', anchor='n')
+        self._bind_wheel(self.frame_up)
+        self._bind_button(self.frame_up)
+
+        # Horizontal separator between the two halves of the frame
+        self.sep_h = Separator(self, orient='horizontal')
+        self.sep_h.pack(expand=True, fill='x', side='top', anchor='n')
+        self._bind_wheel(self.sep_h)
+        self._bind_button(self.sep_h)
+
+        # The upper half of the frame
+        self.frame_down = Frame(self)
+        self.frame_down.pack(expand=True, fill='x', side='top', anchor='n')
+        self._bind_wheel(self.frame_down)
+        self._bind_button(self.frame_down)
+
+        # The number of the frame in the list of all the frames
+        self.label = Label(self.frame_up, text=str(number))
+        self.label.pack(expand=False, fill='none', pady=15, padx=15,
+                        side='left', anchor='w')
+        self._bind_wheel(self.label)
+        self._bind_button(self.label)
+
+        # The button for deleting the frame
+        self.close_button = Button(self.frame_up, text='X', width=2,
+                                   command=delete_cmd)
+        self.close_button.pack(expand=True, fill='none', side='right',
+                               anchor='e', padx=(0, 2))
+        self._bind_wheel(self.close_button)
+
+        # The check button associated with the frame
+        self.img = PhotoImage(width=1, height=1)
+        self.check_button = Checkbutton(self.frame_up, image=self.img, width=6,
+                                        height=24, variable=self.button_var,
+                                        command=check_cmd)
+        self.check_button.pack(expand=True, fill='none', side='right',
+                               anchor='e')
+        self._bind_wheel(self.check_button)
+
+        # A vertical separator between the index of the frame and its name
+        self.sep_v = Separator(self.frame_up, orient='vertical')
+        self.sep_v.pack(expand=True, fill='y', side='left', anchor='w')
+        self._bind_wheel(self.sep_v)
+        self._bind_button(self.sep_v)
+
+        # The name of the file associated with the frame
+        self.name = Label(self.frame_up, text=name, width=40,
+                          font=('Helvetica', 10))
+        self.name.pack(expand=False, fill='none', padx=3, pady=15,
+                       side='left', anchor='w')
+        self._bind_wheel(self.name)
+        self._bind_button(self.name)
+
+        # The total number of detected nuclei
+        self.total = Label(self.frame_down, text='error',
+                           font=('Helvetica', 10))
+        self.total.pack(expand=True, fill='x', side='left', anchor='w',
+                        padx=(12, 12), pady=15)
+        self._bind_wheel(self.total)
+        self._bind_button(self.total)
+
+        # The number of positive detected nuclei
+        self.positive = Label(self.frame_down, text='error',
+                              font=('Helvetica', 10))
+        self.positive.pack(expand=True, fill='x', side='left', anchor='w',
+                           padx=(12, 12), pady=15)
+        self._bind_wheel(self.positive)
+        self._bind_button(self.positive)
+
+        # The ratio of positive nuclei over the total detected nuclei
+        self.ratio = Label(self.frame_down, text='error',
+                           font=('Helvetica', 10))
+        self.ratio.pack(expand=True, fill='x', side='left', anchor='w',
+                        padx=(12, 12), pady=15)
+        self._bind_wheel(self.ratio)
+        self._bind_button(self.ratio)
+
+        # The percentage of area covered by fibers over the total image area
+        self.area = Label(self.frame_down, text='error',
+                          font=('Helvetica', 10))
+        self.area.pack(expand=True, fill='x', side='left', anchor='w',
+                       padx=(12, 12), pady=15)
+        self._bind_wheel(self.area)
+        self._bind_button(self.area)
+
+    def _hover(self, event: Event) -> None:
+        """Callback method called when the mouse enters or exits the Frame, or
+        when the selected status of the Frame is updated."""
+
+        # Highlight the frame if it's selected or being hovered
+        if self.selected.get() or event.type == EventType.Enter:
+            color = 'black'
+        else:
+            color = 'grey'
+
+        self.config(highlightbackground=color)
 
 
 @dataclass
@@ -188,7 +345,7 @@ class Table_items:
     """
 
     entries: List[Table_entry] = field(default_factory=list)
-    current_path: Optional[Path] = None
+    current_index: Optional[int] = None
 
     def __getitem__(self, item: Path) -> Table_entry:
         """Returns the Table_entry object whose path corresponds to the given
@@ -230,20 +387,19 @@ class Table_items:
         """Returns the Table_entry instance corresponding to the currently
         displayed image."""
 
-        if self.current_path is None:
+        if self.selected is None:
             return
 
-        return self[self.current_path]
+        return self[self.selected]
 
     @property
-    def current_index(self) -> Optional[int]:
-        """Returns the index of the Table_entry instance corresponding to the
-        currently displayed image in the list of files."""
+    def selected(self) -> Optional[Path]:
+        """Returns the path of the Table_entry instance corresponding to the
+        currently displayed image."""
 
-        if self.current_path is None:
-            return
-
-        return self.index(self.current_path)
+        for entry in self.entries:
+            if entry.graph_elt.selected.get():
+                return entry.path
 
     @property
     def save_version(self):
@@ -252,14 +408,23 @@ class Table_items:
         the file name."""
 
         return Table_items(entries=[entry.save_version for entry
-                                    in self.entries],
-                           current_path=None)
+                                    in self.entries])
 
     def reset(self) -> None:
-        """Deletes all the stored Table_entry objects."""
+        """Resets all the graphics and deletes all the stored Table_entry
+        objects."""
 
+        self.reset_graphics()
         self.entries = list()
-        self.current_path = None
+
+    def reset_graphics(self) -> None:
+        """Deletes all the displayed Frames of the Table_entries, but keeps the
+        other attributes of the entries."""
+
+        for entry in self:
+            entry.graph_elt.pack_forget()
+            entry.graph_elt.destroy()
+            del entry.graph_elt
 
     def append(self, entry: Table_entry) -> None:
         """Adds a Table_entry object to the list of the stored ones."""

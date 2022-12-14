@@ -1,7 +1,6 @@
 # coding: utf-8
 
-from tkinter import ttk, Canvas, messagebox, Event, BooleanVar, Checkbutton, \
-    PhotoImage
+from tkinter import ttk, Canvas, messagebox, Event, Frame
 from xlsxwriter import Workbook
 from shutil import copyfile, rmtree
 from cv2 import polylines, ellipse, imwrite, cvtColor, COLOR_RGB2BGR
@@ -13,14 +12,8 @@ from functools import partial
 from pickle import dump, load
 from numpy import ndarray, array
 
-from .tools import Nucleus, Fibre, Nuclei, Fibres, Labels, Lines, \
-    Graphical_element, check_image, Check, Table_items, Table_entry
-
-# Color codes used in the table
-background = '#EAECEE'
-background_selected = '#ABB2B9'
-label_line = '#646464'
-label_line_selected = 'black'
+from .tools import Nucleus, Fibre, Nuclei, Fibres, Graphical_element, \
+    check_image, Table_items, Table_entry
 
 
 class Files_table(ttk.Frame):
@@ -44,14 +37,16 @@ class Files_table(ttk.Frame):
 
         super().__init__(root)
 
-        self._row_height = 50  # The height of a row in pixels
         self._projects_path = projects_path
         self._main_window = main_window
 
         # Setting the appearance
         self._set_layout()
-        self._set_bindings()
-        self._set_variables()
+
+        self._canvas.bind('<Configure>', self._on_resize)
+
+        self.image_canvas = None
+        self.table_items = Table_items()
 
     def load_project(self, directory: Path) -> None:
         """Loads an existing project.
@@ -64,7 +59,7 @@ class Files_table(ttk.Frame):
         """
 
         # First, resetting the project
-        self.reset()
+        self.table_items.reset()
 
         # Loading the simple version of the stored data
         with open(directory / 'data.pickle', 'rb') as save_file:
@@ -152,20 +147,6 @@ class Files_table(ttk.Frame):
                 nuc.color = 'out' if nuc.color == 'in' else 'in'
         self._update_data(self.table_items.current_entry)
 
-    def reset(self) -> None:
-        """Resets everything in the frame.
-
-        Removes the existing images, as well as the nuclei and fibres.
-        """
-
-        # Deleting every element in the canvas
-        for item in self._canvas.find_all():
-            self._canvas.delete(item)
-
-        # Deleting all the stored data
-        self.table_items.reset()
-        self._hovering_index = None
-
     def add_images(self, filenames: List[Path]) -> None:
         """Adds images to the current frame.
 
@@ -176,8 +157,7 @@ class Files_table(ttk.Frame):
         """
 
         # Deleting every element in the canvas
-        for item in self._canvas.find_all():
-            self._canvas.delete(item)
+        self.table_items.reset_graphics()
 
         # Making sure there's no conflict between the new and previous images
         for file in filenames:
@@ -241,9 +221,9 @@ class Files_table(ttk.Frame):
         self._update_data(self.table_items[file])
 
         # Refreshes the image display if necessary
-        if file == self.table_items.current_path:
+        if file == self.table_items.selected:
             self.image_canvas.load_image(
-                self.table_items.current_path,
+                self.table_items.current_entry.path,
                 self.table_items.current_entry.nuclei,
                 self.table_items.current_entry.fibres)
 
@@ -257,12 +237,11 @@ class Files_table(ttk.Frame):
             enable: Whether the buttons should be enabled or disabled.
         """
 
-        button_state = 'enabled' if enable else 'disabled'
-        check_state = 'normal' if enable else 'disabled'
+        state = 'normal' if enable else 'disabled'
 
         for entry in self.table_items:
-            entry.graph_elt.button['state'] = button_state
-            entry.graph_elt.check.box['state'] = check_state
+            entry.graph_elt.check_button['state'] = state
+            entry.graph_elt.close_button['state'] = state
 
     @property
     def all_checked(self) -> bool:
@@ -272,7 +251,7 @@ class Files_table(ttk.Frame):
         if not self.table_items:
             return True
 
-        return all(entry.graph_elt.check.var.get() for entry
+        return all(entry.graph_elt.button_var.get() for entry
                    in self.table_items)
 
     @property
@@ -280,7 +259,7 @@ class Files_table(ttk.Frame):
         """Returns the paths to the files whose checkboxes are checked."""
 
         return [entry.path for entry in self.table_items
-                if entry.graph_elt.check.var.get()]
+                if entry.graph_elt.button_var.get()]
 
     def delete_image(self, file: Path, security: bool = True) -> None:
         """Removes an image from the canvas.
@@ -300,32 +279,26 @@ class Files_table(ttk.Frame):
             if not ret:
                 return
 
-        # Un-hovering the current entry, which should be the one to delete
-        if self._hovering_index is not None:
-            self._un_hover(self._hovering_index)
-            self._hovering_index = None
-
-        # Cleaning the canvas
-        for item in self._canvas.find_all():
-            self._canvas.delete(item)
+        # Cleaning up the canvas
+        self.table_items.reset_graphics()
 
         # Removing any reference to the image being deleted
         index = self.table_items.index(file)
         self.table_items.remove(file)
 
-        # If there's no entry left in the canvas
+        # If there's no entry left in the canvas, resetting the image
         if not self.table_items:
-            self.table_items.current_path = None
-            self._hovering_index = None
+            self.table_items.current_index = None
+            self.image_canvas.reset()
 
-        # Selecting the new current image in case it was the one to delete
-        elif self.table_items.current_path == file:
-            try:
-                self.table_items.current_path = self.table_items.\
-                    entries[index].path
-            except IndexError:
-                self.table_items.current_path = self.table_items.\
-                    entries[index - 1].path
+        # Selecting a new current image in case the prev one was just deleted
+        elif self.table_items.current_index == index:
+            if len(self.table_items) <= index:
+                self.table_items.current_index = len(self.table_items) - 1
+
+        # Updating the current index if an image was deleted at a lower index
+        elif self.table_items.current_index > index:
+            self.table_items.current_index -= 1
 
         # Re-drawing the canvas
         self._make_table()
@@ -361,7 +334,7 @@ class Files_table(ttk.Frame):
         # Actually saving the images
         for item in self.table_items:
             # Saving only if the images are not saved yet
-            if self._projects_path not in item.path.parents:
+            if directory not in item.path.parents:
                 new_path = directory / 'Original Images' / item.path.name
 
                 # Handling the case when the image cannot be loaded
@@ -373,10 +346,6 @@ class Files_table(ttk.Frame):
                                          f'{item.path} still exists and '
                                          f'that it is accessible.')
                     continue
-
-                # Updating the current image path if necessary
-                if self.table_items.current_path == item.path:
-                    self.table_items.current_path = new_path
 
                 # Changing the saved path for the image
                 item.path = new_path
@@ -517,13 +486,24 @@ class Files_table(ttk.Frame):
 
         self.pack(expand=True, fill="both", anchor="n", side='top')
 
-        # Creating the canvas
-        self._canvas = Canvas(self, bg='#FFFFFF',
-                              highlightbackground='black',
-                              highlightthickness=3)
+        # Creating a frame to put a black border around the canvas
+        self._canvas_frame = Frame(self,
+                                   highlightbackground='black',
+                                   highlightthickness=3)
+        self._canvas_frame.pack(expand=True, fill="both", anchor="w",
+                                side='left', pady=5)
+
+        # Creating the canvas containing the opened images
+        self._canvas = Canvas(self._canvas_frame, bg='#FFFFFF')
         self._canvas.configure(scrollregion=self._canvas.bbox('all'))
-        self._canvas.pack(expand=True, fill="both", anchor="w", side='left',
-                          pady=5)
+        self._canvas.pack(expand=True, fill="both", anchor="w", side='left')
+
+        # Creating a frame inside the canvas that will contain all the
+        # individual file frames
+        self._scroll_window = Frame(self._canvas, bg='#FFFFFF')
+        self._id = self._canvas.create_window(0, 0,
+                                              window=self._scroll_window,
+                                              anchor='nw')
 
         # Creating the scrollbar
         self._vbar = ttk.Scrollbar(self, orient="vertical")
@@ -533,29 +513,37 @@ class Files_table(ttk.Frame):
 
         self.update()
 
-    def _set_bindings(self) -> None:
-        """Sets the actions associated with the user inputs."""
+    def _on_resize(self, event: Event) -> None:
+        """Updates the canvas scroll region and the entries width when the
+        overall size of the canvas changes.
 
-        # Different wheel management in Windows and Linux
-        if system() == "Linux":
-            self._canvas.bind('<4>', self._on_wheel)
-            self._canvas.bind('<5>', self._on_wheel)
+        Args:
+            event: The resize event.
+        """
+
+        # When first drawing the canvas an event of width 0 is received
+        width = event.width if event.width > 0 else self._canvas.winfo_width()
+
+        # To make the next lines easier to read
+        req_height = self._scroll_window.winfo_reqheight()
+        can_height = self._canvas.winfo_height()
+
+        # Event of height 0 received and entries do not fill the canvas
+        if event.height == 0 and req_height <= can_height:
+            height = can_height
+        # Event of height 0 received and entries do not fit in the canvas
+        elif event.height == 0:
+            height = req_height
+        # Entries do not fill the canvas
+        elif req_height <= event.height:
+            height = event.height
+        # Entries do not fit in the canvas
         else:
-            self._canvas.bind('<MouseWheel>', self._on_wheel)
+            height = req_height
 
-        self._canvas.bind('<ButtonPress-1>', self._left_click)
-        self._canvas.bind_all('<Motion>', self._motion)
-
-    def _set_variables(self) -> None:
-        """Method to centralize the instantiation of the attributes."""
-
-        # Attributes managing the display
-        self._hovering_index = None
-
-        # Other attributes
-        self.image_canvas = None
-
-        self.table_items = Table_items()
+        # Re-dimensioning the scroll region and the canvas for a nice layout
+        self._canvas.config(scrollregion=(0, 0, width, height))
+        self._canvas.itemconfig(self._id, width=width)
 
     def _on_wheel(self, event: Event) -> None:
         """Scrolls the canvas up or down upon wheel motion."""
@@ -566,11 +554,78 @@ class Files_table(ttk.Frame):
         else:
             delta = int(event.delta / abs(event.delta))
 
-        # Don't move if there are too few images
-        if self._table_height > self._canvas.winfo_height():
+        if self._scroll_window.winfo_reqheight() > self._canvas.winfo_height():
             self._canvas.yview_scroll(-delta, "units")
 
-    def _update_data(self, entry: Table_entry) -> None:
+    def _select_image(self, _: Event, index: int) -> None:
+        """Unselects the previous entry, selects the new one and displays the
+        associated image and data.
+
+        Args:
+            _: The mouse click event that triggered the image selection.
+            index: The index in the canvas of the entry that was just clicked.
+        """
+
+        # Getting the entry at the given index
+        entry = self.table_items.entries[index]
+
+        # If the entry is already the selected one, do nothing
+        if entry.graph_elt.selected.get():
+            return
+
+        # Unselecting the previously selected entry
+        if self.table_items.selected is not None:
+            self.table_items.current_entry.graph_elt.selected.set(False)
+
+        # Selecting the new entry
+        entry.graph_elt.selected.set(True)
+        self.table_items.current_index = index
+
+        # Displaying the selected image with its nuclei and fibres
+        self.image_canvas.load_image(entry.path, entry.nuclei, entry.fibres)
+
+    def _make_table(self) -> None:
+        """Draws the entire canvas."""
+
+        # The canvas is built iteratively
+        for i, entry in enumerate(self.table_items):
+
+            # Setting the file name
+            file_name = entry.path.name
+            if len(file_name) >= 39:
+                file_name = f'...{file_name[-36:]}'
+
+            # Creating a graphical element representing the entry
+            entry.graph_elt = Graphical_element(
+                canvas=self._scroll_window,
+                number=i,
+                name=file_name,
+                delete_cmd=partial(self.delete_image, entry.path),
+                check_cmd=self._main_window.update_master_check,
+                scroll_cmd=self._on_wheel,
+                select_cmd=self._select_image)
+
+            # Updating the displayed text according to the data
+            self._update_data(entry)
+
+        # Highlighting the selected image
+        if self.table_items:
+            # Keeping the current index if it exists
+            if self.table_items.current_index is not None:
+                index = self.table_items.current_index
+            # Setting the current index to 0 otherwise
+            else:
+                index = 0
+            # Sending an event for displaying the selected image
+            self.table_items.entries[index].graph_elt.event_generate(
+                '<ButtonPress-1>', when="tail")
+
+        # Updating the canvas and making sure it configures itself as requested
+        self.update()
+        self._canvas.event_generate("<Configure>", when="tail")
+
+    @staticmethod
+    def _update_data(entry: Table_entry) -> None:
         """Updates the display when data about an image has changed.
 
         Args:
@@ -584,241 +639,12 @@ class Files_table(ttk.Frame):
         total_nuclei = len(nuclei)
 
         # Updating the labels
-        self._canvas.itemconfig(items.labels.nuclei,
-                                text='Total : ' + str(total_nuclei))
-        self._canvas.itemconfig(
-            items.labels.positive,
-            text='Positive : ' + str(nuclei.nuclei_in_count))
+        items.total.configure(text=f'Total : {total_nuclei}')
+        items.positive.configure(text=f'Positive : {nuclei.nuclei_in_count}')
         if total_nuclei > 0:
-            self._canvas.itemconfig(
-                items.labels.ratio,
+            items.ratio.configure(
                 text=f'Ratio : '
                      f'{int(100 * nuclei.nuclei_in_count / total_nuclei)}%')
         else:
-            self._canvas.itemconfig(items.labels.ratio,
-                                    text='Ratio : NA')
-        self._canvas.itemconfig(
-            items.labels.fiber,
-            text='Fibre area : ' + f'{int(fibres.area * 100)}%')
-
-    def _motion(self, event: Event) -> None:
-        """Modifies the display when the mose is being hovered over the
-        canvas."""
-
-        if self.table_items:
-            # Case when the mouse is on the canvas
-            if 0 < self._canvas.canvasy(event.y) < self._table_height and \
-                    event.widget == self._canvas:
-                index = int(self._canvas.canvasy(event.y) /
-                            (self._row_height * 2))
-                # Modifying the current item only if a new one was hovered
-                if index != self._hovering_index:
-                    if self._hovering_index is not None:
-                        self._un_hover(self._hovering_index)
-                    self._hover(index)
-
-            # Case when the mouse is not on the canvas
-            elif self._hovering_index is not None:
-                # Simply un-hovering the current item if any
-                self._un_hover(self._hovering_index)
-                self._hovering_index = None
-
-    def _hover(self, index: int) -> None:
-        """Highlights a canvas entry that is being hovered.
-
-        Args:
-            index: The index of the entry to highlight in the index_to_img
-                dict.
-        """
-
-        self._hovering_index = index
-        self._set_aesthetics(index, selected=True, hover=True)
-
-    def _un_hover(self, index: int) -> None:
-        """Un-highlights a canvas entry that is not hovered anymore.
-
-        Args:
-            index: The index of the entry to un-highlight in the index_to_img
-                dict.
-        """
-
-        if index != self.table_items.current_index:
-            self._set_aesthetics(index, selected=False, hover=True)
-
-    def _unselect_image(self, index: int) -> None:
-        """Un-selects an image in the canvas."""
-
-        self._set_aesthetics(index, selected=False, hover=False)
-
-    def _select_image(self, index: int) -> None:
-        """Selects an image in the canvas.
-
-        This image is re-loaded.
-        """
-
-        entry = self.table_items.entries[index]
-        self.image_canvas.load_image(entry.path, entry.nuclei, entry.fibres)
-        self.table_items.current_path = entry.path
-        self._set_aesthetics(index, selected=True, hover=False)
-
-    def _set_aesthetics(self,
-                        index: int,
-                        selected: bool,
-                        hover: bool) -> None:
-        """Sets the display of the canvas when loading or selecting images, or
-        when hovering.
-
-        Args:
-            index: The index of the entry being (un)hovered or (un)selected in
-                the index_to_img dict.
-            selected: True when hovering or selecting, False when un-hovering
-                or un-selecting.
-            hover: True when (un)hovering, False when (un)selecting.
-        """
-
-        # Different color sets when selected or not
-        line_color = label_line_selected if selected else label_line
-        rect_color = background_selected if selected else background
-
-        items = self.table_items.entries[index].graph_elt
-
-        # Cannot set the upper line if first entry in canvas
-        if index > 0:
-            self._canvas.itemconfig(self.table_items.entries[index].graph_elt.
-                                    lines.full_line, fill=line_color)
-
-        # The rectangle isn't affected by hovering
-        if not hover:
-            self._canvas.itemconfig(items.rect, fill=rect_color)
-
-        # Setting all the items of the entry
-        self._canvas.itemconfig(items.lines.half_line, fill=line_color)
-        self._canvas.itemconfig(items.lines.full_line, fill=line_color)
-        self._canvas.itemconfig(items.lines.index_line, fill=line_color)
-
-        self._canvas.itemconfig(items.labels.name, fill=line_color)
-        self._canvas.itemconfig(items.labels.nuclei, fill=line_color)
-        self._canvas.itemconfig(items.labels.ratio, fill=line_color)
-        self._canvas.itemconfig(items.labels.positive, fill=line_color)
-        self._canvas.itemconfig(items.labels.index, fill=line_color)
-        self._canvas.itemconfig(items.labels.fiber, fill=line_color)
-
-    def _left_click(self, event: Event) -> None:
-        """Selects a new image or reloads the current."""
-
-        # Does nothing if clicking in a blank area
-        if self._canvas.canvasy(event.y) < self._table_height:
-            # Unselects previous image
-            self._unselect_image(self.table_items.current_index)
-
-            # Selects new image
-            self._select_image(int(self._canvas.canvasy(event.y) /
-                                   (self._row_height * 2)))
-
-    @property
-    def _table_height(self) -> int:
-        """The height of all the canvas entries in pixels."""
-
-        return self._row_height * 2 * len(self.table_items)
-
-    def _make_table(self) -> None:
-        """Draws the entire canvas."""
-
-        width = self._canvas.winfo_width()
-        # The canvas is built iteratively
-        for i, entry in enumerate(self.table_items):
-            # Defining the top, middle and bottom position
-            top = 2 * i * self._row_height
-            middle = (2 * i + 1) * self._row_height
-            bottom = (2 * i + 2) * self._row_height
-
-            # Drawing the horizontal lines
-            half_line = self._canvas.create_line(
-                -1, middle, width, middle, width=1, fill=label_line)
-            full_line = self._canvas.create_line(
-                -1, bottom, width, bottom, width=3, fill=label_line)
-
-            # Creating the button for removing the file
-            button = ttk.Button(self._canvas, text="X", width=2,
-                                command=partial(self.delete_image, entry.path))
-            self._canvas.create_window(width - 17, top + 16, window=button)
-
-            # Creating the checkbox for processing or not the image
-            check_var = BooleanVar(self._canvas, True)
-            img = PhotoImage(width=1, height=1)
-            checkbox = Checkbutton(
-                self._canvas, variable=check_var,
-                image=img, width=6, height=24,
-                command=self._main_window.update_master_check)
-            self._canvas.create_window(width - 47, top + 16, window=checkbox)
-
-            # Drawing the rectangle
-            rect = self._canvas.create_rectangle(
-                -1, top, width, bottom, fill=background)
-            self._canvas.tag_lower(rect)  # lower it (background)
-
-            # Setting the index
-            index_text = self._canvas.create_text(
-                25, top + int(self._row_height / 2),
-                text=str(i + 1), anchor='center',
-                font=('Helvetica', 10, 'bold'), fill=label_line)
-            index_line = self._canvas.create_line(
-                50, top, 50, middle, width=1, fill=label_line)
-
-            # Setting the file name
-            file_name = entry.path.name
-            if len(file_name) >= 39:
-                file_name = '...' + file_name[-36:]
-
-            # Setting the text
-            padding = 10
-            name_text = self._canvas.create_text(
-                54, top + int(self._row_height / 4),
-                text=file_name, anchor='nw', fill=label_line,
-                width=width - 117)
-            nuclei_text = self._canvas.create_text(
-                padding, middle + int(self._row_height / 4),
-                text='error', anchor='nw', fill=label_line)
-            positive_text = self._canvas.create_text(
-                (width - 2 * padding) / 4 - padding / 2,
-                middle + int(self._row_height / 4),
-                text='error', anchor='nw', fill=label_line)
-            ratio_text = self._canvas.create_text(
-                (width - 2 * padding) * 2 / 4,
-                middle + int(self._row_height / 4),
-                text='error', anchor='nw', fill=label_line)
-            fiber_text = self._canvas.create_text(
-                (width - 2 * padding) * 3 / 4,
-                middle + int(self._row_height / 4),
-                text='error', anchor='nw', fill=label_line)
-
-            # Adding the drawn objects to the items dict
-            entry.graph_elt = Graphical_element(Labels(name_text,
-                                                       nuclei_text,
-                                                       positive_text,
-                                                       ratio_text,
-                                                       index_text,
-                                                       fiber_text),
-                                                Lines(half_line,
-                                                      full_line,
-                                                      index_line),
-                                                rect,
-                                                button,
-                                                Check(checkbox,
-                                                      check_var,
-                                                      img))
-
-            # Updating the displayed text according to the data
-            self._update_data(entry)
-
-        # Setting the scroll region
-        self._canvas.config(scrollregion=(0, 0, width, self._table_height))
-
-        # Highlighting the selected image
-        if self.table_items:
-            if self.table_items.current_path is None:
-                self.table_items.current_path = self.table_items.\
-                    entries[0].path
-            self._select_image(self.table_items.current_index)
-        else:
-            self.image_canvas.reset()
+            items.ratio.configure(text='Ratio : NA')
+        items.area.configure(text=f'Fibre area : {int(fibres.area * 100)}%')

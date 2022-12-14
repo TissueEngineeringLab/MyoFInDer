@@ -29,7 +29,7 @@ if system() == "Windows" and int(release()) >= 8:
 
 # Todo:
 #   Set up unit tests
-#   Create a structure for the canvas of the files table
+#   Add logging
 
 
 def _save_before_closing(func: Callable) -> Callable:
@@ -473,7 +473,7 @@ class Main_window(Tk):
         """Creates a new empty project."""
 
         # Resets the entire window
-        self._files_table.reset()
+        self._files_table.table_items.reset()
         self._image_canvas.reset()
 
         # Sets the buttons and the menu
@@ -1027,10 +1027,10 @@ class Main_window(Tk):
 
         if self._files_table.all_checked:
             for item in self._files_table.table_items:
-                item.graph_elt.check.var.set(False)
+                item.graph_elt.button_var.set(False)
         else:
             for item in self._files_table.table_items:
-                item.graph_elt.check.var.set(True)
+                item.graph_elt.button_var.set(True)
 
     def _delete_many_files(self) -> None:
         """Called when hitting the master delete button.
