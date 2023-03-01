@@ -10,7 +10,7 @@ if errorlevel 1 (
     pyinstaller run.py --noconfirm --name cellen-tellen --paths .\venv\Lib\site-packages\ --hidden-import sklearn.utils._typedefs --hidden-import sklearn.neighbors._partition_nodes --add-data ".\cellen_tellen\app_images\;app_images"
     if exist .\dist\ (
         mkdir .\dist\Projects
-        "C:\Program Files (x86)\Caphyon\Advanced Installer 19.3\bin\x86\AdvancedInstaller.com" /build .\Executable_files\Cellen-Tellen.aip
+        "C:\Program Files (x86)\Caphyon\Advanced Installer 19.3\bin\x86\AdvancedInstaller.com" /build .\Executable_files\Cellen-Tellen_regular.aip
     ) else (
         echo Something went wrong, dist folder not found !
     )
