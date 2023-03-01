@@ -1,5 +1,7 @@
 :: File for compiling cellen-tellen into an executable file in windows
 
+@echo off
+
 where /q pyinstaller
 if errorlevel 1 (
     echo You need to install the python module pyinstaller for compiling cellen-tellen !
