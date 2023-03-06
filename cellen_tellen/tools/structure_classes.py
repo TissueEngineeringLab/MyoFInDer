@@ -275,7 +275,7 @@ class Graphical_element(Frame):
         self.total = Label(self.frame_down, text='error',
                            font=('Helvetica', 10))
         self.total.pack(expand=True, fill='x', side='left', anchor='w',
-                        padx=(12, 12), pady=15)
+                        padx=0, pady=15)
         self._bind_wheel(self.total)
         self._bind_button(self.total)
 
@@ -283,7 +283,7 @@ class Graphical_element(Frame):
         self.positive = Label(self.frame_down, text='error',
                               font=('Helvetica', 10))
         self.positive.pack(expand=True, fill='x', side='left', anchor='w',
-                           padx=(12, 12), pady=15)
+                           padx=0, pady=15)
         self._bind_wheel(self.positive)
         self._bind_button(self.positive)
 
@@ -291,7 +291,7 @@ class Graphical_element(Frame):
         self.ratio = Label(self.frame_down, text='error',
                            font=('Helvetica', 10))
         self.ratio.pack(expand=True, fill='x', side='left', anchor='w',
-                        padx=(12, 12), pady=15)
+                        padx=0, pady=15)
         self._bind_wheel(self.ratio)
         self._bind_button(self.ratio)
 
@@ -299,7 +299,7 @@ class Graphical_element(Frame):
         self.area = Label(self.frame_down, text='error',
                           font=('Helvetica', 10))
         self.area.pack(expand=True, fill='x', side='left', anchor='w',
-                       padx=(12, 12), pady=15)
+                       padx=0, pady=15)
         self._bind_wheel(self.area)
         self._bind_button(self.area)
 
