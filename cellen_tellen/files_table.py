@@ -214,6 +214,9 @@ class Files_table(ttk.Frame):
         self.table_items[file].fibres.reset()
         self.table_items[file].fibres.area = area
         for contour in fibre_contours:
+            # Ensuring single points are not being outlined
+            if len(contour.shape) < 2:
+                continue
             contour = list(map(tuple, contour))
             self.table_items[file].fibres.append(Fibre(None, contour))
 
