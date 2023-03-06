@@ -921,15 +921,16 @@ class Main_window(Tk):
                                                            fibre_contours,
                                                            area, file)
 
-                    # Updating the processed images count
-                    self._processed_images_count.set(
-                        self._processed_images_count.get() + 1)
-
                 # Displaying any error in an error window
                 except (Exception,) as exc:
                     messagebox.showerror("Error !",
                                          f"An error occurred while processing "
                                          f"the images !\nError : {exc}")
+
+                # Updating the processed images count
+                finally:
+                    self._processed_images_count.set(
+                        self._processed_images_count.get() + 1)
 
             # To lazily get the GUI back to normal once all the jobs are
             # completed
