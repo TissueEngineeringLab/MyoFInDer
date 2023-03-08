@@ -542,3 +542,14 @@ class Settings:
 
         for key, value in settings.items():
             getattr(self, key).set(value)
+
+    def __str__(self) -> str:
+        """"""
+
+        settings = (self.fibre_colour, self.nuclei_colour, self.auto_save_time,
+                    self.save_altered_images, self.fibre_threshold,
+                    self.nuclei_threshold, self.small_objects_threshold,
+                    self.blue_channel_bool, self.green_channel_bool,
+                    self.red_channel_bool, self.show_nuclei, self.show_fibres)
+
+        return '\n'.join(f"{setting}: {setting.get()}" for setting in settings)
