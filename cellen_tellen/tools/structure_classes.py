@@ -552,4 +552,4 @@ class Settings:
                     self.blue_channel_bool, self.green_channel_bool,
                     self.red_channel_bool, self.show_nuclei, self.show_fibres)
 
-        return '\n'.join(f"{setting}: {setting.get()}" for setting in settings)
+        return ', '.join(f"{setting}: {setting.get()}" for setting in settings)
