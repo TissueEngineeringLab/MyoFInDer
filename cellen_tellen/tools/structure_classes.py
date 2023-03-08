@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from dataclasses import dataclass, field
-from typing import Optional, List, Any, Tuple, Iterator, Union, Callable
+from typing import Optional, List, Any, Tuple, Iterator, Union, Callable, Dict
 from tkinter.ttk import Button, Separator, Label
 from functools import partial
 from tkinter import StringVar, IntVar, BooleanVar, Checkbutton, PhotoImage, \
@@ -535,3 +535,10 @@ class Settings:
         default_factory=partial(BooleanVar, value=True, name='show_nuclei'))
     show_fibres: BooleanVar = field(
         default_factory=partial(BooleanVar, value=False, name='show_fibres'))
+
+    def update(self, settings: Dict[str, Any]) -> None:
+        """Updates the values of the settings based on the provided
+        dictionary."""
+
+        for key, value in settings.items():
+            getattr(self, key).set(value)
