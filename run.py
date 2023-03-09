@@ -5,23 +5,33 @@
 from cellen_tellen import Main_window
 import logging
 from sys import stdout
+from pathlib import Path
 
 
 if __name__ == "__main__":
+
+    base_path = Path(__file__).parent
+    if Path(__file__).name.endswith(".pyc"):
+        base_path = base_path.parent
 
     # Setting up the logger
     logger = logging.getLogger("Cellen-Tellen")
     logger.setLevel(logging.INFO)
 
     # Setting up the handlers
-    handler = logging.StreamHandler(stream=stdout)
-    handler.setLevel(logging.INFO)
+    handler_console = logging.StreamHandler(stream=stdout)
+    handler_console.setLevel(logging.INFO)
+
+    handler_file = logging.FileHandler(base_path / 'logs.txt', mode='w')
+    handler_file.setLevel(logging.INFO)
 
     # Setting up the formatter
     formatter = logging.Formatter('%(asctime)s %(name)-8s %(message)s')
-    handler.setFormatter(formatter)
+    handler_console.setFormatter(formatter)
+    handler_file.setFormatter(formatter)
 
-    logger.addHandler(handler)
+    logger.addHandler(handler_console)
+    logger.addHandler(handler_file)
 
     # Normal workflow
     try:
