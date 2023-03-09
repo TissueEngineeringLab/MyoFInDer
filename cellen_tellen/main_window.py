@@ -12,6 +12,7 @@ from pickle import load, dump
 from functools import partial, wraps
 from pathlib import Path
 from typing import Callable, Optional
+import logging
 
 from .tools import Settings
 from .tools import Save_popup
@@ -29,7 +30,7 @@ if system() == "Windows" and int(release()) >= 8:
 
 # Todo:
 #   Set up unit tests
-#   Add logging
+#   Move mainloop out of Main Window
 
 
 def _save_before_closing(func: Callable) -> Callable:
@@ -59,16 +60,23 @@ class Main_window(Tk):
         """Creates the splash window, then the main window, sets the layout and
         the callbacks."""
 
+        # Setting the logger
+        self._logger = logging.getLogger("Cellen-Tellen.MainWindow")
+
         # Sets the different paths used in the project
         self.base_path = Path(__file__).parent
         if Path(__file__).name.endswith(".pyc"):
             self.base_path = self.base_path.parent
+        self.log(f"Base path for the project: {str(self.base_path)}")
         self.projects_path = self.base_path.parent / 'Projects'
         self._settings_path = self.base_path / 'settings'
 
         # Generates a splash window while waiting for the modules to load
+        self.log("Creating the splash window")
         splash = Splash_window(self)
+        self.log("Centering the splash window")
         splash.resize_image()
+        self.log("Displaying the splash window")
         self._segmentation = splash.display()
         splash.destroy()
 
@@ -81,6 +89,7 @@ class Main_window(Tk):
             self.attributes('-zoomed', True)
 
         # Sets the application icon
+        self.log("Setting the application icon")
         icon = PhotoImage(file=self.base_path / 'app_images' /
                           "project_icon.png")
         self.iconphoto(False, icon)  # Without it the icon is buggy in Windows
@@ -94,7 +103,9 @@ class Main_window(Tk):
         self._set_layout()
 
         # Sets the image canvas and the files table
+        self.log("Creating the image canvas")
         self._image_canvas = Image_canvas(self._frm, self)
+        self.log("Creating the files table")
         self._files_table = Files_table(self._aux_frame,
                                         self.projects_path,
                                         self)
@@ -105,12 +116,15 @@ class Main_window(Tk):
 
         # Finishes the initialization and starts the event loop
         self.update()
+        self.log("Setting the main windows's bindings and protocols")
         self.bind_all('<Control-s>', self._save_button_pressed)
         self.protocol("WM_DELETE_WINDOW", self._safe_destroy)
         self.mainloop()
 
     def set_unsaved_status(self) -> None:
         """Sets the title and save button when a project is modified."""
+
+        self.log("Setting the unsaved status")
 
         if self._current_project is not None:
             self.title("Cellen Tellen - Project '" + self._current_project.name
@@ -128,27 +142,40 @@ class Main_window(Tk):
 
         self._master_check_var.set(self._files_table.all_checked)
 
+    def log(self, msg: str) -> None:
+        """Wrapper for reducing the verbosity of logging."""
+
+        # For some reason the processing adds a handler to the root logger
+        root = self._logger.parent.parent
+        while root.hasHandlers():
+            root.removeHandler(root.handlers[0])
+
+        self._logger.log(logging.INFO, msg)
+
     def _load_settings(self) -> None:
         """Loads the settings from the settings file if any, otherwise sets
         them to default."""
 
         # Gets the settings from the settings.pickle file
-        if (self._settings_path / 'settings.pickle').is_file():
-            with open(self._settings_path /
-                      'settings.pickle', 'rb') as param_file:
+        settings_file = self._settings_path / 'settings.pickle'
+        if settings_file.is_file():
+            self.log(f"Loading the settings file from {settings_file}")
+            with open(settings_file, 'rb') as param_file:
                 settings = load(param_file)
         else:
-            settings = {}
+            self.log("No setting file detected, loading the default settings")
+            settings = dict()
 
         # Creates a Settings instance and sets the values
         self.settings = Settings()  # The default values are preset in Settings
-        for key, value in settings.items():
-            getattr(self.settings, key).set(value)
+        self.settings.update(settings)
+        self.log(f"Settings values: {str(self.settings)}")
 
         # Gets the recent projects from the recent_projects.pickle file
-        if (self._settings_path / 'recent_projects.pickle').is_file():
-            with open(self._settings_path /
-                      'recent_projects.pickle', 'rb') as recent_projects:
+        projects_file = self._settings_path / 'recent_projects.pickle'
+        if projects_file.is_file():
+            self.log(f"Loading the recent projects file from {projects_file}")
+            with open(projects_file, 'rb') as recent_projects:
                 recent = load(recent_projects)
 
             # Only the names are stored, the path must be completed
@@ -159,7 +186,10 @@ class Main_window(Tk):
                 and (self.projects_path / proj).is_dir()
                 and (self.projects_path / proj / 'data.pickle').is_file()]
             self._recent_projects = list(dict.fromkeys(self._recent_projects))
+            self.log(f"Recent projects: "
+                     f"{', '.join(map(str, self._recent_projects))}")
         else:
+            self.log("No recent projects file detected")
             self._recent_projects = []
 
         # Finally, saving the recent projects and the settings
@@ -167,6 +197,8 @@ class Main_window(Tk):
 
     def _set_traces(self) -> None:
         """Sets the callbacks triggered upon modification of the settings."""
+
+        self.log("Setting the main windows's traces")
 
         # Making sure there's no conflict between the nuclei and fibres colors
         self.settings.fibre_colour.trace_add("write", self._nuclei_colour_sel)
@@ -191,6 +223,8 @@ class Main_window(Tk):
     def _set_variables(self) -> None:
         """Sets the different variables used in the class."""
 
+        self.log("Setting the main windows's variables")
+
         # Variables used when there's a conflict in the choice of colors for
         # the fibres and nuclei
         self._previous_nuclei_colour = StringVar(
@@ -212,7 +246,9 @@ class Main_window(Tk):
         self._thread.start()
 
         # Variables managing the automatic save
-        self._auto_save_path = self.projects_path / 'AUTOSAVE'
+        auto_folder = self.projects_path / 'AUTOSAVE'
+        self._auto_save_path = auto_folder
+        self.log(f"Set the autosave folder to: {auto_folder}")
         self._auto_save_job = None
 
         self._max_recent_projects = 20  # Maximum number of recent projects
@@ -220,6 +256,8 @@ class Main_window(Tk):
 
     def _set_menu(self) -> None:
         """Sets the menu bar."""
+
+        self.log("Setting the main windows's menu bar")
 
         # Sets the overall menu bar
         self._menu_bar = Menu(self)
@@ -286,6 +324,8 @@ class Main_window(Tk):
 
     def _set_layout(self) -> None:
         """Sets the overall layout of the window."""
+
+        self.log("Setting the main windows's layout")
 
         # The main frame of the window
         self._frm = ttk.Frame()
@@ -420,27 +460,34 @@ class Main_window(Tk):
             self._set_autosave_time()
 
         # Saving the settings
-        settings = {key: value.get() for key, value in
-                    self.settings.__dict__.items()}
+        settings = {key: value.get() for key, value
+                    in vars(self.settings).items()}
+        self.log(f"Settings values: {str(self.settings)}")
 
         if not self._settings_path.is_dir():
+            self.log(f"Created the Settings folder at: {self._settings_path}")
             Path.mkdir(self._settings_path)
 
-        with open(self._settings_path /
-                  'settings.pickle', 'wb+') as param_file:
+        settings_file = self._settings_path / 'settings.pickle'
+        with open(settings_file, 'wb+') as param_file:
             dump(settings, param_file, protocol=4)
+            self.log(f"Saved the settings at: {settings_file}")
 
         # Saving the recent projects
-        with open(self._settings_path /
-                  'recent_projects.pickle', 'wb+') as recent_projects_file:
+        projects_file = self._settings_path / 'recent_projects.pickle'
+        with open(projects_file, 'wb+') as recent_projects_file:
             dump({'recent_projects': [str(path.name) for path in
                                       self._recent_projects]},
                  recent_projects_file, protocol=4)
+            self.log(f"Saved the recent projects at: {projects_file}")
 
     def _delete_current_project(self) -> None:
         """Deletes the current project and all the associated files."""
 
+        self.log("User requested deletion of the current project")
+
         if self._current_project is None:
+            self.log("No current project to delete")
             return
 
         # Security to prevent unwanted data loss
@@ -449,13 +496,17 @@ class Main_window(Tk):
                                   "project ?\nThis operation can't be undone.")
 
         if ret:
+            self.log("User approved deletion of current project")
+
             # Simply deletes all the project files
             rmtree(self._current_project)
+            self.log("Deleted the files of the current project")
 
             # Removes the project from the recent projects
             index = self._recent_projects.index(self._current_project)
             self._recent_projects_menu.delete(index)
             self._recent_projects.remove(self._current_project)
+            self.log("Removed current project from the recent projects")
 
             if not self._recent_projects:
                 self._file_menu.entryconfig("Recent Projects",
@@ -469,8 +520,13 @@ class Main_window(Tk):
             # Creates a new empty project
             self._create_empty_project()
 
+        else:
+            self.log("User aborted deletion of current project")
+
     def _create_empty_project(self) -> None:
         """Creates a new empty project."""
+
+        self.log("Creating an empty project")
 
         # Resets the entire window
         self._files_table.table_items.reset()
@@ -500,6 +556,7 @@ class Main_window(Tk):
         if directory is None:
             if self.settings.auto_save_time.get() > 0:
                 directory = self._auto_save_path
+                self.log("Auto-saving the project ")
             else:
                 return
 
@@ -516,6 +573,8 @@ class Main_window(Tk):
 
         # Creating the folder if needed
         if not directory.is_dir():
+            self.log(f"Creating the directory where to save the "
+                     f"project at {directory}")
             Path.mkdir(directory, parents=True)
 
         # Displays a popup indicating the project is being saved
@@ -526,6 +585,7 @@ class Main_window(Tk):
         save_altered = self.settings.save_altered_images.get() or \
             directory == self._auto_save_path
         self._files_table.save_project(directory, save_altered)
+        self.log(f"Project saved at {directory}")
 
         saving_popup.destroy()
 
@@ -537,6 +597,11 @@ class Main_window(Tk):
                 load.
         """
 
+        if directory is not None:
+            self.log(f"Project loading requested by the user at {directory}")
+        else:
+            self.log("Project loading requested by the user")
+
         # Choose the folder in a dialog window if it wasn't specified
         if directory is None:
             folder = filedialog.askdirectory(
@@ -545,15 +610,19 @@ class Main_window(Tk):
                 title="Choose a Project Folder")
 
             if not folder:
+                self.log("Project loading aborted bu the user")
                 return
 
             directory = Path(folder)
+            self.log(f"User requested to load project {directory}")
 
         # Checking that a valid project was selected
         if not directory.is_dir() or not (directory / 'data.pickle').is_file()\
                 or not directory.parent == self.projects_path:
             messagebox.showerror("Error while loading",
                                  "This isn't a valid Cellen-tellen project !")
+            self.log("The selected directory is not valid for loading into "
+                     "Cellen-Tellen")
             return
 
         # Setting the save button, the project title and the menu entries
@@ -562,6 +631,7 @@ class Main_window(Tk):
             self._add_to_recent_projects(directory)
 
         # Actually loading the project
+        self.log(f"Loading the project {directory}")
         self._files_table.load_project(directory)
 
         # Enabling the process images button
@@ -577,6 +647,8 @@ class Main_window(Tk):
         Args:
             directory: The path to the directory where the project is saved.
         """
+
+        self.log("Setting the title and buttons of the main window")
 
         # Sets the save button
         self._save_button['state'] = 'disabled'
@@ -596,6 +668,8 @@ class Main_window(Tk):
         Args:
             directory: The path to the directory where the project is saved.
         """
+
+        self.log(f"Adding {directory} to the recent projects")
 
         # First, remove the project from the recent projects
         if directory in self._recent_projects:
@@ -626,8 +700,11 @@ class Main_window(Tk):
         while images are being processed.
         """
 
+        self.log("Checking if it is necessary to create a warning window")
+
         # Case when the user tries to exit while computations are running
         if not self._queue.empty():
+            self.log("Processing queue not empty")
             ret = messagebox.askyesno(
                 'Hold on !',
                 "The program is still computing !\n"
@@ -639,12 +716,17 @@ class Main_window(Tk):
             # Trying to stop the computation if requested
             if ret:
                 self._stop_thread = True
+                self.log("User requested the computation to stop")
+            else:
+                self.log("User canceled the action")
 
             return ret
 
         # If the project is unsaved, propose to save it
         if self._save_button['state'] == 'enabled' and \
                 self._files_table.table_items:
+
+            self.log("The project is unsaved")
 
             # Creating the warning window and waiting for the user to choose
             return_var = IntVar()
@@ -655,16 +737,20 @@ class Main_window(Tk):
             ret = return_var.get()
             # The user wants to save and proceed
             if ret == 2:
+                self.log("User requested to save the project and proceed")
                 warning_window.destroy()
                 return self._save_button_pressed()
             # the user wants to proceed without saving
             elif ret == 1:
                 warning_window.destroy()
+                self.log("User requested to proceed anyway without saving")
                 return True
             # The user cancelled its action
             else:
+                self.log("User requested to cancel the action")
                 return False
 
+        self.log("No warning window required")
         return True
 
     def _save_button_pressed(self, _: Optional[Event] = None,
@@ -679,6 +765,8 @@ class Main_window(Tk):
                 already has a folder.
         """
 
+        self.log("The user requested to save the current project")
+
         # Asks for a new project name if needed
         if force_save_as or self._current_project is None:
             # Creating a project name window and waiting for the user to choose
@@ -690,14 +778,17 @@ class Main_window(Tk):
             if ret:
                 name = name_window.return_name()
                 name_window.destroy()
+                self.log(f"Saving the project to {self.projects_path / name}")
                 self._save_project(self.projects_path / name)
                 return True
             # No name was given
             else:
+                self.log("The user aborted the save action")
                 return False
 
         # Perform a normal save otherwise
         else:
+            self.log(f"Saving the project to {self._current_project}")
             self._save_project(self._current_project)
             return True
 
@@ -706,10 +797,18 @@ class Main_window(Tk):
         """Stops the computation thread, closes the main window, and displays
         a warning if there's unsaved data."""
 
+        self.log("Requesting the processing thread to finish")
         self._stop_thread = True
         sleep(0.5)
+        self.log("Waiting for the processing thread to finish")
         self._thread.join(timeout=1)
 
+        if self._thread.is_alive():
+            self.log("ERROR! The processing thread is still alive !")
+        else:
+            self.log("The processing thread terminated as excepted")
+
+        self.log("Destroying the main window")
         self.destroy()
 
     @_save_before_closing
@@ -733,6 +832,8 @@ class Main_window(Tk):
     def _disable_buttons(self) -> None:
         """Disables most of the buttons and menu entries when computing."""
 
+        self.log("Disabling the buttons")
+
         # Disabling the buttons
         self._load_button['state'] = "disabled"
         self._save_button['state'] = "disabled"
@@ -752,6 +853,8 @@ class Main_window(Tk):
 
     def _enable_buttons(self) -> None:
         """Re-enables the buttons and menu entries once processing is over."""
+
+        self.log("Enabling the buttons")
 
         # Re-enabling buttons
         self._load_button['state'] = "enabled"
@@ -800,6 +903,7 @@ class Main_window(Tk):
             return
 
         # Sends a stop signal to the processing thread
+        self.log("End of processing requested, setting the stop event")
         self._stop_event.set()
 
         # Wait for the job queue to be empty and then resets the GUI
@@ -808,6 +912,8 @@ class Main_window(Tk):
             self._process_images_button["state"] = 'disabled'
             i = 1
             while not self._queue.empty():
+                self.log("Processing queue not empty, waiting for the thread "
+                         "to stop processing")
                 self.update()
                 # Indicating the user how many processes are left
                 self._processing_label[
@@ -818,6 +924,7 @@ class Main_window(Tk):
                 sleep(0.5)
 
         # Cleaning up the buttons and variables related to processing
+        self.log("Cleaning up the processing-related objects")
         self._processed_images_count.set(0)
         self._img_to_process_count = 0
         self._process_images_button["state"] = 'enabled'
@@ -833,14 +940,20 @@ class Main_window(Tk):
         """Prepares the interface and then sends to images to process to the
         processing thread."""
 
+        self.log("User requested the images to be processed")
+
         # Getting the names of the images to process
         file_names = self._files_table.checked_files
 
         # If all checkboxes are unchecked, do nothing
         if not file_names:
+            self.log("No images to process, aborting")
             return
 
+        self.log(f"Processing the images: {', '.join(map(str, file_names))}")
+
         # Setting the buttons and variables related to processing
+        self.log("Setting up the processing-related objects")
         self._processed_images_count.set(0)
         self._img_to_process_count = len(file_names)
         self._process_images_button['text'] = 'Stop Processing'
@@ -854,6 +967,7 @@ class Main_window(Tk):
 
         # Sending the jobs to the processing thread
         self._stop_event.clear()
+        self.log("Sending the jobs to the processing thread")
         for file in file_names:
             self._queue.put_nowait(
                 (file,
@@ -873,12 +987,16 @@ class Main_window(Tk):
         after the last job in the queue was handled.
         """
 
+        self.log("Starting the processing thread")
+
         # Looping forever until the stop_thread flag is raised
         while not self._stop_thread:
 
             # If the stop_event is set, we just have to discard all the jobs
             if self._stop_event.is_set():
                 while not self._queue.empty():
+                    self.log("Emptying the processing queue after the stop "
+                             "event was set")
                     try:
                         self._queue.get_nowait()
                     except Empty:
@@ -890,15 +1008,18 @@ class Main_window(Tk):
             elif not self._queue.empty():
                 # Acquiring the next job in the queue
                 try:
+                    job = self._queue.get_nowait()
                     path, nuclei_color, fibre_color, fibre_threshold, \
-                        nuclei_threshold, \
-                        small_objects_threshold = self._queue.get_nowait()
+                        nuclei_threshold, small_objects_threshold = job
+                    self.log(f"Processing thread received job: "
+                             f"{', '.join(map(str, job))}")
                 except Empty:
                     sleep(1)
                     continue
 
                 # Not processing if the user wants to stop the computation
                 if self._stop_event.is_set():
+                    self.log("Stop event was set, aborting processing")
                     continue
 
                 try:
@@ -910,12 +1031,18 @@ class Main_window(Tk):
                                            fibre_threshold,
                                            nuclei_threshold,
                                            small_objects_threshold)
+                    self.log(f"Segmentation returned file: {file}, "
+                             f"nuclei out: {len(nuclei_out)}, "
+                             f"nuclei in: {len(nuclei_in)}, "
+                             f"fibre contours: {len(fibre_contours)}, "
+                             f"area: {area}")
 
                     # Not updating if the user wants to stop the computation
                     if self._stop_event.is_set():
                         continue
 
                     # Updating the image data with the result of the processing
+                    self.log("Passing precessed data to the files table")
                     self._files_table.input_processed_data(nuclei_out,
                                                            nuclei_in,
                                                            fibre_contours,
@@ -926,6 +1053,8 @@ class Main_window(Tk):
                     messagebox.showerror("Error !",
                                          f"An error occurred while processing "
                                          f"the images !\nError : {exc}")
+                    self._logger.exception("Exception caught wile processing "
+                                           "image", exc_info=exc)
 
                 # Updating the processed images count
                 finally:
@@ -935,8 +1064,12 @@ class Main_window(Tk):
             # To lazily get the GUI back to normal once all the jobs are
             # completed
             else:
+                self.log("Processing queue empty, requesting to stop the "
+                         "processing")
                 self._stop_processing(force=False)
                 sleep(1)
+
+        self.log("Processing thread finished")
 
     def _update_processed_images(self, _, __, ___) -> None:
         """Updates the display of the processed images count."""
@@ -951,6 +1084,8 @@ class Main_window(Tk):
         """Opens a dialog window for selecting the images to load, then adds
         them in the files table."""
 
+        self.log("Load button clicked by the user")
+
         # Getting the file names
         file_names = filedialog.askopenfilenames(
             filetypes=[('Image Files', ('.tif', '.png', '.jpg', '.jpeg',
@@ -959,6 +1094,8 @@ class Main_window(Tk):
 
         if file_names:
             file_names = [Path(path) for path in file_names]
+            self.log(f"User requested to load the images: "
+                     f"{', '.join(map(str, file_names))}")
 
             # Enables the process images button
             self._process_images_button["state"] = 'enabled'
@@ -967,22 +1104,30 @@ class Main_window(Tk):
             self._files_table.add_images(file_names)
             self.set_unsaved_status()
 
+        else:
+            self.log("No files selected by the user, aborting")
+
     def _set_autosave_time(self) -> None:
         """Schedules a save job according to the selected autosave time."""
 
+        self.log("Setting the autosave job")
+
         # Cancels any previous autosave job
         if self._auto_save_job is not None:
+            self.log("Canceling the previous autosave job")
             self.after_cancel(self._auto_save_job)
         self._auto_save_job = None
 
         # Schedule a new autosave job
         if self.settings.auto_save_time.get() > 0:
-            self._auto_save_job = self.after(self.settings.auto_save_time.get()
-                                             * 1000, self._save_project)
+            t = self.settings.auto_save_time.get()
+            self.log(f"Creating an autosave job, that will happen in {t}s")
+            self._auto_save_job = self.after(t * 1000, self._save_project)
 
     def _set_image_channels(self) -> None:
         """Redraws the current image with the selected channels."""
 
+        self.log("Setting the image channels to display")
         self._image_canvas.show_image()
         self._save_settings()
 
@@ -991,6 +1136,7 @@ class Main_window(Tk):
         selection."""
         
         # Updating the display
+        self.log("Setting the image indicators to display")
         self._image_canvas.set_indicators()
         self._save_settings()
 
@@ -1026,6 +1172,8 @@ class Main_window(Tk):
         all.
         """
 
+        self.log("Inverting all the checkboxes")
+
         if self._files_table.all_checked:
             for item in self._files_table.table_items:
                 item.graph_elt.button_var.set(False)
@@ -1039,16 +1187,20 @@ class Main_window(Tk):
         Deletes all the files in the files table whose checkboxes are checked.
         """
 
+        self.log("Delete all button clicked by the user")
+
         # Getting the list of files to delete, and checking it's not empty
         to_delete = self._files_table.checked_files
         if not to_delete:
+            self.log("No file to delete, aborting")
             return
 
         # Actually deleting the files
+        self.log(f"Deleting the files: {', '.join(map(str, to_delete))}")
         self._files_table.delete_image(tuple(to_delete))
 
-    @staticmethod
-    def _open_github() -> None:
+    def _open_github(self) -> None:
         """Opens the project repository in a browser."""
 
+        self.log("Opening the online documentation")
         open_new("https://github.com/WeisLeDocto/Cellen-Tellen")

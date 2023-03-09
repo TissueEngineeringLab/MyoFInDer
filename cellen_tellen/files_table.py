@@ -11,6 +11,7 @@ from copy import deepcopy
 from functools import partial
 from pickle import dump, load
 from numpy import ndarray, array
+import logging
 
 from .tools import Nucleus, Fibre, Nuclei, Fibres, Graphical_element, \
     check_image, Table_items, Table_entry
@@ -35,6 +36,9 @@ class Files_table(ttk.Frame):
             main_window: the main window of the GUI.
         """
 
+        # Setting the logger
+        self._logger = logging.getLogger("Cellen-Tellen.FilesTable")
+
         super().__init__(root)
 
         self._projects_path = projects_path
@@ -43,10 +47,16 @@ class Files_table(ttk.Frame):
         # Setting the appearance
         self._set_layout()
 
+        self.log("Setting the file table's bindings")
         self._canvas.bind('<Configure>', self._on_resize)
 
         self.image_canvas = None
         self.table_items = Table_items()
+
+    def log(self, msg: str) -> None:
+        """Wrapper for reducing the verbosity of logging."""
+
+        self._logger.log(logging.INFO, msg)
 
     def load_project(self, directory: Path) -> None:
         """Loads an existing project.
@@ -59,10 +69,12 @@ class Files_table(ttk.Frame):
         """
 
         # First, resetting the project
+        self.log("Resetting all the table items")
         self.table_items.reset()
 
         # Loading the simple version of the stored data
         with open(directory / 'data.pickle', 'rb') as save_file:
+            self.log(f"Loading project data from {directory / 'data.pickle'}")
             table_items = load(save_file)
 
         # Keeping only the data corresponding to existing images
@@ -73,6 +85,8 @@ class Files_table(ttk.Frame):
         # Completing the paths to match that of the directory to load
         for entry in self.table_items:
             entry.path = directory / 'Original Images' / entry.path
+        loaded = (entry.path for entry in self.table_items)
+        self.log(f"Loaded data for images: {', '.join(map(str, loaded))}")
 
         # Removing any reference to Tkinter objects
         for entry in self.table_items:
@@ -100,6 +114,8 @@ class Files_table(ttk.Frame):
                 saved ?
         """
 
+        self.log(f"Saving the project {directory}")
+
         # First, save the stats in a .xlsx file
         self._save_table(directory)
 
@@ -121,6 +137,7 @@ class Files_table(ttk.Frame):
             nucleus: The Nucleus object to add.
         """
 
+        self.log(f"Nucleus added at position {nucleus.x_pos}, {nucleus.y_pos}")
         self.table_items.current_entry.nuclei.append(deepcopy(nucleus))
         self._update_data(self.table_items.current_entry)
 
@@ -132,6 +149,8 @@ class Files_table(ttk.Frame):
             nucleus: The Nucleus object to remove.
         """
 
+        self.log(f"Nucleus removed at position "
+                 f"{nucleus.x_pos}, {nucleus.y_pos}")
         self.table_items.current_entry.nuclei.remove(nucleus)
         self._update_data(self.table_items.current_entry)
 
@@ -142,6 +161,8 @@ class Files_table(ttk.Frame):
             nucleus: The Nucleus object whose color should be switched.
         """
 
+        self.log(f"Nucleus switched at position "
+                 f"{nucleus.x_pos}, {nucleus.y_pos}")
         for nuc in self.table_items.current_entry.nuclei:
             if nuc == nucleus:
                 nuc.color = 'out' if nuc.color == 'in' else 'in'
@@ -157,6 +178,7 @@ class Files_table(ttk.Frame):
         """
 
         # Deleting every element in the canvas
+        self.log("Deleting all the elements in the image canvas")
         self.table_items.reset_graphics()
 
         # Making sure there's no conflict between the new and previous images
@@ -165,13 +187,19 @@ class Files_table(ttk.Frame):
                 messagebox.showerror("Error while loading files",
                                      f"The file {file.name} is already opened,"
                                      f"ignoring.")
+                self.log(f"Removing file {file} from the images to add as it "
+                         f"is already opened")
                 filenames.remove(file)
             elif file.name in [file_.name for file_
                                in self.table_items.file_names]:
                 messagebox.showerror("Error while  loading files",
                                      f"A file with the same name ({file.name})"
                                      f"is already opened, ignoring.")
+                self.log(f"Removing file {file} from the images to add as an "
+                         f"image with the same name is already opened")
                 filenames.remove(file)
+
+        self.log(f"Adding the images {', '.join(map(str, filenames))}")
 
         # Adding the new images to the frame
         for file in filenames:
@@ -240,6 +268,11 @@ class Files_table(ttk.Frame):
             enable: Whether the buttons should be enabled or disabled.
         """
 
+        if enable:
+            self.log("Enabling the buttons")
+        else:
+            self.log("Disabling the buttons")
+
         state = 'normal' if enable else 'disabled'
 
         for entry in self.table_items:
@@ -275,6 +308,8 @@ class Files_table(ttk.Frame):
                 from the canvas.
         """
 
+        self.log("Image deletion requested by the user")
+
         # Security to prevent unwanted deletions
         if len(to_delete) == 1:
             ret = messagebox.askyesno('Hold on !',
@@ -288,13 +323,17 @@ class Files_table(ttk.Frame):
                                       f"{len(to_delete)} files ?\n"
                                       f"All the unsaved data will be lost.")
         if not ret:
+            self.log("Image deletion canceled by the user")
             return
 
         # Cleaning up the canvas
+        self.log("Deleting all the elements in the image canvas")
         self.table_items.reset_graphics()
 
         # Iterating over the files to delete
         for file in to_delete:
+
+            self.log(f"Deleting the file: {file}")
 
             # Removing any reference to the image being deleted
             index = self.table_items.index(file)
@@ -331,6 +370,7 @@ class Files_table(ttk.Frame):
         """
 
         with open(directory / 'data.pickle', 'wb+') as save_file:
+            self.log(f"Saving the data to file {directory / 'data.pickle'}")
             dump(self.table_items.save_version, save_file, protocol=4)
 
     def _save_originals(self, directory: Path) -> None:
@@ -343,13 +383,18 @@ class Files_table(ttk.Frame):
 
         # Creating the directory if it doesn't exit
         if not (directory / 'Original Images').is_dir():
+            self.log(f"Creating the folder for saving the original images at: "
+                     f"{directory / 'Original Images'}")
             Path.mkdir(directory / 'Original Images')
+
+        self.log("Saving the original images")
 
         # Actually saving the images
         for item in self.table_items:
             # Saving only if the images are not saved yet
             if directory not in item.path.parents:
                 new_path = directory / 'Original Images' / item.path.name
+                self.log(f"Saving the image: {new_path}")
 
                 # Handling the case when the image cannot be loaded
                 try:
@@ -359,10 +404,14 @@ class Files_table(ttk.Frame):
                                          f'Check that the image at '
                                          f'{item.path} still exists and '
                                          f'that it is accessible.')
+                    self.log(f"ERROR! Could not save file {new_path}")
                     continue
 
                 # Changing the saved path for the image
                 item.path = new_path
+
+            else:
+                self.log(f"Skipping {item.path} as it is already saved")
 
     def _save_table(self, directory: Path) -> None:
         """Saves a .xlsx file containing stats about the images of the project.
@@ -374,6 +423,9 @@ class Files_table(ttk.Frame):
         # Creating the Excel file
         workbook = Workbook(str(directory / str(directory.name + '.xlsx')))
         worksheet = workbook.add_worksheet()
+
+        self.log(f"Saving an overview of the data as an Excel file at "
+                 f"{directory / str(directory.name + '.xlsx')}")
 
         # Bold style for a nicer layout
         bold = workbook.add_format({'bold': True, 'align': 'center'})
@@ -437,7 +489,11 @@ class Files_table(ttk.Frame):
         # Creates the directory if it doesn't exist yet
         if (directory / 'Altered Images').is_dir():
             rmtree(directory / 'Altered Images')
+            self.log(f"Creating the folder for saving the altered images at: "
+                     f"{directory / 'Altered Images'}")
         Path.mkdir(directory / 'Altered Images')
+
+        self.log("Saving the altered images")
 
         # Saves the images
         for entry in self.table_items:
@@ -468,11 +524,16 @@ class Files_table(ttk.Frame):
         # Reads the image
         cv_img = check_image(project_name / "Original Images" /
                              entry.path.name)
-        cv_img = cvtColor(cv_img, COLOR_RGB2BGR)
+
+        destination = project_name / "Altered Images" / entry.path.name
 
         # Aborting if the image cannot be loaded
         if cv_img is None:
+            self.log(f"Skipping the image {destination} as the original image "
+                     f"could not be loaded")
             return
+
+        cv_img = cvtColor(cv_img, COLOR_RGB2BGR)
 
         # Drawing the fibres
         for fib in entry.fibres:
@@ -492,11 +553,14 @@ class Files_table(ttk.Frame):
                         color_to_bgr[self.image_canvas.nuc_col_in], -1)
 
         # Now saving the image
-        imwrite(str(project_name / "Altered Images" / entry.path.name), cv_img)
+        self.log(f"Saving the image {destination}")
+        imwrite(str(destination), cv_img)
 
     def _set_layout(self) -> None:
         """Sets the layout of the frame by creating the canvas and the
         scrollbar."""
+
+        self.log("Setting the file table's layout")
 
         self.pack(expand=True, fill="both", anchor="n", side='top')
 
@@ -580,11 +644,14 @@ class Files_table(ttk.Frame):
             index: The index in the canvas of the entry that was just clicked.
         """
 
+        self.log(f"Entry with index {index} selected by the user")
+
         # Getting the entry at the given index
         entry = self.table_items.entries[index]
 
         # If the entry is already the selected one, do nothing
         if entry.graph_elt.selected.get():
+            self.log(f"Skipping as it is already the current selected one")
             return
 
         # Unselecting the previously selected entry
@@ -598,8 +665,12 @@ class Files_table(ttk.Frame):
         # Displaying the selected image with its nuclei and fibres
         self.image_canvas.load_image(entry.path, entry.nuclei, entry.fibres)
 
+        self.log(f"Loaded data for the entry {entry.path}")
+
     def _make_table(self) -> None:
         """Draws the entire canvas."""
+
+        self.log("Drawing the entire files table")
 
         # The canvas is built iteratively
         for i, entry in enumerate(self.table_items):
@@ -638,13 +709,14 @@ class Files_table(ttk.Frame):
         self.update()
         self._canvas.event_generate("<Configure>", when="tail")
 
-    @staticmethod
-    def _update_data(entry: Table_entry) -> None:
+    def _update_data(self, entry: Table_entry) -> None:
         """Updates the display when data about an image has changed.
 
         Args:
             entry: The path to the image whose data should be updated.
         """
+
+        self.log(f"Updating the data for the entry {entry.path}")
 
         # To avoid repeated calls to the same attribute
         nuclei = entry.nuclei

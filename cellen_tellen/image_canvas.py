@@ -7,6 +7,7 @@ from functools import partial
 from copy import deepcopy
 from pathlib import Path
 from typing import Tuple, Optional, List
+import logging
 
 from .tools import Nucleus, Nuclei, Fibres, check_image, Selection_box
 
@@ -19,6 +20,9 @@ class Image_canvas(ttk.Frame):
         """Initializes the frame, the layout, the callbacks and the
         variables."""
 
+        # Setting the logger
+        self._logger = logging.getLogger("Cellen-Tellen.ImageCanvas")
+
         super().__init__(mainframe)
 
         self.nuclei_table = None
@@ -28,6 +32,11 @@ class Image_canvas(ttk.Frame):
         self._set_layout()
         self._set_bindings()
         self._set_variables()
+
+    def log(self, msg: str) -> None:
+        """Wrapper for reducing the verbosity of logging."""
+
+        self._logger.log(logging.INFO, msg)
 
     def set_indicators(self) -> None:
         """Redraws the nuclei and/or fibres after the user changed the elements
@@ -39,6 +48,8 @@ class Image_canvas(ttk.Frame):
 
         # Draw the nuclei
         if self._settings.show_nuclei.get():
+            self.log(f"Drawing all the {len(self._nuclei)} nuclei on the "
+                     f"canvas")
             for nuc in self._nuclei:
                 nuc.tk_obj = self._draw_nucleus(
                     nuc.x_pos, nuc.y_pos,
@@ -47,6 +58,8 @@ class Image_canvas(ttk.Frame):
 
         # Draw the fibers
         if self._settings.show_fibres.get():
+            self.log(f"Drawing all the {len(self._fibres)} fibre contours on "
+                     f"the canvas")
             for fibre in self._fibres:
                 fibre.polygon = self._draw_fibre(fibre.position)
 
@@ -63,6 +76,8 @@ class Image_canvas(ttk.Frame):
             fibres: The Fibres object containing the position of the fibres to
                 draw on top of the image.
         """
+
+        self.log(f"Loading the image {path}")
 
         # First, checking that the image can be loaded
         # Otherwise, all data would be lost !
@@ -83,6 +98,8 @@ class Image_canvas(ttk.Frame):
 
             # Drawing the nuclei
             if self._settings.show_nuclei.get():
+                self.log(f"Drawing all the {len(self._nuclei)} nuclei on the "
+                         f"canvas")
                 for nuc in self._nuclei:
                     nuc.tk_obj = self._draw_nucleus(
                         nuc.x_pos, nuc.y_pos,
@@ -94,6 +111,8 @@ class Image_canvas(ttk.Frame):
 
             # Drawing the fibres
             if self._settings.show_fibres.get():
+                self.log(f"Drawing all the {len(self._fibres)} fibre contours "
+                         f"on the canvas")
                 for fib in self._fibres:
                     fib.polygon = self._draw_fibre(fib.position)
 
@@ -103,10 +122,13 @@ class Image_canvas(ttk.Frame):
                                  f'Check that the image at '
                                  f'{path} still exists and '
                                  f'that it is accessible.')
+            self.log(f"Could not load image {path}, aborting")
 
     def reset(self) -> None:
         """Resets every object in the canvas: the image, the nuclei and the
         fibres."""
+
+        self.log("Resetting the entire image canvas")
 
         # Resetting the variables
         self._image = None
@@ -199,6 +221,8 @@ class Image_canvas(ttk.Frame):
 
         if self._image is not None:
 
+            self.log(f"Displaying the image {self._image_path}")
+
             # Keeping only the channels the user wants
             multiplier = (self._settings.red_channel_bool.get(), 0, 0, 0,
                           0, self._settings.green_channel_bool.get(), 0, 0,
@@ -224,10 +248,14 @@ class Image_canvas(ttk.Frame):
                     scaled_y < self._canvas.winfo_height():
                 self._canvas.xview_moveto(0),
                 self._canvas.yview_moveto(0)
+
+        self.log("Show image called but no image was set, aborting")
     
     def _delete_nuclei(self) -> None:
         """Removes all nuclei from the canvas, but doesn't delete the nuclei
         objects."""
+
+        self.log("Deleting all the nuclei on the canvas")
 
         for nuc in self._nuclei:
             self._canvas.delete(nuc.tk_obj)
@@ -236,12 +264,16 @@ class Image_canvas(ttk.Frame):
         """Removes all fibres from the canvas, but doesn't delete the fibres
          objects."""
 
+        self.log("Deleting all the fibres on the canvas")
+
         for fibre in self._fibres:
             self._canvas.delete(fibre.polygon)
 
     def _set_layout(self) -> None:
         """Creates the frame, canvas and scrollbar objects, places them and
         displays them."""
+
+        self.log("Setting the images canvas's layout")
 
         # Creating the architecture
         self.pack(expand=True, fill="both", anchor="w", side="left",
@@ -278,6 +310,8 @@ class Image_canvas(ttk.Frame):
     def _set_bindings(self) -> None:
         """Sets the actions to perform for the different user inputs."""
 
+        self.log("Setting the images canvas's bindings")
+
         self._canvas.bind('<ButtonPress-2>', self._move_from)
         self._canvas.bind('<B2-Motion>', self._move_to)
 
@@ -310,6 +344,8 @@ class Image_canvas(ttk.Frame):
 
     def _set_variables(self) -> None:
         """Sets the variables used in this class."""
+
+        self.log("Setting the images canvas's variables")
 
         self._image = None
         self._image_path = None
@@ -505,6 +541,12 @@ class Image_canvas(ttk.Frame):
                 self._selection_box.x_end = abs_x
                 self._selection_box.y_end = abs_y
 
+            self.log(f"Inversion box drawn from ("
+                     f"{self._selection_box.x_start}, "
+                     f"{self._selection_box.y_start}) to ("
+                     f"{self._selection_box.x_end}, "
+                     f"{self._selection_box.y_end})")
+
             # Inverting all the nuclei found inside the selection box
             for nuc in self._nuclei:
                 if self._selection_box.is_inside(nuc.x_pos, nuc.y_pos):
@@ -588,6 +630,12 @@ class Image_canvas(ttk.Frame):
             if abs_x < self._image.width and abs_y < self._image.height:
                 self._selection_box.x_end = abs_x
                 self._selection_box.y_end = abs_y
+
+            self.log(f"Deletion box drawn from ("
+                     f"{self._selection_box.x_start}, "
+                     f"{self._selection_box.y_start}) to ("
+                     f"{self._selection_box.x_end}, "
+                     f"{self._selection_box.y_end})")
 
             to_delete = list()
             # Detecting all the nuclei to delete
@@ -677,6 +725,8 @@ class Image_canvas(ttk.Frame):
                                              self.nuc_col_out),
                           'out')
 
+        self.log(f"Added nucleus at position ({abs_x}, {abs_y})")
+
         # Adding the nucleus to the nuclei table and to the current nuclei
         self.nuclei_table.add_nucleus(new_nuc)
         self._nuclei.append(new_nuc)
@@ -701,6 +751,8 @@ class Image_canvas(ttk.Frame):
             self._canvas.itemconfig(nuc.tk_obj, fill=self.nuc_col_out)
             nuc.color = 'out'
 
+        self.log(f"Inverted nucleus at position ({nuc.x_pos}, {nuc.y_pos})")
+
         # Updating the nuclei table
         self.nuclei_table.switch_nucleus(nuc)
 
@@ -721,6 +773,8 @@ class Image_canvas(ttk.Frame):
         self._canvas.delete(nuc.tk_obj)
         self._nuclei.remove(nuc)
 
+        self.log(f"Deleted nucleus at position ({nuc.x_pos}, {nuc.y_pos})")
+
         # Setting the unsaved status
         self._main_window.set_unsaved_status()
 
@@ -730,6 +784,8 @@ class Image_canvas(ttk.Frame):
 
         if self._image_path:
 
+            self.log(f"Loading image {self._image_path}")
+
             # Loading the image
             cv_img = check_image(self._image_path)
             # Handling the case when the image cannot be loaded
@@ -738,6 +794,7 @@ class Image_canvas(ttk.Frame):
                                      f'Check that the image at '
                                      f'{self._image_path} still exists and '
                                      f'that it is accessible.')
+                self.log(f"ERROR ! Could not load image {self._image_path}")
                 return
 
             self._image = Image.fromarray(cv_img)
@@ -756,6 +813,10 @@ class Image_canvas(ttk.Frame):
 
             # Deducing the new image scale
             self._img_scale = resize_width / self._image.width
+
+        else:
+            self.log("Image loading requested but no file was selected, "
+                     "ignoring")
 
     def _arrows(self, event: Event) -> None:
         """Scrolls the image upon pressing on the arrow keys.
