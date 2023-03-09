@@ -26,7 +26,8 @@ if __name__ == "__main__":
     # Normal workflow
     try:
         logger.log(logging.INFO, "Launching Cellen-Tellen")
-        Main_window()
+        window = Main_window()
+        window.mainloop()
         logger.log(logging.INFO, "Cellen-Tellen terminated gracefully")
 
     # Displaying the exception and waiting for the user to close the console

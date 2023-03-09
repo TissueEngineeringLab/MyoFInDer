@@ -30,7 +30,6 @@ if system() == "Windows" and int(release()) >= 8:
 
 # Todo:
 #   Set up unit tests
-#   Move mainloop out of Main Window
 
 
 def _save_before_closing(func: Callable) -> Callable:
@@ -119,7 +118,6 @@ class Main_window(Tk):
         self.log("Setting the main windows's bindings and protocols")
         self.bind_all('<Control-s>', self._save_button_pressed)
         self.protocol("WM_DELETE_WINDOW", self._safe_destroy)
-        self.mainloop()
 
     def set_unsaved_status(self) -> None:
         """Sets the title and save button when a project is modified."""
