@@ -2,7 +2,7 @@
 
 """Executable file for running the application"""
 
-from cellen_tellen import Main_window
+from . import Main_window
 import logging
 from sys import stdout
 from pathlib import Path
