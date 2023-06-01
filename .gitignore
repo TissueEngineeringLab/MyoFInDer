@@ -140,3 +140,6 @@ Projects/
 # Build from AdvancedInstaller
 Executable_files/*-cache
 Executable_files/*-SetupFiles
+
+# The log file
+logs.txt
