@@ -7,6 +7,7 @@ import logging
 from sys import stdout
 from pathlib import Path
 import argparse
+from platform import system
 
 
 if __name__ == "__main__":
@@ -29,28 +30,47 @@ if __name__ == "__main__":
     from_app = args.app
     log = args.nolog
 
-    base_path = Path(__file__).parent
-    if Path(__file__).name.endswith(".pyc"):
-        base_path = base_path.parent
+    # If started from an app, sets the base path for saving log messages,
+    # settings and the location of the recent projects
+    if from_app:
+        log_dir = Path.cwd()
+    else:
+        if system() in ('Linux', 'Darwin'):
+            log_dir = Path('/tmp/Cellen-Tellen')
+        elif system() == 'Windows':
+            log_dir = (Path.home() / 'AppData' / 'Local' / 'Temp'
+                       / 'Cellen-Tellen')
+        else:
+            log_dir = None
+
+    # Creating the folder for logging, if needed
+    if log_dir is not None:
+        try:
+            log_dir.mkdir(parents=False, exist_ok=True)
+        except FileNotFoundError:
+            log_dir = None
 
     # Setting up the logger
     logger = logging.getLogger("Cellen-Tellen")
     logger.setLevel(logging.INFO)
 
-    # Setting up the handlers
-    handler_console = logging.StreamHandler(stream=stdout)
-    handler_console.setLevel(logging.INFO)
+    # Setting up the handlers only if logging is enabled
+    if log:
+        handler_console = logging.StreamHandler(stream=stdout)
+        handler_console.setLevel(logging.INFO)
 
-    handler_file = logging.FileHandler(base_path / 'logs.txt', mode='w')
-    handler_file.setLevel(logging.INFO)
+        # Setting up the formatter
+        formatter = logging.Formatter('%(asctime)s %(name)-8s %(message)s')
+        handler_console.setFormatter(formatter)
 
-    # Setting up the formatter
-    formatter = logging.Formatter('%(asctime)s %(name)-8s %(message)s')
-    handler_console.setFormatter(formatter)
-    handler_file.setFormatter(formatter)
+        logger.addHandler(handler_console)
 
-    logger.addHandler(handler_console)
-    logger.addHandler(handler_file)
+        # Setting up the file handler only if a location is provided
+        if log_dir is not None:
+            handler_file = logging.FileHandler(log_dir / 'logs.txt', mode='w')
+            handler_file.setLevel(logging.INFO)
+            handler_file.setFormatter(formatter)
+            logger.addHandler(handler_file)
 
     # Normal workflow
     try:
@@ -63,5 +83,7 @@ if __name__ == "__main__":
     except (Exception,) as exc:
         logger.exception("Cellen-Tellen encountered an error while running !",
                          exc_info=exc)
-        print("\n\nPress ENTER to exit ...")
-        input()
+        # Only leave the console on if logging is enabled
+        if log:
+            print("\n\nPress ENTER to exit ...")
+            input()
