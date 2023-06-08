@@ -72,7 +72,7 @@ class Main_window(Tk):
 
         # Generates a splash window while waiting for the modules to load
         self.log("Creating the splash window")
-        splash = Splash_window(self)
+        splash = Splash_window()
         self.log("Centering the splash window")
         splash.resize_image()
         self.log("Displaying the splash window")
