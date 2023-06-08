@@ -20,14 +20,14 @@ if __name__ == "__main__":
                         help="If provided, indicates the module that it was "
                              "started from an application. It consequently "
                              "enables or disables some features.")
-    parser.add_argument('-l', '--log', action='store_true',
-                        help="If provided, the log messages will be displayed "
-                             "and recorded. Otherwise, they will be ignored.")
+    parser.add_argument('-n', '--nolog', action='store_false',
+                        help="If provided, the log messages won't be displayed"
+                             " and recorded. Otherwise, they are by default.")
     args = parser.parse_args()
 
     # Retrieving the command-line arguments
     from_app = args.app
-    log = args.log
+    log = args.nolog
 
     base_path = Path(__file__).parent
     if Path(__file__).name.endswith(".pyc"):
