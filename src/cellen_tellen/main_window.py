@@ -17,9 +17,9 @@ import logging
 from .tools import Settings
 from .tools import Save_popup
 from .tools import Warning_window
-from .tools import Project_name_window
 from .tools import Settings_window
 from .tools import Splash_window
+from .tools import check_project_name
 from .files_table import Files_table
 from .image_canvas import Image_canvas
 
@@ -767,22 +767,26 @@ class Main_window(Tk):
 
         # Asks for a new project name if needed
         if force_save_as or self._current_project is None:
-            # Creating a project name window and waiting for the user to choose
-            return_var = IntVar()
-            name_window = Project_name_window(self, return_var)
-            self.wait_variable(return_var)
-            ret = return_var.get()
-            # A name was given
-            if ret:
-                name = name_window.return_name()
-                name_window.destroy()
-                self.log(f"Saving the project to {self.projects_path / name}")
-                self._save_project(self.projects_path / name)
-                return True
-            # No name was given
-            else:
-                self.log("The user aborted the save action")
-                return False
+            save = False
+            path = None
+
+            # Letting the user choose a path for saving the project
+            while not save:
+                # Ask for a project name and location
+                path = filedialog.asksaveasfilename(
+                    confirmoverwrite=False, defaultextension=None,
+                    initialdir=Path.cwd(), title='Saving Current Project')
+                # The user can exit by pressing the cancel button
+                if not path:
+                    self.log("The user aborted the save action")
+                    return False
+                # Checking the validity of the chosen path
+                path = Path(path)
+                save = check_project_name(path)
+
+            self.log(f"Saving the project to {path}")
+            self._save_project(path)
+            return True
 
         # Perform a normal save otherwise
         else:

@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from .project_name_window import Project_name_window
+from .project_name_window import check_project_name
 from .save_popup import Save_popup
 from .settings_window import Settings_window
 from .splash_window import Splash_window
