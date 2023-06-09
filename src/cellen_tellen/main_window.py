@@ -125,8 +125,8 @@ class Main_window(Tk):
         self.log("Setting the unsaved status")
 
         if self._current_project is not None:
-            self.title("Cellen Tellen - Project '" + self._current_project.name
-                       + "' (Unsaved)")
+            self.title(f"Cellen Tellen - Project "
+                       f"'{self._current_project.name}' (Unsaved)")
             self._save_button['state'] = 'enabled'
             self._save_button['text'] = 'Save'
         else:
@@ -302,7 +302,7 @@ class Main_window(Tk):
         # associate commands with the recent projects items
         for path in self._recent_projects:
             self._recent_projects_menu.add_command(
-                label="Load '" + path.name + "'",
+                label=f"Load '{path.name}'",
                 command=partial(self._safe_load, path))
 
     def _set_layout(self) -> None:
