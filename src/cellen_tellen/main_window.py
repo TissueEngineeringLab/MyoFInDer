@@ -447,6 +447,10 @@ class Main_window(Tk):
             project_path: The Path where the project will be saved.
         """
 
+        # Only saving the recent projects if the module was started from an app
+        if not self._from_app:
+            return
+
         # Saving the recent projects
         projects_file = project_path / 'recent_projects.pickle'
         with open(projects_file, 'wb+') as recent_projects_file:
@@ -481,6 +485,7 @@ class Main_window(Tk):
                 self._recent_projects_menu.delete(index)
                 self._recent_projects.remove(self._current_project)
                 self.log("Removed current project from the recent projects")
+                self._save_recent_projects(Path.cwd())
 
             if not self._recent_projects:
                 self._file_menu.entryconfig("Recent Projects",
@@ -646,6 +651,8 @@ class Main_window(Tk):
             self._recent_projects_menu.delete(
                 self._recent_projects_menu.index("end"))
             self._recent_projects.pop()
+
+        self._save_recent_projects(Path.cwd())
 
     def _create_warning_window(self) -> bool:
         """Creates a warning window in case the user triggers an action that

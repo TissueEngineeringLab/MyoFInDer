@@ -75,7 +75,7 @@ if __name__ == "__main__":
     # Normal workflow
     try:
         logger.log(logging.INFO, "Launching Cellen-Tellen")
-        window = Main_window()
+        window = Main_window(from_app)
         window.mainloop()
         logger.log(logging.INFO, "Cellen-Tellen terminated gracefully")
 
