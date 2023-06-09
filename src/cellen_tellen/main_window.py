@@ -187,7 +187,7 @@ class Main_window(Tk):
         self.settings.nuclei_colour.trace_add("write", self._nuclei_colour_sel)
 
         # Some settings should enable the save button when modified
-        self.settings.save_altered_images.trace_add(
+        self.settings.save_overlay.trace_add(
             "write", self._enable_save_button)
         self.settings.fibre_threshold.trace_add("write",
                                                 self._enable_save_button)
@@ -540,8 +540,8 @@ class Main_window(Tk):
 
         # Actually saving the project
         self._save_settings(directory)
-        save_altered = self.settings.save_altered_images.get()
-        self._files_table.save_project(directory, save_altered)
+        save_overlay = self.settings.save_overlay.get()
+        self._files_table.save_project(directory, save_overlay)
         self.log(f"Project saved at {directory}")
 
         saving_popup.destroy()

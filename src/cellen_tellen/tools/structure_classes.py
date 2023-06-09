@@ -515,8 +515,8 @@ class Settings:
         default_factory=partial(StringVar, value="green", name='fibre_colour'))
     nuclei_colour: StringVar = field(
         default_factory=partial(StringVar, value="blue", name='nuclei_colour'))
-    save_altered_images: BooleanVar = field(
-        default_factory=partial(BooleanVar, value=False, name='save_altered'))
+    save_overlay: BooleanVar = field(
+        default_factory=partial(BooleanVar, value=False, name='save_overlay'))
     fibre_threshold: IntVar = field(
         default_factory=partial(IntVar, value=25, name='fibre_threshold'))
     nuclei_threshold: IntVar = field(
@@ -545,7 +545,7 @@ class Settings:
         """"""
 
         settings = (self.fibre_colour, self.nuclei_colour,
-                    self.save_altered_images, self.fibre_threshold,
+                    self.save_overlay, self.fibre_threshold,
                     self.nuclei_threshold, self.small_objects_threshold,
                     self.blue_channel_bool, self.green_channel_bool,
                     self.red_channel_bool, self.show_nuclei, self.show_fibres)

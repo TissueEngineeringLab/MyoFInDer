@@ -70,14 +70,14 @@ class Settings_window(Toplevel):
             value="red")
         fibre_colour_r3.grid(column=1, row=5, sticky='NW')
 
-        # Buttons to chose whether to save the altered images or not
-        ttk.Label(frame, text='Save Altered Images :').grid(
+        # Buttons to chose whether to save the overlay images or not
+        ttk.Label(frame, text='Save Images with Overlay :').grid(
             column=0, row=11, sticky='NE', pady=(10, 0), padx=(0, 10))
         ttk.Radiobutton(
-            frame, text="On", variable=self._settings.save_altered_images,
+            frame, text="On", variable=self._settings.save_overlay,
             value=1).grid(column=1, row=11, sticky='NW', pady=(10, 0))
         ttk.Radiobutton(
-            frame, text="Off", variable=self._settings.save_altered_images,
+            frame, text="Off", variable=self._settings.save_overlay,
             value=0).grid(column=1, row=12, sticky='NW')
 
         # Slider to adjust the threshold for fiber detection

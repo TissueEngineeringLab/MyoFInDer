@@ -96,7 +96,7 @@ class Files_table(ttk.Frame):
         if self.table_items:
             self._make_table()
 
-    def save_project(self, directory: Path, save_altered: bool) -> None:
+    def save_project(self, directory: Path, save_overlay: bool) -> None:
         """Saves a project.
 
         Saves the images names and paths, the fibres positions, the nuclei
@@ -107,7 +107,7 @@ class Files_table(ttk.Frame):
         Args:
             directory: The path to the directory where the project has to be
                 saved.
-            save_altered: Should the images with nuclei and fibres drawn be
+            save_overlay: Should the images with nuclei and fibres drawn be
                 saved ?
         """
 
@@ -119,9 +119,9 @@ class Files_table(ttk.Frame):
         # Then, save the original images
         self._save_originals(directory)
 
-        # If needed, save the altered images
-        if save_altered:
-            self._save_altered_images(directory)
+        # If needed, save the overlay images
+        if save_overlay:
+            self._save_overlay_images(directory)
 
         # Finally, save the data
         self._save_data(directory)
@@ -476,7 +476,7 @@ class Files_table(ttk.Frame):
 
         workbook.close()
 
-    def _save_altered_images(self, directory: Path) -> None:
+    def _save_overlay_images(self, directory: Path) -> None:
         """Saves the images with the nuclei and fibres drawn on them.
 
         Args:
@@ -484,13 +484,13 @@ class Files_table(ttk.Frame):
         """
 
         # Creates the directory if it doesn't exist yet
-        if (directory / 'Altered Images').is_dir():
-            rmtree(directory / 'Altered Images')
-            self.log(f"Creating the folder for saving the altered images at: "
-                     f"{directory / 'Altered Images'}")
-        Path.mkdir(directory / 'Altered Images')
+        if (directory / 'Overlay Images').is_dir():
+            rmtree(directory / 'Overlay Images')
+            self.log(f"Creating the folder for saving the overlay images at: "
+                     f"{directory / 'Overlay Images'}")
+        Path.mkdir(directory / 'Overlay Images')
 
-        self.log("Saving the altered images")
+        self.log("Saving the overlay images")
 
         # Saves the images
         for entry in self.table_items:
@@ -522,7 +522,7 @@ class Files_table(ttk.Frame):
         cv_img = check_image(project_name / "Original Images" /
                              entry.path.name)
 
-        destination = project_name / "Altered Images" / entry.path.name
+        destination = project_name / "Overlay Images" / entry.path.name
 
         # Aborting if the image cannot be loaded
         if cv_img is None:
