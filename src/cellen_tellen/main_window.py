@@ -105,9 +105,7 @@ class Main_window(Tk):
         self.log("Creating the image canvas")
         self._image_canvas = Image_canvas(self._frm, self)
         self.log("Creating the files table")
-        self._files_table = Files_table(self._aux_frame,
-                                        self.projects_path,
-                                        self)
+        self._files_table = Files_table(self._aux_frame, self)
         self._image_canvas.nuclei_table = self._files_table
         self._files_table.image_canvas = self._image_canvas
 

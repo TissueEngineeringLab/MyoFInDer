@@ -26,13 +26,11 @@ class Files_table(ttk.Frame):
 
     def __init__(self,
                  root: ttk.Frame,
-                 projects_path: Path,
                  main_window) -> None:
         """Sets the appearance of the frame.
 
         Args:
             root: The parent frame in which this one is included.
-            projects_path: The path to the Projects folder.
             main_window: the main window of the GUI.
         """
 
@@ -41,7 +39,6 @@ class Files_table(ttk.Frame):
 
         super().__init__(root)
 
-        self._projects_path = projects_path
         self._main_window = main_window
 
         # Setting the appearance
