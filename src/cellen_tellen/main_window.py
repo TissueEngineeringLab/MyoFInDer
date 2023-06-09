@@ -658,7 +658,7 @@ class Main_window(Tk):
 
         # Sets the project name
         self._current_project = directory
-        self.title("Cellen Tellen - Project '" + directory.name + "'")
+        self.title(f"Cellen Tellen - Project '{directory.name}'")
 
     def _add_to_recent_projects(self, directory: Path) -> None:
         """Sets the recent project menu entry when loading or saving a project.
@@ -754,7 +754,7 @@ class Main_window(Tk):
     def _save_button_pressed(self, _: Optional[Event] = None,
                              force_save_as: bool = False) -> bool:
         """Method called when a save action is triggered by the user or when
-        CTRL+S is hit..
+        CTRL+S is hit.
 
         It may or may not lead to an actual save.
 

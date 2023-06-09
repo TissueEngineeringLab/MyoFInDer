@@ -6,16 +6,22 @@ from pathlib import Path
 
 
 class Save_popup(Toplevel):
+    """Popup window displayed while the project is being saved to inform the
+    user that saving is in progress."""
 
     def __init__(self, main_window: Tk, directory: Path) -> None:
-        """Popup window displayed while the project is being saved to infor the
-        user that saving is in progress."""
+        """Sets the layout of the popup window.
+
+        Args:
+            main_window: The parent window of which this popup depends.
+            directory: The directory where the project is being saved.
+        """
 
         super().__init__(main_window)
 
         # Setting the layout
         self.title("Saving....")
-        ttk.Label(self, text="Saving to '" + directory.name + "' ..."). \
+        ttk.Label(self, text=f"Saving to '{directory.name}' ..."). \
             pack(anchor='center', expand=False, fill='none', padx=10, pady=10)
 
         # Centering on the screen
