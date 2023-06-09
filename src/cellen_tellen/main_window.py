@@ -56,9 +56,16 @@ class Main_window(Tk):
     It manages all the buttons, menus, events, and the secondary windows.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, from_app: bool) -> None:
         """Creates the splash window, then the main window, sets the layout and
-        the callbacks."""
+        the callbacks.
+
+        Args:
+            from_app: If True, the module was started from an application. It
+                enables the recent projects feature.
+        """
+
+        self._from_app = from_app
 
         # Setting the logger
         self._logger = logging.getLogger("Cellen-Tellen.MainWindow")
@@ -89,6 +96,7 @@ class Main_window(Tk):
 
         # Sets the settings, variables, callbacks, menus and layout
         self._set_variables()
+        self._load_recent_projects(Path.cwd())
         self._set_traces()
         self._set_menu()
         self._set_layout()
@@ -242,16 +250,15 @@ class Main_window(Tk):
         self._quit_menu.add_command(label="Quit", command=self._safe_destroy)
         self._menu_bar.add_cascade(label="Quit", menu=self._quit_menu)
 
-        # Disables the recent project menu if there's no recent project
+        # Managing the recent projects menu entry
         if not self._recent_projects:
             self._file_menu.entryconfig("Recent Projects", state='disabled')
-            return
-
-        # associate commands with the recent projects items
-        for path in self._recent_projects:
-            self._recent_projects_menu.add_command(
-                label=f"Load '{path.name}'",
-                command=partial(self._safe_load, path))
+        else:
+            # associate commands with the recent projects items
+            for path in self._recent_projects:
+                self._recent_projects_menu.add_command(
+                    label=f"Load '{path.name}'",
+                    command=partial(self._safe_load, path))
 
     def _set_layout(self) -> None:
         """Sets the overall layout of the window."""
@@ -390,6 +397,10 @@ class Main_window(Tk):
             application_path: The Path where the application is installed.
         """
 
+        # Only load the recent projects if the module was started from an app
+        if not self._from_app:
+            return
+
         # Gets the recent projects from the recent_projects.pickle file
         projects_file = application_path / 'recent_projects.pickle'
         if projects_file.is_file() and projects_file.exists():
@@ -465,10 +476,11 @@ class Main_window(Tk):
             self.log("Deleted the files of the current project")
 
             # Removes the project from the recent projects
-            index = self._recent_projects.index(self._current_project)
-            self._recent_projects_menu.delete(index)
-            self._recent_projects.remove(self._current_project)
-            self.log("Removed current project from the recent projects")
+            if self._from_app:
+                index = self._recent_projects.index(self._current_project)
+                self._recent_projects_menu.delete(index)
+                self._recent_projects.remove(self._current_project)
+                self.log("Removed current project from the recent projects")
 
             if not self._recent_projects:
                 self._file_menu.entryconfig("Recent Projects",
@@ -609,6 +621,10 @@ class Main_window(Tk):
         Args:
             directory: The path to the directory where the project is saved.
         """
+
+        # Only ad to recent projects if the module was started from an app
+        if not self._from_app:
+            return
 
         self.log(f"Adding {directory} to the recent projects")
 
