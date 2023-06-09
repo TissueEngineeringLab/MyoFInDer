@@ -70,25 +70,6 @@ class Settings_window(Toplevel):
             value="red")
         fibre_colour_r3.grid(column=1, row=5, sticky='NW')
 
-        # Buttons to set the autosave timer
-        ttk.Label(frame, text='Autosave Interval :').grid(
-            column=0, row=6, sticky='NE', pady=(10, 0), padx=(0, 10))
-        ttk.Radiobutton(
-            frame, text="5 Minutes", variable=self._settings.auto_save_time,
-            value=5 * 60).grid(column=1, row=6, sticky='NW', pady=(10, 0))
-        ttk.Radiobutton(
-            frame, text="15 Minutes", variable=self._settings.auto_save_time,
-            value=15 * 60).grid(column=1, row=7, sticky='NW')
-        ttk.Radiobutton(
-            frame, text="30 Minutes", variable=self._settings.auto_save_time,
-            value=30 * 60).grid(column=1, row=8, sticky='NW')
-        ttk.Radiobutton(
-            frame, text="60 Minutes", variable=self._settings.auto_save_time,
-            value=60 * 60).grid(column=1, row=9, sticky='NW')
-        ttk.Radiobutton(
-            frame, text="Never", variable=self._settings.auto_save_time,
-            value=-1).grid(column=1, row=10, sticky='NW')
-
         # Buttons to chose whether to save the altered images or not
         ttk.Label(frame, text='Save Altered Images :').grid(
             column=0, row=11, sticky='NE', pady=(10, 0), padx=(0, 10))

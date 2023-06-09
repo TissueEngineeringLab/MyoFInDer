@@ -111,7 +111,7 @@ class Main_window(Tk):
         self._image_canvas.nuclei_table = self._files_table
         self._files_table.image_canvas = self._image_canvas
 
-        self._save_settings(autosave_time=True)
+        self._save_settings()
 
         # Finishes the initialization and starts the event loop
         self.update()
@@ -203,8 +203,6 @@ class Main_window(Tk):
         self.settings.nuclei_colour.trace_add("write", self._nuclei_colour_sel)
 
         # Simply saving the settings upon modification
-        self.settings.auto_save_time.trace_add("write",
-                                               self._save_settings_callback)
         self.settings.save_altered_images.trace_add(
             "write", self._save_settings_callback)
         self.settings.fibre_threshold.trace_add("write",
@@ -243,12 +241,6 @@ class Main_window(Tk):
         self._thread = Thread(target=self._process_thread)
         self._thread.start()
 
-        # Variables managing the automatic save
-        auto_folder = self.projects_path / 'AUTOSAVE'
-        self._auto_save_path = auto_folder
-        self.log(f"Set the autosave folder to: {auto_folder}")
-        self._auto_save_job = None
-
         self._max_recent_projects = 20  # Maximum number of recent projects
         self._current_project = None  # Path to the current project
 
@@ -278,13 +270,6 @@ class Main_window(Tk):
             command=self._safe_load)
         self._file_menu.add_separator()
 
-        self._file_menu.add_command(label='Load Automatic Save',
-                                    state='disabled',
-                                    command=partial(self._safe_load,
-                                                    self._auto_save_path))
-
-        if self._auto_save_path.is_dir():
-            self._file_menu.entryconfig("Load Automatic Save", state='normal')
         self._file_menu.add_separator()
 
         self._recent_projects_menu = Menu(self._file_menu, tearoff=0)
@@ -432,30 +417,22 @@ class Main_window(Tk):
             name: The name of the setting that was modified.
         """
 
-        if name == 'auto_save_time':
-            self._save_settings(autosave_time=True)
-        elif name == 'save_altered':
+        if name == 'save_altered':
             self._save_settings(enable_save=True)
         else:
             self._save_settings()
 
     def _save_settings(self,
-                       autosave_time: bool = False,
                        enable_save: bool = False) -> None:
         """Saves the settings and recent projects to .pickle files.
 
         Args:
-            autosave_time: If True, sets the autosave time before saving.
             enable_save: If True, enables the save button
         """
 
         # Enables the save button if needed
         if enable_save:
             self._save_button['state'] = 'enabled'
-
-        # Set the autosave timer
-        if autosave_time:
-            self._set_autosave_time()
 
         # Saving the settings
         settings = {key: value.get() for key, value
@@ -511,10 +488,6 @@ class Main_window(Tk):
                                             state='disabled')
             self._save_settings()
 
-            if self._current_project == self._auto_save_path:
-                self._file_menu.entryconfig("Load Automatic Save",
-                                            state='disabled')
-
             # Creates a new empty project
             self._create_empty_project()
 
@@ -542,7 +515,7 @@ class Main_window(Tk):
         self.title("Cellen Tellen - New Project (Unsaved)")
         self._current_project = None
 
-    def _save_project(self, directory: Optional[Path] = None) -> None:
+    def _save_project(self, directory: Path) -> None:
         """Saves a project, its images and the associated data.
 
         Args:
@@ -550,24 +523,9 @@ class Main_window(Tk):
                 saved.
         """
 
-        # A call without a directory means an autosave
-        if directory is None:
-            if self.settings.auto_save_time.get() > 0:
-                directory = self._auto_save_path
-                self.log("Auto-saving the project ")
-            else:
-                return
-
         # Setting the save button, the project title and the menu entries
-        if directory != self._auto_save_path:
-            self._set_title_and_button(directory)
-            self._add_to_recent_projects(directory)
-
-        # Starting the next autosave job, as the current one ends now
-        else:
-            self._file_menu.entryconfig("Load Automatic Save", state='normal')
-            if self.settings.auto_save_time.get() > 0:
-                self._set_autosave_time()
+        self._set_title_and_button(directory)
+        self._add_to_recent_projects(directory)
 
         # Creating the folder if needed
         if not directory.is_dir():
@@ -580,8 +538,7 @@ class Main_window(Tk):
         sleep(1)
 
         # Actually saving the project
-        save_altered = self.settings.save_altered_images.get() or \
-            directory == self._auto_save_path
+        save_altered = self.settings.save_altered_images.get()
         self._files_table.save_project(directory, save_altered)
         self.log(f"Project saved at {directory}")
 
@@ -625,8 +582,7 @@ class Main_window(Tk):
 
         # Setting the save button, the project title and the menu entries
         self._set_title_and_button(directory)
-        if directory != self._auto_save_path:
-            self._add_to_recent_projects(directory)
+        self._add_to_recent_projects(directory)
 
         # Actually loading the project
         self.log(f"Loading the project {directory}")
@@ -677,7 +633,7 @@ class Main_window(Tk):
 
         # Then insert it again, likely in another position
         self._recent_projects_menu.insert_command(
-            index=0, label="Load '" + directory.name + "'",
+            index=0, label=f"Load '{directory.name}'",
             command=partial(self._safe_load, directory))
         self._recent_projects.insert(0, directory)
         self._file_menu.entryconfig("Recent Projects", state='normal')
@@ -843,7 +799,6 @@ class Main_window(Tk):
         self._delete_all_button['state'] = 'disabled'
 
         # Disabling the menu entries
-        self._file_menu.entryconfig("Load Automatic Save", state='disabled')
         self._file_menu.entryconfig("Recent Projects", state='disabled')
         self._file_menu.entryconfig("Delete Current Project", state="disabled")
         self._file_menu.entryconfig("Save Project As", state="disabled")
@@ -866,8 +821,6 @@ class Main_window(Tk):
         self._set_indicators()
 
         # Re-enabling menu entries
-        if self._auto_save_path.is_dir():
-            self._file_menu.entryconfig("Load Automatic Save", state='normal')
         if self._recent_projects:
             self._file_menu.entryconfig("Recent Projects", state='normal')
         if self._current_project is not None:
@@ -1108,23 +1061,6 @@ class Main_window(Tk):
 
         else:
             self.log("No files selected by the user, aborting")
-
-    def _set_autosave_time(self) -> None:
-        """Schedules a save job according to the selected autosave time."""
-
-        self.log("Setting the autosave job")
-
-        # Cancels any previous autosave job
-        if self._auto_save_job is not None:
-            self.log("Canceling the previous autosave job")
-            self.after_cancel(self._auto_save_job)
-        self._auto_save_job = None
-
-        # Schedule a new autosave job
-        if self.settings.auto_save_time.get() > 0:
-            t = self.settings.auto_save_time.get()
-            self.log(f"Creating an autosave job, that will happen in {t}s")
-            self._auto_save_job = self.after(t * 1000, self._save_project)
 
     def _set_image_channels(self) -> None:
         """Redraws the current image with the selected channels."""

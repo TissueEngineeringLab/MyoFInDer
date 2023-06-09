@@ -515,8 +515,6 @@ class Settings:
         default_factory=partial(StringVar, value="green", name='fibre_colour'))
     nuclei_colour: StringVar = field(
         default_factory=partial(StringVar, value="blue", name='nuclei_colour'))
-    auto_save_time: IntVar = field(
-        default_factory=partial(IntVar, value=-1, name='auto_save_time'))
     save_altered_images: BooleanVar = field(
         default_factory=partial(BooleanVar, value=False, name='save_altered'))
     fibre_threshold: IntVar = field(
@@ -546,7 +544,7 @@ class Settings:
     def __str__(self) -> str:
         """"""
 
-        settings = (self.fibre_colour, self.nuclei_colour, self.auto_save_time,
+        settings = (self.fibre_colour, self.nuclei_colour,
                     self.save_altered_images, self.fibre_threshold,
                     self.nuclei_threshold, self.small_objects_threshold,
                     self.blue_channel_bool, self.green_channel_bool,
