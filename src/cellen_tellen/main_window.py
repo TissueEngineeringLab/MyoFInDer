@@ -226,8 +226,6 @@ class Main_window(Tk):
             command=self._safe_load)
         self._file_menu.add_separator()
 
-        self._file_menu.add_separator()
-
         self._recent_projects_menu = Menu(self._file_menu, tearoff=0)
         self._file_menu.add_cascade(label="Recent Projects",
                                     menu=self._recent_projects_menu)
@@ -541,6 +539,7 @@ class Main_window(Tk):
         sleep(1)
 
         # Actually saving the project
+        self._save_settings(directory)
         save_altered = self.settings.save_altered_images.get()
         self._files_table.save_project(directory, save_altered)
         self.log(f"Project saved at {directory}")
@@ -590,6 +589,7 @@ class Main_window(Tk):
 
         # Actually loading the project
         self.log(f"Loading the project {directory}")
+        self._load_settings(directory)
         self._files_table.load_project(directory)
 
         # Enabling the process images button
