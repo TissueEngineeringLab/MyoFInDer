@@ -249,7 +249,8 @@ class Image_canvas(ttk.Frame):
                 self._canvas.xview_moveto(0),
                 self._canvas.yview_moveto(0)
 
-        self.log("Show image called but no image was set, aborting")
+        else:
+            self.log("Show image called but no image was set, aborting")
     
     def _delete_nuclei(self) -> None:
         """Removes all nuclei from the canvas, but doesn't delete the nuclei
