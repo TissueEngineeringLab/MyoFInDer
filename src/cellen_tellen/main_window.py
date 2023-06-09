@@ -11,8 +11,9 @@ from time import sleep
 from pickle import load, dump
 from functools import partial, wraps
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable, Optional, List
 import logging
+from pkg_resources import resource_filename
 
 from .tools import Settings
 from .tools import Save_popup
@@ -62,14 +63,6 @@ class Main_window(Tk):
         # Setting the logger
         self._logger = logging.getLogger("Cellen-Tellen.MainWindow")
 
-        # Sets the different paths used in the project
-        self.base_path = Path(__file__).parent
-        if Path(__file__).name.endswith(".pyc"):
-            self.base_path = self.base_path.parent
-        self.log(f"Base path for the project: {str(self.base_path)}")
-        self.projects_path = self.base_path.parent / 'Projects'
-        self._settings_path = self.base_path / 'settings'
-
         # Generates a splash window while waiting for the modules to load
         self.log("Creating the splash window")
         splash = Splash_window()
@@ -89,13 +82,12 @@ class Main_window(Tk):
 
         # Sets the application icon
         self.log("Setting the application icon")
-        icon = PhotoImage(file=self.base_path / 'app_images' /
-                          "project_icon.png")
+        icon = PhotoImage(file=resource_filename(
+            'cellen_tellen', 'app_images/project_icon.png'))
         self.iconphoto(False, icon)  # Without it the icon is buggy in Windows
         self.iconphoto(True, icon)
 
         # Sets the settings, variables, callbacks, menus and layout
-        self._load_settings()
         self._set_variables()
         self._set_traces()
         self._set_menu()
@@ -108,8 +100,6 @@ class Main_window(Tk):
         self._files_table = Files_table(self._aux_frame, self)
         self._image_canvas.nuclei_table = self._files_table
         self._files_table.image_canvas = self._image_canvas
-
-        self._save_settings()
 
         # Finishes the initialization and starts the event loop
         self.update()
@@ -148,76 +138,12 @@ class Main_window(Tk):
 
         self._logger.log(logging.INFO, msg)
 
-    def _load_settings(self) -> None:
-        """Loads the settings from the settings file if any, otherwise sets
-        them to default."""
-
-        # Gets the settings from the settings.pickle file
-        settings_file = self._settings_path / 'settings.pickle'
-        if settings_file.is_file():
-            self.log(f"Loading the settings file from {settings_file}")
-            with open(settings_file, 'rb') as param_file:
-                settings = load(param_file)
-        else:
-            self.log("No setting file detected, loading the default settings")
-            settings = dict()
-
-        # Creates a Settings instance and sets the values
-        self.settings = Settings()  # The default values are preset in Settings
-        self.settings.update(settings)
-        self.log(f"Settings values: {str(self.settings)}")
-
-        # Gets the recent projects from the recent_projects.pickle file
-        projects_file = self._settings_path / 'recent_projects.pickle'
-        if projects_file.is_file():
-            self.log(f"Loading the recent projects file from {projects_file}")
-            with open(projects_file, 'rb') as recent_projects:
-                recent = load(recent_projects)
-
-            # Only the names are stored, the path must be completed
-            # Here we also make sure that the projects are valid
-            self._recent_projects = [
-                self.projects_path / proj for proj in recent['recent_projects']
-                if proj
-                and (self.projects_path / proj).is_dir()
-                and (self.projects_path / proj / 'data.pickle').is_file()]
-            self._recent_projects = list(dict.fromkeys(self._recent_projects))
-            self.log(f"Recent projects: "
-                     f"{', '.join(map(str, self._recent_projects))}")
-        else:
-            self.log("No recent projects file detected")
-            self._recent_projects = []
-
-        # Finally, saving the recent projects and the settings
-        self._save_settings()
-
-    def _set_traces(self) -> None:
-        """Sets the callbacks triggered upon modification of the settings."""
-
-        self.log("Setting the main windows's traces")
-
-        # Making sure there's no conflict between the nuclei and fibres colors
-        self.settings.fibre_colour.trace_add("write", self._nuclei_colour_sel)
-        self.settings.nuclei_colour.trace_add("write", self._nuclei_colour_sel)
-
-        # Simply saving the settings upon modification
-        self.settings.save_altered_images.trace_add(
-            "write", self._save_settings_callback)
-        self.settings.fibre_threshold.trace_add("write",
-                                                self._save_settings_callback)
-        self.settings.nuclei_threshold.trace_add("write",
-                                                 self._save_settings_callback)
-        self.settings.small_objects_threshold.trace_add(
-            "write", self._save_settings_callback)
-
-        # Updates the display when an image has been processed
-        self._processed_images_count.trace_add("write",
-                                               self._update_processed_images)
-
     def _set_variables(self) -> None:
         """Sets the different variables used in the class."""
 
         self.log("Setting the main windows's variables")
+
+        self.settings = Settings()
 
         # Variables used when there's a conflict in the choice of colors for
         # the fibres and nuclei
@@ -239,8 +165,32 @@ class Main_window(Tk):
         self._thread = Thread(target=self._process_thread)
         self._thread.start()
 
+        self._recent_projects = list()
         self._max_recent_projects = 20  # Maximum number of recent projects
-        self._current_project = None  # Path to the current project
+        self._current_project: Optional[Path] = None  # Path to current project
+
+    def _set_traces(self) -> None:
+        """Sets the callbacks triggered upon modification of the settings."""
+
+        self.log("Setting the main windows's traces")
+
+        # Making sure there's no conflict between the nuclei and fibres colors
+        self.settings.fibre_colour.trace_add("write", self._nuclei_colour_sel)
+        self.settings.nuclei_colour.trace_add("write", self._nuclei_colour_sel)
+
+        # Some settings should enable the save button when modified
+        self.settings.save_altered_images.trace_add(
+            "write", self._enable_save_button)
+        self.settings.fibre_threshold.trace_add("write",
+                                                self._enable_save_button)
+        self.settings.nuclei_threshold.trace_add("write",
+                                                 self._enable_save_button)
+        self.settings.small_objects_threshold.trace_add(
+            "write", self._enable_save_button)
+
+        # Updates the display when an image has been processed
+        self._processed_images_count.trace_add("write",
+                                               self._update_processed_images)
 
     def _set_menu(self) -> None:
         """Sets the menu bar."""
@@ -406,51 +356,90 @@ class Main_window(Tk):
                                               variable=self._master_check_var)
         self._select_all_button.pack(anchor="e", side="right", fill='none')
 
-    def _save_settings_callback(self, name: str, _, __) -> None:
-        """Saves the settings upon modification of one of them.
+    def _enable_save_button(self) -> None:
+        """Some settings should enable the save button when modified."""
 
-        Some settings require a slightly different saving strategy.
+        self._save_button['state'] = 'enabled'
+
+    def _load_settings(self, project_path: Path) -> None:
+        """Loads the settings from the settings file if any is present.
 
         Args:
-            name: The name of the setting that was modified.
+            project_path: The Path where the project is saved.
         """
 
-        if name == 'save_altered':
-            self._save_settings(enable_save=True)
+        # Gets the settings from the settings.pickle file
+        settings_file = project_path / 'settings.pickle'
+        if settings_file.is_file() and settings_file.exists():
+            self.log(f"Loading the settings file from {settings_file}")
+            with open(settings_file, 'rb') as param_file:
+                settings = load(param_file)
         else:
-            self._save_settings()
+            self.log("No setting file detected, loading the default settings")
+            settings = dict()
 
-    def _save_settings(self,
-                       enable_save: bool = False) -> None:
-        """Saves the settings and recent projects to .pickle files.
+        # Creates a Settings instance and sets the values
+        self.settings.update(settings)
+        self.log(f"Settings values: {str(self.settings)}")
+
+    def _load_recent_projects(self, application_path: Path) -> None:
+        """Loads the recent projects file if the module is started from an
+        installed application, and enables the corresponding menu entry.
 
         Args:
-            enable_save: If True, enables the save button
+            application_path: The Path where the application is installed.
         """
 
-        # Enables the save button if needed
-        if enable_save:
-            self._save_button['state'] = 'enabled'
+        # Gets the recent projects from the recent_projects.pickle file
+        projects_file = application_path / 'recent_projects.pickle'
+        if projects_file.is_file() and projects_file.exists():
+            self.log(f"Loading the recent projects file from {projects_file}")
+            with open(projects_file, 'rb') as recent_projects:
+                recent: List[Path] = load(recent_projects)
+
+            # Making sure that the paths to the projects are valid
+            recent = [path for path in recent
+                      if path.is_dir() and
+                      path.exists() and
+                      (path / 'data.pickle').is_file() and
+                      (path / 'data.pickle').exists()]
+
+            # Removing duplicates
+            self._recent_projects = list(dict.fromkeys(recent))
+            self.log(f"Recent projects: "
+                     f"{', '.join(map(str, self._recent_projects))}")
+        else:
+            self.log("No recent projects file detected")
+            self._recent_projects = list()
+
+    def _save_settings(self, project_path: Path) -> None:
+        """Saves the settings to a settings.pickle file.
+
+        Args:
+            project_path: The Path where the project will be saved.
+        """
 
         # Saving the settings
         settings = {key: value.get() for key, value
                     in vars(self.settings).items()}
         self.log(f"Settings values: {str(self.settings)}")
 
-        if not self._settings_path.is_dir():
-            self.log(f"Created the Settings folder at: {self._settings_path}")
-            Path.mkdir(self._settings_path)
-
-        settings_file = self._settings_path / 'settings.pickle'
+        settings_file = project_path / 'settings.pickle'
         with open(settings_file, 'wb+') as param_file:
             dump(settings, param_file, protocol=4)
             self.log(f"Saved the settings at: {settings_file}")
 
+    def _save_recent_projects(self, project_path: Path) -> None:
+        """Saves the recent projects to a recent_projects.pickle file.
+
+        Args:
+            project_path: The Path where the project will be saved.
+        """
+
         # Saving the recent projects
-        projects_file = self._settings_path / 'recent_projects.pickle'
+        projects_file = project_path / 'recent_projects.pickle'
         with open(projects_file, 'wb+') as recent_projects_file:
-            dump({'recent_projects': [str(path.name) for path in
-                                      self._recent_projects]},
+            dump({'recent_projects': self._recent_projects},
                  recent_projects_file, protocol=4)
             self.log(f"Saved the recent projects at: {projects_file}")
 
@@ -484,7 +473,6 @@ class Main_window(Tk):
             if not self._recent_projects:
                 self._file_menu.entryconfig("Recent Projects",
                                             state='disabled')
-            self._save_settings()
 
             # Creates a new empty project
             self._create_empty_project()
@@ -526,7 +514,7 @@ class Main_window(Tk):
         self._add_to_recent_projects(directory)
 
         # Creating the folder if needed
-        if not directory.is_dir():
+        if not (directory.is_dir() and directory.exists()):
             self.log(f"Creating the directory where to save the "
                      f"project at {directory}")
             Path.mkdir(directory, parents=True)
@@ -558,7 +546,7 @@ class Main_window(Tk):
         # Choose the folder in a dialog window if it wasn't specified
         if directory is None:
             folder = filedialog.askdirectory(
-                initialdir=self.projects_path,
+                initialdir=Path.cwd(),
                 mustexist=True,
                 title="Choose a Project Folder")
 
@@ -570,8 +558,9 @@ class Main_window(Tk):
             self.log(f"User requested to load project {directory}")
 
         # Checking that a valid project was selected
-        if not directory.is_dir() or not (directory / 'data.pickle').is_file()\
-                or not directory.parent == self.projects_path:
+        if not (directory.is_dir() and directory.exists() and
+                (directory / 'data.pickle').is_file() and
+                (directory / 'data.pickle').exists()):
             messagebox.showerror("Error while loading",
                                  "This isn't a valid Cellen-tellen project !")
             self.log("The selected directory is not valid for loading into "
@@ -641,8 +630,6 @@ class Main_window(Tk):
             self._recent_projects_menu.delete(
                 self._recent_projects_menu.index("end"))
             self._recent_projects.pop()
-
-        self._save_settings()
 
     def _create_warning_window(self) -> bool:
         """Creates a warning window in case the user triggers an action that
@@ -1043,7 +1030,7 @@ class Main_window(Tk):
         file_names = filedialog.askopenfilenames(
             filetypes=[('Image Files', ('.tif', '.png', '.jpg', '.jpeg',
                                         '.bmp', '.hdr'))],
-            parent=self, title='Please select a directory')
+            parent=self, title='Please select the images to open')
 
         if file_names:
             file_names = [Path(path) for path in file_names]
@@ -1065,7 +1052,6 @@ class Main_window(Tk):
 
         self.log("Setting the image channels to display")
         self._image_canvas.show_image()
-        self._save_settings()
 
     def _set_indicators(self) -> None:
         """Updates the display of fibres and nuclei according to the user
@@ -1074,7 +1060,6 @@ class Main_window(Tk):
         # Updating the display
         self.log("Setting the image indicators to display")
         self._image_canvas.set_indicators()
-        self._save_settings()
 
     def _nuclei_colour_sel(self, _, __, ___) -> None:
         """Ensures there's no conflict in the chosen image channels for fibres
@@ -1098,7 +1083,6 @@ class Main_window(Tk):
         self._previous_fibre_colour.set(self.settings.fibre_colour.get())
 
         # Finally, save and redraw the nuclei and fibers
-        self._save_settings()
         self._image_canvas.set_indicators()
 
     def _invert_checkboxes(self) -> None:
