@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Home page"
-permalink: /home-page
+permalink: /index
 ---
 
 # Cellen-Tellen documentation
