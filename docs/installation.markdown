@@ -13,6 +13,17 @@ Because the installation and use as a Python module might not be
 straightforward for every user, a very **basic Windows installer** is also 
 provided for convenience.
 
+Index of the Installation page :
+
+1. [On Windows](#1-on-windows)
+   1. [Install Python](#11-install-python)
+   2. [Installation of Cellen-Tellen using the Windows installer](#12-installation-of-cellen-tellen-using-the-windows-installer)
+   3. [Installation of Cellen-Tellen from console](#13-installation-of-cellen-tellen-from-console)
+2. [On Linux and macOS](#2-on-linux-and-macos)
+   1. [Check your Python version](#21-check-your-python-version)
+   2. [[Optional] Deploy a virtual environment](#22-optional-deploy-a-virtual-environment)
+   3. [Install Cellen-Tellen](#23-install-cellen-tellen)
+
 # 1. On Windows
 
 ## 1.1 Install Python
