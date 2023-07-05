@@ -114,14 +114,14 @@ however not mandatory and Cellen-Tellen can also be installed directly at the
 user level.
 
 To create a virtual environment called `venv`, simply run the following 
-command at the location of your choice (here in the *Documents* folder) :
+command at the location of your choice (here in the `Documents` folder) :
 
 ```console
 C:\Users\User>cd Documents
 C:\Users\User\Documents>python -m venv venv
 ```
 
-> Use the *cd* command to navigate to the desired location for your virtual
+> Use the `cd` command to navigate to the desired location for your virtual
 > environment.
 
 A new folder called `venv` is created, containing more or less the following 
@@ -156,7 +156,7 @@ C:\Users\User><Path to your venv>\Scripts\activate.bat
 (venv) C:\Users\User>
 ```
 
-Where *\<Path to your venv\>* is the path to the created virtual environment.
+Where `<Path to your venv>` is the path to the created virtual environment.
 
 ### 1.3.2 Install Cellen-Tellen
 
@@ -237,14 +237,14 @@ however not mandatory and Cellen-Tellen can also be installed directly at the
 user level.
 
 To create a virtual environment called `venv`, simply run the following 
-command at the location of your choice (here in the *Documents* folder) :
+command at the location of your choice (here in the `Documents` folder) :
 
 ```console
 user@machine:~$ cd Documents
 user@machine:~/Documents$ python -m venv venv
 ```
 
-> Use the *cd* command to navigate to the desired location for your virtual
+> Use the `cd` command to navigate to the desired location for your virtual
 > environment.
 
 A new folder called `venv` is created, containing more or less the following 
@@ -271,7 +271,7 @@ user@machine:~$ source <Path to your venv>/bin/activate
 (venv) user@machine:~$ █
 ```
 
-Where *\<Path to your venv\>* is the path to the created virtual environment.
+Where `<Path to your venv>` is the path to the created virtual environment.
 
 ## 2.3 Install Cellen-Tellen
 
