@@ -38,8 +38,7 @@ if __name__ == "__main__":
         if system() in ('Linux', 'Darwin'):
             log_dir = Path('/tmp/Cellen-Tellen')
         elif system() == 'Windows':
-            log_dir = (Path.home() / 'AppData' / 'Local' / 'Temp'
-                       / 'Cellen-Tellen')
+            log_dir = (Path.home() / 'AppData' / 'Local' / 'Cellen-Tellen')
         else:
             log_dir = None
 
