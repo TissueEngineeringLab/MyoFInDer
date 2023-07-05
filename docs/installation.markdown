@@ -107,18 +107,22 @@ conflicts with other Python packages installed at the user level. This step is
 however not mandatory and Cellen-Tellen can also be installed directly at the
 user level.
 
-To create a virtual environment called `venv_ct`, simply run the following 
-command at the location of your choice :
+To create a virtual environment called `venv`, simply run the following 
+command at the location of your choice (here in the *Documents* folder) :
 
 ```console
-C:\Users\User>python -m venv venv_ct
+C:\Users\User>cd Documents
+C:\Users\User\Documents>python -m venv venv
 ```
 
-A new folder called `venv_ct` is created, containing more or less the following 
+> Use the *cd* command to navigate to the desired location for your virtual
+> environment.
+
+A new folder called `venv` is created, containing more or less the following 
 elements (depending on your platform) :
 
 ```console
-C:\Users\User>dir venv_ct
+C:\Users\User\Documents>dir venv
 
 06/23/2023 02:16 PM    <DIR>          .
 06/23/2023 02:16 PM    <DIR>          ..
@@ -134,9 +138,19 @@ Once the environment is set, it needs to **be activated** before proceeding to
 the next step :
 
 ```console
-C:\Users\User>venv_ct\Scripts\activate.bat
-(venv_ct) C:\Users\User>
+C:\Users\User\Documents>venv\Scripts\activate.bat
+(venv) C:\Users\User\Documents>
 ```
+
+Note that if you run the console from another location, you have to adjust the 
+path to your virtual environment accordingly :
+
+```console
+C:\Users\User><Path to your venv>\Scripts\activate.bat
+(venv) C:\Users\User>
+```
+
+Where *\<Path to your venv\>* is the path to the created virtual environment.
 
 ### 1.3.2 Install Cellen-Tellen
 
@@ -150,7 +164,7 @@ C:\Users\User>python -m pip install Cellen-Tellen
 Or if installing in a virtual environment :
 
 ```console
-(venv_ct) C:\Users\User>python -m pip install Cellen-Tellen
+(venv) C:\Users\User>python -m pip install Cellen-Tellen
 ```
 
 The console should display lines similar to :
@@ -173,7 +187,7 @@ C:\Users\User>python -c "import CellenTellen; print(CellenTellen.__version__)"
 Or if installed in a virtual environment :
 
 ```console
-(venv_ct) C:\Users\User>python -c "import CellenTellen; print(CellenTellen.__version__)"
+(venv) C:\Users\User>python -c "import CellenTellen; print(CellenTellen.__version__)"
 1.0.0
 ```
 
@@ -216,18 +230,22 @@ conflicts with other Python packages installed at the user level. This step is
 however not mandatory and Cellen-Tellen can also be installed directly at the
 user level.
 
-To create a virtual environment called `venv_ct`, simply run the following 
-command at the location of your choice :
+To create a virtual environment called `venv`, simply run the following 
+command at the location of your choice (here in the *Documents* folder) :
 
 ```console
-user@machine:~$ python -m venv venv_ct
+user@machine:~$ cd Documents
+user@machine:~/Documents$ python -m venv venv
 ```
 
-A new folder called `venv_ct` is created, containing more or less the following 
+> Use the *cd* command to navigate to the desired location for your virtual
+> environment.
+
+A new folder called `venv` is created, containing more or less the following 
 elements (depending on your platform) :
 
 ```console
-user@machine:~$ ls venv_ct
+user@machine:~/Documents$ ls venv
 bin  include  lib  lib64  pyvenv.cfg
 ```
 
@@ -235,9 +253,19 @@ Once the environment is set, it needs to **be activated** before proceeding to
 the next step :
 
 ```console
-user@machine:~$ source venv_ct/bin/activate
-(venv_ct) user@machine:~$ █
+user@machine:~/Documents$ source venv/bin/activate
+(venv) user@machine:~/Documents$ █
 ```
+
+Note that if you run the console from another location, you have to adjust the 
+path to your virtual environment accordingly :
+
+```console
+user@machine:~$ source <Path to your venv>/bin/activate
+(venv) user@machine:~$ █
+```
+
+Where *\<Path to your venv\>* is the path to the created virtual environment.
 
 ## 2.3 Install Cellen-Tellen
 
@@ -254,7 +282,7 @@ user@machine:~$ python -m pip install Cellen-Tellen
 Or if installing in a virtual environment :
 
 ```console
-(venv_ct) user@machine:~$ python -m pip install Cellen-Tellen
+(venv) user@machine:~$ python -m pip install Cellen-Tellen
 ```
 
 The console should display lines similar to :
@@ -277,7 +305,7 @@ user@machine:~$ python -c "import CellenTellen; print(CellenTellen.__version__)"
 Or if installed in a virtual environment :
 
 ```console
-(venv_ct) user@machine:~$ python -c "import CellenTellen; print(CellenTellen.__version__)"
+(venv) user@machine:~$ python -c "import CellenTellen; print(CellenTellen.__version__)"
 1.0.0
 ```
 
