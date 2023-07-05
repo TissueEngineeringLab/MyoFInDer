@@ -93,6 +93,12 @@ Note that compared to the command-line installation, the installer just
 installs additional features for easily starting Cellen-Tellen. Both 
 installation methods are strictly equivalent otherwise.
 
+To run the installer, just double-click on it and follow the displayed 
+instructions. You might have to enter an administrator password at some point. 
+Then, when opening the application for the first time, the required Python 
+modules and Cellen-Tellen will be installed automatically. This may take some
+time and necessitates a working internet connection.
+
 ## 1.3 Installation of Cellen-Tellen from console
 
 In case the provided installer does not work properly, or simply if you prefer
