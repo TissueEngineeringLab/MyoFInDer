@@ -361,7 +361,7 @@ class Main_window(Tk):
                                               variable=self._master_check_var)
         self._select_all_button.pack(anchor="e", side="right", fill='none')
 
-    def _enable_save_button(self) -> None:
+    def _enable_save_button(self, *_, **__) -> None:
         """Some settings should enable the save button when modified."""
 
         self._save_button['state'] = 'enabled'
