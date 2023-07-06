@@ -532,21 +532,26 @@ class Files_table(ttk.Frame):
 
         cv_img = cvtColor(cv_img, COLOR_RGB2BGR)
 
+        # Adjusting the indicator sizes to the size of the image
+        max_dim = max(cv_img.shape)
+        line_width = max(1, round(max_dim / 1080))
+        spot_size = max(1, round(max_dim / 1080 * 2))
+
         # Drawing the fibres
         for fib in entry.fibres:
             positions = array(fib.position)
             positions = positions.reshape((-1, 1, 2))
             polylines(cv_img, [positions], True,
-                      color_to_bgr[self.image_canvas.fib_color], 4)
+                      color_to_bgr[self.image_canvas.fib_color], line_width)
 
         # Drawing the nuclei
         for nuc in entry.nuclei:
             centre = (int(nuc.x_pos), int(nuc.y_pos))
             if nuc.color == 'out':
-                ellipse(cv_img, centre, (6, 6), 0, 0, 360,
+                ellipse(cv_img, centre, (spot_size, spot_size), 0, 0, 360,
                         color_to_bgr[self.image_canvas.nuc_col_out], -1)
             else:
-                ellipse(cv_img, centre, (6, 6), 0, 0, 360,
+                ellipse(cv_img, centre, (spot_size, spot_size), 0, 0, 360,
                         color_to_bgr[self.image_canvas.nuc_col_in], -1)
 
         # Now saving the image
