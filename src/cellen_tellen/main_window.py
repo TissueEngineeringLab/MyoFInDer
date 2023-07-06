@@ -456,32 +456,23 @@ class Main_window(Tk):
 
         saving_popup.destroy()
 
-    def _load_project(self, directory: Path) -> None:
-        """Loads a project, its images and its data.
+    def _load_project(self) -> None:
+        """Loads a project, its images and its data."""
 
-        Args:
-            directory: The path to the directory containing the project to
-                load.
-        """
+        self.log("Project loading requested by the user")
 
-        if directory is not None:
-            self.log(f"Project loading requested by the user at {directory}")
-        else:
-            self.log("Project loading requested by the user")
+        # Choose the folder in a dialog window
+        directory = filedialog.askdirectory(
+            initialdir=Path.cwd(),
+            mustexist=True,
+            title="Choose a Project Folder")
 
-        # Choose the folder in a dialog window if it wasn't specified
-        if directory is None:
-            folder = filedialog.askdirectory(
-                initialdir=Path.cwd(),
-                mustexist=True,
-                title="Choose a Project Folder")
+        if not directory:
+            self.log("Project loading aborted bu the user")
+            return
 
-            if not folder:
-                self.log("Project loading aborted bu the user")
-                return
-
-            directory = Path(folder)
-            self.log(f"User requested to load project {directory}")
+        directory = Path(directory)
+        self.log(f"User requested to load project {directory}")
 
         # Checking that a valid project was selected
         if not (directory.is_dir() and directory.exists() and
@@ -590,7 +581,8 @@ class Main_window(Tk):
         self.log("No warning window required")
         return True
 
-    def _save_button_pressed(self, _: Optional[Event] = None,
+    def _save_button_pressed(self,
+                             _: Optional[Event] = None,
                              force_save_as: bool = False) -> bool:
         """Method called when a save action is triggered by the user or when
         CTRL+S is hit.
@@ -660,15 +652,11 @@ class Main_window(Tk):
         self._create_empty_project()
 
     @_save_before_closing
-    def _safe_load(self, path: Optional[Path] = None) -> None:
+    def _safe_load(self) -> None:
         """Loads an existing project, and displays a warning if there's unsaved
-        data.
+        data."""
 
-        Args:
-            path: The path to the project to load.
-        """
-
-        self._load_project(path)
+        self._load_project()
 
     def _disable_buttons(self) -> None:
         """Disables most of the buttons and menu entries when computing."""
