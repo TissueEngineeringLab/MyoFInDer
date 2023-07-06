@@ -17,17 +17,12 @@ if __name__ == "__main__":
         description="Starts Cellen-Tellen, with optional flags for specifying "
                     "whether to record log messages and whether the module was"
                     " started by the application or independently.")
-    parser.add_argument('-a', '--app', action='store_true',
-                        help="If provided, indicates the module that it was "
-                             "started from an application. It consequently "
-                             "enables or disables some features.")
     parser.add_argument('-n', '--nolog', action='store_false',
                         help="If provided, the log messages won't be displayed"
                              " and recorded. Otherwise, they are by default.")
     args = parser.parse_args()
 
-    # Retrieving the command-line arguments
-    from_app = args.app
+    # Retrieving the command-line argument
     log = args.nolog
 
     # If started from an app, sets the base path for saving log messages,
@@ -74,7 +69,7 @@ if __name__ == "__main__":
     # Normal workflow
     try:
         logger.log(logging.INFO, "Launching Cellen-Tellen")
-        window = Main_window(from_app)
+        window = Main_window()
         window.mainloop()
         logger.log(logging.INFO, "Cellen-Tellen terminated gracefully")
 
