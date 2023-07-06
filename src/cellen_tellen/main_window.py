@@ -106,6 +106,11 @@ class Main_window(Tk):
         self._image_canvas.nuclei_table = self._files_table
         self._files_table.image_canvas = self._image_canvas
 
+        # Loading the previous setting if applicable
+        if self.app_folder is not None:
+            if (self.app_folder / 'settings.pickle').exists():
+                self._load_settings(self.app_folder)
+
         # Finishes the initialization and starts the event loop
         self.update()
         self.log("Setting the main windows's bindings and protocols")
