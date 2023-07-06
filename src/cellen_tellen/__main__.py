@@ -25,17 +25,13 @@ if __name__ == "__main__":
     # Retrieving the command-line argument
     log = args.nolog
 
-    # If started from an app, sets the base path for saving log messages,
-    # settings and the location of the recent projects
-    if from_app:
-        log_dir = Path.cwd()
+    # Setting the base path for saving the log messages and settings
+    if system() in ('Linux', 'Darwin'):
+        log_dir = Path.home() / '.CellenTellen'
+    elif system() == 'Windows':
+        log_dir = (Path.home() / 'AppData' / 'Local' / 'Cellen-Tellen')
     else:
-        if system() in ('Linux', 'Darwin'):
-            log_dir = Path('/tmp/Cellen-Tellen')
-        elif system() == 'Windows':
-            log_dir = (Path.home() / 'AppData' / 'Local' / 'Cellen-Tellen')
-        else:
-            log_dir = None
+        log_dir = None
 
     # Creating the folder for logging, if needed
     if log_dir is not None:
