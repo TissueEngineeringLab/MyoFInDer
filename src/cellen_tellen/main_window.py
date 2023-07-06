@@ -11,7 +11,7 @@ from time import sleep
 from pickle import load, dump
 from functools import partial, wraps
 from pathlib import Path
-from typing import Callable, Optional, List
+from typing import Callable, Optional
 import logging
 from pkg_resources import resource_filename
 
@@ -56,16 +56,9 @@ class Main_window(Tk):
     It manages all the buttons, menus, events, and the secondary windows.
     """
 
-    def __init__(self, from_app: bool) -> None:
+    def __init__(self) -> None:
         """Creates the splash window, then the main window, sets the layout and
-        the callbacks.
-
-        Args:
-            from_app: If True, the module was started from an application. It
-                enables the recent projects feature.
-        """
-
-        self._from_app = from_app
+        the callbacks."""
 
         # Setting the logger
         self._logger = logging.getLogger("Cellen-Tellen.MainWindow")
@@ -96,7 +89,6 @@ class Main_window(Tk):
 
         # Sets the settings, variables, callbacks, menus and layout
         self._set_variables()
-        self._load_recent_projects(Path.cwd())
         self._set_traces()
         self._set_menu()
         self._set_layout()
@@ -173,8 +165,6 @@ class Main_window(Tk):
         self._thread = Thread(target=self._process_thread)
         self._thread.start()
 
-        self._recent_projects = list()
-        self._max_recent_projects = 20  # Maximum number of recent projects
         self._current_project: Optional[Path] = None  # Path to current project
 
     def _set_traces(self) -> None:
@@ -224,11 +214,6 @@ class Main_window(Tk):
         self._file_menu.add_command(
             label="Load From Explorer",
             command=self._safe_load)
-        self._file_menu.add_separator()
-
-        self._recent_projects_menu = Menu(self._file_menu, tearoff=0)
-        self._file_menu.add_cascade(label="Recent Projects",
-                                    menu=self._recent_projects_menu)
 
         self._menu_bar.add_cascade(label="File", menu=self._file_menu)
 
@@ -247,16 +232,6 @@ class Main_window(Tk):
         self._quit_menu = Menu(self._menu_bar, tearoff=0)
         self._quit_menu.add_command(label="Quit", command=self._safe_destroy)
         self._menu_bar.add_cascade(label="Quit", menu=self._quit_menu)
-
-        # Managing the recent projects menu entry
-        if not self._recent_projects:
-            self._file_menu.entryconfig("Recent Projects", state='disabled')
-        else:
-            # associate commands with the recent projects items
-            for path in self._recent_projects:
-                self._recent_projects_menu.add_command(
-                    label=f"Load '{path.name}'",
-                    command=partial(self._safe_load, path))
 
     def _set_layout(self) -> None:
         """Sets the overall layout of the window."""
@@ -361,7 +336,7 @@ class Main_window(Tk):
                                               variable=self._master_check_var)
         self._select_all_button.pack(anchor="e", side="right", fill='none')
 
-    def _enable_save_button(self, *_, **__) -> None:
+    def _enable_save_button(self, _, __, ___) -> None:
         """Some settings should enable the save button when modified."""
 
         self._save_button['state'] = 'enabled'
@@ -387,40 +362,6 @@ class Main_window(Tk):
         self.settings.update(settings)
         self.log(f"Settings values: {str(self.settings)}")
 
-    def _load_recent_projects(self, application_path: Path) -> None:
-        """Loads the recent projects file if the module is started from an
-        installed application, and enables the corresponding menu entry.
-
-        Args:
-            application_path: The Path where the application is installed.
-        """
-
-        # Only load the recent projects if the module was started from an app
-        if not self._from_app:
-            return
-
-        # Gets the recent projects from the recent_projects.pickle file
-        projects_file = application_path / 'recent_projects.pickle'
-        if projects_file.is_file() and projects_file.exists():
-            self.log(f"Loading the recent projects file from {projects_file}")
-            with open(projects_file, 'rb') as recent_projects:
-                recent: List[Path] = load(recent_projects)
-
-            # Making sure that the paths to the projects are valid
-            recent = [path for path in recent
-                      if path.is_dir() and
-                      path.exists() and
-                      (path / 'data.pickle').is_file() and
-                      (path / 'data.pickle').exists()]
-
-            # Removing duplicates
-            self._recent_projects = list(dict.fromkeys(recent))
-            self.log(f"Recent projects: "
-                     f"{', '.join(map(str, self._recent_projects))}")
-        else:
-            self.log("No recent projects file detected")
-            self._recent_projects = list()
-
     def _save_settings(self, project_path: Path) -> None:
         """Saves the settings to a settings.pickle file.
 
@@ -437,24 +378,6 @@ class Main_window(Tk):
         with open(settings_file, 'wb+') as param_file:
             dump(settings, param_file, protocol=4)
             self.log(f"Saved the settings at: {settings_file}")
-
-    def _save_recent_projects(self, project_path: Path) -> None:
-        """Saves the recent projects to a recent_projects.pickle file.
-
-        Args:
-            project_path: The Path where the project will be saved.
-        """
-
-        # Only saving the recent projects if the module was started from an app
-        if not self._from_app:
-            return
-
-        # Saving the recent projects
-        projects_file = project_path / 'recent_projects.pickle'
-        with open(projects_file, 'wb+') as recent_projects_file:
-            dump({'recent_projects': self._recent_projects},
-                 recent_projects_file, protocol=4)
-            self.log(f"Saved the recent projects at: {projects_file}")
 
     def _delete_current_project(self) -> None:
         """Deletes the current project and all the associated files."""
@@ -476,18 +399,6 @@ class Main_window(Tk):
             # Simply deletes all the project files
             rmtree(self._current_project)
             self.log("Deleted the files of the current project")
-
-            # Removes the project from the recent projects
-            if self._from_app:
-                index = self._recent_projects.index(self._current_project)
-                self._recent_projects_menu.delete(index)
-                self._recent_projects.remove(self._current_project)
-                self.log("Removed current project from the recent projects")
-                self._save_recent_projects(Path.cwd())
-
-            if not self._recent_projects:
-                self._file_menu.entryconfig("Recent Projects",
-                                            state='disabled')
 
             # Creates a new empty project
             self._create_empty_project()
@@ -526,7 +437,6 @@ class Main_window(Tk):
 
         # Setting the save button, the project title and the menu entries
         self._set_title_and_button(directory)
-        self._add_to_recent_projects(directory)
 
         # Creating the folder if needed
         if not (directory.is_dir() and directory.exists()):
@@ -546,7 +456,7 @@ class Main_window(Tk):
 
         saving_popup.destroy()
 
-    def _load_project(self, directory: Optional[Path] = None) -> None:
+    def _load_project(self, directory: Path) -> None:
         """Loads a project, its images and its data.
 
         Args:
@@ -585,7 +495,6 @@ class Main_window(Tk):
 
         # Setting the save button, the project title and the menu entries
         self._set_title_and_button(directory)
-        self._add_to_recent_projects(directory)
 
         # Actually loading the project
         self.log(f"Loading the project {directory}")
@@ -619,40 +528,6 @@ class Main_window(Tk):
         # Sets the project name
         self._current_project = directory
         self.title(f"Cellen Tellen - Project '{directory.name}'")
-
-    def _add_to_recent_projects(self, directory: Path) -> None:
-        """Sets the recent project menu entry when loading or saving a project.
-
-        Args:
-            directory: The path to the directory where the project is saved.
-        """
-
-        # Only ad to recent projects if the module was started from an app
-        if not self._from_app:
-            return
-
-        self.log(f"Adding {directory} to the recent projects")
-
-        # First, remove the project from the recent projects
-        if directory in self._recent_projects:
-            index = self._recent_projects.index(directory)
-            self._recent_projects_menu.delete(index)
-            self._recent_projects.remove(directory)
-
-        # Then insert it again, likely in another position
-        self._recent_projects_menu.insert_command(
-            index=0, label=f"Load '{directory.name}'",
-            command=partial(self._safe_load, directory))
-        self._recent_projects.insert(0, directory)
-        self._file_menu.entryconfig("Recent Projects", state='normal')
-
-        # Remove the last project if there are too many
-        if len(self._recent_projects) > self._max_recent_projects:
-            self._recent_projects_menu.delete(
-                self._recent_projects_menu.index("end"))
-            self._recent_projects.pop()
-
-        self._save_recent_projects(Path.cwd())
 
     def _create_warning_window(self) -> bool:
         """Creates a warning window in case the user triggers an action that
@@ -807,7 +682,6 @@ class Main_window(Tk):
         self._delete_all_button['state'] = 'disabled'
 
         # Disabling the menu entries
-        self._file_menu.entryconfig("Recent Projects", state='disabled')
         self._file_menu.entryconfig("Delete Current Project", state="disabled")
         self._file_menu.entryconfig("Save Project As", state="disabled")
         self._file_menu.entryconfig("New Empty Project", state="disabled")
@@ -828,9 +702,6 @@ class Main_window(Tk):
         self.set_unsaved_status()
         self._set_indicators()
 
-        # Re-enabling menu entries
-        if self._recent_projects:
-            self._file_menu.entryconfig("Recent Projects", state='normal')
         if self._current_project is not None:
             self._file_menu.entryconfig("Delete Current Project",
                                         state='normal')
