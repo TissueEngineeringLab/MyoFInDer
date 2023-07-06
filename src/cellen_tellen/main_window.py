@@ -56,9 +56,13 @@ class Main_window(Tk):
     It manages all the buttons, menus, events, and the secondary windows.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, app_folder: Optional[Path]) -> None:
         """Creates the splash window, then the main window, sets the layout and
-        the callbacks."""
+        the callbacks.
+
+        Args:
+            app_folder: The Path to the application folder.
+        """
 
         # Setting the logger
         self._logger = logging.getLogger("Cellen-Tellen.MainWindow")
@@ -79,6 +83,7 @@ class Main_window(Tk):
             self.state('zoomed')
         else:
             self.attributes('-zoomed', True)
+        self.app_folder = app_folder
 
         # Sets the application icon
         self.log("Setting the application icon")
@@ -121,6 +126,23 @@ class Main_window(Tk):
             self.title("Cellen Tellen - New Project (Unsaved)")
             self._save_button['state'] = 'enabled'
             self._save_button['text'] = 'Save As'
+
+    def save_settings(self, project_path: Path) -> None:
+        """Saves the settings to a settings.pickle file.
+
+        Args:
+            project_path: The Path where the project will be saved.
+        """
+
+        # Saving the settings
+        settings = {key: value.get() for key, value
+                    in vars(self.settings).items()}
+        self.log(f"Settings values: {str(self.settings)}")
+
+        settings_file = project_path / 'settings.pickle'
+        with open(settings_file, 'wb+') as param_file:
+            dump(settings, param_file, protocol=4)
+            self.log(f"Saved the settings at: {settings_file}")
 
     def update_master_check(self) -> None:
         """Updates the master checkbox according to the states of the
@@ -362,23 +384,6 @@ class Main_window(Tk):
         self.settings.update(settings)
         self.log(f"Settings values: {str(self.settings)}")
 
-    def _save_settings(self, project_path: Path) -> None:
-        """Saves the settings to a settings.pickle file.
-
-        Args:
-            project_path: The Path where the project will be saved.
-        """
-
-        # Saving the settings
-        settings = {key: value.get() for key, value
-                    in vars(self.settings).items()}
-        self.log(f"Settings values: {str(self.settings)}")
-
-        settings_file = project_path / 'settings.pickle'
-        with open(settings_file, 'wb+') as param_file:
-            dump(settings, param_file, protocol=4)
-            self.log(f"Saved the settings at: {settings_file}")
-
     def _delete_current_project(self) -> None:
         """Deletes the current project and all the associated files."""
 
@@ -449,7 +454,7 @@ class Main_window(Tk):
         sleep(1)
 
         # Actually saving the project
-        self._save_settings(directory)
+        self.save_settings(directory)
         save_overlay = self.settings.save_overlay.get()
         self._files_table.save_project(directory, save_overlay)
         self.log(f"Project saved at {directory}")

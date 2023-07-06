@@ -30,6 +30,14 @@ class Settings_window(Toplevel):
         self.update()
         self._center()
 
+    def destroy(self) -> None:
+        """Before exiting, saves the settings to a file in the application
+        folder."""
+
+        if self._main_window.app_folder is not None:
+            self._main_window.save_settings(self._main_window.app_folder)
+        super().destroy()
+
     def _set_layout(self) -> None:
         """Creates the buttons and sliders, places them and displays them."""
 

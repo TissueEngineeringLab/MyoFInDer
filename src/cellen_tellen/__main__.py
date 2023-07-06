@@ -25,20 +25,20 @@ if __name__ == "__main__":
     # Retrieving the command-line argument
     log = args.nolog
 
-    # Setting the base path for saving the log messages and settings
+    # Setting the path to the application folder
     if system() in ('Linux', 'Darwin'):
-        log_dir = Path.home() / '.CellenTellen'
+        app_folder = Path.home() / '.CellenTellen'
     elif system() == 'Windows':
-        log_dir = (Path.home() / 'AppData' / 'Local' / 'Cellen-Tellen')
+        app_folder = (Path.home() / 'AppData' / 'Local' / 'Cellen-Tellen')
     else:
-        log_dir = None
+        app_folder = None
 
-    # Creating the folder for logging, if needed
-    if log_dir is not None:
+    # Creating the application folder, if needed
+    if app_folder is not None:
         try:
-            log_dir.mkdir(parents=False, exist_ok=True)
+            app_folder.mkdir(parents=True, exist_ok=True)
         except FileNotFoundError:
-            log_dir = None
+            app_folder = None
 
     # Setting up the logger
     logger = logging.getLogger("Cellen-Tellen")
@@ -56,8 +56,9 @@ if __name__ == "__main__":
         logger.addHandler(handler_console)
 
         # Setting up the file handler only if a location is provided
-        if log_dir is not None:
-            handler_file = logging.FileHandler(log_dir / 'logs.txt', mode='w')
+        if app_folder is not None:
+            handler_file = logging.FileHandler(app_folder / 'logs.txt',
+                                               mode='w')
             handler_file.setLevel(logging.INFO)
             handler_file.setFormatter(formatter)
             logger.addHandler(handler_file)
@@ -65,7 +66,7 @@ if __name__ == "__main__":
     # Normal workflow
     try:
         logger.log(logging.INFO, "Launching Cellen-Tellen")
-        window = Main_window()
+        window = Main_window(app_folder)
         window.mainloop()
         logger.log(logging.INFO, "Cellen-Tellen terminated gracefully")
 
