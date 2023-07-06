@@ -108,7 +108,7 @@ class Splash_window(Tk):
 
         # Load the image segmentation and update the display
         self._canvas.itemconfig(self._loading_label,
-                                text="Initializing Mesmer...")
+                                text="Initializing NuclearSegmentation...")
         self.update()
         segmentation = Image_segmentation()
 

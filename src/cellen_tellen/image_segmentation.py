@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from deepcell.applications import Mesmer
+from deepcell.applications import NuclearSegmentation
 import numpy as np
 import numpy.ma as ma
 from pathlib import Path
@@ -19,9 +19,9 @@ class Image_segmentation:
     """Class for processing images, detecting fibers and nuclei."""
 
     def __init__(self) -> None:
-        """Simply loads the Mesmer library."""
+        """Simply loads the NuclearSegmentation library."""
 
-        self._app = Mesmer()
+        self._app = NuclearSegmentation()
 
     def __call__(self,
                  path: Path,
@@ -70,44 +70,53 @@ class Image_segmentation:
               (image[:, :, 1] > 50) &
               (image[:, :, 2] > 50)] = (0, 0, 0)
 
-        two_channel_image = np.array([image[:, :, colors]])
         nuclei_channel = image[:, :, colors[0]]
         fibre_channel = image[:, :, colors[1]]
 
         del image
 
+        # Resizing the nuclear channel before processing
+        nuclei_channel = np.expand_dims(nuclei_channel, 0)
+        nuclei_channel = np.expand_dims(nuclei_channel, -1)
+
         # Default parameters
-        maxima_threshold = 0.05
+        radius = 10
+        maxima_threshold = 0.1
+        interior_threshold = 0.01
         maxima_smooth = 0
-        interior_threshold = 0.3
-        interior_smooth = 2
-        fill_holes_threshold = 15
-        radius = 2
-        microns_per_pixel = None
-        batch_size = 8
+        interior_smooth = 0
+        maxima_index = 0
+        interior_index = -1
+        label_erosion = 0
+        fill_holes_threshold = 0
+        pixel_expansion = None
+        maxima_algorith = 'h_maxima'
 
         # Actual nuclei detection function
         labeled_image = self._app.predict(
-            image=two_channel_image,
-            batch_size=batch_size,
-            image_mpp=microns_per_pixel,
-            preprocess_kwargs={},
-            compartment='nuclear',
+            image=nuclei_channel,
+            batch_size=1,
+            image_mpp=None,
             pad_mode='constant',
-            postprocess_kwargs_whole_cell={},
-            postprocess_kwargs_nuclear={
+            preprocess_kwargs=dict(),
+            postprocess_kwargs={
+                'radius': radius,
                 'maxima_threshold': maxima_threshold,
-                'maxima_smooth': maxima_smooth,
                 'interior_threshold': interior_threshold,
+                'maxima_smooth': maxima_smooth,
                 'interior_smooth': interior_smooth,
+                'maxima_index': maxima_index,
+                'interior_index': interior_index,
+                'label_erosion': label_erosion,
                 'small_objects_threshold': small_objects_threshold,
                 'fill_holes_threshold': fill_holes_threshold,
-                'radius': radius})
+                'pixel_expansion': pixel_expansion,
+                'maxima_algorith': maxima_algorith,
+            })
 
-        del two_channel_image
-
-        # Removing useless axes on the output
+        # Removing useless axes on the output and nuclei channel
         labeled_image = np.squeeze(labeled_image)
+        nuclei_channel = np.squeeze(nuclei_channel)
 
         # Getting the fibre mask
         mask = self._get_fibre_mask(fibre_channel,
