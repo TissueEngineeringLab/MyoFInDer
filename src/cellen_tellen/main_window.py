@@ -42,9 +42,9 @@ def _save_before_closing(func: Callable) -> Callable:
 
     @wraps(func)
     def wrapper(self, *args, **kwargs):
+        """The warning window will return False if the operation shouldn't be
+        carried on"""
 
-        # The warning window will return False if the operation shouldn't be
-        # carried on
         if self._create_warning_window():
             func(self, *args, **kwargs)
     return wrapper

@@ -31,7 +31,19 @@ class Image_canvas(ttk.Frame):
 
         self._set_layout()
         self._set_bindings()
-        self._set_variables()
+
+        self.log("Setting the images canvas's variables")
+
+        self._image: Optional[Image] = None
+        self._image_path: Optional[Path] = None
+        self._img_scale: float = 1.0
+        self._can_scale: float = 1.0
+        self._delta: float = 1.3
+        self._current_zoom: int = 0
+        self._nuclei: Nuclei = Nuclei()
+        self._fibers: Fibers = Fibers()
+        self._image_id: Optional[int] = None
+        self._selection_box: Selection_box = Selection_box()
 
     def log(self, msg: str) -> None:
         """Wrapper for reducing the verbosity of logging."""
@@ -342,22 +354,6 @@ class Image_canvas(ttk.Frame):
         self._canvas.bind('<ButtonPress-3>', self._click)
         self._canvas.bind('<B1-Motion>', self._motion)
         self._canvas.bind('<B3-Motion>', self._motion)
-
-    def _set_variables(self) -> None:
-        """Sets the variables used in this class."""
-
-        self.log("Setting the images canvas's variables")
-
-        self._image = None
-        self._image_path = None
-        self._img_scale = 1.0
-        self._can_scale = 1.0
-        self._delta = 1.3
-        self._current_zoom = 0
-        self._nuclei = Nuclei()
-        self._fibers = Fibers()
-        self._image_id = None
-        self._selection_box = Selection_box()
 
     def _draw_nucleus(self,
                       unscaled_x: float,
