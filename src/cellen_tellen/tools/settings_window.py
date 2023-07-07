@@ -46,35 +46,35 @@ class Settings_window(Toplevel):
         frame.grid(sticky='NESW')
 
         # Buttons for selecting the nuclei channel
-        ttk.Label(frame, text="Nuclei Colour :").grid(column=0, row=0,
-                                                      sticky='NE',
-                                                      padx=(0, 10))
+        ttk.Label(frame, text="Nuclei Channel :").grid(column=0, row=0,
+                                                       sticky='NE',
+                                                       padx=(0, 10))
         nuclei_colour_r1 = ttk.Radiobutton(
-            frame, text="Blue Channel", variable=self._settings.nuclei_colour,
+            frame, text="Blue", variable=self._settings.nuclei_colour,
             value="blue")
         nuclei_colour_r1.grid(column=1, row=0, sticky='NW')
         nuclei_colour_r2 = ttk.Radiobutton(
-            frame, text="Green Channel", variable=self._settings.nuclei_colour,
+            frame, text="Green", variable=self._settings.nuclei_colour,
             value="green")
         nuclei_colour_r2.grid(column=1, row=1, sticky='NW')
         nuclei_colour_r3 = ttk.Radiobutton(
-            frame, text="Red Channel", variable=self._settings.nuclei_colour,
+            frame, text="Red", variable=self._settings.nuclei_colour,
             value="red")
         nuclei_colour_r3.grid(column=1, row=2, sticky='NW')
 
         # Buttons for selecting the fibres channel
-        ttk.Label(frame, text="Fibre Colour :").grid(
+        ttk.Label(frame, text="Fiber Channel :").grid(
             column=0, row=3, sticky='NE', pady=(10, 0), padx=(0, 10))
         fibre_colour_r1 = ttk.Radiobutton(
-            frame, text="Blue Channel", variable=self._settings.fibre_colour,
+            frame, text="Blue", variable=self._settings.fibre_colour,
             value="blue")
         fibre_colour_r1.grid(column=1, row=3, sticky='NW', pady=(10, 0))
         fibre_colour_r2 = ttk.Radiobutton(
-            frame, text="Green Channel", variable=self._settings.fibre_colour,
+            frame, text="Green", variable=self._settings.fibre_colour,
             value="green")
         fibre_colour_r2.grid(column=1, row=4, sticky='NW')
         fibre_colour_r3 = ttk.Radiobutton(
-            frame, text="Red Channel", variable=self._settings.fibre_colour,
+            frame, text="Red", variable=self._settings.fibre_colour,
             value="red")
         fibre_colour_r3.grid(column=1, row=5, sticky='NW')
 

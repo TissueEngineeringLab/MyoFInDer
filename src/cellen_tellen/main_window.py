@@ -312,23 +312,23 @@ class Main_window(Tk):
         self._channels = ttk.Label(self._tick_frame_1, text="  Channels :   ")
         self._channels.pack(anchor="w", side="left", fill='x', padx=3, pady=5)
         self._blue_channel_check_button = ttk.Checkbutton(
-            self._tick_frame_1, text="Blue Channel", onvalue=True,
-            offvalue=False, variable=self.settings.blue_channel_bool,
+            self._tick_frame_1, text="Blue", onvalue=True, offvalue=False,
+            variable=self.settings.blue_channel_bool,
             command=self._set_image_channels)
         self._blue_channel_check_button.pack(anchor="w", side="left", fill='x',
-                                             padx=3, pady=5)
+                                             padx=5, pady=5)
         self._green_channel_check_button = ttk.Checkbutton(
-            self._tick_frame_1, text="Green Channel", onvalue=True,
-            offvalue=False, variable=self.settings.green_channel_bool,
+            self._tick_frame_1, text="Green", onvalue=True, offvalue=False,
+            variable=self.settings.green_channel_bool,
             command=self._set_image_channels)
         self._green_channel_check_button.pack(anchor="w", side="left",
-                                              fill='x', padx=3, pady=5)
+                                              fill='x', padx=5, pady=5)
         self._red_channel_check_button = ttk.Checkbutton(
-            self._tick_frame_1, text="Red Channel", onvalue=True,
-            offvalue=False, variable=self.settings.red_channel_bool,
+            self._tick_frame_1, text="Red", onvalue=True, offvalue=False,
+            variable=self.settings.red_channel_bool,
             command=self._set_image_channels)
         self._red_channel_check_button.pack(anchor="w", side="left", fill='x',
-                                            padx=3, pady=5)
+                                            padx=5, pady=5)
 
         # Creating the checkboxes of the second row
         self._indicator = ttk.Label(self._tick_frame_2, text="  Indicators : ")
@@ -339,7 +339,7 @@ class Main_window(Tk):
         self._show_nuclei_check_button.pack(anchor="w", side="left", fill='x',
                                             padx=3, pady=5)
         self._show_fibres_check_button = ttk.Checkbutton(
-            self._tick_frame_2, text="Fibres", onvalue=True, offvalue=False,
+            self._tick_frame_2, text="Fibers", onvalue=True, offvalue=False,
             variable=self.settings.show_fibres, command=self._set_indicators)
         self._show_fibres_check_button.pack(anchor="w", side="left", fill='x',
                                             padx=3, pady=5)
