@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from deepcell.applications import NuclearSegmentation
+from deepcell.applications import Mesmer
 import numpy as np
 import numpy.ma as ma
 from pathlib import Path
@@ -19,9 +19,9 @@ class Image_segmentation:
     """Class for processing images, detecting fibers and nuclei."""
 
     def __init__(self) -> None:
-        """Simply loads the NuclearSegmentation library."""
+        """Simply loads the Mesmer library."""
 
-        self._app = NuclearSegmentation()
+        self._app = Mesmer()
 
     def __call__(self,
                  path: Path,
@@ -75,10 +75,6 @@ class Image_segmentation:
 
         del image
 
-        # Resizing the nuclear channel before processing
-        nuclei_channel = np.expand_dims(nuclei_channel, 0)
-        nuclei_channel = np.expand_dims(nuclei_channel, -1)
-
         # Default parameters
         radius = 10
         maxima_threshold = 0.1
@@ -94,12 +90,15 @@ class Image_segmentation:
 
         # Actual nuclei detection function
         labeled_image = self._app.predict(
-            image=nuclei_channel,
+            image=np.stack((nuclei_channel,
+                            nuclei_channel), axis=-1)[np.newaxis, :],
             batch_size=1,
             image_mpp=None,
             pad_mode='constant',
+            compartment='nuclear',
             preprocess_kwargs=dict(),
-            postprocess_kwargs={
+            postprocess_kwargs_whole_cell=dict(),
+            postprocess_kwargs_nuclear={
                 'radius': radius,
                 'maxima_threshold': maxima_threshold,
                 'interior_threshold': interior_threshold,
@@ -116,7 +115,6 @@ class Image_segmentation:
 
         # Removing useless axes on the output and nuclei channel
         labeled_image = np.squeeze(labeled_image)
-        nuclei_channel = np.squeeze(nuclei_channel)
 
         # Getting the fibre mask
         mask = self._get_fibre_mask(fibre_channel,
