@@ -131,7 +131,7 @@ class Settings_window(Toplevel):
                                            pady=(10, 0))
 
         # Slider to adjust the small objects threshold
-        ttk.Label(frame, text='Dead cells size Threshold :').grid(
+        ttk.Label(frame, text='Small Objects Threshold :').grid(
             column=0, row=15, sticky='E', pady=(10, 0), padx=(0, 10))
 
         threshold_slider_frame = ttk.Frame(frame)
