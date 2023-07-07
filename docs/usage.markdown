@@ -147,7 +147,8 @@ In the main frame, **the currently selected image is displayed**. You can
 select another image by left-clicking on it in the information frame. 
 
 It is also possible to **delete a loaded image** by clicking on the *X* Delete 
-button at the top-right of its information display.
+button at the top-right of its information display. You will be asked to 
+confirm your choice in a popup window.
 
 **The checkboxes of the images** allow to apply the Delete and Process 
 operations to only part of the loaded images. The deletion of all the checked 
@@ -224,13 +225,10 @@ the *Save As* button at the top-right of the interface. Alternatively, you can
 also click on the *Save Project As* button in the *File* menu.
 
 A file explorer then appears, in which you have to **select the folder in which 
-to save the project**. This folder can either be an existing one, or a newly
-created one. To save the project in an existing folder, double-click on it in 
-the explorer and validate using the *Save* button. 
-
-To save in a new folder, place the file explorer in the parent folder that will 
-contain your new folder, enter the name of the new folder in the *File name* 
-field of the explorer, and validate using the *Save* button.
+to save the project**. This folder has to be a newly created one. To save in a 
+new folder, place the file explorer in the parent folder that will contain your 
+new folder, enter the name of the new folder in the *File name* field of the 
+explorer, and validate using the *Save* button.
 
 If you look inside a saved project folder, you will find first an Excel file
 containing a **summary of the detected nuclei and fibers** for each image in 
