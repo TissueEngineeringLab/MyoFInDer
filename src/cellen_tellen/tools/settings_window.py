@@ -142,10 +142,10 @@ class Settings_window(Toplevel):
             pack(side='left', anchor='w', fill='none', expand=False,
                  padx=(0, 20))
 
-        Scale(threshold_slider_frame, from_=10, to=1000,
+        Scale(threshold_slider_frame, from_=0, to=100,
               variable=self._settings.small_objects_threshold,
               orient="horizontal", length=150, showvalue=False,
-              tickinterval=300). \
+              tickinterval=25). \
             pack(side='left', anchor='w', fill='none', expand=False)
 
         threshold_slider_frame.grid(column=1, row=15, sticky='NW',
