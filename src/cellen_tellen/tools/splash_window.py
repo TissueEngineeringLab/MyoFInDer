@@ -77,22 +77,22 @@ class Splash_window(Tk):
 
         # Sets the background of the window
         image_tk = ImageTk.PhotoImage(self._image)
-        self._canvas = Canvas(self, bg="brown")
-        self._canvas.create_image(0, 0, image=image_tk, anchor="nw")
+        canvas = Canvas(self, bg="brown")
+        canvas.create_image(0, 0, image=image_tk, anchor="nw")
 
         # Sets the static text of the window
-        self._canvas.create_text(
+        canvas.create_text(
             20, int(0.70 * self._image.height),
             anchor='w',
-            text="Cellen Tellen - A P&O project by Quentin De Rore, Ibrahim El"
-                 " Kaddouri, Emiel Vanspranghels and Henri Vermeersch, "
-                 "assisted by Desmond Kabus, Rebecca Wüst and Maria Olenic",
+            text="Cellen Tellen - A project of the Tissue Engineering Lab at "
+                 "KU Leuven\nBy Antoine Weisrock, Rebecca Wüst and "
+                 "Maria Olenic",
             fill="white",
             font='Helvetica 7 bold',
             width=self._image.width - 40)
 
         # Sets the dynamic text of the window
-        self._loading_label = self._canvas.create_text(
+        label = canvas.create_text(
             20, int(0.9 * self._image.height),
             anchor="w",
             text='Importing dependencies...',
@@ -101,20 +101,18 @@ class Splash_window(Tk):
             width=self._image.width - 40)
 
         # Finish setting the layout
-        self._canvas.pack(fill="both", expand=True)
+        canvas.pack(fill="both", expand=True)
         self.update()
 
         from ..image_segmentation import Image_segmentation
 
         # Load the image segmentation and update the display
-        self._canvas.itemconfig(self._loading_label,
-                                text="Initializing Mesmer...")
+        canvas.itemconfig(label, text="Initializing Mesmer...")
         self.update()
         segmentation = Image_segmentation()
 
         # Update the display before starting the software
-        self._canvas.itemconfig(self._loading_label,
-                                text="Starting program...")
+        canvas.itemconfig(label, text="Starting program...")
         self.update()
 
         sleep(1)
