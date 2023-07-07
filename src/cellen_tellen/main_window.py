@@ -173,11 +173,11 @@ class Main_window(Tk):
         self.settings = Settings()
 
         # Variables used when there's a conflict in the choice of colors for
-        # the fibres and nuclei
+        # the fibers and nuclei
         self._previous_nuclei_colour = StringVar(
             value=self.settings.nuclei_colour.get())
-        self._previous_fibre_colour = StringVar(
-            value=self.settings.fibre_colour.get())
+        self._previous_fiber_colour = StringVar(
+            value=self.settings.fiber_colour.get())
 
         # The variables associated with the master checkbox
         self._master_check_var = BooleanVar(value=True)
@@ -199,14 +199,14 @@ class Main_window(Tk):
 
         self.log("Setting the main windows's traces")
 
-        # Making sure there's no conflict between the nuclei and fibres colors
-        self.settings.fibre_colour.trace_add("write", self._nuclei_colour_sel)
+        # Making sure there's no conflict between the nuclei and fibers colors
+        self.settings.fiber_colour.trace_add("write", self._nuclei_colour_sel)
         self.settings.nuclei_colour.trace_add("write", self._nuclei_colour_sel)
 
         # Some settings should enable the save button when modified
         self.settings.save_overlay.trace_add(
             "write", self._enable_save_button)
-        self.settings.fibre_threshold.trace_add("write",
+        self.settings.fiber_threshold.trace_add("write",
                                                 self._enable_save_button)
         self.settings.nuclei_threshold.trace_add("write",
                                                  self._enable_save_button)
@@ -338,10 +338,10 @@ class Main_window(Tk):
             variable=self.settings.show_nuclei, command=self._set_indicators)
         self._show_nuclei_check_button.pack(anchor="w", side="left", fill='x',
                                             padx=3, pady=5)
-        self._show_fibres_check_button = ttk.Checkbutton(
+        self._show_fibers_check_button = ttk.Checkbutton(
             self._tick_frame_2, text="Fibers", onvalue=True, offvalue=False,
-            variable=self.settings.show_fibres, command=self._set_indicators)
-        self._show_fibres_check_button.pack(anchor="w", side="left", fill='x',
+            variable=self.settings.show_fibers, command=self._set_indicators)
+        self._show_fibers_check_button.pack(anchor="w", side="left", fill='x',
                                             padx=3, pady=5)
 
         # Label displaying info during image processing
@@ -804,8 +804,8 @@ class Main_window(Tk):
             self._queue.put_nowait(
                 (file,
                  self.settings.nuclei_colour.get(),
-                 self.settings.fibre_colour.get(),
-                 self.settings.fibre_threshold.get(),
+                 self.settings.fiber_colour.get(),
+                 self.settings.fiber_threshold.get(),
                  self.settings.nuclei_threshold.get(),
                  self.settings.small_objects_threshold.get()))
 
@@ -841,7 +841,7 @@ class Main_window(Tk):
                 # Acquiring the next job in the queue
                 try:
                     job = self._queue.get_nowait()
-                    path, nuclei_color, fibre_color, fibre_threshold, \
+                    path, nuclei_color, fiber_color, fiber_threshold, \
                         nuclei_threshold, small_objects_threshold = job
                     self.log(f"Processing thread received job: "
                              f"{', '.join(map(str, job))}")
@@ -856,17 +856,17 @@ class Main_window(Tk):
 
                 try:
                     # Now processing the image
-                    file, nuclei_out, nuclei_in, fibre_contours, area = \
+                    file, nuclei_out, nuclei_in, fiber_contours, area = \
                         self._segmentation(path,
                                            nuclei_color,
-                                           fibre_color,
-                                           fibre_threshold,
+                                           fiber_color,
+                                           fiber_threshold,
                                            nuclei_threshold,
                                            small_objects_threshold)
                     self.log(f"Segmentation returned file: {file}, "
                              f"nuclei out: {len(nuclei_out)}, "
                              f"nuclei in: {len(nuclei_in)}, "
-                             f"fibre contours: {len(fibre_contours)}, "
+                             f"fiber contours: {len(fiber_contours)}, "
                              f"area: {area}")
 
                     # Not updating if the user wants to stop the computation
@@ -877,7 +877,7 @@ class Main_window(Tk):
                     self.log("Passing precessed data to the files table")
                     self._files_table.input_processed_data(nuclei_out,
                                                            nuclei_in,
-                                                           fibre_contours,
+                                                           fiber_contours,
                                                            area, file)
 
                 # Displaying any error in an error window
@@ -946,7 +946,7 @@ class Main_window(Tk):
         self._image_canvas.show_image()
 
     def _set_indicators(self) -> None:
-        """Updates the display of fibres and nuclei according to the user
+        """Updates the display of fibers and nuclei according to the user
         selection."""
         
         # Updating the display
@@ -954,25 +954,25 @@ class Main_window(Tk):
         self._image_canvas.set_indicators()
 
     def _nuclei_colour_sel(self, _, __, ___) -> None:
-        """Ensures there's no conflict in the chosen image channels for fibres
+        """Ensures there's no conflict in the chosen image channels for fibers
         and nuclei."""
 
         # Sets one of the channels back to its previous value in case of
         # conflict
         if self.settings.nuclei_colour.get() == \
-                self.settings.fibre_colour.get():
+                self.settings.fiber_colour.get():
             if self._previous_nuclei_colour.get() != \
                     self.settings.nuclei_colour.get():
-                self.settings.fibre_colour.set(
+                self.settings.fiber_colour.set(
                     self._previous_nuclei_colour.get())
-            elif self._previous_fibre_colour.get() != \
-                    self.settings.fibre_colour.get():
+            elif self._previous_fiber_colour.get() != \
+                    self.settings.fiber_colour.get():
                 self.settings.nuclei_colour.set(
-                    self._previous_fibre_colour.get())
+                    self._previous_fiber_colour.get())
 
         # Sets the previous values variables
         self._previous_nuclei_colour.set(self.settings.nuclei_colour.get())
-        self._previous_fibre_colour.set(self.settings.fibre_colour.get())
+        self._previous_fiber_colour.set(self.settings.fiber_colour.get())
 
         # Finally, save and redraw the nuclei and fibers
         self._image_canvas.set_indicators()

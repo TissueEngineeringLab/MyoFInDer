@@ -13,14 +13,14 @@ from pickle import dump, load
 from numpy import ndarray, array
 import logging
 
-from .tools import Nucleus, Fibre, Nuclei, Fibres, Graphical_element, \
+from .tools import Nucleus, Fiber, Nuclei, Fibers, Graphical_element, \
     check_image, Table_items, Table_entry
 
 
 class Files_table(ttk.Frame):
     """This frame stores and displays the different images of the project.
 
-    It also stores the nuclei and fibre count, and handles the saving of images
+    It also stores the nuclei and fiber count, and handles the saving of images
     and data.
     """
 
@@ -58,7 +58,7 @@ class Files_table(ttk.Frame):
     def load_project(self, directory: Path) -> None:
         """Loads an existing project.
 
-        Gets the images names and paths, the fibres positions, and the nuclei
+        Gets the images names and paths, the fibers positions, and the nuclei
         positions and colors from the data.pickle file.
 
         Args:
@@ -89,8 +89,8 @@ class Files_table(ttk.Frame):
         for entry in self.table_items:
             for nucleus in entry.nuclei:
                 nucleus.tk_obj = None
-            for fibre in entry.fibres:
-                fibre.polygon = None
+            for fiber in entry.fibers:
+                fiber.polygon = None
 
         # Redrawing the canvas
         if self.table_items:
@@ -99,15 +99,15 @@ class Files_table(ttk.Frame):
     def save_project(self, directory: Path, save_overlay: bool) -> None:
         """Saves a project.
 
-        Saves the images names and paths, the fibres positions, the nuclei
+        Saves the images names and paths, the fibers positions, the nuclei
         positions and colors, the images themselves, a .xlsx file containing
-        stats of the project, and optionally the images with nuclei and fibres
+        stats of the project, and optionally the images with nuclei and fibers
         drawn on it.
 
         Args:
             directory: The path to the directory where the project has to be
                 saved.
-            save_overlay: Should the images with nuclei and fibres drawn be
+            save_overlay: Should the images with nuclei and fibers drawn be
                 saved ?
         """
 
@@ -202,7 +202,7 @@ class Files_table(ttk.Frame):
         for file in filenames:
             self.table_items.append(Table_entry(path=file,
                                                 nuclei=Nuclei(),
-                                                fibres=Fibres()))
+                                                fibers=Fibers()))
 
         # Redrawing the canvas
         self._make_table()
@@ -211,20 +211,20 @@ class Files_table(ttk.Frame):
             self,
             nuclei_negative_positions: List[Tuple[float, float]],
             nuclei_positive_positions: List[Tuple[float, float]],
-            fibre_contours: Tuple[ndarray],
+            fiber_contours: Tuple[ndarray],
             area: float,
             file: Path) -> None:
-        """Adds the nuclei and fibres positions to the frame after they've been
+        """Adds the nuclei and fibers positions to the frame after they've been
         computed.
 
         Args:
             nuclei_negative_positions: The positions of the nuclei outside the
-                fibres.
+                fibers.
             nuclei_positive_positions: The positions of the nuclei inside the
-                fibres.
-            fibre_contours: The positions of the contour points of the fibers.
+                fibers.
+            fiber_contours: The positions of the contour points of the fibers.
             area: The ratio of fiber area over the total image area.
-            file: The path to the file whose nuclei and fibres have been
+            file: The path to the file whose nuclei and fibers have been
                 computed.
         """
 
@@ -235,15 +235,15 @@ class Files_table(ttk.Frame):
         for x, y in nuclei_positive_positions:
             self.table_items[file].nuclei.append(Nucleus(x, y, None, 'in'))
 
-        # Adds the received fibres to the Fibres object and draws them
-        self.table_items[file].fibres.reset()
-        self.table_items[file].fibres.area = area
-        for contour in fibre_contours:
+        # Adds the received fibers to the Fibers object and draws them
+        self.table_items[file].fibers.reset()
+        self.table_items[file].fibers.area = area
+        for contour in fiber_contours:
             # Ensuring single points are not being outlined
             if len(contour.shape) < 2:
                 continue
             contour = list(map(tuple, contour))
-            self.table_items[file].fibres.append(Fibre(None, contour))
+            self.table_items[file].fibers.append(Fiber(None, contour))
 
         # Updates the display
         self._update_data(self.table_items[file])
@@ -253,7 +253,7 @@ class Files_table(ttk.Frame):
             self.image_canvas.load_image(
                 self.table_items.current_entry.path,
                 self.table_items.current_entry.nuclei,
-                self.table_items.current_entry.fibres)
+                self.table_items.current_entry.fibers)
 
     def enable_buttons(self, enable: bool) -> None:
         """Enables or disables the close buttons and checkboxes of the images.
@@ -357,7 +357,7 @@ class Files_table(ttk.Frame):
         self._main_window.update_master_check()
 
     def _save_data(self, directory: Path) -> None:
-        """Saves the names of the images, the positions of the fibres and the
+        """Saves the names of the images, the positions of the fibers and the
         positions and colors of the nuclei.
 
         All this information is stored in a data.pickle file.
@@ -451,7 +451,7 @@ class Files_table(ttk.Frame):
             # Writing the total number of nuclei
             worksheet.write(i + 2, 1, len(item.nuclei))
 
-            # Writing the number of nuclei in fibres
+            # Writing the number of nuclei in fibers
             worksheet.write(i + 2, 2, item.nuclei.nuclei_in_count)
 
             # Writing the ratio of nuclei in over the total number of nuclei
@@ -461,8 +461,8 @@ class Files_table(ttk.Frame):
             else:
                 worksheet.write(i + 2, 3, 'NA')
 
-            # Writing the percentage area of fibres
-            worksheet.write(i + 2, 4, f'{item.fibres.area * 100:.2f}')
+            # Writing the percentage area of fibers
+            worksheet.write(i + 2, 4, f'{item.fibers.area * 100:.2f}')
 
         # Writing the average for each column
         average_line = 3 + len(self.table_items)
@@ -477,7 +477,7 @@ class Files_table(ttk.Frame):
         workbook.close()
 
     def _save_overlay_images(self, directory: Path) -> None:
-        """Saves the images with the nuclei and fibres drawn on them.
+        """Saves the images with the nuclei and fibers drawn on them.
 
         Args:
             directory: The path to the project folder.
@@ -499,7 +499,7 @@ class Files_table(ttk.Frame):
     def _draw_nuclei_save(self,
                           entry: Table_entry,
                           project_name: Path) -> None:
-        """Draws fibres and nuclei on an images and then saves it.
+        """Draws fibers and nuclei on an images and then saves it.
 
         Args:
             entry: The table entry whose image to save.
@@ -537,8 +537,8 @@ class Files_table(ttk.Frame):
         line_width = max(1, round(max_dim / 1080))
         spot_size = max(1, round(max_dim / 1080 * 2))
 
-        # Drawing the fibres
-        for fib in entry.fibres:
+        # Drawing the fibers
+        for fib in entry.fibers:
             positions = array(fib.position)
             positions = positions.reshape((-1, 1, 2))
             polylines(cv_img, [positions], True,
@@ -664,8 +664,8 @@ class Files_table(ttk.Frame):
         entry.graph_elt.selected.set(True)
         self.table_items.current_index = index
 
-        # Displaying the selected image with its nuclei and fibres
-        self.image_canvas.load_image(entry.path, entry.nuclei, entry.fibres)
+        # Displaying the selected image with its nuclei and fibers
+        self.image_canvas.load_image(entry.path, entry.nuclei, entry.fibers)
 
         self.log(f"Loaded data for the entry {entry.path}")
 
@@ -722,7 +722,7 @@ class Files_table(ttk.Frame):
 
         # To avoid repeated calls to the same attribute
         nuclei = entry.nuclei
-        fibres = entry.fibres
+        fibers = entry.fibers
         items = entry.graph_elt
         total_nuclei = len(nuclei)
 
@@ -735,4 +735,4 @@ class Files_table(ttk.Frame):
                      f'{int(100 * nuclei.nuclei_in_count / total_nuclei)}%')
         else:
             items.ratio.configure(text='Ratio : NA')
-        items.area.configure(text=f'Fibre area : {int(fibres.area * 100)}%')
+        items.area.configure(text=f'Fiber area : {int(fibers.area * 100)}%')

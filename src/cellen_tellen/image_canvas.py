@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Tuple, Optional, List
 import logging
 
-from .tools import Nucleus, Nuclei, Fibres, check_image, Selection_box
+from .tools import Nucleus, Nuclei, Fibers, check_image, Selection_box
 
 
 class Image_canvas(ttk.Frame):
@@ -39,12 +39,12 @@ class Image_canvas(ttk.Frame):
         self._logger.log(logging.INFO, msg)
 
     def set_indicators(self) -> None:
-        """Redraws the nuclei and/or fibres after the user changed the elements
+        """Redraws the nuclei and/or fibers after the user changed the elements
         to display."""
 
         # Deletes all the elements in the canvas
         self._delete_nuclei()
-        self._delete_fibres()
+        self._delete_fibers()
 
         # Draw the nuclei
         if self._settings.show_nuclei.get():
@@ -57,23 +57,23 @@ class Image_canvas(ttk.Frame):
                     else self.nuc_col_out)
 
         # Draw the fibers
-        if self._settings.show_fibres.get():
-            self.log(f"Drawing all the {len(self._fibres)} fibre contours on "
+        if self._settings.show_fibers.get():
+            self.log(f"Drawing all the {len(self._fibers)} fiber contours on "
                      f"the canvas")
-            for fibre in self._fibres:
-                fibre.polygon = self._draw_fibre(fibre.position)
+            for fiber in self._fibers:
+                fiber.polygon = self._draw_fiber(fiber.position)
 
     def load_image(self,
                    path: Path,
                    nuclei: Nuclei,
-                   fibres: Fibres) -> None:
-        """Loads and displays an image and its fibres and nuclei.
+                   fibers: Fibers) -> None:
+        """Loads and displays an image and its fibers and nuclei.
 
         Args:
             path: The path to the image to load.
             nuclei: The Nuclei object containing the position and color of the
                 nuclei to draw on top of the image.
-            fibres: The Fibres object containing the position of the fibres to
+            fibers: The Fibers object containing the position of the fibers to
                 draw on top of the image.
         """
 
@@ -86,7 +86,7 @@ class Image_canvas(ttk.Frame):
             # First, reset the canvas
             self.reset()
             self._delete_nuclei()
-            self._delete_fibres()
+            self._delete_fibers()
 
             # Then, load and display the image
             self._image_path = path
@@ -107,14 +107,14 @@ class Image_canvas(ttk.Frame):
                         else self.nuc_col_out)
 
             # Deep copy to have independent objects
-            self._fibres = deepcopy(fibres)
+            self._fibers = deepcopy(fibers)
 
-            # Drawing the fibres
-            if self._settings.show_fibres.get():
-                self.log(f"Drawing all the {len(self._fibres)} fibre contours "
+            # Drawing the fibers
+            if self._settings.show_fibers.get():
+                self.log(f"Drawing all the {len(self._fibers)} fiber contours "
                          f"on the canvas")
-                for fib in self._fibres:
-                    fib.polygon = self._draw_fibre(fib.position)
+                for fib in self._fibers:
+                    fib.polygon = self._draw_fiber(fib.position)
 
         # Informing the user that the image cannot be loaded
         else:
@@ -126,7 +126,7 @@ class Image_canvas(ttk.Frame):
 
     def reset(self) -> None:
         """Resets every object in the canvas: the image, the nuclei and the
-        fibres."""
+        fibers."""
 
         self.log("Resetting the entire image canvas")
 
@@ -136,13 +136,13 @@ class Image_canvas(ttk.Frame):
         self._can_scale = 1.0
         self._current_zoom = 0
 
-        # Removing the fibres and nuclei from the canvas
+        # Removing the fibers and nuclei from the canvas
         self._delete_nuclei()
-        self._delete_fibres()
+        self._delete_fibers()
 
-        # Resetting the fibres and nuclei objects
+        # Resetting the fibers and nuclei objects
         self._nuclei = Nuclei()
-        self._fibres = Fibres()
+        self._fibers = Fibers()
 
         # Removing the image from the canvas
         if self._image_id is not None:
@@ -154,7 +154,7 @@ class Image_canvas(ttk.Frame):
 
     @property
     def nuc_col_out(self) -> str:
-        """Returns the color of the nuclei outside of fibres, that depends on
+        """Returns the color of the nuclei outside of fibers, that depends on
         the selected channels.
 
         The color returned is the RGB color that is neither the one of nuclei
@@ -164,28 +164,28 @@ class Image_canvas(ttk.Frame):
         num_to_color = {0: 'blue', 1: '#32CD32', 2: 'red'}
         color_to_num = {'blue': 0, 'green': 1, 'red': 2}
 
-        fibre_num = color_to_num[self._settings.fibre_colour.get()]
+        fiber_num = color_to_num[self._settings.fiber_colour.get()]
         nuclei_num = color_to_num[self._settings.nuclei_colour.get()]
 
-        if not (fibre_num == 2 and nuclei_num == 0):
-            return num_to_color[3 - fibre_num - nuclei_num]
-        # Special case when the fibre channel is red and the nuclei are blue
+        if not (fiber_num == 2 and nuclei_num == 0):
+            return num_to_color[3 - fiber_num - nuclei_num]
+        # Special case when the fiber channel is red and the nuclei are blue
         else:
             return 'red'
 
     @property
     def nuc_col_in(self) -> str:
-        """Returns the color of the nuclei inside fibres, that depends on the
+        """Returns the color of the nuclei inside fibers, that depends on the
         selected channels."""
 
         if self._settings.nuclei_colour.get() == 'green':
-            if self._settings.fibre_colour.get() == 'red':
+            if self._settings.fiber_colour.get() == 'red':
                 return 'magenta'
             else:
                 return 'blue'
 
         elif self._settings.nuclei_colour.get() == 'red':
-            if self._settings.fibre_colour.get() == 'blue':
+            if self._settings.fiber_colour.get() == 'blue':
                 return '#646464'
             else:
                 return 'white'
@@ -194,19 +194,19 @@ class Image_canvas(ttk.Frame):
 
     @property
     def fib_color(self) -> str:
-        """returns the color of the fibres, that depends on the selected
+        """returns the color of the fibers, that depends on the selected
         channels."""
 
-        if self._settings.fibre_colour.get() == 'green':
+        if self._settings.fiber_colour.get() == 'green':
             return 'magenta'
 
-        elif self._settings.fibre_colour.get() == 'blue':
+        elif self._settings.fiber_colour.get() == 'blue':
             if self._settings.nuclei_colour.get() == 'green':
                 return 'magenta'
             else:
                 return 'white'
 
-        elif self._settings.fibre_colour.get() == 'red':
+        elif self._settings.fiber_colour.get() == 'red':
             if self._settings.nuclei_colour.get() == 'green':
                 return 'cyan'
             else:
@@ -261,14 +261,14 @@ class Image_canvas(ttk.Frame):
         for nuc in self._nuclei:
             self._canvas.delete(nuc.tk_obj)
 
-    def _delete_fibres(self) -> None:
-        """Removes all fibres from the canvas, but doesn't delete the fibres
+    def _delete_fibers(self) -> None:
+        """Removes all fibers from the canvas, but doesn't delete the fibers
          objects."""
 
-        self.log("Deleting all the fibres on the canvas")
+        self.log("Deleting all the fibers on the canvas")
 
-        for fibre in self._fibres:
-            self._canvas.delete(fibre.polygon)
+        for fiber in self._fibers:
+            self._canvas.delete(fiber.polygon)
 
     def _set_layout(self) -> None:
         """Creates the frame, canvas and scrollbar objects, places them and
@@ -355,7 +355,7 @@ class Image_canvas(ttk.Frame):
         self._delta = 1.3
         self._current_zoom = 0
         self._nuclei = Nuclei()
-        self._fibres = Fibres()
+        self._fibers = Fibers()
         self._image_id = None
         self._selection_box = Selection_box()
 
@@ -388,7 +388,7 @@ class Image_canvas(ttk.Frame):
             x - radius, y - radius, x + radius, y + radius,
             fill=color, outline='#fff', width=0)
 
-    def _draw_fibre(self, positions: List[Tuple[float,
+    def _draw_fiber(self, positions: List[Tuple[float,
                                                 float]]) -> int:
         """Draws a single fiber on the canvas.
 
@@ -407,7 +407,7 @@ class Image_canvas(ttk.Frame):
         positions = [(self._img_scale * x, self._img_scale * y)
                      for x, y in positions]
 
-        # Actually drawing the fibre
+        # Actually drawing the fiber
         positions = [val for pos in positions for val in pos]
         polygon = self._canvas.create_polygon(*positions,
                                               width=line_width,

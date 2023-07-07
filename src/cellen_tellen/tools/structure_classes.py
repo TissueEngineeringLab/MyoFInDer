@@ -29,8 +29,8 @@ class Nucleus:
 
 
 @dataclass
-class Fibre:
-    """Class holding the data associated with a single fibre."""
+class Fiber:
+    """Class holding the data associated with a single fiber."""
 
     polygon: Optional[int]
     position: List[Tuple[float, float]] = field(default_factory=list)
@@ -67,13 +67,13 @@ class Nuclei:
 
     @property
     def nuclei_in_count(self) -> int:
-        """Returns the number of nuclei inside fibres."""
+        """Returns the number of nuclei inside fibers."""
 
         return len([nuc for nuc in self.nuclei if nuc.color == 'in'])
 
     @property
     def nuclei_out_count(self) -> int:
-        """Returns the number of nuclei outside fibres."""
+        """Returns the number of nuclei outside fibers."""
 
         return len([nuc for nuc in self.nuclei if nuc.color == 'out'])
 
@@ -84,40 +84,40 @@ class Nuclei:
 
 
 @dataclass
-class Fibres:
-    """Class for managing the data of all the fibres in one image."""
+class Fibers:
+    """Class for managing the data of all the fibers in one image."""
 
     area: float = field(default=0)
-    fibres: List[Fibre] = field(default_factory=list)
+    fibers: List[Fiber] = field(default_factory=list)
 
-    def append(self, fib: Fibre) -> None:
-        """Adds a fiber to the list of fibres."""
+    def append(self, fib: Fiber) -> None:
+        """Adds a fiber to the list of fibers."""
 
-        self.fibres.append(fib)
+        self.fibers.append(fib)
 
-    def remove(self, fib: Fibre) -> None:
-        """Removes a given fiber from the list of fibres."""
+    def remove(self, fib: Fiber) -> None:
+        """Removes a given fiber from the list of fibers."""
 
         try:
-            self.fibres.remove(fib)
+            self.fibers.remove(fib)
         except ValueError:
-            raise ValueError("No matching fibre to delete")
+            raise ValueError("No matching fiber to delete")
 
     def reset(self) -> None:
-        """Deletes all the saved Fibre objects."""
+        """Deletes all the saved Fiber objects."""
 
-        self.fibres = list()
+        self.fibers = list()
         self.area = 0
 
-    def __iter__(self) -> Iterator[Fibre]:
-        """Returns an iterator over the stored Fibre objects."""
+    def __iter__(self) -> Iterator[Fiber]:
+        """Returns an iterator over the stored Fiber objects."""
 
-        return iter(self.fibres)
+        return iter(self.fibers)
 
     def __len__(self) -> int:
-        """Returns the number of fibres."""
+        """Returns the number of fibers."""
 
-        return len(self.fibres)
+        return len(self.fibers)
 
 
 class Graphical_element(Frame):
@@ -322,7 +322,7 @@ class Table_entry:
 
     path: Union[Path, str]
     nuclei: Nuclei
-    fibres: Fibres
+    fibers: Fibers
     graph_elt: Optional[Graphical_element] = None
 
     @property
@@ -332,7 +332,7 @@ class Table_entry:
 
         return Table_entry(path=self.path.name,
                            nuclei=self.nuclei,
-                           fibres=self.fibres,
+                           fibers=self.fibers,
                            graph_elt=None)
 
 
@@ -511,14 +511,14 @@ class Settings:
 
     # Here a default factory is needed so that the tkinter vars are not
     # instantiated before the tkinter app is initialized
-    fibre_colour: StringVar = field(
-        default_factory=partial(StringVar, value="green", name='fibre_colour'))
+    fiber_colour: StringVar = field(
+        default_factory=partial(StringVar, value="green", name='fiber_colour'))
     nuclei_colour: StringVar = field(
         default_factory=partial(StringVar, value="blue", name='nuclei_colour'))
     save_overlay: BooleanVar = field(
         default_factory=partial(BooleanVar, value=False, name='save_overlay'))
-    fibre_threshold: IntVar = field(
-        default_factory=partial(IntVar, value=25, name='fibre_threshold'))
+    fiber_threshold: IntVar = field(
+        default_factory=partial(IntVar, value=25, name='fiber_threshold'))
     nuclei_threshold: IntVar = field(
         default_factory=partial(IntVar, value=25, name='nuclei_threshold'))
     small_objects_threshold: IntVar = field(
@@ -531,8 +531,8 @@ class Settings:
         default_factory=partial(BooleanVar, value=False, name='red_channel'))
     show_nuclei: BooleanVar = field(
         default_factory=partial(BooleanVar, value=True, name='show_nuclei'))
-    show_fibres: BooleanVar = field(
-        default_factory=partial(BooleanVar, value=False, name='show_fibres'))
+    show_fibers: BooleanVar = field(
+        default_factory=partial(BooleanVar, value=False, name='show_fibers'))
 
     def update(self, settings: Dict[str, Any]) -> None:
         """Updates the values of the settings based on the provided
@@ -544,10 +544,10 @@ class Settings:
     def __str__(self) -> str:
         """"""
 
-        settings = (self.fibre_colour, self.nuclei_colour,
-                    self.save_overlay, self.fibre_threshold,
+        settings = (self.fiber_colour, self.nuclei_colour,
+                    self.save_overlay, self.fiber_threshold,
                     self.nuclei_threshold, self.small_objects_threshold,
                     self.blue_channel_bool, self.green_channel_bool,
-                    self.red_channel_bool, self.show_nuclei, self.show_fibres)
+                    self.red_channel_bool, self.show_nuclei, self.show_fibers)
 
         return ', '.join(f"{setting}: {setting.get()}" for setting in settings)

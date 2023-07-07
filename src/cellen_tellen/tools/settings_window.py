@@ -62,21 +62,21 @@ class Settings_window(Toplevel):
             value="red")
         nuclei_colour_r3.grid(column=1, row=2, sticky='NW')
 
-        # Buttons for selecting the fibres channel
+        # Buttons for selecting the fibers channel
         ttk.Label(frame, text="Fiber Channel :").grid(
             column=0, row=3, sticky='NE', pady=(10, 0), padx=(0, 10))
-        fibre_colour_r1 = ttk.Radiobutton(
-            frame, text="Blue", variable=self._settings.fibre_colour,
+        fiber_colour_r1 = ttk.Radiobutton(
+            frame, text="Blue", variable=self._settings.fiber_colour,
             value="blue")
-        fibre_colour_r1.grid(column=1, row=3, sticky='NW', pady=(10, 0))
-        fibre_colour_r2 = ttk.Radiobutton(
-            frame, text="Green", variable=self._settings.fibre_colour,
+        fiber_colour_r1.grid(column=1, row=3, sticky='NW', pady=(10, 0))
+        fiber_colour_r2 = ttk.Radiobutton(
+            frame, text="Green", variable=self._settings.fiber_colour,
             value="green")
-        fibre_colour_r2.grid(column=1, row=4, sticky='NW')
-        fibre_colour_r3 = ttk.Radiobutton(
-            frame, text="Red", variable=self._settings.fibre_colour,
+        fiber_colour_r2.grid(column=1, row=4, sticky='NW')
+        fiber_colour_r3 = ttk.Radiobutton(
+            frame, text="Red", variable=self._settings.fiber_colour,
             value="red")
-        fibre_colour_r3.grid(column=1, row=5, sticky='NW')
+        fiber_colour_r3.grid(column=1, row=5, sticky='NW')
 
         # Buttons to chose whether to save the overlay images or not
         ttk.Label(frame, text='Save Images with Overlay :').grid(
@@ -95,14 +95,14 @@ class Settings_window(Toplevel):
         fiber_threshold_slider_frame = ttk.Frame(frame)
 
         ttk.Label(fiber_threshold_slider_frame,
-                  textvariable=self._settings.fibre_threshold,
+                  textvariable=self._settings.fiber_threshold,
                   width=3). \
             pack(side='left', anchor='w', fill='none', expand=False,
                  padx=(0, 20))
 
         Scale(fiber_threshold_slider_frame, from_=0, to=100,
               orient="horizontal",
-              variable=self._settings.fibre_threshold, showvalue=False,
+              variable=self._settings.fiber_threshold, showvalue=False,
               length=150, tickinterval=20). \
             pack(side='left', anchor='w', fill='none', expand=False)
 
