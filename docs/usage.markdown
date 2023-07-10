@@ -126,7 +126,7 @@ module is loading. It can take up to 30s for the application to open, and even
 more on the first run as it has to download some data. The Splash window should 
 look as such :
 
-<img src="./usage_images/splash.png" width="300">
+<img src="./usage_images/splash.png" width="300" title="Splash window">
 
 # 2. Basic usage
 
@@ -136,24 +136,34 @@ The first step for processing images is to **load them in the interface**. To
 do so, click on the *Load Images* button located at the top-right of the 
 interface.
 
+<img src="./usage_images/load_images.png" title="Load Images button">
+
 **A file explorer then appears**, in which you can browse the files in your 
 computer and in the network drives. In this explorer, select one or several 
 images to import and click on *Open*.
 
-Information on the imported images is then displayed in **the information 
-frame** on the right of the interface. 
+<img src="./usage_images/loading_window.png" title="Load Images popup window">
 
-In the main frame, **the currently selected image is displayed**. You can 
-select another image by left-clicking on it in the information frame. 
+Information on the imported images is then displayed in **the information 
+frame** on the right of the interface. In the main frame, **the currently 
+selected image is displayed**. You can select another image by left-clicking on 
+it in the information frame. 
+
+<img src="./usage_images/loaded_images.png" 
+title="Display after loading images">
 
 It is also possible to **delete a loaded image** by clicking on the *X* Delete 
 button at the top-right of its information display. You will be asked to 
 confirm your choice in a popup window.
 
+<img src="./usage_images/delete_warning.png" title="Delete image popup window">
+
 **The checkboxes of the images** allow to apply the Delete and Process 
 operations to only part of the loaded images. The deletion of all the checked 
 images is achieved by using the master Delete button. The master checkbox 
 allows to (un)select all the images at once.
+
+<img src="./usage_images/checkboxes.png" title="Information frame checkboxes">
 
 ## 2.2 Tuning the settings
 
@@ -161,10 +171,14 @@ Before processing the loaded images, you might want to **adjust the processing
 parameters**. That can be done by clicking on the Settings button, that opens a
 new window containing the Settings menu.
 
+<img src="./usage_images/settings_button.png" title="Settings button">
+
 In this menu, you can adjust various parameters like the channels to use for
 the fibers and nuclei or thresholds to use when processing images. **The 
 settings are applied as soon as you modify them**, there is no need to validate 
 your choice. Just close this window when you're done.
+
+<img src="./usage_images/settings_menu.png" title="Settings menu window">
 
 ## 2.3 Starting a computation
 
@@ -175,12 +189,20 @@ processing images**. To do so, simply click on the *Process Images* button.
 > before processing them. This way, the images will first be copied locally and
 > Cellen-Tellen won't be affected by network issues.
 
+<img src="./usage_images/process_images.png" title="Process Images button">
+
 All the checked images then start being processed, and a message displays the
 progress status. The images are processed one by one, in the same order as they
 appear in the information frame.
 
+<img src="./usage_images/processing_message.png" 
+title="Processing progress message">
+
 On each processed image **the nuclei and fibers are detected**, and the 
 information on the right frame is updated accordingly. 
+
+<img src="./usage_images/processed.png" 
+title="Display after processing images">
 
 The display for the selected image in the main frame might also be updated, 
 depending on the selected display options. **The positive and negative nuclei 
@@ -191,12 +213,17 @@ It is possible to **stop the computation** while it is running by clicking on
 the *Stop Processing* button. It might take a few seconds for the computation 
 to effectively stop.
 
+<img src="./usage_images/stop_processing.png" title="Stop Processing button">
+
 ## 2.4 Adjusting the display
 
 At the top-right of the interface, several checkboxes allow to **tune the 
 display of the currently selected image** in the main frame. It is possible to 
 choose which channels are displayed, and if the nuclei and fibers overlay are 
 added.
+
+<img src="./usage_images/checkboxes_display.png" 
+title="Display tuning checkboxes">
 
 Using the mouse scroll wheel, **you can zoom in and out** on the displayed 
 image. The *-*, *_*, *+* and *=* keys also allow zooming in and out. Click on 
@@ -206,14 +233,16 @@ the mouse wheel and drag to **move the view** on a zoomed image.
 
 Once the images have been processed, you can **manually correct the detected
 nuclei** by adding, inverting or deleting ones. To do so, the nuclei overlay 
-must be enabled. To add a nucleus, left-click on an area where no nucleus is 
-present. To invert a nucleus, i.e. switch it from positive to negative or 
-vice-versa, left-click on an already existing one. And to delete a nucleus, 
-right-click on an already existing one.
+must be enabled. To **add a nucleus**, left-click on an area where no nucleus 
+is present. To **invert a nucleus**, i.e. switch it from positive to negative 
+or vice-versa, left-click on an already existing one. And to **delete a 
+nucleus**, right-click on an already existing one.
 
 It is also possible to **invert or delete multiple nuclei at once**. To do so,
 left- or right-click and drag to form a selection box. All the nuclei inside
 the selection box are inverted or deleted, depending on the side of the click.
+
+<img src="./usage_images/selection_box.png" title="Mouse selection box">
 
 # 3. Managing your projects
 
@@ -224,11 +253,15 @@ for all the loaded images is saved at once. To save a project, simply click on
 the *Save As* button at the top-right of the interface. Alternatively, you can 
 also click on the *Save Project As* button in the *File* menu.
 
+<img src="./usage_images/save_as.png" title="Save As buttons">
+
 A file explorer then appears, in which you have to **select the folder in which 
 to save the project**. This folder has to be a newly created one. To save in a 
 new folder, place the file explorer in the parent folder that will contain your 
 new folder, enter the name of the new folder in the *File name* field of the 
 explorer, and validate using the *Save* button.
+
+<img src="./usage_images/saving_popup.png" title="Save popup window">
 
 If you look inside a saved project folder, you will find first an Excel file
 containing a **summary of the detected nuclei and fibers** for each image in 
@@ -240,16 +273,22 @@ contains all the information needed for reloading the project. Optionally, if
 the *Save Images with Overlay* setting is enabled, an `Overlay Images` folder
 contains the images with an overlay showing the detected fibers and nuclei.
 
+<img src="./usage_images/project_content.png" title="Project folder content">
+
 ## 3.2 Loading data from an existing project
 
 To **load data from an existing project**, first click on the *Load From 
 Explorer* button in the *File* menu.
+
+<img src="./usage_images/load_project.png" title="Load From Explorer button">
 
 A file explorer then appears, in which you have to **select the project folder 
 to load**. It is not sufficient to simply have the name of the folder 
 highlighted, you need to double-click on it to place the explorer inside the 
 folder to open. Once you are inside the project to open, validate your choice 
 using the *Ok* button.
+
+<img src="./usage_images/loading_popup.png" title="Load Project popup window">
 
 After loading the project, all the images it contains should be listed in the
 information frame and the detected nuclei and fibers should also appear in the
