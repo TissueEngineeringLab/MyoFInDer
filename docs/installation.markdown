@@ -105,6 +105,9 @@ Then, when opening the application for the first time, the required Python
 modules and Cellen-Tellen will be installed automatically. This may take some
 time and necessitates a working internet connection.
 
+The Windows installer can be downloaded 
+[here](https://github.com/WeisLeDocto/Cellen-Tellen/blob/main/bin/cellen_tellen.msi).
+
 ## 1.3 Installation of Cellen-Tellen from console
 
 In case the provided installer does not work properly, or simply if you prefer
