@@ -44,6 +44,8 @@ installer. It can also be started by searching for "Cellen-Tellen" in the
 Menu-bar, or by any other standard way offered by Windows for opening 
 applications.
 
+<img src="./usage_images/shortcut.png" width="300" title="Menu shortcut">
+
 ## 1.2 From the command line
 
 *In this section, replace* `python` *with* `python3` *or* `python3.x` 
