@@ -130,16 +130,3 @@ dmypy.json
 
 # Pycharm
 .idea/
-
-# Settings files
-cellen_tellen/settings
-
-# Projects files
-Projects/
-
-# Build from AdvancedInstaller
-Executable_files/*-cache
-Executable_files/*-SetupFiles
-
-# The log file
-logs.txt
