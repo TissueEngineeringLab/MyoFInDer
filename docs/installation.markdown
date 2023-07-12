@@ -29,6 +29,7 @@ Index of the Installation page :
    1. [Check your Python version](#21-check-your-python-version)
    2. [[Optional] Deploy a virtual environment](#22-optional-deploy-a-virtual-environment)
    3. [Install Cellen-Tellen](#23-install-cellen-tellen)
+3. [GPU acceleration](#3-gpu-acceleration)
 
 # 1. On Windows
 
@@ -323,5 +324,23 @@ Or if installed in a virtual environment :
 (venv) user@machine:~$ python -c "import CellenTellen; print(CellenTellen.__version__)"
 1.0.0
 ```
+
+# 3. GPU-acceleration
+
+The [TensorFlow](https://www.tensorflow.org/) library that runs the AI model 
+used by Cellen Tellen supports GPU acceleration. When it is enabled, it can 
+drastically improve the computation speed of the module by performing the
+calculations on the GPU rather than on the CPU. Depending on your machine, you 
+might however not be able to enable GPU acceleration.
+
+The first requirement is to have a machine equipped with an Nvidia graphic 
+card. If that's the case, you then need to install the right CUDA drivers for
+your OS and GPU model. The available drivers can be downloaded 
+[here](https://developer.nvidia.com/cuda-downloads). Finally, you need to 
+install the cuDNN library, again with the correct version for your OS and 
+platform. An installation guide for cuDNN can be found 
+[here](https://docs.nvidia.com/deeplearning/cudnn/install-guide/). Once this is 
+done, GPU acceleration should be automatically enabled when processing images
+with Cellen Tellen.
 
 [Home page](index.markdown)
