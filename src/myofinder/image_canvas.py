@@ -21,7 +21,7 @@ class Image_canvas(ttk.Frame):
         variables."""
 
         # Setting the logger
-        self._logger = logging.getLogger("Cellen-Tellen.ImageCanvas")
+        self._logger = logging.getLogger("MyoFInDer.ImageCanvas")
 
         super().__init__(mainframe)
 

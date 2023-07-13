@@ -18,13 +18,13 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: Cellen-Tellen
+title: MyoFInDer
 email: antoine.weisrock@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
-  This website contains the documentation for the Cellen-Tellen project.
+  This website contains the documentation for the MyoFInDer project.
   It details the installation steps, the usage guidelines, and provides useful 
   links for users requesting additional support.
-baseurl: "/Cellen-Tellen" # the subpath of your site, e.g. /blog
+baseurl: "/MyoFInDer" # the subpath of your site, e.g. /blog
 url: "https://weisledocto.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 github_username:  WeisLeDocto
 show_downloads: false

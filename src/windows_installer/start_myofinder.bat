@@ -1,15 +1,15 @@
-:: File for starting Cellen-Tellen in a virtual environment in Windows
+:: File for starting MyoFInDer in a virtual environment in Windows
 
 @echo off
 
-set "base_path=%userprofile%\AppData\Local\Cellen-Tellen"
+set "base_path=%userprofile%\AppData\Local\MyoFInDer"
 
 echo Checking if Python is installed on the computer
 python --version >nul 2>&1 && (
     echo Python is installed on the computer
 ) || (
     echo Python was not found on the computer !
-    echo Install it first and run Cellen Tellen again
+    echo Install it first and run MyoFInDer again
     pause
     exit /b 1
 )
@@ -37,25 +37,25 @@ if exist %base_path%\venv (
 echo.
 
 echo Checking if the dependencies are installed
-%base_path%\venv\Scripts\python -m pip list | findstr "cellen" >nul 2>&1 && (
+%base_path%\venv\Scripts\python -m pip list | findstr "myofinder" >nul 2>&1 && (
     echo The dependencies are installed
 ) || (
     echo The dependencies are not installed, installing them
-    %base_path%\venv\Scripts\python -m pip install cellen_tellen
+    %base_path%\venv\Scripts\python -m pip install myofinder
 )
 
 echo.
 
-echo Checking that Cellen Tellen was correctly installed
-%base_path%\venv\Scripts\python -c "import cellen_tellen" && (
-    echo Cellen-Tellen was correctly installed
+echo Checking that MyoFInDer was correctly installed
+%base_path%\venv\Scripts\python -c "import myofinder" && (
+    echo MyoFInDer was correctly installed
 ) || (
-    echo Something went wrong during Cellen-Tellen's installation !
+    echo Something went wrong during MyoFInDer's installation !
     pause
     exit /b 1
 )
 
 echo.
 
-echo Starting Cellen Tellen
-%base_path%\venv\Scripts\python -m cellen_tellen
+echo Starting MyoFInDer
+%base_path%\venv\Scripts\python -m myofinder

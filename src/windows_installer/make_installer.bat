@@ -31,6 +31,6 @@ rmdir /s /q "%~dp0config-cache"
 echo Creating the bin folder if it does not already exist
 mkdir "%~dp0..\..\bin\"
 echo Moving the installer file to the bin folder
-move "%~dp0\config-SetupFiles\config.msi" "%~dp0..\..\bin\cellen_tellen.msi"
+move "%~dp0\config-SetupFiles\config.msi" "%~dp0..\..\bin\myofinder.msi"
 echo Deleting the remaining setup files folder
 rmdir /s /q "%~dp0config-SetupFiles"

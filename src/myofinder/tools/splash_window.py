@@ -21,7 +21,7 @@ class Splash_window(Tk):
         self.grab_set()
 
         self._image = Image.open(resource_filename(
-            'cellen_tellen', 'app_images/splash_background.png'))
+            'myofinder', 'app_images/splash_background.png'))
 
     def resize_image(self) -> None:
         """Centers the window on the monitor currently in use."""
@@ -84,7 +84,7 @@ class Splash_window(Tk):
         canvas.create_text(
             20, int(0.70 * self._image.height),
             anchor='w',
-            text="Cellen Tellen - A project of the Tissue Engineering Lab at "
+            text="MyoFInDer - A project of the Tissue Engineering Lab at "
                  "KU Leuven\nBy Antoine Weisrock, Rebecca Wüst and "
                  "Maria Olenic",
             fill="white",

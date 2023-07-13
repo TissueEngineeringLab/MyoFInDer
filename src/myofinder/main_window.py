@@ -51,7 +51,7 @@ def _save_before_closing(func: Callable) -> Callable:
 
 
 class Main_window(Tk):
-    """The main window of the Cellen Tellen software.
+    """The main window of the MyoFInDer software.
 
     It manages all the buttons, menus, events, and the secondary windows.
     """
@@ -65,7 +65,7 @@ class Main_window(Tk):
         """
 
         # Setting the logger
-        self._logger = logging.getLogger("Cellen-Tellen.MainWindow")
+        self._logger = logging.getLogger("MyoFInDer.MainWindow")
 
         # Generates a splash window while waiting for the modules to load
         self.log("Creating the splash window")
@@ -78,7 +78,7 @@ class Main_window(Tk):
 
         # Initializes the main window
         super().__init__()
-        self.title("Cellen Tellen - New Project (Unsaved)")
+        self.title("MyoFInDer - New Project (Unsaved)")
         if system() == "Windows":
             self.state('zoomed')
         else:
@@ -88,7 +88,7 @@ class Main_window(Tk):
         # Sets the application icon
         self.log("Setting the application icon")
         icon = PhotoImage(file=resource_filename(
-            'cellen_tellen', 'app_images/project_icon.png'))
+            'myofinder', 'app_images/project_icon.png'))
         self.iconphoto(False, icon)  # Without it the icon is buggy in Windows
         self.iconphoto(True, icon)
 
@@ -123,12 +123,12 @@ class Main_window(Tk):
         self.log("Setting the unsaved status")
 
         if self._current_project is not None:
-            self.title(f"Cellen Tellen - Project "
+            self.title(f"MyoFInDer - Project "
                        f"'{self._current_project.name}' (Unsaved)")
             self._save_button['state'] = 'enabled'
             self._save_button['text'] = 'Save'
         else:
-            self.title("Cellen Tellen - New Project (Unsaved)")
+            self.title("MyoFInDer - New Project (Unsaved)")
             self._save_button['state'] = 'enabled'
             self._save_button['text'] = 'Save As'
 
@@ -434,7 +434,7 @@ class Main_window(Tk):
                                     state="disabled")
 
         # Sets the title
-        self.title("Cellen Tellen - New Project (Unsaved)")
+        self.title("MyoFInDer - New Project (Unsaved)")
         self._current_project = None
 
     def _save_project(self, directory: Path) -> None:
@@ -489,9 +489,9 @@ class Main_window(Tk):
                 (directory / 'data.pickle').is_file() and
                 (directory / 'data.pickle').exists()):
             messagebox.showerror("Error while loading",
-                                 "This isn't a valid Cellen-tellen project !")
+                                 "This isn't a valid MyoFInDer project !")
             self.log("The selected directory is not valid for loading into "
-                     "Cellen-Tellen")
+                     "MyoFInDer")
             return
 
         # Setting the save button, the project title and the menu entries
@@ -528,7 +528,7 @@ class Main_window(Tk):
 
         # Sets the project name
         self._current_project = directory
-        self.title(f"Cellen Tellen - Project '{directory.name}'")
+        self.title(f"MyoFInDer - Project '{directory.name}'")
 
     def _create_warning_window(self) -> bool:
         """Creates a warning window in case the user triggers an action that
@@ -1015,4 +1015,4 @@ class Main_window(Tk):
         """Opens the project repository in a browser."""
 
         self.log("Opening the online documentation")
-        open_new("https://github.com/WeisLeDocto/Cellen-Tellen")
+        open_new("https://github.com/WeisLeDocto/MyoFInDer")

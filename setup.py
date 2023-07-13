@@ -10,17 +10,17 @@ https://github.com/pypa/sampleproject
 from setuptools import find_namespace_packages, setup
 
 # Reading version from __version__.py file
-with open('src/cellen_tellen/__version__.py') as file:
+with open('src/myofinder/__version__.py') as file:
   for line in file:
     if line.startswith('__version__'):
       __version__ = line.split("'")[1]
 
 setup(
   # Description of the project
-  name='cellen_tellen',
+  name='myofinder',
   version=__version__,
   description='Automatic calculation of the fusion index by AI segmentation',
-  long_description="""Cellen-Tellen is a Python module for the automatic 
+  long_description="""MyoFInDer is a Python module for the automatic 
   calculation of the fusion index on florescence-stained images of muscle
   cultures. It provides a simple and user-friendly interface managing several
   images, processing all or part of them, visualizing the output, and manually
@@ -45,11 +45,11 @@ setup(
                ],
 
   # URLs of the project
-  url='https://github.com/WeisLeDocto/Cellen-Tellen',
-  download_url='https://pypi.org/project/cellen_tellen/#files',
+  url='https://github.com/WeisLeDocto/MyoFInDer',
+  download_url='https://pypi.org/project/MyoFInDer/#files',
   project_urls={
-    'Documentation': 'https://weisledocto.github.io/Cellen-Tellen/',
-    'Source': 'https://github.com/WeisLeDocto/Cellen-Tellen'},
+    'Documentation': 'https://weisledocto.github.io/MyoFInDer/',
+    'Source': 'https://github.com/WeisLeDocto/MyoFInDer'},
 
   # Information on the author
   author='Antoine Weisrock',
@@ -61,7 +61,7 @@ setup(
   packages=find_namespace_packages(where="src", exclude=list()),
   package_dir={"": "src"},
   include_package_data=True,
-  ext_package='cellen_tellen',
+  ext_package='myofinder',
   ext_modules=list(),
 
   # Installation requirements

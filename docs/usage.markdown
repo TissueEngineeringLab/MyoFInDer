@@ -5,13 +5,13 @@ title: Usage
 
 [Home page](index.markdown)
 
-This page describes the **procedures for using Cellen-Tellen** and its 
-different features. Everything you have to know about the module is explained 
-here, please report it if you consider that this section is incomplete.
+This page describes the **procedures for using MyoFInDer** and its different 
+features. Everything you have to know about the module is explained here, 
+please report it if you consider that this section is incomplete.
 
 Index of the Usage page :
 
-1. [Starting Cellen-Tellen](#1-starting-cellen-tellen)
+1. [Starting MyoFInDer](#1-starting-myofinder)
    1. [Using the shortcuts (Windows installer only)](#11-using-the-shortcuts-windows-installer-only)
    2. [From the command line](#12-from-the-command-line)
    3. [Startup window](#13-startup-window)
@@ -29,18 +29,18 @@ Index of the Usage page :
    1. [Command-line option](#41-command-line-option)
    2. [Retrieving the log messages](#42-retrieving-the-log-messages)
 
-# 1. Starting Cellen-Tellen
+# 1. Starting MyoFInDer
 
-There are **two possible ways to start Cellen-Tellen**, depending if the 
+There are **two possible ways to start MyoFInDer**, depending if the 
 application was installed using the Windows installer or not. This section
 re-uses names introduced on the [Installation page](installation.markdown), so 
 it is advised to first read the Installation page before this one.
 
 ## 1.1 Using the shortcuts (Windows installer only)
 
-The first and most straightforward way to start Cellen-Tellen is to **click on
-the Menu-bar or Desktop shortcuts** that were created when running the Windows 
-installer. It can also be started by searching for "Cellen-Tellen" in the 
+The first and most straightforward way to start MyoFInDer is to **click on the 
+Menu-bar or Desktop shortcuts** that were created when running the Windows 
+installer. It can also be started by searching for "MyoFInDer" in the 
 Menu-bar, or by any other standard way offered by Windows for opening 
 applications.
 
@@ -54,12 +54,11 @@ applications.
 ### 1.2.1 After manual installation
 
 No matter which installation method you chose, **it is always possible to start
-Cellen-Tellen from the command-line**. This operation is however a bit more 
-complex if you used the Windows installer, so this specific case is covered 
-separately in the 
-[next subsection](#122-after-installation-using-the-windows-installer).
+MyoFInDer from the command-line**. This operation is however a bit more complex 
+if you used the Windows installer, so this specific case is covered separately 
+in the [next subsection](#122-after-installation-using-the-windows-installer).
 
-If you installed Cellen-Tellen in a virtual environment, you should first 
+If you installed MyoFInDer in a virtual environment, you should first 
 **activate it** :
 
 ```console
@@ -75,50 +74,50 @@ user@machine:~$ source <Path to your venv>/bin/activate
 (venv) user@machine:~$ █
 ```
 
-Then, you can simply **start Cellen-Tellen** by running the following line 
-(ignore the `venv` part if not running in a virtual environment) :
+Then, you can simply **start MyoFInDer** by running the following line (ignore 
+the `venv` part if not running in a virtual environment) :
 
 ```console
-(venv) C:\Users\User>python -m CellenTellen
+(venv) C:\Users\User>python -m myofinder
 ```
 
 Or in Linux :
 
 ```console
-(venv) user@machine:~$ python -m CellenTellen
+(venv) user@machine:~$ python -m myofinder
 ```
 
 ### 1.2.2 After installation using the Windows installer
 
-Starting Cellen-Tellen from the command-line might be your only option if for 
+Starting MyoFInDer from the command-line might be your only option if for 
 some reason **you cannot start it using the shortcuts** created by the 
 installer (in which case you should report that as a bug). When run, the 
 installer deploys a virtual environment at 
-`C:\Users\<User>\AppData\Local\CellenTellen\venv`, where `<User>` is your 
+`C:\Users\<User>\AppData\Local\MyoFInDer\venv`, where `<User>` is your 
 username on the computer. First, **activate this virtual environment** by 
 running :
 
 ```console
-C:\Users\User>C:\Users\User\AppData\Local\CellenTellen\venv\Scripts\activate.bat
+C:\Users\User>C:\Users\User\AppData\Local\MyoFInDer\venv\Scripts\activate.bat
 (venv) C:\Users\User>
 ```
 
-Then, you can **start Cellen-Tellen** the same way as described in the previous 
+Then, you can **start MyoFInDer** the same way as described in the previous 
 subsection :
 
 ```console
-(venv) C:\Users\User>python -m CellenTellen
+(venv) C:\Users\User>python -m myofinder
 ```
 
 Or in Linux :
 
 ```console
-(venv) user@machine:~$ python -m CellenTellen
+(venv) user@machine:~$ python -m myofinder
 ```
 
 ## 1.3 Startup window
 
-Once Cellen-Tellen is running, **a console should first appear** with log 
+Once MyoFInDer is running, **a console should first appear** with log 
 messages displaying in it. If started from the command-line, this console is 
 already open and is the one you typed your commands in. This console simply 
 displays the log messages, which may be useful for tracking errors.
@@ -189,7 +188,7 @@ processing images**. To do so, simply click on the *Process Images* button.
 
 > If you use images from a network drive, is advised to first save the project
 > before processing them. This way, the images will first be copied locally and
-> Cellen-Tellen won't be affected by network issues.
+> MyoFInDer won't be affected by network issues.
 
 <img src="./usage_images/process_images.png" title="Process Images button">
 
@@ -250,10 +249,10 @@ the selection box are inverted or deleted, depending on the side of the click.
 
 ## 3.1 Saving your data into a project
 
-In Cellen-Tellen the **data is saved as a project**, which means that the data 
-for all the loaded images is saved at once. To save a project, simply click on 
-the *Save As* button at the top-right of the interface. Alternatively, you can 
-also click on the *Save Project As* button in the *File* menu.
+In MyoFInDer the **data is saved as a project**, which means that the data for 
+all the loaded images is saved at once. To save a project, simply click on the 
+*Save As* button at the top-right of the interface. Alternatively, you can also 
+click on the *Save Project As* button in the *File* menu.
 
 <img src="./usage_images/save_as.png" title="Save As buttons">
 
@@ -299,17 +298,17 @@ nuclei and fiber overlays.
 ## 3.3 Operations on saved projects
 
 The saved projects can be located anywhere on the computer, preferably in 
-folders where Cellen-Tellen has read and write access. Because they contain all
-the information needed to reconstruct a project, **the project folders can be
+folders where MyoFInDer has read and write access. Because they contain all the 
+information needed to reconstruct a project, **the project folders can be
 renamed or moved**, including to a different computer. They can also be 
 compressed for sharing. **The project folders can be safely deleted**, with no
-impact on the behavior of Cellen-Tellen.
+impact on the behavior of MyoFInDer.
 
 # 4. Advanced usage
 
 ## 4.1 Command-line option
 
-A single command-line option is available when starting Cellen-Tellen from the
+A single command-line option is available when starting MyoFInDer from the
 console. It allows to **disable logging**, by adding the `-n` or `--nolog` 
 option. It disables both the display of log messages in the console, and 
 recording of the log messages to the log file.
@@ -318,8 +317,8 @@ recording of the log messages to the log file.
 
 The log messages are, if possible, recorded to an application folder whose 
 location depends on the OS. On Linux and macOS, the application folder is 
-located in `/home/<user>/.Cellen-Tellen`. On Windows, the application folder
-is located in `C:\Users\<user>\AppData\Local\Cellen-Tellen`. This application 
+located in `/home/<user>/.MyoFInDer`. On Windows, the application folder
+is located in `C:\Users\<user>\AppData\Local\MyoFInDer`. This application 
 folder normally contains only the log messages for the last run of the 
 application, as well as a `settings.pickle` file containing the last used 
 settings.

@@ -35,7 +35,7 @@ class Files_table(ttk.Frame):
         """
 
         # Setting the logger
-        self._logger = logging.getLogger("Cellen-Tellen.FilesTable")
+        self._logger = logging.getLogger("MyoFInDer.FilesTable")
 
         super().__init__(root)
 
@@ -371,8 +371,7 @@ class Files_table(ttk.Frame):
             dump(self.table_items.save_version, save_file, protocol=4)
 
     def _save_originals(self, directory: Path) -> None:
-        """Saves the original images in a sub-folder of Cellen-Tellen's Project
-        folder.
+        """Saves the original images in a sub-folder of the project folder.
 
         Args:
             directory: The path to the project folder.

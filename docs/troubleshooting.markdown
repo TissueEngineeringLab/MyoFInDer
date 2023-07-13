@@ -5,25 +5,25 @@ title: Troubleshooting
 
 [Home page](index.markdown)
 
-Cellen-Tellen is a free and open-source software developed as a side-project.
-As such, **it comes "as is" with no warranty of any kind**. That being said, 
-its developer will gladly do their best to maintain it and fix any bug brought 
-to his attention, within reasonable limits.
+MyoFInDer is a free and open-source software developed as a side-project. As 
+such, **it comes "as is" with no warranty of any kind**. That being said, its 
+developer will gladly do their best to maintain it and fix any bug brought to 
+his attention, within reasonable limits.
 
-When encountering a problem with Cellen-Tellen, please **first thoroughly read 
-the [Installation](installation.markdown) and [Usage](usage.markdown) 
-sections**. If you cannot find information about your problem there, check if 
-it isn't listed in **the [Common problems](#common-problems) section below**. 
-If you still cannot find anything, you can also check **the 
-[Issues](https://github.com/WeisLeDocto/Cellen-Tellen/issues) and 
-[Discussions](https://github.com/WeisLeDocto/Cellen-Tellen/discussions) pages**
+When encountering a problem with MyoFInDer, please **first thoroughly read the 
+[Installation](installation.markdown) and [Usage](usage.markdown) sections**. 
+If you cannot find information about your problem there, check if it isn't 
+listed in **the [Common problems](#common-problems) section below**. If you 
+still cannot find anything, you can also check **the 
+[Issues](https://github.com/WeisLeDocto/MyoFInDer/issues) and 
+[Discussions](https://github.com/WeisLeDocto/MyoFInDer/discussions) pages**
 of the GitHub repository.
 
 If your problem has never been reported before, **the best way to report it is
-to [open a new issue](https://github.com/WeisLeDocto/Cellen-Tellen/issues/new) 
-on GitHub**. Issues are not only intended for bugs, they can also be opened for
+to [open a new issue](https://github.com/WeisLeDocto/MyoFInDer/issues/new) on 
+GitHub**. Issues are not only intended for bugs, they can also be opened for
 requesting help or suggesting improvements. Alternatively, you can also 
-**[start a new discussion](https://github.com/WeisLeDocto/Cellen-Tellen/discussions/new/choose)
+**[start a new discussion](https://github.com/WeisLeDocto/MyoFInDer/discussions/new/choose)
 on GitHub** for chatting with the maintainer in a more informal way. Both of 
 these solutions require you to 
 [create a GitHub account](https://github.com/join). If for some reason you 
@@ -37,7 +37,7 @@ I would prefer you not to contact me this way.
   installer**
   
   Depending on your computer configuration, you might need specific permissions 
-  to install Python and/or to run the Windows installer of Cellen-Tellen. If
+  to install Python and/or to run the Windows installer of MyoFInDer. If
   that's the case, you will probably be asked to enter an administrator 
   password during the installation procedure. If you don't have the necessary 
   privileges, your only option is then to contact your local administrator.
@@ -48,13 +48,13 @@ I would prefer you not to contact me this way.
   displaying on the screen even after switching to another image. These "ghost"
   nuclei will persist no matter what you try to do. This is a known bug, that
   fortunately only affect the display and not the data. To reset the display, 
-  save your project, close Cellen-Tellen, re-open it, and load your project. 
+  save your project, close MyoFInDer, re-open it, and load your project. 
   Please send feedback to the developer if you would encounter this bug, it 
   will help him troubleshoot it.
 
 - **I cannot load my project from the file explorer**
 
-  When you want to load a Cellen-Tellen project from the explorer, make sure 
+  When you want to load a MyoFInDer project from the explorer, make sure 
   that the file explorer path corresponds to that of folder containing the 
   project files. For example if you want to load the 
   *C:\Users\User\Desktop\Proj* project, the "Selection" section of the file

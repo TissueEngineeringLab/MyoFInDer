@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     # Parser for parsing the command line arguments of the script
     parser = argparse.ArgumentParser(
-        description="Starts Cellen-Tellen, with optional flags for specifying "
+        description="Starts MyoFInDer, with optional flags for specifying "
                     "whether to record log messages and whether the module was"
                     " started by the application or independently.")
     parser.add_argument('-n', '--nolog', action='store_false',
@@ -27,9 +27,9 @@ if __name__ == "__main__":
 
     # Setting the path to the application folder
     if system() in ('Linux', 'Darwin'):
-        app_folder = Path.home() / '.CellenTellen'
+        app_folder = Path.home() / '.MyoFInDer'
     elif system() == 'Windows':
-        app_folder = (Path.home() / 'AppData' / 'Local' / 'Cellen-Tellen')
+        app_folder = (Path.home() / 'AppData' / 'Local' / 'MyoFInDer')
     else:
         app_folder = None
 
@@ -41,7 +41,7 @@ if __name__ == "__main__":
             app_folder = None
 
     # Setting up the logger
-    logger = logging.getLogger("Cellen-Tellen")
+    logger = logging.getLogger("MyoFInDer")
     logger.setLevel(logging.INFO)
 
     # Setting up the handlers only if logging is enabled
@@ -65,14 +65,14 @@ if __name__ == "__main__":
 
     # Normal workflow
     try:
-        logger.log(logging.INFO, "Launching Cellen-Tellen")
+        logger.log(logging.INFO, "Launching MyoFInDer")
         window = Main_window(app_folder)
         window.mainloop()
-        logger.log(logging.INFO, "Cellen-Tellen terminated gracefully")
+        logger.log(logging.INFO, "MyoFInDer terminated gracefully")
 
     # Displaying the exception and waiting for the user to close the console
     except (Exception,) as exc:
-        logger.exception("Cellen-Tellen encountered an error while running !",
+        logger.exception("MyoFInDer encountered an error while running !",
                          exc_info=exc)
         # Only leave the console on if logging is enabled
         if log:

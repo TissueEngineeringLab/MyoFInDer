@@ -5,30 +5,30 @@ title: Installation
 
 [Home page](index.markdown)
 
-As a Python module, Cellen-Tellen can be installed on almost any computer able
-to run a version of Python between 3.7 and 3.10. It is in particular fully 
+As a Python module, MyoFInDer can be installed on almost any computer able to 
+run a version of Python between 3.7 and 3.10. It is in particular fully 
 supported on **Windows 8 and later**, and on **Ubuntu 18.04 and later**. 
 
 Because the installation and use as a Python module might not be 
 straightforward for every user, a very **basic Windows installer** is also 
 provided for convenience.
 
-Cellen-Tellen's installation takes between 1 and 2GB of disk memory. It uses 
-around 1GB of RAM when running, and might use up to 100% of the CPU. For a good
+MyoFInDer's installation takes between 1 and 2GB of disk memory. It uses around 
+1GB of RAM when running, and might use up to 100% of the CPU. For a good
 performance, it is advised to have at least 8GB of RAM on your computer, and
-4 CPU cores or more. It is also recommended not to run Cellen-Tellen along with
+4 CPU cores or more. It is also recommended not to run MyoFInDer along with
 other CPU-intensive applications, like image-processing software.
 
 Index of the Installation page :
 
 1. [On Windows](#1-on-windows)
    1. [Install Python](#11-install-python)
-   2. [Installation of Cellen-Tellen using the Windows installer](#12-installation-of-cellen-tellen-using-the-windows-installer)
-   3. [Installation of Cellen-Tellen from console](#13-installation-of-cellen-tellen-from-console)
+   2. [Installation of MyoFInDer using the Windows installer](#12-installation-of-myofinder-using-the-windows-installer)
+   3. [Installation of MyoFInDer from console](#13-installation-of-myofinder-from-console)
 2. [On Linux and macOS](#2-on-linux-and-macos)
    1. [Check your Python version](#21-check-your-python-version)
    2. [[Optional] Deploy a virtual environment](#22-optional-deploy-a-virtual-environment)
-   3. [Install Cellen-Tellen](#23-install-cellen-tellen)
+   3. [Install MyoFInDer](#23-install-myofinder)
 3. [GPU acceleration](#3-gpu-acceleration)
 
 # 1. On Windows
@@ -84,7 +84,7 @@ the instructions of the installation wizard. Make sure to check the
 Once Python is installed, you can **double-check the installation** by running 
 again `python --version`.
 
-## 1.2 Installation of Cellen-Tellen using the Windows installer
+## 1.2 Installation of MyoFInDer using the Windows installer
 
 For convenience, **a very basic installer is provided for Windows users**. It 
 requires a compatible version of Python to be installed, as described in the
@@ -92,36 +92,35 @@ previous section.
 
 This installer makes user's life easier by :
 
-- Handling the installation of the Cellen-Tellen module
-- Adding Desktop and Menu Bar shortcuts for starting Cellen-Tellen
-- Enabling the Recent Projects feature in the application
+- Handling the installation of the MyoFInDer module
+- Adding Desktop and Menu Bar shortcuts for starting MyoFInDer
 
 Note that compared to the command-line installation, the installer just 
-installs additional features for easily starting Cellen-Tellen. Both 
-installation methods are strictly equivalent otherwise.
+installs additional features for easily starting MyoFInDer. Both installation 
+methods are strictly equivalent otherwise.
 
 To run the installer, just double-click on it and follow the displayed 
 instructions. You might have to enter an administrator password at some point. 
 Then, when opening the application for the first time, the required Python 
-modules and Cellen-Tellen will be installed automatically. This may take some
-time and necessitates a working internet connection.
+modules and MyoFInDer will be installed automatically. This may take some time 
+and necessitates a working internet connection.
 
 The Windows installer can be downloaded 
-[here](https://github.com/WeisLeDocto/Cellen-Tellen/blob/main/bin/cellen_tellen.msi).
+[here](https://github.com/WeisLeDocto/MyoFInDer/blob/main/bin/MyoFInDer.msi).
 
-## 1.3 Installation of Cellen-Tellen from console
+## 1.3 Installation of MyoFInDer from console
 
 In case the provided installer does not work properly, or simply if you prefer
-using Cellen-Tellen from the command-line, **it is also possible to install it
+using MyoFInDer from the command-line, **it is also possible to install it
 using `pip` like any other Python module**. 
 
 ### 1.3.1 \[Optional] Deploy a virtual environment
 
-It is **recommended to install Cellen-Tellen in a
+It is **recommended to install MyoFInDer in a
 [virtual environment](https://docs.python.org/3/library/venv.html)** to avoid 
 conflicts with other Python packages installed at the user level. This step is
-however not mandatory and Cellen-Tellen can also be installed directly at the
-user level.
+however not mandatory and MyoFInDer can also be installed directly at the user 
+level.
 
 To create a virtual environment called `venv`, simply run the following 
 command at the location of your choice (here in the `Documents` folder) :
@@ -168,19 +167,19 @@ C:\Users\User><Path to your venv>\Scripts\activate.bat
 
 Where `<Path to your venv>` is the path to the created virtual environment.
 
-### 1.3.2 Install Cellen-Tellen
+### 1.3.2 Install MyoFInDer
 
-Once the correct version of Python is installed, Cellen-Tellen can be 
-installed using the `pip` module :
+Once the correct version of Python is installed, MyoFInDer can be installed 
+using the `pip` module :
 
 ```console
-C:\Users\User>python -m pip install Cellen-Tellen
+C:\Users\User>python -m pip install myofinder
 ```
 
 Or if installing in a virtual environment :
 
 ```console
-(venv) C:\Users\User>python -m pip install Cellen-Tellen
+(venv) C:\Users\User>python -m pip install myofinder
 ```
 
 The console should display lines similar to :
@@ -193,17 +192,17 @@ Installing collected packages: numpy
 Successfully installed numpy-1.25.0
 ```
 
-You can then **check if Cellen-Tellen is correctly installed** by running :
+You can then **check if MyoFInDer is correctly installed** by running :
 
 ```console
-C:\Users\User>python -c "import CellenTellen; print(CellenTellen.__version__)"
+C:\Users\User>python -c "import myofinder; print(myofinder.__version__)"
 1.0.0
 ```
 
 Or if installed in a virtual environment :
 
 ```console
-(venv) C:\Users\User>python -c "import CellenTellen; print(CellenTellen.__version__)"
+(venv) C:\Users\User>python -c "import myofinder; print(myofinder.__version__)"
 1.0.0
 ```
 
@@ -240,11 +239,11 @@ python-versions-ubuntu-20-04/) in Ubuntu.
 *In this section, replace* `python` *with* `python3` *or* `python3.x` 
 *(7<=x<=10) if necessary.*
 
-It is **recommended to install Cellen-Tellen in a
+It is **recommended to install MyoFInDer in a
 [virtual environment](https://docs.python.org/3/library/venv.html)** to avoid 
 conflicts with other Python packages installed at the user level. This step is
-however not mandatory and Cellen-Tellen can also be installed directly at the
-user level.
+however not mandatory and MyoFInDer can also be installed directly at the user 
+level.
 
 To create a virtual environment called `venv`, simply run the following 
 command at the location of your choice (here in the `Documents` folder) :
@@ -283,22 +282,22 @@ user@machine:~$ source <Path to your venv>/bin/activate
 
 Where `<Path to your venv>` is the path to the created virtual environment.
 
-## 2.3 Install Cellen-Tellen
+## 2.3 Install MyoFInDer
 
 *In this section, replace* `python` *with* `python3` *or* `python3.x` 
 *(7<=x<=10) if necessary.*
 
-Once the correct version of Python is installed, **Cellen-Tellen can be 
-installed like any other package using the `pip` module** :
+Once the correct version of Python is installed, **MyoFInDer can be installed 
+like any other package using the `pip` module** :
 
 ```console
-user@machine:~$ python -m pip install Cellen-Tellen
+user@machine:~$ python -m pip install myofinder
 ```
 
 Or if installing in a virtual environment :
 
 ```console
-(venv) user@machine:~$ python -m pip install Cellen-Tellen
+(venv) user@machine:~$ python -m pip install myofinder
 ```
 
 The console should display lines similar to :
@@ -311,24 +310,24 @@ Installing collected packages: numpy
 Successfully installed numpy-1.25.0
 ```
 
-You can then **check if Cellen-Tellen is correctly installed** by running :
+You can then **check if MyoFInDer is correctly installed** by running :
 
 ```console
-user@machine:~$ python -c "import CellenTellen; print(CellenTellen.__version__)"
+user@machine:~$ python -c "import myofinder; print(myofinder.__version__)"
 1.0.0
 ```
 
 Or if installed in a virtual environment :
 
 ```console
-(venv) user@machine:~$ python -c "import CellenTellen; print(CellenTellen.__version__)"
+(venv) user@machine:~$ python -c "import myofinder; print(myofinder.__version__)"
 1.0.0
 ```
 
 # 3. GPU-acceleration
 
 The [TensorFlow](https://www.tensorflow.org/) library that runs the AI model 
-used by Cellen Tellen supports GPU acceleration. When it is enabled, it can 
+used by MyoFInDern supports GPU acceleration. When it is enabled, it can 
 drastically improve the computation speed of the module by performing the
 calculations on the GPU rather than on the CPU. Depending on your machine, you 
 might however not be able to enable GPU acceleration.
@@ -341,6 +340,6 @@ install the cuDNN library, again with the correct version for your OS and
 platform. An installation guide for cuDNN can be found 
 [here](https://docs.nvidia.com/deeplearning/cudnn/install-guide/). Once this is 
 done, GPU acceleration should be automatically enabled when processing images
-with Cellen Tellen.
+with MyoFInDer.
 
 [Home page](index.markdown)
