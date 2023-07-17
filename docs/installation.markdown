@@ -106,7 +106,7 @@ modules and MyoFInDer will be installed automatically. This may take some time
 and necessitates a working internet connection.
 
 The Windows installer can be downloaded 
-[here](https://github.com/WeisLeDocto/MyoFInDer/blob/main/bin/MyoFInDer.msi).
+[here](https://github.com/WeisLeDocto/MyoFInDer/blob/main/bin/myofinder.msi).
 
 ## 1.3 Installation of MyoFInDer from console
 
@@ -182,17 +182,9 @@ Or if installing in a virtual environment :
 (venv) C:\Users\User>python -m pip install myofinder
 ```
 
-The console should display lines similar to :
-
-```console
-Collecting numpy
-  Downloading numpy-1.25.0-cp39-cp39-win_amd64.whl (15.1 MB)
-     ---------------------------------------- 15.1/15.1 MB 4.3 MB/s eta 0:00:00
-Installing collected packages: numpy
-Successfully installed numpy-1.25.0
-```
-
-You can then **check if MyoFInDer is correctly installed** by running :
+The console should display progress bars corresponding to the installation of
+various Python modules. You can then **check if MyoFInDer is correctly 
+installed** by running :
 
 ```console
 C:\Users\User>python -c "import myofinder; print(myofinder.__version__)"
@@ -300,17 +292,9 @@ Or if installing in a virtual environment :
 (venv) user@machine:~$ python -m pip install myofinder
 ```
 
-The console should display lines similar to :
-
-```console
-Collecting numpy
-  Downloading numpy-1.25.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (17.6 MB)
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 17.6/17.6 MB 4.6 MB/s eta 0:00:00
-Installing collected packages: numpy
-Successfully installed numpy-1.25.0
-```
-
-You can then **check if MyoFInDer is correctly installed** by running :
+The console should display progress bars corresponding to the installation of
+various Python modules. You can then **check if MyoFInDer is correctly 
+installed** by running :
 
 ```console
 user@machine:~$ python -c "import myofinder; print(myofinder.__version__)"

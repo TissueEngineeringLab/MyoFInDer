@@ -7,8 +7,8 @@ title: Troubleshooting
 
 MyoFInDer is a free and open-source software developed as a side-project. As 
 such, **it comes "as is" with no warranty of any kind**. That being said, its 
-developer will gladly do their best to maintain it and fix any bug brought to 
-his attention, within reasonable limits.
+developer will gladly do its best to maintain it and fix any bug brought to his 
+attention, within reasonable limits.
 
 When encountering a problem with MyoFInDer, please **first thoroughly read the 
 [Installation](installation.markdown) and [Usage](usage.markdown) sections**. 

@@ -109,12 +109,6 @@ subsection :
 (venv) C:\Users\User>python -m myofinder
 ```
 
-Or in Linux :
-
-```console
-(venv) user@machine:~$ python -m myofinder
-```
-
 ## 1.3 Startup window
 
 Once MyoFInDer is running, **a console should first appear** with log 
@@ -169,7 +163,7 @@ allows to (un)select all the images at once.
 ## 2.2 Tuning the settings
 
 Before processing the loaded images, you might want to **adjust the processing
-parameters**. That can be done by clicking on the Settings button, that opens a
+parameters**. This can be done by clicking on the Settings button, that opens a
 new window containing the Settings menu.
 
 <img src="./usage_images/settings_button.png" title="Settings button">
@@ -187,8 +181,8 @@ Once you have adjusted the computation parameters, it is time to **start
 processing images**. To do so, simply click on the *Process Images* button.
 
 > If you use images from a network drive, is advised to first save the project
-> before processing them. This way, the images will first be copied locally and
-> MyoFInDer won't be affected by network issues.
+> locally before processing them. This way, MyoFInDer won't be affected by 
+> potential network issues.
 
 <img src="./usage_images/process_images.png" title="Process Images button">
 
@@ -232,12 +226,12 @@ the mouse wheel and drag to **move the view** on a zoomed image.
 
 ## 2.5 Manually correcting the output
 
-Once the images have been processed, you can **manually correct the detected
-nuclei** by adding, inverting or deleting ones. To do so, the nuclei overlay 
-must be enabled. To **add a nucleus**, left-click on an area where no nucleus 
-is present. To **invert a nucleus**, i.e. switch it from positive to negative 
-or vice-versa, left-click on an already existing one. And to **delete a 
-nucleus**, right-click on an already existing one.
+Once the images have been processed, you can **manually correct the output** by 
+adding, inverting or deleting nuclei. To do so, the nuclei overlay must be 
+enabled. To **add a nucleus**, left-click on an area where no nucleus is 
+present. To **invert a nucleus**, i.e. switch it from positive to negative or 
+vice-versa, left-click on an already existing one. And to **delete a nucleus**, 
+right-click on an already existing one.
 
 It is also possible to **invert or delete multiple nuclei at once**. To do so,
 left- or right-click and drag to form a selection box. All the nuclei inside
@@ -256,25 +250,27 @@ click on the *Save Project As* button in the *File* menu.
 
 <img src="./usage_images/save_as.png" title="Save As buttons">
 
-A file explorer then appears, in which you have to **select the folder in which 
-to save the project**. This folder has to be a newly created one. To save in a 
-new folder, place the file explorer in the parent folder that will contain your 
-new folder, enter the name of the new folder in the *File name* field of the 
-explorer, and validate using the *Save* button.
+A file explorer then appears, in which you have to **specify the folder in 
+which to save the project**. First, place the file explorer in the parent 
+folder that will contain your project folder. Then, enter the desired name for 
+the project folder in the *File name* field of the explorer, and validate using 
+the *Save* button. Projects can only be saved in new folders, not in existing 
+ones.
 
 <img src="./usage_images/saving_popup.png" title="Save popup window">
 
 If you look inside a saved project folder, you will find first an Excel file
 containing a **summary of the detected nuclei and fibers** for each image in 
-the project. Then, a `settings.pickle` file containing the setting values at 
-the moment when the project was saved. The `data.pickle` files contains the 
+the project. Then, a `settings.pickle` file contains the setting values at the 
+moment when the project was saved. The `data.pickle` files contains the 
 location and nature of all the detected nuclei and fibers. The original images
-are copied and saved to the `Original Images` folder, so the project folder 
-contains all the information needed for reloading the project. Optionally, if 
-the *Save Images with Overlay* setting is enabled, an `Overlay Images` folder
-contains the images with an overlay showing the detected fibers and nuclei.
+are copied and saved to the `Original Images` folder. Optionally, if the *Save 
+Images with Overlay* setting is enabled, an `Overlay Images` folder contains 
+the images with an overlay showing the detected fibers and nuclei.
 
 <img src="./usage_images/project_content.png" title="Project folder content">
+
+> The `.pickle` files are binary files that are not directly readable.
 
 ## 3.2 Loading data from an existing project
 
@@ -319,8 +315,7 @@ The log messages are, if possible, recorded to an application folder whose
 location depends on the OS. On Linux and macOS, the application folder is 
 located in `/home/<user>/.MyoFInDer`. On Windows, the application folder
 is located in `C:\Users\<user>\AppData\Local\MyoFInDer`. This application 
-folder normally contains only the log messages for the last run of the 
-application, as well as a `settings.pickle` file containing the last used 
-settings.
+folder normally contains the log messages for the last run of the application, 
+as well as a `settings.pickle` file containing the last used settings.
 
 [Home page](index.markdown)
