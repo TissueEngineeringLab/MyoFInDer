@@ -29,7 +29,7 @@ setup(
   """,
   keywords='segmentation,fusion index,automation,muscle culture',
   license='GPL V3',
-  classifiers=['Development Status :: 4 - Beta',
+  classifiers=['Development Status :: 5 - Production/Stable ',
                'Intended Audience :: Science/Research',
                'License :: OSI Approved :: GNU General Public License v3 '
                '(GPLv3)',
