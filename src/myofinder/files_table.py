@@ -463,16 +463,6 @@ class Files_table(ttk.Frame):
             # Writing the percentage area of fibers
             worksheet.write(i + 2, 4, f'{item.fibers.area * 100:.2f}')
 
-        # Writing the average for each column
-        average_line = 3 + len(self.table_items)
-        last_data_line = 2 + len(self.table_items)
-        worksheet.write(average_line, 0, "Average", bold)
-        if self.table_items:
-            worksheet.write(average_line, 1, f"=AVERAGE(B3:B{last_data_line})")
-            worksheet.write(average_line, 2, f"=AVERAGE(C3:C{last_data_line})")
-            worksheet.write(average_line, 3, f"=AVERAGE(D3:D{last_data_line})")
-            worksheet.write(average_line, 4, f"=AVERAGE(E3:E{last_data_line})")
-
         workbook.close()
 
     def _save_overlay_images(self, directory: Path) -> None:
