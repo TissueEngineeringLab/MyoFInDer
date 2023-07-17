@@ -48,7 +48,7 @@ class Splash_window(Tk):
             self._image = self._image.resize(
                 (int(scr_width * size_factor),
                  int(scr_width * size_factor / img_ratio)),
-                Image.ANTIALIAS)
+                Image.LANCZOS)
             self.geometry('%dx%d+%d+%d' % (
                 int(scr_width * size_factor),
                 int(scr_width * size_factor / img_ratio),
@@ -60,7 +60,7 @@ class Splash_window(Tk):
             self._image = self._image.resize(
                 (int(scr_height * size_factor * img_ratio),
                  int(scr_height * size_factor)),
-                Image.ANTIALIAS)
+                Image.LANCZOS)
             self.geometry('%dx%d+%d+%d' % (
                 int(scr_height * size_factor * img_ratio),
                 int(scr_height * size_factor),
