@@ -61,6 +61,7 @@ setup(
   packages=find_namespace_packages(where="src", exclude=list()),
   package_dir={"": "src"},
   include_package_data=True,
+  package_data={"myofinder": ["app_images/*"]},
   ext_package='myofinder',
   ext_modules=list(),
 
