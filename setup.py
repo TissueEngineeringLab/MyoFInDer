@@ -20,12 +20,12 @@ setup(
   name='myofinder',
   version=__version__,
   description='Automatic calculation of the fusion index by AI segmentation',
-  long_description="""MyoFInDer is a Python module for the automatic 
-  calculation of the fusion index on florescence-stained images of muscle
-  cultures. It provides a simple and user-friendly interface managing several
-  images, processing all or part of them, visualizing the output, and manually
-  correcting it if needed. It relies on the DeepCell library for performing the
-  image segmentation.
+  long_description="""Myoblast Fusion Index Determination
+  Myofinder is is a Python module for the automatic calculation of the fusion 
+  index on florescence-stained images of muscle cultures. It provides a simple 
+  and user-friendly interface managing several images, processing all or part 
+  of them, visualizing the output, and manually correcting it if needed. It 
+  relies on the DeepCell library for performing the image segmentation.
   """,
   keywords='segmentation,fusion index,automation,muscle culture',
   license='GPL V3',
