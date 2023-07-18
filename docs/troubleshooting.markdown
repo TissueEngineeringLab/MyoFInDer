@@ -15,15 +15,15 @@ When encountering a problem with MyoFInDer, please **first thoroughly read the
 If you cannot find information about your problem there, check if it isn't 
 listed in **the [Common problems](#common-problems) section below**. If you 
 still cannot find anything, you can also check **the 
-[Issues](https://github.com/WeisLeDocto/MyoFInDer/issues) and 
-[Discussions](https://github.com/WeisLeDocto/MyoFInDer/discussions) pages**
-of the GitHub repository.
+[Issues](https://github.com/TissueEngineeringLab/MyoFInDer/issues) and 
+[Discussions](https://github.com/TissueEngineeringLab/MyoFInDer/discussions) 
+pages** of the GitHub repository.
 
 If your problem has never been reported before, **the best way to report it is
-to [open a new issue](https://github.com/WeisLeDocto/MyoFInDer/issues/new) on 
-GitHub**. Issues are not only intended for bugs, they can also be opened for
+to [open a new issue](https://github.com/TissueEngineeringLab/MyoFInDer/issues/new) 
+on GitHub**. Issues are not only intended for bugs, they can also be opened for
 requesting help or suggesting improvements. Alternatively, you can also 
-**[start a new discussion](https://github.com/WeisLeDocto/MyoFInDer/discussions/new/choose)
+**[start a new discussion](https://github.com/TissueEngineeringLab/MyoFInDer/discussions/new/choose)
 on GitHub** for chatting with the maintainer in a more informal way. Both of 
 these solutions require you to 
 [create a GitHub account](https://github.com/join). If for some reason you 

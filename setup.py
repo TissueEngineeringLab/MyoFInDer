@@ -45,11 +45,11 @@ setup(
                ],
 
   # URLs of the project
-  url='https://github.com/WeisLeDocto/MyoFInDer',
+  url='https://github.com/TissueEngineeringLab/MyoFInDer',
   download_url='https://pypi.org/project/MyoFInDer/#files',
   project_urls={
-    'Documentation': 'https://weisledocto.github.io/MyoFInDer/',
-    'Source': 'https://github.com/WeisLeDocto/MyoFInDer'},
+    'Documentation': 'https://tissueengineeringlab.github.io/MyoFInDer/',
+    'Source': 'https://github.com/TissueEngineeringLab/MyoFInDer'},
 
   # Information on the author
   author='Antoine Weisrock',

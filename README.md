@@ -17,7 +17,7 @@ and re-opened later.
 
 A more detailed description of the features and usage of MyoFInDer can be found 
 in the 
-[usage section](https://weisledocto.github.io/MyoFInDer/usage.html)
+[usage section](https://tissueengineeringlab.github.io/MyoFInDer/usage.html)
 of the documentation.
 
 MyoFInDer was developed at the 
@@ -59,12 +59,13 @@ installer allows automatically installing the module and its dependencies for
 Windows users who don't feel comfortable with command-line operations.
 
 A more detailed description of the installation procedure can be found in the 
-[installation section](https://weisledocto.github.io/MyoFInDer/installation.html)
+[installation section](https://tissueengineeringlab.github.io/MyoFInDer/installation.html)
 of the documentation.
 
 Documentation
 -------------
 
 The latest version of the documentation can be accessed on the 
-[project's website](https://weisledocto.github.io/MyoFInDer/). It contains
-detailed information about the installation, usage, and troubleshooting. 
+[project's website](https://tissueengineeringlab.github.io/MyoFInDer/). It 
+contains detailed information about the installation, usage, and 
+troubleshooting. 

@@ -25,7 +25,7 @@ description: >- # this means to ignore newlines until "baseurl:"
   It details the installation steps, the usage guidelines, and provides useful 
   links for users requesting additional support.
 baseurl: "/MyoFInDer" # the subpath of your site, e.g. /blog
-url: "https://weisledocto.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://tissueengineeringlab.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 github_username:  WeisLeDocto
 show_downloads: false
 verbose: true
