@@ -20,12 +20,12 @@ setup(
   name='myofinder',
   version=__version__,
   description='Automatic calculation of the fusion index by AI segmentation',
-  long_description="""MyoFInDer is a Python module for the automatic 
-  calculation of the fusion index on florescence-stained images of muscle
-  cultures. It provides a simple and user-friendly interface managing several
-  images, processing all or part of them, visualizing the output, and manually
-  correcting it if needed. It relies on the DeepCell library for performing the
-  image segmentation.
+  long_description="""Myoblast Fusion Index Determination
+  Myofinder is is a Python module for the automatic calculation of the fusion 
+  index on florescence-stained images of muscle cultures. It provides a simple 
+  and user-friendly interface managing several images, processing all or part 
+  of them, visualizing the output, and manually correcting it if needed. It 
+  relies on the DeepCell library for performing the image segmentation.
   """,
   keywords='segmentation,fusion index,automation,muscle culture',
   license='GPL V3',
@@ -46,7 +46,7 @@ setup(
 
   # URLs of the project
   url='https://github.com/TissueEngineeringLab/MyoFInDer',
-  download_url='https://pypi.org/project/MyoFInDer/#files',
+  download_url='https://pypi.org/project/myofinder/#files',
   project_urls={
     'Documentation': 'https://tissueengineeringlab.github.io/MyoFInDer/',
     'Source': 'https://github.com/TissueEngineeringLab/MyoFInDer'},
@@ -66,7 +66,7 @@ setup(
   ext_modules=list(),
 
   # Installation requirements
-  python_requires=">=3.7,<3.10",
+  python_requires=">=3.7,<3.11",
   install_requires=['Pillow>=9.0.0', 'opencv-python>=4.5', 'DeepCell>=0.10.0',
                     'XlsxWriter>=3.0.0', 'screeninfo>=0.7', 'numpy<1.24'],
   extras_require=dict(),
