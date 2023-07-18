@@ -66,7 +66,7 @@ setup(
   ext_modules=list(),
 
   # Installation requirements
-  python_requires=">=3.7,<=3.10",
+  python_requires=">=3.7,<3.11",
   install_requires=['Pillow>=9.0.0', 'opencv-python>=4.5', 'DeepCell>=0.10.0',
                     'XlsxWriter>=3.0.0', 'screeninfo>=0.7', 'numpy<1.24'],
   extras_require=dict(),
