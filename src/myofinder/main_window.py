@@ -1015,4 +1015,4 @@ class Main_window(Tk):
         """Opens the project repository in a browser."""
 
         self.log("Opening the online documentation")
-        open_new("https://github.com/WeisLeDocto/MyoFInDer")
+        open_new("https://github.com/TissueEngineeringLab/MyoFInDer")

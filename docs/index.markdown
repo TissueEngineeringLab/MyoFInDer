@@ -24,8 +24,8 @@ On this documentation website, you can find information about the :
 # About
 
 This module is **free and open-source**, hosted and distributed on 
-[GitHub](https://github.com/WeisLeDocto/MyoFInDer) under the GNU GPL-3.0 
-license. It was developed at the
+[GitHub](https://github.com/TissueEngineeringLab/MyoFInDer) under the GNU 
+GPL-3.0 license. It was developed at the
 [Tissue Engineering Lab](https://tissueengineering.kuleuven-kulak.be/), part of
 the [KU Leuven KULAK](https://kulak.kuleuven.be/) university. **Contributions,
 bug reports or simple questions** are welcome in the dedicated sections of the
