@@ -107,7 +107,7 @@ internet connection is required for this step, and that it might take up a few
 minutes for this step to complete.
 
 The Windows installer can be downloaded 
-[here](https://github.com/WeisLeDocto/MyoFInDer/blob/main/bin/myofinder.msi).
+[here](https://github.com/TissueEngineeringLab/MyoFInDer/blob/main/bin/myofinder.msi).
 
 ## 1.3 Installation of MyoFInDer from console
 
