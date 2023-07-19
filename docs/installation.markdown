@@ -312,6 +312,10 @@ Or if installed in a virtual environment :
 1.0.0
 ```
 
+> Note that tkinter might not be distributed by default with Python, you might
+> have to install it manually. On Ubuntu, that can be done by calling
+> `sudo apt install python3-tk`.
+
 # 3. GPU-acceleration
 
 The [TensorFlow](https://www.tensorflow.org/) library that runs the AI model 
