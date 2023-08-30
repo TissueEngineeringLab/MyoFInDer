@@ -519,8 +519,6 @@ class Settings:
         default_factory=partial(BooleanVar, value=False, name='save_overlay'))
     fiber_threshold: IntVar = field(
         default_factory=partial(IntVar, value=25, name='fiber_threshold'))
-    nuclei_threshold: IntVar = field(
-        default_factory=partial(IntVar, value=25, name='nuclei_threshold'))
     small_objects_threshold: IntVar = field(
         default_factory=partial(IntVar, value=20, name='small_objects'))
     blue_channel_bool: BooleanVar = field(
@@ -546,8 +544,8 @@ class Settings:
 
         settings = (self.fiber_colour, self.nuclei_colour,
                     self.save_overlay, self.fiber_threshold,
-                    self.nuclei_threshold, self.small_objects_threshold,
-                    self.blue_channel_bool, self.green_channel_bool,
-                    self.red_channel_bool, self.show_nuclei, self.show_fibers)
+                    self.small_objects_threshold, self.blue_channel_bool,
+                    self.green_channel_bool, self.red_channel_bool,
+                    self.show_nuclei, self.show_fibers)
 
         return ', '.join(f"{setting}: {setting.get()}" for setting in settings)

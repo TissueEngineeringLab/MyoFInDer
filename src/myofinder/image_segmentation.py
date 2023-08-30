@@ -28,7 +28,6 @@ class Image_segmentation:
                  nuclei_color: str,
                  fiber_color: str,
                  fiber_threshold: int,
-                 nuclei_threshold: int,
                  small_objects_threshold: int) -> \
             (Path, List[Tuple[np.ndarray, np.ndarray]],
              List[Tuple[np.ndarray, np.ndarray]], Tuple[Any], float):
@@ -42,8 +41,6 @@ class Image_segmentation:
             fiber_color: The color of the fibers, as a string.
             fiber_threshold: The gray level threshold above which a pixel is
                 considered to be part of a fiber.
-            nuclei_threshold: The gray level threshold above which a detected
-                nucleus is considered to be valid.
             small_objects_threshold: Objects whose area is lower than this
                 value (in pixels) will not be considered.
 
