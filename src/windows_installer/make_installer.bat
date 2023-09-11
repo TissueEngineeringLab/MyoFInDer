@@ -2,13 +2,13 @@
 
 @echo off
 
-set advinst_path="C:\Program Files (x86)\Caphyon\Advanced Installer 20.8\bin\x86\"
+set advinst_path="C:\Program Files (x86)\Caphyon\Advanced Installer 20.9.1\bin\x86\"
 
 echo Checking if Advanced Installer is installed
 if exist %advinst_path% (
-    echo Advanced Installer 20.8 found on the system
+    echo Advanced Installer 20.9.1 found on the system
 ) else (
-    echo Please install Advanced Installer 20.8 for compiling the installer
+    echo Please install Advanced Installer 20.9.1 for compiling the installer
     pause
     exit /b 1
 )
