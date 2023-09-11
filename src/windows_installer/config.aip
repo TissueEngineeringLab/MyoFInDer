@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<DOCUMENT Type="Advanced Installer" CreateVersion="20.8" version="20.8" Modules="simple" RootPath="." Language="en" Id="{756979C8-C59B-4193-9DD6-BA761C79E716}">
+<DOCUMENT Type="Advanced Installer" CreateVersion="20.8" version="20.9.1" Modules="simple" RootPath="." Language="en" Id="{756979C8-C59B-4193-9DD6-BA761C79E716}">
   <COMPONENT cid="caphyon.advinst.msicomp.ProjectOptionsComponent">
     <ROW Name="HiddenItems" Value="AppXProductDetailsComponent;AppXDependenciesComponent;AppXAppDetailsComponent;AppXVisualAssetsComponent;AppXCapabilitiesComponent;AppXAppDeclarationsComponent;AppXUriRulesComponent;FixupComponent;MsiXDiffComponent;MsixManifestEditorComponent"/>
   </COMPONENT>
@@ -15,7 +15,7 @@
     <ROW Property="ProductCode" Value="1033:{BFA51019-B48F-475B-B8BB-E2F14499079C} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="MyoFInDer"/>
-    <ROW Property="ProductVersion" Value="1.0.2" Options="32"/>
+    <ROW Property="ProductVersion" Value="1.0.3" Options="32"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
     <ROW Property="UpgradeCode" Value="{CE95562D-8E91-4ED9-B26E-5638FFE5C0B0}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
