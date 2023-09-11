@@ -23,8 +23,9 @@ Index of the Installation page :
 
 1. [On Windows](#1-on-windows)
    1. [Install Python](#11-install-python)
-   2. [Installation of MyoFInDer using the Windows installer](#12-installation-of-myofinder-using-the-windows-installer)
-   3. [Installation of MyoFInDer from console](#13-installation-of-myofinder-from-console)
+   2. [Install the C++ build tools](#12-install-the-c-build-tools)
+   3. [Installation of MyoFInDer using the Windows installer](#13-installation-of-myofinder-using-the-windows-installer)
+   4. [Installation of MyoFInDer from console](#14-installation-of-myofinder-from-console)
 2. [On Linux and macOS](#2-on-linux-and-macos)
    1. [Check your Python version](#21-check-your-python-version)
    2. [[Optional] Deploy a virtual environment](#22-optional-deploy-a-virtual-environment)
@@ -84,7 +85,26 @@ the instructions of the installation wizard. Make sure to check the
 Once Python is installed, you can **double-check the installation** by running 
 again `python --version`.
 
-## 1.2 Installation of MyoFInDer using the Windows installer
+## 1.2 Install the C++ Build tools
+
+On Windows only, **some extra tools need to be installed before installing
+MyoFInDer**. These extra tools are necessary for successfully installing one of
+the dependencies, and are not optional.
+
+First, go to the [Microsoft C++ Build Tools website](https://visualstudio.
+microsoft.com/visual-cpp-build-tools/) and download the Build Tools. When 
+starting the downloaded program, you will be asked to choose features to 
+install from a list of possible options. In the *Individual Components* tab,
+select the necessary features as shown on the picture below. Select a correct
+SDK (Windows **10** or Windows **11**) depending on your OS version ! Also, for 
+the MSCV, select the one ending with *x64/x86 build tools (Latest)*, it won't 
+necessarily be the *v143* one as shown on the picture. Then, click on Install 
+and wait for the installation to complete. This step requires about 3GB of 
+available disk space.
+
+<img src="./cpp_build_tools.png" title="Components to select for build tools">
+
+## 1.3 Installation of MyoFInDer using the Windows installer
 
 For convenience, **a very basic installer is provided for Windows users**. It 
 requires a compatible version of Python to be installed, as described in the
@@ -109,13 +129,13 @@ minutes for this step to complete.
 The Windows installer can be downloaded 
 [here](https://github.com/TissueEngineeringLab/MyoFInDer/blob/main/bin/myofinder.msi).
 
-## 1.3 Installation of MyoFInDer from console
+## 1.4 Installation of MyoFInDer from console
 
 In case the provided installer does not work properly, or simply if you prefer
 using MyoFInDer from the command-line, **it is also possible to install it
 using `pip` like any other Python module**. 
 
-### 1.3.1 \[Optional] Deploy a virtual environment
+### 1.4.1 \[Optional] Deploy a virtual environment
 
 It is **recommended to install MyoFInDer in a
 [virtual environment](https://docs.python.org/3/library/venv.html)** to avoid 
@@ -168,7 +188,7 @@ C:\Users\User><Path to your venv>\Scripts\activate.bat
 
 Where `<Path to your venv>` is the path to the created virtual environment.
 
-### 1.3.2 Install MyoFInDer
+### 1.4.2 Install MyoFInDer
 
 Once the correct version of Python is installed, MyoFInDer can be installed 
 using the `pip` module :
