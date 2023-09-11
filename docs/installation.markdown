@@ -13,11 +13,12 @@ Because the installation and use as a Python module might not be
 straightforward for every user, a very **basic Windows installer** is also 
 provided for convenience.
 
-MyoFInDer's installation takes around 2GB of disk memory. It uses around 1GB of 
-RAM when running, and might use up to 100% of the CPU. For a good performance, 
-it is advised to have at least 8GB of RAM on your computer, and 4 CPU cores or 
-more. It is also recommended not to run MyoFInDer along with other 
-CPU-intensive applications, like image-processing software.
+MyoFInDer's installation takes around 2GB of disk memory on Linux and macOS, 
+and 5GB on Windows. It uses around 1GB of RAM when running, and might use up to 
+100% of the CPU. For a good performance, it is advised to have at least 8GB of 
+RAM on your computer, and 4 CPU cores or more. It is also recommended not to 
+run MyoFInDer along with other CPU-intensive applications, like 
+image-processing software.
 
 Index of the Installation page :
 
