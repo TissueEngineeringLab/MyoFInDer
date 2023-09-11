@@ -41,6 +41,7 @@ echo Checking if the dependencies are installed
     echo The dependencies are installed
 ) || (
     echo The dependencies are not installed, installing them
+    %base_path%\venv\Scripts\python -m pip install --upgrade pip
     %base_path%\venv\Scripts\python -m pip install myofinder
 )
 
