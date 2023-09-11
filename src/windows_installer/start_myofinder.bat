@@ -36,12 +36,13 @@ if exist %base_path%\venv (
 
 echo.
 
+echo Upgrading pip to the latest version
+%base_path%\venv\Scripts\python -m pip install --upgrade pip
 echo Checking if the dependencies are installed
 %base_path%\venv\Scripts\python -m pip list | findstr "myofinder" >nul 2>&1 && (
     echo The dependencies are installed
 ) || (
     echo The dependencies are not installed, installing them
-    %base_path%\venv\Scripts\python -m pip install --upgrade pip
     %base_path%\venv\Scripts\python -m pip install myofinder
 )
 
