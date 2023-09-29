@@ -62,11 +62,6 @@ class Image_segmentation:
             raise IOError("Could not load the image for segmentation, "
                           "aborting !")
 
-        # Removing the scale bar
-        image[(image[:, :, 0] > 50) &
-              (image[:, :, 1] > 50) &
-              (image[:, :, 2] > 50)] = (0, 0, 0)
-
         nuclei_channel = image[:, :, colors[0]]
         fiber_channel = image[:, :, colors[1]]
 

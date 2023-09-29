@@ -27,6 +27,7 @@ setup(
   of them, visualizing the output, and manually correcting it if needed. It 
   relies on the DeepCell library for performing the image segmentation.
   """,
+  long_description_content_type='text/plain',
   keywords='segmentation,fusion index,automation,muscle culture',
   license='GPL V3',
   classifiers=['Development Status :: 5 - Production/Stable ',
