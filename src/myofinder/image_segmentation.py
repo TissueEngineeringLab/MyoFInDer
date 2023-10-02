@@ -67,16 +67,16 @@ class Image_segmentation:
 
         del image
 
-        # Default parameters
-        radius = 10
-        maxima_threshold = 0.1
-        interior_threshold = 0.01
+        # Segmentation parameters
+        radius = 2
+        maxima_threshold = 0.05
+        interior_threshold = 0.3
         maxima_smooth = 0
-        interior_smooth = 0
+        interior_smooth = 2
         maxima_index = 0
         interior_index = -1
         label_erosion = 0
-        fill_holes_threshold = 0
+        fill_holes_threshold = 15
         pixel_expansion = None
         maxima_algorith = 'h_maxima'
 
