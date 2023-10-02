@@ -15,7 +15,7 @@
     <ROW Property="ProductCode" Value="1033:{BFA51019-B48F-475B-B8BB-E2F14499079C} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="MyoFInDer"/>
-    <ROW Property="ProductVersion" Value="1.0.4" Options="32"/>
+    <ROW Property="ProductVersion" Value="1.0.5" Options="32"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
     <ROW Property="UpgradeCode" Value="{CE95562D-8E91-4ED9-B26E-5638FFE5C0B0}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="DefaultBuild:Windows 9x/ME" ValueLocId="-"/>
