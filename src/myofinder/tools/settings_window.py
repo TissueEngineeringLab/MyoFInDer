@@ -109,9 +109,30 @@ class Settings_window(Toplevel):
         fiber_threshold_slider_frame.grid(column=1, row=13, sticky='NW',
                                           pady=(10, 0))
 
+        # Slider to adjust the threshold for nuclei detection
+        ttk.Label(frame, text='Nuclei detection threshold :').grid(
+            column=0, row=14, sticky='E', pady=(10, 0), padx=(0, 10))
+
+        nuclei_threshold_slider_frame = ttk.Frame(frame)
+
+        ttk.Label(nuclei_threshold_slider_frame,
+                  textvariable=self._settings.nuclei_threshold,
+                  width=3). \
+            pack(side='left', anchor='w', fill='none', expand=False,
+                 padx=(0, 20))
+
+        Scale(nuclei_threshold_slider_frame, from_=0, to=160,
+              orient="horizontal",
+              variable=self._settings.nuclei_threshold, showvalue=False,
+              length=150, tickinterval=40). \
+            pack(side='left', anchor='w', fill='none', expand=False)
+
+        nuclei_threshold_slider_frame.grid(column=1, row=14, sticky='NW',
+                                           pady=(10, 0))
+
         # Slider to adjust the small objects threshold
         ttk.Label(frame, text='Small Objects Threshold :').grid(
-            column=0, row=14, sticky='E', pady=(10, 0), padx=(0, 10))
+            column=0, row=15, sticky='E', pady=(10, 0), padx=(0, 10))
 
         threshold_slider_frame = ttk.Frame(frame)
 
@@ -127,7 +148,7 @@ class Settings_window(Toplevel):
               tickinterval=25). \
             pack(side='left', anchor='w', fill='none', expand=False)
 
-        threshold_slider_frame.grid(column=1, row=14, sticky='NW',
+        threshold_slider_frame.grid(column=1, row=15, sticky='NW',
                                     pady=(10, 0))
 
     def _center(self) -> None:
