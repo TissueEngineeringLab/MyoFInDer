@@ -222,6 +222,18 @@ Or if installed in a virtual environment :
 
 # 2. On Linux and macOS
 
+On Linux and macOS, **MyoFInDer can only be installed as a Python module using 
+`pip`**. Therefore, a very basic knowledge of Python and command-line terminals 
+is  required, as this page is not meant to be a Python tutorial. In particular, 
+users are expected to know how to open a terminal in their OS, how to navigate
+through the folders in the terminal, and how to execute a command in the 
+terminal. Note that in all the command-line snippets given below, the entire
+console is displayed as it would appear in the default terminal of Ubuntu 22.04
+with an XFCE desktop environment. The actual command to type in your terminal
+is the part of the line located after the `$` symbol. The lines that do not
+contain a `user@machine:~$` header represent the output of the commands, and 
+you should therefore not try to type and execute them !
+
 ## 2.1 Check your Python version
 
 On both Linux and macOS, **Python is natively installed**. In a terminal, you 
