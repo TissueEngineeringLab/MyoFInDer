@@ -208,6 +208,8 @@ class Main_window(Tk):
             "write", self._enable_save_button)
         self.settings.fiber_threshold.trace_add("write",
                                                 self._enable_save_button)
+        self.settings.nuclei_threshold.trace_add("write",
+                                                 self._enable_save_button)
         self.settings.small_objects_threshold.trace_add(
             "write", self._enable_save_button)
 
@@ -804,6 +806,7 @@ class Main_window(Tk):
                  self.settings.nuclei_colour.get(),
                  self.settings.fiber_colour.get(),
                  self.settings.fiber_threshold.get(),
+                 self.settings.nuclei_threshold.get(),
                  self.settings.small_objects_threshold.get()))
 
     def _process_thread(self) -> None:
@@ -839,7 +842,7 @@ class Main_window(Tk):
                 try:
                     job = self._queue.get_nowait()
                     path, nuclei_color, fiber_color, fiber_threshold, \
-                        small_objects_threshold = job
+                        nuclei_threshold, small_objects_threshold = job
                     self.log(f"Processing thread received job: "
                              f"{', '.join(map(str, job))}")
                 except Empty:
@@ -858,6 +861,7 @@ class Main_window(Tk):
                                            nuclei_color,
                                            fiber_color,
                                            fiber_threshold,
+                                           nuclei_threshold,
                                            small_objects_threshold)
                     self.log(f"Segmentation returned file: {file}, "
                              f"nuclei out: {len(nuclei_out)}, "

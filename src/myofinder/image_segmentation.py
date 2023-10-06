@@ -28,6 +28,7 @@ class Image_segmentation:
                  nuclei_color: str,
                  fiber_color: str,
                  fiber_threshold: int,
+                 nuclei_threshold: int,
                  small_objects_threshold: int) -> \
             (Path, List[Tuple[np.ndarray, np.ndarray]],
              List[Tuple[np.ndarray, np.ndarray]], Tuple[Any], float):
@@ -41,6 +42,8 @@ class Image_segmentation:
             fiber_color: The color of the fibers, as a string.
             fiber_threshold: The gray level threshold above which a pixel is
                 considered to be part of a fiber.
+            nuclei_threshold: Any nucleus whose average brightness is lower
+                than this value will be discarded.
             small_objects_threshold: Objects whose area is lower than this
                 value (in pixels) will not be considered.
 
@@ -126,7 +129,7 @@ class Image_segmentation:
 
         # Getting the position of the nuclei
         nuclei_out, nuclei_in = self._get_nuclei_positions(
-            labeled_image, mask, nuclei_channel, 0.4)
+            labeled_image, mask, nuclei_channel, 0.4, nuclei_threshold)
 
         return path, nuclei_out, nuclei_in, fiber_contours, area
 
@@ -186,8 +189,8 @@ class Image_segmentation:
     def _get_nuclei_positions(labeled_image: np.ndarray,
                               mask: np.ndarray,
                               nuclei_channel: np.ndarray,
-                              fiber_threshold: float = 0.85,
-                              nuclei_threshold: int = 50) -> \
+                              fiber_threshold: float,
+                              nuclei_threshold: int) -> \
             (List[Tuple[np.ndarray, np.ndarray]],
              List[Tuple[np.ndarray, np.ndarray]]):
         """Computes the center of the nuclei and determines whether they're
@@ -199,6 +202,8 @@ class Image_segmentation:
             nuclei_channel: The channel of the image containing the nuclei.
             fiber_threshold: Fraction of area above which a nucleus is
                 considered to be inside a fiber.
+            nuclei_threshold: Any nucleus whose average brightness is lower
+                than this value will be discarded.
 
         Returns:
             The list of the centers of nuclei outside of fibers, and the list
