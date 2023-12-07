@@ -29,7 +29,7 @@ class Image_segmentation:
                  fiber_color: str,
                  fiber_threshold: int,
                  nuclei_threshold: int,
-                 small_objects_threshold: int) -> \
+                 minimum_nucleus_diameter: int) -> \
             (Path, List[Tuple[np.ndarray, np.ndarray]],
              List[Tuple[np.ndarray, np.ndarray]], Tuple[Any], float):
         """Computes the nuclei positions and optionally the fibers positions.
@@ -44,7 +44,7 @@ class Image_segmentation:
                 considered to be part of a fiber.
             nuclei_threshold: Any nucleus whose average brightness is lower
                 than this value will be discarded.
-            small_objects_threshold: Objects whose area is lower than this
+            minimum_nucleus_diameter: Objects whose area is lower than this
                 value (in pixels) will not be considered.
 
         Returns:
@@ -82,6 +82,8 @@ class Image_segmentation:
         fill_holes_threshold = 15
         pixel_expansion = None
         maxima_algorith = 'h_maxima'
+
+        small_objects_threshold = minimum_nucleus_diameter ** 2 * np.pi / 4
 
         # Actual nuclei detection function
         labeled_image = self._app.predict(

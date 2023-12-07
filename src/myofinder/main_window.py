@@ -207,7 +207,7 @@ class Main_window(Tk):
                                                 self._enable_save_button)
         self.settings.nuclei_threshold.trace_add("write",
                                                  self._enable_save_button)
-        self.settings.small_objects_threshold.trace_add(
+        self.settings.minimum_nuc_diameter.trace_add(
             "write", self._enable_save_button)
 
         # Updates the display when an image has been processed
@@ -804,7 +804,7 @@ class Main_window(Tk):
                  self.settings.fiber_colour.get(),
                  self.settings.fiber_threshold.get(),
                  self.settings.nuclei_threshold.get(),
-                 self.settings.small_objects_threshold.get()))
+                 self.settings.minimum_nuc_diameter.get()))
 
     def _process_thread(self) -> None:
         """Main loop of the thread in charge of processing the images.
@@ -839,7 +839,7 @@ class Main_window(Tk):
                 try:
                     job = self._queue.get_nowait()
                     path, nuclei_color, fiber_color, fiber_threshold, \
-                        nuclei_threshold, small_objects_threshold = job
+                        nuclei_threshold, minimum_nucleus_diameter = job
                     self.log(f"Processing thread received job: "
                              f"{', '.join(map(str, job))}")
                 except Empty:
@@ -859,7 +859,7 @@ class Main_window(Tk):
                                            fiber_color,
                                            fiber_threshold,
                                            nuclei_threshold,
-                                           small_objects_threshold)
+                                           minimum_nucleus_diameter)
                     self.log(f"Segmentation returned file: {file}, "
                              f"nuclei out: {len(nuclei_out)}, "
                              f"nuclei in: {len(nuclei_in)}, "

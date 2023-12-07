@@ -522,8 +522,8 @@ class Settings:
         default_factory=partial(IntVar, value=25, name='fiber_threshold'))
     nuclei_threshold: IntVar = field(
         default_factory=partial(IntVar, value=25, name='nuclei_threshold'))
-    small_objects_threshold: IntVar = field(
-        default_factory=partial(IntVar, value=20, name='small_objects'))
+    minimum_nuc_diameter: IntVar = field(
+        default_factory=partial(IntVar, value=20, name='minimum_diameter'))
     blue_channel_bool: BooleanVar = field(
         default_factory=partial(BooleanVar, value=True, name='blue_channel'))
     green_channel_bool: BooleanVar = field(

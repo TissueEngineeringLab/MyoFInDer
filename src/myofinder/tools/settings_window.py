@@ -130,26 +130,26 @@ class Settings_window(Toplevel):
         nuclei_threshold_slider_frame.grid(column=1, row=14, sticky='NW',
                                            pady=(10, 0))
 
-        # Slider to adjust the small objects threshold
-        ttk.Label(frame, text='Small Objects Threshold :').grid(
+        # Slider to adjust the minimum nucleus diameter
+        ttk.Label(frame, text='Minimum nucleus diameter (px) :').grid(
             column=0, row=15, sticky='E', pady=(10, 0), padx=(0, 10))
 
-        threshold_slider_frame = ttk.Frame(frame)
+        diameter_slider_frame = ttk.Frame(frame)
 
-        ttk.Label(threshold_slider_frame,
-                  textvariable=self._settings.small_objects_threshold,
+        ttk.Label(diameter_slider_frame,
+                  textvariable=self._settings.minimum_nuc_diameter,
                   width=3). \
             pack(side='left', anchor='w', fill='none', expand=False,
                  padx=(0, 20))
 
-        Scale(threshold_slider_frame, from_=0, to=100,
-              variable=self._settings.small_objects_threshold,
+        Scale(diameter_slider_frame, from_=0, to=100,
+              variable=self._settings.minimum_nuc_diameter,
               orient="horizontal", length=150, showvalue=False,
               tickinterval=25). \
             pack(side='left', anchor='w', fill='none', expand=False)
 
-        threshold_slider_frame.grid(column=1, row=15, sticky='NW',
-                                    pady=(10, 0))
+        diameter_slider_frame.grid(column=1, row=15, sticky='NW',
+                                   pady=(10, 0))
 
     def _center(self) -> None:
         """Centers the popup window on the currently used monitor."""
