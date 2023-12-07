@@ -203,10 +203,10 @@ class Main_window(Tk):
         # Some settings should enable the save button when modified
         self.settings.save_overlay.trace_add(
             "write", self._enable_save_button)
-        self.settings.fiber_threshold.trace_add("write",
-                                                self._enable_save_button)
-        self.settings.nuclei_threshold.trace_add("write",
-                                                 self._enable_save_button)
+        self.settings.minimum_fiber_intensity.trace_add(
+            "write", self._enable_save_button)
+        self.settings.minimum_nucleus_intensity.trace_add(
+            "write", self._enable_save_button)
         self.settings.minimum_nuc_diameter.trace_add(
             "write", self._enable_save_button)
 
@@ -802,8 +802,8 @@ class Main_window(Tk):
                 (file,
                  self.settings.nuclei_colour.get(),
                  self.settings.fiber_colour.get(),
-                 self.settings.fiber_threshold.get(),
-                 self.settings.nuclei_threshold.get(),
+                 self.settings.minimum_fiber_intensity.get(),
+                 self.settings.minimum_nucleus_intensity.get(),
                  self.settings.minimum_nuc_diameter.get()))
 
     def _process_thread(self) -> None:
@@ -838,8 +838,8 @@ class Main_window(Tk):
                 # Acquiring the next job in the queue
                 try:
                     job = self._queue.get_nowait()
-                    path, nuclei_color, fiber_color, fiber_threshold, \
-                        nuclei_threshold, minimum_nucleus_diameter = job
+                    (path, nuclei_color, fiber_color, minimum_fiber_intensity,
+                     minimum_nucleus_intensity, minimum_nucleus_diameter) = job
                     self.log(f"Processing thread received job: "
                              f"{', '.join(map(str, job))}")
                 except Empty:
@@ -857,8 +857,8 @@ class Main_window(Tk):
                         self._segmentation(path,
                                            nuclei_color,
                                            fiber_color,
-                                           fiber_threshold,
-                                           nuclei_threshold,
+                                           minimum_fiber_intensity,
+                                           minimum_nucleus_intensity,
                                            minimum_nucleus_diameter)
                     self.log(f"Segmentation returned file: {file}, "
                              f"nuclei out: {len(nuclei_out)}, "

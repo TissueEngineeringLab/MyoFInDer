@@ -518,10 +518,12 @@ class Settings:
         default_factory=partial(StringVar, value="blue", name='nuclei_colour'))
     save_overlay: BooleanVar = field(
         default_factory=partial(BooleanVar, value=False, name='save_overlay'))
-    fiber_threshold: IntVar = field(
-        default_factory=partial(IntVar, value=25, name='fiber_threshold'))
-    nuclei_threshold: IntVar = field(
-        default_factory=partial(IntVar, value=25, name='nuclei_threshold'))
+    minimum_fiber_intensity: IntVar = field(
+        default_factory=partial(IntVar, value=25,
+                                name='minimum_fiber_intensity'))
+    minimum_nucleus_intensity: IntVar = field(
+        default_factory=partial(IntVar, value=25,
+                                name='minimum_nucleus_intensity'))
     minimum_nuc_diameter: IntVar = field(
         default_factory=partial(IntVar, value=20, name='minimum_diameter'))
     blue_channel_bool: BooleanVar = field(
@@ -549,8 +551,8 @@ class Settings:
         return {'fiber_colour': self.fiber_colour.get(),
                 'nuclei_colour': self.nuclei_colour.get(),
                 'save_overlay': self.save_overlay.get(),
-                'fiber_threshold': self.fiber_threshold.get(),
-                'nuclei_threshold': self.nuclei_threshold.get(),
+                'minimum_fiber_intensity': self.minimum_fiber_intensity.get(),
+                'minimum_nucleus_intensity': self.minimum_nucleus_intensity.get(),
                 'minimum_nuc_diameter': self.minimum_nuc_diameter.get(),
                 'blue_channel_bool': self.blue_channel_bool.get(),
                 'green_channel_bool': self.green_channel_bool.get(),

@@ -88,47 +88,47 @@ class Settings_window(Toplevel):
             frame, text="Off", variable=self._settings.save_overlay,
             value=0).grid(column=1, row=12, sticky='NW')
 
-        # Slider to adjust the threshold for fiber detection
-        ttk.Label(frame, text='Fiber detection threshold :').grid(
+        # Slider to adjust the minimum intensity for fiber detection
+        ttk.Label(frame, text='Minimum fiber intensity :').grid(
             column=0, row=13, sticky='E', pady=(10, 0), padx=(0, 10))
 
-        fiber_threshold_slider_frame = ttk.Frame(frame)
+        minimum_fiber_intensity_slider_frame = ttk.Frame(frame)
 
-        ttk.Label(fiber_threshold_slider_frame,
-                  textvariable=self._settings.fiber_threshold,
+        ttk.Label(minimum_fiber_intensity_slider_frame,
+                  textvariable=self._settings.minimum_fiber_intensity,
                   width=3). \
             pack(side='left', anchor='w', fill='none', expand=False,
                  padx=(0, 20))
 
-        Scale(fiber_threshold_slider_frame, from_=0, to=100,
+        Scale(minimum_fiber_intensity_slider_frame, from_=0, to=100,
               orient="horizontal",
-              variable=self._settings.fiber_threshold, showvalue=False,
+              variable=self._settings.minimum_fiber_intensity, showvalue=False,
               length=150, tickinterval=20). \
             pack(side='left', anchor='w', fill='none', expand=False)
 
-        fiber_threshold_slider_frame.grid(column=1, row=13, sticky='NW',
-                                          pady=(10, 0))
+        minimum_fiber_intensity_slider_frame.grid(column=1, row=13,
+                                                  sticky='NW', pady=(10, 0))
 
-        # Slider to adjust the threshold for nuclei detection
-        ttk.Label(frame, text='Nuclei detection threshold :').grid(
+        # Slider to adjust the minimum intensity for nuclei detection
+        ttk.Label(frame, text='Minimum nucleus intensity :').grid(
             column=0, row=14, sticky='E', pady=(10, 0), padx=(0, 10))
 
-        nuclei_threshold_slider_frame = ttk.Frame(frame)
+        minimum_nuclei_intensity_slider_frame = ttk.Frame(frame)
 
-        ttk.Label(nuclei_threshold_slider_frame,
-                  textvariable=self._settings.nuclei_threshold,
+        ttk.Label(minimum_nuclei_intensity_slider_frame,
+                  textvariable=self._settings.minimum_nucleus_intensity,
                   width=3). \
             pack(side='left', anchor='w', fill='none', expand=False,
                  padx=(0, 20))
 
-        Scale(nuclei_threshold_slider_frame, from_=0, to=160,
+        Scale(minimum_nuclei_intensity_slider_frame, from_=0, to=160,
               orient="horizontal",
-              variable=self._settings.nuclei_threshold, showvalue=False,
-              length=150, tickinterval=40). \
+              variable=self._settings.minimum_nucleus_intensity,
+              showvalue=False, length=150, tickinterval=40). \
             pack(side='left', anchor='w', fill='none', expand=False)
 
-        nuclei_threshold_slider_frame.grid(column=1, row=14, sticky='NW',
-                                           pady=(10, 0))
+        minimum_nuclei_intensity_slider_frame.grid(column=1, row=14,
+                                                   sticky='NW', pady=(10, 0))
 
         # Slider to adjust the minimum nucleus diameter
         ttk.Label(frame, text='Minimum nucleus diameter (px) :').grid(
