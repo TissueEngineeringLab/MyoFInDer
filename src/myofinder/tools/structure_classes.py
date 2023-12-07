@@ -543,6 +543,21 @@ class Settings:
 
         self._logger = logging.getLogger("MyoFInDer.FilesTable")
 
+    def get_all(self) -> Dict[str, Any]:
+        """Returns a dict containing all the settings and their values."""
+
+        return {'fiber_colour': self.fiber_colour.get(),
+                'nuclei_colour': self.nuclei_colour.get(),
+                'save_overlay': self.save_overlay.get(),
+                'fiber_threshold': self.fiber_threshold.get(),
+                'nuclei_threshold': self.nuclei_threshold.get(),
+                'minimum_nuc_diameter': self.minimum_nuc_diameter.get(),
+                'blue_channel_bool': self.blue_channel_bool.get(),
+                'green_channel_bool': self.green_channel_bool.get(),
+                'red_channel_bool': self.red_channel_bool.get(),
+                'show_nuclei': self.show_nuclei.get(),
+                'show_fibers': self.show_fibers.get()}
+
     def update(self, settings: Dict[str, Any]) -> None:
         """Updates the values of the settings based on the provided dictionary.
 
@@ -561,10 +576,5 @@ class Settings:
         """Nice string representation of the current settings and their values,
         used for logging."""
 
-        settings = (self.fiber_colour, self.nuclei_colour,
-                    self.save_overlay, self.fiber_threshold,
-                    self.nuclei_threshold, self.small_objects_threshold,
-                    self.blue_channel_bool, self.green_channel_bool,
-                    self.red_channel_bool, self.show_nuclei, self.show_fibers)
-
-        return ', '.join(f"{setting}: {setting.get()}" for setting in settings)
+        return ', '.join(f"{setting}: {value}" for setting, value
+                         in self.get_all().items())

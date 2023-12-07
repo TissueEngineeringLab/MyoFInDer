@@ -140,13 +140,10 @@ class Main_window(Tk):
         """
 
         # Saving the settings
-        settings = {key: value.get() for key, value
-                    in vars(self.settings).items()}
         self.log(f"Settings values: {str(self.settings)}")
-
         settings_file = project_path / 'settings.pickle'
         with open(settings_file, 'wb+') as param_file:
-            dump(settings, param_file, protocol=4)
+            dump(self.settings.get_all(), param_file, protocol=4)
             self.log(f"Saved the settings at: {settings_file}")
 
     def update_master_check(self) -> None:
