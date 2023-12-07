@@ -28,7 +28,9 @@ class Image_segmentation:
                  nuclei_color: str,
                  fiber_color: str,
                  minimum_fiber_intensity: int,
+                 maximum_fiber_intensity: int,
                  minimum_nucleus_intensity: int,
+                 maximum_nucleus_intensity: int,
                  minimum_nucleus_diameter: int) -> \
             (Path, List[Tuple[np.ndarray, np.ndarray]],
              List[Tuple[np.ndarray, np.ndarray]], Tuple[Any], float):
@@ -42,8 +44,12 @@ class Image_segmentation:
             fiber_color: The color of the fibers, as a string.
             minimum_fiber_intensity: The gray level intensity above which a
                 pixel is considered to be part of a fiber.
+            maximum_fiber_intensity: The gray level intensity below which a
+                pixel is considered to be part of a fiber.
             minimum_nucleus_intensity: Any nucleus whose average brightness is
                 lower than this value will be discarded.
+            maximum_nucleus_intensity: Any nucleus whose average brightness is
+                greater than this value will be discarded.
             minimum_nucleus_diameter: Objects whose area is lower than this
                 value (in pixels) will not be considered.
 
@@ -114,8 +120,10 @@ class Image_segmentation:
         labeled_image = np.squeeze(labeled_image)
 
         # Getting the fiber mask
-        mask = self._get_fiber_mask(fiber_channel, nuclei_channel,
-                                    minimum_fiber_intensity)
+        mask = self._get_fiber_mask(fiber_channel,
+                                    nuclei_channel,
+                                    minimum_fiber_intensity,
+                                    maximum_fiber_intensity)
 
         del fiber_channel
 
@@ -131,14 +139,15 @@ class Image_segmentation:
         # Getting the position of the nuclei
         nuclei_out, nuclei_in = self._get_nuclei_positions(
             labeled_image, mask, nuclei_channel, 0.4,
-            minimum_nucleus_intensity)
+            minimum_nucleus_intensity, maximum_nucleus_intensity)
 
         return path, nuclei_out, nuclei_in, fiber_contours, area
 
     @staticmethod
     def _get_fiber_mask(fiber_channel: np.ndarray,
                         nuclei_channel: np.ndarray,
-                        minimum_intensity: int) -> np.ndarray:
+                        minimum_intensity: int,
+                        maximum_intensity: int) -> np.ndarray:
         """Applies several images processing methods to the fiber channel of
         the image to smoothen the outline.
 
@@ -147,6 +156,8 @@ class Image_segmentation:
             nuclei_channel: The channel of the image containing the nuclei.
             minimum_intensity: The gray level intensity above which a pixel is
                 considered to be part of a fiber.
+            minimum_intensity: The gray level intensity below which a pixel is
+                considered to be part of a fiber.
 
         Returns:
             A boolean mask containing the position of the fibers
@@ -154,8 +165,12 @@ class Image_segmentation:
 
         # First, apply a base threshold
         kernel = np.ones((4, 4), np.uint8)
-        _, processed = cv2.threshold(fiber_channel, minimum_intensity, 255,
-                                     cv2.THRESH_BINARY)
+        _, min_thresh = cv2.threshold(fiber_channel, minimum_intensity, 255,
+                                      cv2.THRESH_BINARY)
+        _, max_thresh = cv2.threshold(fiber_channel, maximum_intensity, 255,
+                                      cv2.THRESH_BINARY)
+        processed = min_thresh - max_thresh
+        del min_thresh, max_thresh
 
         # Opening, to remove noise in the background
         processed = cv2.morphologyEx(processed,
@@ -192,7 +207,8 @@ class Image_segmentation:
                               mask: np.ndarray,
                               nuclei_channel: np.ndarray,
                               fiber_overlap_threshold: float,
-                              minimum_nucleus_intensity: int) -> \
+                              minimum_nucleus_intensity: int,
+                              maximum_nucleus_intensity: int) -> \
             (List[Tuple[np.ndarray, np.ndarray]],
              List[Tuple[np.ndarray, np.ndarray]]):
         """Computes the center of the nuclei and determines whether they're
@@ -206,6 +222,8 @@ class Image_segmentation:
                 considered to be inside a fiber.
             minimum_nucleus_intensity: Any nucleus whose average brightness is
                 lower than this value will be discarded.
+            maximum_nucleus_intensity: Any nucleus whose average brightness is
+                greater than this value will be discarded.
 
         Returns:
             The list of the centers of nuclei outside of fibers, and the list
@@ -230,8 +248,9 @@ class Image_segmentation:
             center_x, center_y = np.mean(nucleus_x), np.mean(nucleus_y)
 
             # Aborting for the current nucleus if it's not bright enough
-            if (np.average(nuclei_channel[nucleus_y, nucleus_x]) <
-                minimum_nucleus_intensity):
+            if not (minimum_nucleus_intensity <=
+                    np.average(nuclei_channel[nucleus_y, nucleus_x]) <=
+                    maximum_nucleus_intensity):
                 continue
 
             # Determining whether the nucleus is positive or negative

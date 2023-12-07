@@ -521,9 +521,15 @@ class Settings:
     minimum_fiber_intensity: IntVar = field(
         default_factory=partial(IntVar, value=25,
                                 name='minimum_fiber_intensity'))
+    maximum_fiber_intensity: IntVar = field(
+        default_factory=partial(IntVar, value=255,
+                                name='maximum_fiber_intensity'))
     minimum_nucleus_intensity: IntVar = field(
         default_factory=partial(IntVar, value=25,
                                 name='minimum_nucleus_intensity'))
+    maximum_nucleus_intensity: IntVar = field(
+        default_factory=partial(IntVar, value=255,
+                                name='maximum_nucleus_intensity'))
     minimum_nuc_diameter: IntVar = field(
         default_factory=partial(IntVar, value=20, name='minimum_diameter'))
     blue_channel_bool: BooleanVar = field(
@@ -548,17 +554,20 @@ class Settings:
     def get_all(self) -> Dict[str, Any]:
         """Returns a dict containing all the settings and their values."""
 
-        return {'fiber_colour': self.fiber_colour.get(),
-                'nuclei_colour': self.nuclei_colour.get(),
-                'save_overlay': self.save_overlay.get(),
-                'minimum_fiber_intensity': self.minimum_fiber_intensity.get(),
-                'minimum_nucleus_intensity': self.minimum_nucleus_intensity.get(),
-                'minimum_nuc_diameter': self.minimum_nuc_diameter.get(),
-                'blue_channel_bool': self.blue_channel_bool.get(),
-                'green_channel_bool': self.green_channel_bool.get(),
-                'red_channel_bool': self.red_channel_bool.get(),
-                'show_nuclei': self.show_nuclei.get(),
-                'show_fibers': self.show_fibers.get()}
+        return {
+            'fiber_colour': self.fiber_colour.get(),
+            'nuclei_colour': self.nuclei_colour.get(),
+            'save_overlay': self.save_overlay.get(),
+            'minimum_fiber_intensity': self.minimum_fiber_intensity.get(),
+            'maximum_fiber_intensity': self.maximum_fiber_intensity.get(),
+            'minimum_nucleus_intensity': self.minimum_nucleus_intensity.get(),
+            'maximum_nucleus_intensity': self.maximum_nucleus_intensity.get(),
+            'minimum_nuc_diameter': self.minimum_nuc_diameter.get(),
+            'blue_channel_bool': self.blue_channel_bool.get(),
+            'green_channel_bool': self.green_channel_bool.get(),
+            'red_channel_bool': self.red_channel_bool.get(),
+            'show_nuclei': self.show_nuclei.get(),
+            'show_fibers': self.show_fibers.get()}
 
     def update(self, settings: Dict[str, Any]) -> None:
         """Updates the values of the settings based on the provided dictionary.

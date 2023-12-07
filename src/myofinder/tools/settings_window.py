@@ -109,9 +109,30 @@ class Settings_window(Toplevel):
         minimum_fiber_intensity_slider_frame.grid(column=1, row=13,
                                                   sticky='NW', pady=(10, 0))
 
+        # Slider to adjust the maximum intensity for fiber detection
+        ttk.Label(frame, text='Maximum fiber intensity :').grid(
+            column=0, row=14, sticky='E', pady=(10, 0), padx=(0, 10))
+
+        maximum_fiber_intensity_slider_frame = ttk.Frame(frame)
+
+        ttk.Label(maximum_fiber_intensity_slider_frame,
+                  textvariable=self._settings.maximum_fiber_intensity,
+                  width=3). \
+            pack(side='left', anchor='w', fill='none', expand=False,
+                 padx=(0, 20))
+
+        Scale(maximum_fiber_intensity_slider_frame, from_=155, to=255,
+              orient="horizontal",
+              variable=self._settings.maximum_fiber_intensity, showvalue=False,
+              length=150, tickinterval=25). \
+            pack(side='left', anchor='w', fill='none', expand=False)
+
+        maximum_fiber_intensity_slider_frame.grid(column=1, row=14,
+                                                  sticky='NW', pady=(10, 0))
+
         # Slider to adjust the minimum intensity for nuclei detection
         ttk.Label(frame, text='Minimum nucleus intensity :').grid(
-            column=0, row=14, sticky='E', pady=(10, 0), padx=(0, 10))
+            column=0, row=15, sticky='E', pady=(10, 0), padx=(0, 10))
 
         minimum_nuclei_intensity_slider_frame = ttk.Frame(frame)
 
@@ -121,18 +142,39 @@ class Settings_window(Toplevel):
             pack(side='left', anchor='w', fill='none', expand=False,
                  padx=(0, 20))
 
-        Scale(minimum_nuclei_intensity_slider_frame, from_=0, to=160,
+        Scale(minimum_nuclei_intensity_slider_frame, from_=0, to=100,
               orient="horizontal",
               variable=self._settings.minimum_nucleus_intensity,
-              showvalue=False, length=150, tickinterval=40). \
+              showvalue=False, length=150, tickinterval=20). \
             pack(side='left', anchor='w', fill='none', expand=False)
 
-        minimum_nuclei_intensity_slider_frame.grid(column=1, row=14,
+        minimum_nuclei_intensity_slider_frame.grid(column=1, row=15,
+                                                   sticky='NW', pady=(10, 0))
+
+        # Slider to adjust the maximum intensity for nuclei detection
+        ttk.Label(frame, text='Maximum nucleus intensity :').grid(
+            column=0, row=16, sticky='E', pady=(10, 0), padx=(0, 10))
+
+        maximum_nuclei_intensity_slider_frame = ttk.Frame(frame)
+
+        ttk.Label(maximum_nuclei_intensity_slider_frame,
+                  textvariable=self._settings.maximum_nucleus_intensity,
+                  width=3). \
+            pack(side='left', anchor='w', fill='none', expand=False,
+                 padx=(0, 20))
+
+        Scale(maximum_nuclei_intensity_slider_frame, from_=155, to=255,
+              orient="horizontal",
+              variable=self._settings.maximum_nucleus_intensity,
+              showvalue=False, length=150, tickinterval=25). \
+            pack(side='left', anchor='w', fill='none', expand=False)
+
+        maximum_nuclei_intensity_slider_frame.grid(column=1, row=16,
                                                    sticky='NW', pady=(10, 0))
 
         # Slider to adjust the minimum nucleus diameter
         ttk.Label(frame, text='Minimum nucleus diameter (px) :').grid(
-            column=0, row=15, sticky='E', pady=(10, 0), padx=(0, 10))
+            column=0, row=17, sticky='E', pady=(10, 0), padx=(0, 10))
 
         diameter_slider_frame = ttk.Frame(frame)
 
@@ -148,7 +190,7 @@ class Settings_window(Toplevel):
               tickinterval=25). \
             pack(side='left', anchor='w', fill='none', expand=False)
 
-        diameter_slider_frame.grid(column=1, row=15, sticky='NW',
+        diameter_slider_frame.grid(column=1, row=17, sticky='NW',
                                    pady=(10, 0))
 
     def _center(self) -> None:
