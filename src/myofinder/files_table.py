@@ -294,7 +294,7 @@ class Files_table(ttk.Frame):
         return [entry.path for entry in self.table_items
                 if entry.graph_elt.button_var.get()]
 
-    def delete_image(self, to_delete: Tuple[Path]) -> None:
+    def delete_image(self, to_delete: Tuple[Path, ...]) -> None:
         """Removes images from the canvas, and discards all the associated
         data.
 
