@@ -8,6 +8,7 @@ from tkinter import StringVar, IntVar, BooleanVar, Checkbutton, PhotoImage, \
     Frame, Event, EventType
 from pathlib import Path
 from platform import system
+import logging
 
 
 @dataclass
@@ -534,15 +535,31 @@ class Settings:
     show_fibers: BooleanVar = field(
         default_factory=partial(BooleanVar, value=False, name='show_fibers'))
 
+    _logger: Optional[logging.Logger] = None
+
+    def __post_init__(self) -> None:
+        """This method defines a logger for this class to be able to log
+        messages."""
+
+        self._logger = logging.getLogger("MyoFInDer.FilesTable")
+
     def update(self, settings: Dict[str, Any]) -> None:
-        """Updates the values of the settings based on the provided
-        dictionary."""
+        """Updates the values of the settings based on the provided dictionary.
+
+        If a key is provided that is not a valid setting, ignores it and
+        displays a warning.
+        """
 
         for key, value in settings.items():
-            getattr(self, key).set(value)
+            try:
+                getattr(self, key).set(value)
+            except AttributeError:
+                self._logger.log(logging.WARNING, f"The {key} setting is not "
+                                                  f"supported, ignoring it !")
 
     def __str__(self) -> str:
-        """"""
+        """Nice string representation of the current settings and their values,
+        used for logging."""
 
         settings = (self.fiber_colour, self.nuclei_colour,
                     self.save_overlay, self.fiber_threshold,
