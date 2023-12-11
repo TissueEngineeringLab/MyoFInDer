@@ -140,13 +140,10 @@ class Main_window(Tk):
         """
 
         # Saving the settings
-        settings = {key: value.get() for key, value
-                    in vars(self.settings).items()}
         self.log(f"Settings values: {str(self.settings)}")
-
         settings_file = project_path / 'settings.pickle'
         with open(settings_file, 'wb+') as param_file:
-            dump(settings, param_file, protocol=4)
+            dump(self.settings.get_all(), param_file, protocol=4)
             self.log(f"Saved the settings at: {settings_file}")
 
     def update_master_check(self) -> None:
@@ -206,11 +203,15 @@ class Main_window(Tk):
         # Some settings should enable the save button when modified
         self.settings.save_overlay.trace_add(
             "write", self._enable_save_button)
-        self.settings.fiber_threshold.trace_add("write",
-                                                self._enable_save_button)
-        self.settings.nuclei_threshold.trace_add("write",
-                                                 self._enable_save_button)
-        self.settings.small_objects_threshold.trace_add(
+        self.settings.minimum_fiber_intensity.trace_add(
+            "write", self._enable_save_button)
+        self.settings.maximum_fiber_intensity.trace_add(
+            "write", self._enable_save_button)
+        self.settings.minimum_nucleus_intensity.trace_add(
+            "write", self._enable_save_button)
+        self.settings.maximum_nucleus_intensity.trace_add(
+            "write", self._enable_save_button)
+        self.settings.minimum_nuc_diameter.trace_add(
             "write", self._enable_save_button)
 
         # Updates the display when an image has been processed
@@ -805,9 +806,11 @@ class Main_window(Tk):
                 (file,
                  self.settings.nuclei_colour.get(),
                  self.settings.fiber_colour.get(),
-                 self.settings.fiber_threshold.get(),
-                 self.settings.nuclei_threshold.get(),
-                 self.settings.small_objects_threshold.get()))
+                 self.settings.minimum_fiber_intensity.get(),
+                 self.settings.maximum_fiber_intensity.get(),
+                 self.settings.minimum_nucleus_intensity.get(),
+                 self.settings.maximum_nucleus_intensity.get(),
+                 self.settings.minimum_nuc_diameter.get()))
 
     def _process_thread(self) -> None:
         """Main loop of the thread in charge of processing the images.
@@ -841,8 +844,9 @@ class Main_window(Tk):
                 # Acquiring the next job in the queue
                 try:
                     job = self._queue.get_nowait()
-                    path, nuclei_color, fiber_color, fiber_threshold, \
-                        nuclei_threshold, small_objects_threshold = job
+                    (path, nuclei_color, fiber_color, minimum_fiber_intensity,
+                     maximum_fiber_intensity, minimum_nucleus_intensity,
+                     maximum_nucleus_intensity, minimum_nucleus_diameter) = job
                     self.log(f"Processing thread received job: "
                              f"{', '.join(map(str, job))}")
                 except Empty:
@@ -860,9 +864,11 @@ class Main_window(Tk):
                         self._segmentation(path,
                                            nuclei_color,
                                            fiber_color,
-                                           fiber_threshold,
-                                           nuclei_threshold,
-                                           small_objects_threshold)
+                                           minimum_fiber_intensity,
+                                           maximum_fiber_intensity,
+                                           minimum_nucleus_intensity,
+                                           maximum_nucleus_intensity,
+                                           minimum_nucleus_diameter)
                     self.log(f"Segmentation returned file: {file}, "
                              f"nuclei out: {len(nuclei_out)}, "
                              f"nuclei in: {len(nuclei_in)}, "

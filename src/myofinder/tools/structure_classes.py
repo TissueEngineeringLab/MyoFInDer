@@ -8,6 +8,7 @@ from tkinter import StringVar, IntVar, BooleanVar, Checkbutton, PhotoImage, \
     Frame, Event, EventType
 from pathlib import Path
 from platform import system
+import logging
 
 
 @dataclass
@@ -517,12 +518,20 @@ class Settings:
         default_factory=partial(StringVar, value="blue", name='nuclei_colour'))
     save_overlay: BooleanVar = field(
         default_factory=partial(BooleanVar, value=False, name='save_overlay'))
-    fiber_threshold: IntVar = field(
-        default_factory=partial(IntVar, value=25, name='fiber_threshold'))
-    nuclei_threshold: IntVar = field(
-        default_factory=partial(IntVar, value=25, name='nuclei_threshold'))
-    small_objects_threshold: IntVar = field(
-        default_factory=partial(IntVar, value=20, name='small_objects'))
+    minimum_fiber_intensity: IntVar = field(
+        default_factory=partial(IntVar, value=25,
+                                name='minimum_fiber_intensity'))
+    maximum_fiber_intensity: IntVar = field(
+        default_factory=partial(IntVar, value=255,
+                                name='maximum_fiber_intensity'))
+    minimum_nucleus_intensity: IntVar = field(
+        default_factory=partial(IntVar, value=25,
+                                name='minimum_nucleus_intensity'))
+    maximum_nucleus_intensity: IntVar = field(
+        default_factory=partial(IntVar, value=255,
+                                name='maximum_nucleus_intensity'))
+    minimum_nuc_diameter: IntVar = field(
+        default_factory=partial(IntVar, value=20, name='minimum_diameter'))
     blue_channel_bool: BooleanVar = field(
         default_factory=partial(BooleanVar, value=True, name='blue_channel'))
     green_channel_bool: BooleanVar = field(
@@ -534,20 +543,49 @@ class Settings:
     show_fibers: BooleanVar = field(
         default_factory=partial(BooleanVar, value=False, name='show_fibers'))
 
+    _logger: Optional[logging.Logger] = None
+
+    def __post_init__(self) -> None:
+        """This method defines a logger for this class to be able to log
+        messages."""
+
+        self._logger = logging.getLogger("MyoFInDer.FilesTable")
+
+    def get_all(self) -> Dict[str, Any]:
+        """Returns a dict containing all the settings and their values."""
+
+        return {
+            'fiber_colour': self.fiber_colour.get(),
+            'nuclei_colour': self.nuclei_colour.get(),
+            'save_overlay': self.save_overlay.get(),
+            'minimum_fiber_intensity': self.minimum_fiber_intensity.get(),
+            'maximum_fiber_intensity': self.maximum_fiber_intensity.get(),
+            'minimum_nucleus_intensity': self.minimum_nucleus_intensity.get(),
+            'maximum_nucleus_intensity': self.maximum_nucleus_intensity.get(),
+            'minimum_nuc_diameter': self.minimum_nuc_diameter.get(),
+            'blue_channel_bool': self.blue_channel_bool.get(),
+            'green_channel_bool': self.green_channel_bool.get(),
+            'red_channel_bool': self.red_channel_bool.get(),
+            'show_nuclei': self.show_nuclei.get(),
+            'show_fibers': self.show_fibers.get()}
+
     def update(self, settings: Dict[str, Any]) -> None:
-        """Updates the values of the settings based on the provided
-        dictionary."""
+        """Updates the values of the settings based on the provided dictionary.
+
+        If a key is provided that is not a valid setting, ignores it and
+        displays a warning.
+        """
 
         for key, value in settings.items():
-            getattr(self, key).set(value)
+            try:
+                getattr(self, key).set(value)
+            except AttributeError:
+                self._logger.log(logging.WARNING, f"The {key} setting is not "
+                                                  f"supported, ignoring it !")
 
     def __str__(self) -> str:
-        """"""
+        """Nice string representation of the current settings and their values,
+        used for logging."""
 
-        settings = (self.fiber_colour, self.nuclei_colour,
-                    self.save_overlay, self.fiber_threshold,
-                    self.nuclei_threshold, self.small_objects_threshold,
-                    self.blue_channel_bool, self.green_channel_bool,
-                    self.red_channel_bool, self.show_nuclei, self.show_fibers)
-
-        return ', '.join(f"{setting}: {setting.get()}" for setting in settings)
+        return ', '.join(f"{setting}: {value}" for setting, value
+                         in self.get_all().items())
