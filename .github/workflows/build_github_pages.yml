@@ -16,7 +16,7 @@ on:
     - cron: '0 12 1 * *'
 
 jobs:
-  build:
+  build-github-pages:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
