@@ -14,7 +14,7 @@ Index of the Usage page :
 1. [Starting MyoFInDer](#1-starting-myofinder)
    1. [Using the shortcuts (Windows installer only)](#11-using-the-shortcuts-windows-installer-only)
    2. [From the command line](#12-from-the-command-line)
-   3. [Startup window](#13-startup-window)
+   3. [Startup window](#13-startup-window-and-console)
 2. [Basic usage](#2-basic-usage)
    1. [Loading images](#21-loading-images)
    2. [Tuning the settings](#22-tuning-the-settings)
@@ -50,6 +50,12 @@ applications.
 
 *In this section, replace* `python` *with* `python3` *or* `python3.x` 
 *(7<=x<=10) if necessary.*
+
+> The commands below are intended for experimented users who know what they're
+> doing ! Do not try to run them unless you understand what they do ! If you 
+> face any problem with starting MyoFInDer and don't know what to do, please 
+> refer to the [Troubleshooting page](troubleshooting.markdown) or get in touch 
+> with the maintainer.
 
 ### 1.2.1 After manual installation
 
@@ -109,12 +115,19 @@ subsection :
 (venv) C:\Users\User>python -m myofinder
 ```
 
-## 1.3 Startup window
+## 1.3 Startup window and console
 
 Once MyoFInDer is running, **a console should first appear** with log 
 messages displaying in it. If started from the command-line, this console is 
 already open and is the one you typed your commands in. This console simply 
-displays the log messages, which may be useful for tracking errors.
+displays the log messages, which may be useful for tracking errors. **The first
+time you start MyoFInDer, many messages will be prompted in the console !** 
+That is because MyoFInDer needs to finish its installation, and will download
+a number of dependencies. This step can take up to several minutes, depending
+on the speed of your internet connection and on the performance of your 
+computer. The displayed messages should look similar to:
+
+<img src="./pip_install.png" width="1000" title="Installation in console">
 
 Shortly after the console, **a Splash window should also appear** while the 
 module is loading. It can take up to 30s for the application to open, and even 
@@ -174,6 +187,37 @@ settings are applied as soon as you modify them**, there is no need to validate
 your choice. Just close this window when you're done.
 
 <img src="./usage_images/settings_menu.png" title="Settings menu window">
+
+The available settings are:
+
+ * **Nuclei Channel**: The color channel of the image carrying the signal for 
+   the nuclei. Default to Blue.
+ * **Fiber Channel**: The color channel of the image carrying the signal for 
+   the fibers. Default to Green.
+ * **Save Images with Overlay**: When saving a project, the raw images are
+   always saved. In addition, it is possible to save the images with the
+   detected nuclei and fibers drawn on top as an overlay, if this option is set
+   to On. Defaults to Off.
+ * **Minimum fiber intensity**: For each channel, the color intensity of each 
+   pixel is represented by a value between 0 and 255. Pixels of the Fiber
+   Channel whose intensity is lower than the value of this setting are not 
+   considered as part of the detected fibers. Defaults to 25.
+ * **Maximum fiber intensity**: For each channel, the color intensity of each 
+   pixel is represented by a value between 0 and 255. Pixels of the Fiber
+   Channel whose intensity is greater than the value of this setting are not 
+   considered as part of the detected fibers. Defaults to 255.
+ * **Minimum nucleus intensity**: For each channel, the color intensity of each 
+   pixel is represented by a value between 0 and 255. Only nuclei whose average
+   intensity is greater than the value of this setting will be detected.
+   Defaults to 25.
+ * **Maximum nucleus intensity**: For each channel, the color intensity of each 
+   pixel is represented by a value between 0 and 255. Only nuclei whose average
+   intensity is lower than the value of this setting will be detected. Defaults
+   to 255.
+ * **Minimum nucleus diameter (px)**: The minimum "average" diameter a nucleus
+   must have in order to be detected, in pixels. More precisely, the area of
+   detected nuclei must be superior or equal to the area of a circle whose
+   diameter is the value of this setting. Defaults to 20.
 
 ## 2.3 Starting a computation
 

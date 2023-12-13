@@ -125,10 +125,13 @@ instructions. You might have to enter an administrator password at some point.
 Then, when opening the application for the first time, the required Python 
 modules and MyoFInDer will be installed automatically. Note that a working
 internet connection is required for this step, and that it might take up a few
-minutes for this step to complete.
+minutes for this step to complete. A number of messages will be displayed in 
+the console, which is totally normal. The console should look similar to:
 
-The Windows installer can be downloaded 
-[here](https://github.com/TissueEngineeringLab/MyoFInDer/blob/main/bin/myofinder.msi).
+<img src="./pip_install.png" width="1000" title="Installation in console">
+
+**The Windows installer can be downloaded 
+[here](https://github.com/TissueEngineeringLab/MyoFInDer/blob/main/bin/myofinder.msi).**
 
 ## 1.4 Installation of MyoFInDer from console
 
@@ -137,6 +140,13 @@ using MyoFInDer from the command-line, **it is also possible to install it
 using `pip` like any other Python module**. 
 
 ### 1.4.1 \[Optional] Deploy a virtual environment
+
+> The commands below are intended for experimented users who know what they're
+> doing ! Do not try to run them unless you understand what they do ! For 
+> Windows users, the [installation using the Windows installer](#13-installation-of-myofinder-using-the-windows-installer) 
+> is recommended. If you face any problem with the installation and don't know 
+> what to do, please refer to the [Troubleshooting page](troubleshooting.markdown) 
+> or get in touch with the maintainer.
 
 It is **recommended to install MyoFInDer in a
 [virtual environment](https://docs.python.org/3/library/venv.html)** to avoid 
@@ -190,6 +200,13 @@ C:\Users\User><Path to your venv>\Scripts\activate.bat
 Where `<Path to your venv>` is the path to the created virtual environment.
 
 ### 1.4.2 Install MyoFInDer
+
+> The commands below are intended for experimented users who know what they're
+> doing ! Do not try to run them unless you understand what they do ! For 
+> Windows users, the [installation using the Windows installer](#13-installation-of-myofinder-using-the-windows-installer) 
+> is recommended. If you face any problem with the installation and don't know 
+> what to do, please refer to the [Troubleshooting page](troubleshooting.markdown) 
+> or get in touch with the maintainer.
 
 Once the correct version of Python is installed, MyoFInDer can be installed 
 using the `pip` module :
