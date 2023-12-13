@@ -51,6 +51,12 @@ applications.
 *In this section, replace* `python` *with* `python3` *or* `python3.x` 
 *(7<=x<=10) if necessary.*
 
+> The commands below are intended for experimented users who know what they're
+> doing ! Do not try to run them unless you understand what they do ! If you 
+> face any problem with starting MyoFInDer and don't know what to do, please 
+> refer to the [Troubleshooting page](troubleshooting.markdown) or get in touch 
+> with the maintainer.
+
 ### 1.2.1 After manual installation
 
 No matter which installation method you chose, **it is always possible to start
