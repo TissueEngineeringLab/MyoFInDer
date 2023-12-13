@@ -125,10 +125,13 @@ instructions. You might have to enter an administrator password at some point.
 Then, when opening the application for the first time, the required Python 
 modules and MyoFInDer will be installed automatically. Note that a working
 internet connection is required for this step, and that it might take up a few
-minutes for this step to complete.
+minutes for this step to complete. A number of messages will be displayed in 
+the console, which is totally normal. The console should look similar to:
 
-The Windows installer can be downloaded 
-[here](https://github.com/TissueEngineeringLab/MyoFInDer/blob/main/bin/myofinder.msi).
+<img src="./pip_install.png" width="1000" title="Installation in console">
+
+**The Windows installer can be downloaded 
+[here](https://github.com/TissueEngineeringLab/MyoFInDer/blob/main/bin/myofinder.msi).**
 
 ## 1.4 Installation of MyoFInDer from console
 

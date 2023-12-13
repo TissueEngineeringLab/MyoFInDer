@@ -14,7 +14,7 @@ Index of the Usage page :
 1. [Starting MyoFInDer](#1-starting-myofinder)
    1. [Using the shortcuts (Windows installer only)](#11-using-the-shortcuts-windows-installer-only)
    2. [From the command line](#12-from-the-command-line)
-   3. [Startup window](#13-startup-window)
+   3. [Startup window](#13-startup-window-and-console)
 2. [Basic usage](#2-basic-usage)
    1. [Loading images](#21-loading-images)
    2. [Tuning the settings](#22-tuning-the-settings)
@@ -115,12 +115,19 @@ subsection :
 (venv) C:\Users\User>python -m myofinder
 ```
 
-## 1.3 Startup window
+## 1.3 Startup window and console
 
 Once MyoFInDer is running, **a console should first appear** with log 
 messages displaying in it. If started from the command-line, this console is 
 already open and is the one you typed your commands in. This console simply 
-displays the log messages, which may be useful for tracking errors.
+displays the log messages, which may be useful for tracking errors. **The first
+time you start MyoFInDer, many messages will be prompted in the console !** 
+That is because MyoFInDer needs to finish its installation, and will download
+a number of dependencies. This step can take up to several minutes, depending
+on the speed of your internet connection and on the performance of your 
+computer. The displayed messages should look similar to:
+
+<img src="./pip_install.png" width="1000" title="Installation in console">
 
 Shortly after the console, **a Splash window should also appear** while the 
 module is loading. It can take up to 30s for the application to open, and even 
