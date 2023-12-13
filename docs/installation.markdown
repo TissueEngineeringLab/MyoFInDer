@@ -138,6 +138,13 @@ using `pip` like any other Python module**.
 
 ### 1.4.1 \[Optional] Deploy a virtual environment
 
+> The commands below are intended for experimented users who know what they're
+> doing ! Do not try to run them unless you understand what they do ! For 
+> Windows users, the [installation using the Windows installer](#13-installation-of-myofinder-using-the-windows-installer) 
+> is recommended. If you face any problem with the installation and don't know 
+> what to do, please refer to the [Troubleshooting page](troubleshooting.markdown) 
+> or get in touch with the maintainer.
+
 It is **recommended to install MyoFInDer in a
 [virtual environment](https://docs.python.org/3/library/venv.html)** to avoid 
 conflicts with other Python packages installed at the user level. This step is
@@ -190,6 +197,13 @@ C:\Users\User><Path to your venv>\Scripts\activate.bat
 Where `<Path to your venv>` is the path to the created virtual environment.
 
 ### 1.4.2 Install MyoFInDer
+
+> The commands below are intended for experimented users who know what they're
+> doing ! Do not try to run them unless you understand what they do ! For 
+> Windows users, the [installation using the Windows installer](#13-installation-of-myofinder-using-the-windows-installer) 
+> is recommended. If you face any problem with the installation and don't know 
+> what to do, please refer to the [Troubleshooting page](troubleshooting.markdown) 
+> or get in touch with the maintainer.
 
 Once the correct version of Python is installed, MyoFInDer can be installed 
 using the `pip` module :
