@@ -175,6 +175,37 @@ your choice. Just close this window when you're done.
 
 <img src="./usage_images/settings_menu.png" title="Settings menu window">
 
+The available settings are:
+
+ * **Nuclei Channel**: The color channel of the image carrying the signal for 
+   the nuclei. Default to Blue.
+ * **Fiber Channel**: The color channel of the image carrying the signal for 
+   the fibers. Default to Green.
+ * **Save Images with Overlay**: When saving a project, the raw images are
+   always saved. In addition, it is possible to save the images with the
+   detected nuclei and fibers drawn on top as an overlay, if this option is set
+   to On. Defaults to Off.
+ * **Minimum fiber intensity**: For each channel, the color intensity of each 
+   pixel is represented by a value between 0 and 255. Pixels of the Fiber
+   Channel whose intensity is lower than the value of this setting are not 
+   considered as part of the detected fibers. Defaults to 25.
+ * **Maximum fiber intensity**: For each channel, the color intensity of each 
+   pixel is represented by a value between 0 and 255. Pixels of the Fiber
+   Channel whose intensity is greater than the value of this setting are not 
+   considered as part of the detected fibers. Defaults to 255.
+ * **Minimum nucleus intensity**: For each channel, the color intensity of each 
+   pixel is represented by a value between 0 and 255. Only nuclei whose average
+   intensity is greater than the value of this setting will be detected.
+   Defaults to 25.
+ * **Maximum nucleus intensity**: For each channel, the color intensity of each 
+   pixel is represented by a value between 0 and 255. Only nuclei whose average
+   intensity is lower than the value of this setting will be detected. Defaults
+   to 255.
+ * **Minimum nucleus diameter (px)**: The minimum "average" diameter a nucleus
+   must have in order to be detected, in pixels. More precisely, the area of
+   detected nuclei must be superior or equal to the area of a circle whose
+   diameter is the value of this setting. Defaults to 20.
+
 ## 2.3 Starting a computation
 
 Once you have adjusted the computation parameters, it is time to **start 
