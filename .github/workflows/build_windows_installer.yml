@@ -1,0 +1,70 @@
+# Workflow building the Windows Installer file
+name: Build Windows Installer
+
+on:
+  # Runs on pushes on the default branch
+  push:
+    branches: ["main"]
+
+  # Runs on pull requests targeting the default branch
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+    branches: ["main"]
+
+  # Runs automatically every first day of the month
+  schedule:
+    - cron: '0 12 1 * *'
+
+  # May also be started manually
+  workflow_dispatch:
+
+jobs:
+  # Builds the Windows installer, tests it, and uploads it
+  build-windows-installer:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      # Generates the .msi file using Advanced Installer
+      - name: Generate MSI
+        uses: caphyon/advinst-github-action@v1.1
+        with:
+          advinst-version: '20.9.1'
+          advinst-enable-automation: 'true'
+          aip-path: ${{ github.workspace }}\src\windows_installer\config.aip
+          aip-build-name: DefaultBuild
+          aip-package-name: myofinder.msi
+          aip-output-dir:  ${{ github.workspace }}\setup
+      # For some reason the installation directory needs to be manually created
+      - name: Create installation folder
+        shell: pwsh
+        run: mkdir "$env:localappdata\MyoFInDer"
+      # Execute the .msi installer to check that it operates as expected
+      # Also, record the logs to a log file
+      - name: Run Installer
+        shell: pwsh
+        run: If ((Start-Process msiexec -Wait -PassThru -ArgumentList "/I",
+             "${{ github.workspace }}\setup\myofinder.msi", 
+             "/qn",
+             "/l*vx",
+             "${{ github.workspace }}\setup\log.txt").ExitCode -ne 0)
+             {exit 1} else
+             {Write-Output "::notice ::{MSI Installation succeeded}"}
+      # If the workflow is manually started, show some debug information
+      - name: Show Debug Info
+        if: contains(fromJSON('["workflow_dispatch"]'), github.event_name)
+        run: type ${{ github.workspace }}\setup\log.txt
+      # Run the startup script installed by the .msi installer
+      # Currently disabled, waiting for some features to be pushed
+      - name: Run Startup Script
+        if: ${{ false }}
+        shell: cmd
+        run:  '%localappdata%\MyoFInDer\start_myofinder.bat'
+      # If the workflow is started manually or by a push, upload the .msi installer
+      - name: Upload artifact
+        if: contains(fromJSON('["push", "workflow_dispatch"]'), github.event_name)
+        uses: actions/upload-artifact@v3
+        with:
+          name: myofinder.msi
+          path: ${{ github.workspace }}\setup\myofinder.msi
+          if-no-files-found: error
