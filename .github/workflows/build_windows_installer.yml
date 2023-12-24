@@ -36,7 +36,7 @@ jobs:
           aip-package-name: myofinder.msi
           aip-output-dir:  ${{ github.workspace }}\setup
       # For some reason the installation directory needs to be manually created
-      - name: Create installation folder
+      - name: Create Installation Folder
         shell: pwsh
         run: mkdir "$env:localappdata\MyoFInDer"
       # Execute the .msi installer to check that it operates as expected
@@ -61,7 +61,7 @@ jobs:
         shell: cmd
         run:  '%localappdata%\MyoFInDer\start_myofinder.bat'
       # If the workflow is started manually or by a push, upload the .msi installer
-      - name: Upload artifact
+      - name: Upload Artifact
         if: contains(fromJSON('["push", "workflow_dispatch"]'), github.event_name)
         uses: actions/upload-artifact@v3
         with:
