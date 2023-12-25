@@ -9,10 +9,10 @@ from pathlib import Path
 from typing import Tuple, Optional, List
 import logging
 
-from .tools import Nucleus, Nuclei, Fibers, check_image, Selection_box
+from .tools import Nucleus, Nuclei, Fibers, check_image, SelectionBox
 
 
-class Image_canvas(ttk.Frame):
+class ImageCanvas(ttk.Frame):
     """This class manages the display of one image, its nuclei and its
     fibers."""
 
@@ -43,7 +43,7 @@ class Image_canvas(ttk.Frame):
         self._nuclei: Nuclei = Nuclei()
         self._fibers: Fibers = Fibers()
         self._image_id: Optional[int] = None
-        self._selection_box: Selection_box = Selection_box()
+        self._selection_box: SelectionBox = SelectionBox()
 
     def log(self, msg: str) -> None:
         """Wrapper for reducing the verbosity of logging."""
@@ -162,7 +162,7 @@ class Image_canvas(ttk.Frame):
         self._image_id = None
 
         # Resetting the selection box
-        self._selection_box = Selection_box()
+        self._selection_box = SelectionBox()
 
     @property
     def nuc_col_out(self) -> str:
@@ -513,7 +513,7 @@ class Image_canvas(ttk.Frame):
         # Cleans up all the selection box related objects before returning
         if self._selection_box.tk_obj is not None:
             self._canvas.delete(self._selection_box.tk_obj)
-        self._selection_box = Selection_box()
+        self._selection_box = SelectionBox()
 
     def _left_release_box(self, event: Event) -> None:
         """Method called when the user releases the left mouse button after
@@ -603,7 +603,7 @@ class Image_canvas(ttk.Frame):
         # Cleans up all the selection box related objects before returning
         if self._selection_box.tk_obj is not None:
             self._canvas.delete(self._selection_box.tk_obj)
-        self._selection_box = Selection_box()
+        self._selection_box = SelectionBox()
 
     def _right_release_box(self, event: Event) -> None:
         """Method called when the user releases the right mouse button after

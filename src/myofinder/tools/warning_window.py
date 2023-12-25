@@ -4,7 +4,7 @@ from tkinter import Toplevel, ttk, IntVar
 from screeninfo import get_monitors
 
 
-class Warning_window(Toplevel):
+class WarningWindow(Toplevel):
     """Popup window warning the user that the selected action may cause a data
     loss, and proposing to user save before continuing, continue without
     saving, or cancel."""

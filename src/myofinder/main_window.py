@@ -16,13 +16,13 @@ import logging
 from pkg_resources import resource_filename
 
 from .tools import Settings
-from .tools import Save_popup
-from .tools import Warning_window
-from .tools import Settings_window
-from .tools import Splash_window
+from .tools import SavePopup
+from .tools import WarningWindow
+from .tools import SettingsWindow
+from .tools import SplashWindow
 from .tools import check_project_name
-from .files_table import Files_table
-from .image_canvas import Image_canvas
+from .files_table import FilesTable
+from .image_canvas import ImageCanvas
 
 # Sets a better resolution on recent Windows platforms
 if system() == "Windows" and int(release()) >= 8:
@@ -50,7 +50,7 @@ def _save_before_closing(func: Callable) -> Callable:
     return wrapper
 
 
-class Main_window(Tk):
+class MainWindow(Tk):
     """The main window of the MyoFInDer software.
 
     It manages all the buttons, menus, events, and the secondary windows.
@@ -69,7 +69,7 @@ class Main_window(Tk):
 
         # Generates a splash window while waiting for the modules to load
         self.log("Creating the splash window")
-        splash = Splash_window()
+        splash = SplashWindow()
         self.log("Centering the splash window")
         splash.resize_image()
         self.log("Displaying the splash window")
@@ -100,9 +100,9 @@ class Main_window(Tk):
 
         # Sets the image canvas and the files table
         self.log("Creating the image canvas")
-        self._image_canvas = Image_canvas(self._frm, self)
+        self._image_canvas = ImageCanvas(self._frm, self)
         self.log("Creating the files table")
-        self._files_table = Files_table(self._aux_frame, self)
+        self._files_table = FilesTable(self._aux_frame, self)
         self._image_canvas.nuclei_table = self._files_table
         self._files_table.image_canvas = self._image_canvas
 
@@ -248,7 +248,7 @@ class Main_window(Tk):
         # Sets the settings menu
         self._settings_menu = Menu(self._menu_bar, tearoff=0)
         self._settings_menu.add_command(
-            label="Settings", command=partial(Settings_window, self))
+            label="Settings", command=partial(SettingsWindow, self))
         self._menu_bar.add_cascade(label="Settings", menu=self._settings_menu)
 
         # Sets the help menu
@@ -456,7 +456,7 @@ class Main_window(Tk):
             Path.mkdir(directory, parents=True)
 
         # Displays a popup indicating the project is being saved
-        saving_popup = Save_popup(self, directory)
+        saving_popup = SavePopup(self, directory)
         sleep(1)
 
         # Actually saving the project
@@ -569,7 +569,7 @@ class Main_window(Tk):
 
             # Creating the warning window and waiting for the user to choose
             return_var = IntVar()
-            warning_window = Warning_window(self, return_var)
+            warning_window = WarningWindow(self, return_var)
             self.wait_variable(return_var)
 
             # Handling the different possible answers from the user

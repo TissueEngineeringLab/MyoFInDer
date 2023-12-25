@@ -2,7 +2,7 @@
 
 @echo off
 
-set "base_path=%userprofile%\AppData\Local\MyoFInDer"
+set "base_path=%localappdata%\MyoFInDer"
 
 echo Checking if Python is installed on the computer
 python --version >nul 2>&1 && (

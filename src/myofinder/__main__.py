@@ -1,16 +1,22 @@
 # coding: utf-8
 
-"""Executable file for running the application"""
+"""This file contains the executable code that allows to run the MyoFInDer
+interface."""
 
-from . import Main_window
+from . import MainWindow
 import logging
-from sys import stdout
+from sys import stdout, exit
 from pathlib import Path
 import argparse
 from platform import system
 
 
-if __name__ == "__main__":
+def main():
+    """This is the main method called for running the MyoFInDer application.
+
+    It first parses the command-line arguments, then initializes the logger,
+    and finally starts the application window.
+    """
 
     # Parser for parsing the command line arguments of the script
     parser = argparse.ArgumentParser(
@@ -66,7 +72,7 @@ if __name__ == "__main__":
     # Normal workflow
     try:
         logger.log(logging.INFO, "Launching MyoFInDer")
-        window = Main_window(app_folder)
+        window = MainWindow(app_folder)
         window.mainloop()
         logger.log(logging.INFO, "MyoFInDer terminated gracefully")
 
@@ -78,3 +84,8 @@ if __name__ == "__main__":
         if log:
             print("\n\nPress ENTER to exit ...")
             input()
+
+
+if __name__ == "__main__":
+
+    exit(main())
