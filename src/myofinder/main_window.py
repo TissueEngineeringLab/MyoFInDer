@@ -115,7 +115,7 @@ class MainWindow(Tk):
         self.update()
         self.log("Setting the main windows's bindings and protocols")
         self.bind_all('<Control-s>', self._save_button_pressed)
-        self.protocol("WM_DELETE_WINDOW", self._safe_destroy)
+        self.protocol("WM_DELETE_WINDOW", self.safe_destroy)
 
     def set_unsaved_status(self) -> None:
         """Sets the title and save button when a project is modified."""
@@ -161,6 +161,25 @@ class MainWindow(Tk):
             root.removeHandler(root.handlers[0])
 
         self._logger.log(logging.INFO, msg)
+
+    @_save_before_closing
+    def safe_destroy(self) -> None:
+        """Stops the computation thread, closes the main window, and displays
+        a warning if there's unsaved data."""
+
+        self.log("Requesting the processing thread to finish")
+        self._stop_thread = True
+        sleep(0.5)
+        self.log("Waiting for the processing thread to finish")
+        self._thread.join(timeout=1)
+
+        if self._thread.is_alive():
+            self.log("ERROR! The processing thread is still alive !")
+        else:
+            self.log("The processing thread terminated as excepted")
+
+        self.log("Destroying the main window")
+        self.destroy()
 
     def _set_variables(self) -> None:
         """Sets the different variables used in the class."""
@@ -258,7 +277,7 @@ class MainWindow(Tk):
 
         # Sets the quit menu
         self._quit_menu = Menu(self._menu_bar, tearoff=0)
-        self._quit_menu.add_command(label="Quit", command=self._safe_destroy)
+        self._quit_menu.add_command(label="Quit", command=self.safe_destroy)
         self._menu_bar.add_cascade(label="Quit", menu=self._quit_menu)
 
     def _set_layout(self) -> None:
@@ -635,25 +654,6 @@ class MainWindow(Tk):
             self.log(f"Saving the project to {self._current_project}")
             self._save_project(self._current_project)
             return True
-
-    @_save_before_closing
-    def _safe_destroy(self) -> None:
-        """Stops the computation thread, closes the main window, and displays
-        a warning if there's unsaved data."""
-
-        self.log("Requesting the processing thread to finish")
-        self._stop_thread = True
-        sleep(0.5)
-        self.log("Waiting for the processing thread to finish")
-        self._thread.join(timeout=1)
-
-        if self._thread.is_alive():
-            self.log("ERROR! The processing thread is still alive !")
-        else:
-            self.log("The processing thread terminated as excepted")
-
-        self.log("Destroying the main window")
-        self.destroy()
 
     @_save_before_closing
     def _safe_empty_project(self) -> None:

@@ -26,10 +26,15 @@ def main():
     parser.add_argument('-n', '--nolog', action='store_false',
                         help="If provided, the log messages won't be displayed"
                              " and recorded. Otherwise, they are by default.")
+    parser.add_argument('-t', '--test', action='store_true',
+                        help="If provided, the main window is created but its "
+                             "main loop is never started and the window is "
+                             "destroyed as soon as it is initialized.")
     args = parser.parse_args()
 
-    # Retrieving the command-line argument
-    log = args.nolog
+    # Retrieving the command-line arguments
+    log: bool = args.nolog
+    test: bool = args.test
 
     # Setting the path to the application folder
     if system() in ('Linux', 'Darwin'):
@@ -73,7 +78,12 @@ def main():
     try:
         logger.log(logging.INFO, "Launching MyoFInDer")
         window = MainWindow(app_folder)
-        window.mainloop()
+        # Normal operation mode, start the mainloop
+        if not test:
+            window.mainloop()
+        # Test mode, destroy the main window right away
+        else:
+            window.safe_destroy()
         logger.log(logging.INFO, "MyoFInDer terminated gracefully")
 
     # Displaying the exception and waiting for the user to close the console
