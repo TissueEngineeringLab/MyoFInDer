@@ -36,12 +36,28 @@ if exist %base_path%\venv (
 
 echo.
 
+echo Checking if MyoFInDer should run in test mode
+if "%1"=="-t" (
+    set test=true
+    echo Running in test mode
+) else (
+    set test=false
+    echo Running in regular mode
+)
+
+echo.
+
 echo Checking if the dependencies are installed
 %base_path%\venv\Scripts\python -m pip list | findstr "myofinder" >nul 2>&1 && (
     echo The dependencies are installed
 ) || (
     echo The dependencies are not installed, installing them
-    %base_path%\venv\Scripts\python -m pip install myofinder==1.0.7
+    if "%test%"=="false" (
+        %base_path%\venv\Scripts\python -m pip install myofinder==1.0.7
+    ) else (
+        echo Installing the locally built package in test mode
+        %base_path%\venv\Scripts\python -m pip install --no-index -f "%2"
+    )
 )
 
 echo.
@@ -53,17 +69,6 @@ echo Checking that MyoFInDer is correctly installed
     echo Something went wrong during MyoFInDer's installation !
     pause
     exit /b 1
-)
-
-echo.
-
-echo Checking if MyoFInDer should run in test mode
-if "%1"=="-t" (
-    set test=true
-    echo Running in test mode
-) else (
-    set test=false
-    echo Running in regular mode
 )
 
 echo.
