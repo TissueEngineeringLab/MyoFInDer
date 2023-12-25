@@ -26,7 +26,7 @@ Index of the Usage page :
    2. [Loading data from an existing project](#32-loading-data-from-an-existing-project)
    3. [Operations on saved projects](#33-operations-on-saved-projects)
 4. [Advanced usage](#4-advanced-usage)
-   1. [Command-line option](#41-command-line-option)
+   1. [Command-line option](#41-command-line-options)
    2. [Retrieving the log messages](#42-retrieving-the-log-messages)
 
 # 1. Starting MyoFInDer
@@ -346,12 +346,14 @@ impact on the behavior of MyoFInDer.
 
 # 4. Advanced usage
 
-## 4.1 Command-line option
+## 4.1 Command-line options
 
-A single command-line option is available when starting MyoFInDer from the
-console. It allows to **disable logging**, by adding the `-n` or `--nolog` 
-option. It disables both the display of log messages in the console, and 
-recording of the log messages to the log file.
+Two command-line options are available when starting MyoFInDer from the
+console. The first one allows to **disable logging**, by adding the `-n` or 
+`--nolog` option. It disables both the display of log messages in the console, 
+and recording of the log messages to the log file. The second option is for
+**testing only**. It will initialize the interface in a normal way, but close 
+it right away. This behavior is enabled by passing the `-t` or `--test` option.
 
 ## 4.2 Retrieving the log messages
 
