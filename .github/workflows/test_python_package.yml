@@ -20,19 +20,31 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Run on all the supported Python versions
         python-version: ["3.7", "3.8", "3.9", "3.10"]
+        # Run on all the supported platforms
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
+    # Checkout the repository
     - name: Checkout
       uses: actions/checkout@v4
+    # Set up the correct version of Python
     - name: Set up Python ${{ matrix.python-version }} on ${{ matrix.os }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+    # Install the build dependencies
     - name: Install Dependencies
       run: python -m pip install --upgrade pip wheel build setuptools
+    # Install the MyoFInDer Python module
     - name: Install MyoFInDer
       run: python -m pip install .
-    - name: Import MyoFInDer
-      run: python -c "import myofinder; print(myofinder.__version__)"
+    # On Windows, MyoFInDer can run even though there is no graphical environment
+    - name: Run MyoFInDer (Windows)
+      if: runner.os == 'Windows'
+      run: python -m myofinder -t
+    # On macOS and Linux, it is not possible to start the module without a graphical environment
+    - name: Import MyoFInDer (macOS and Linux)
+      if: contains(fromJSON('["macOS", "Linux"]'), runner.os)
+      run: python -c "import myofinder;print(myofinder.__version__)"
