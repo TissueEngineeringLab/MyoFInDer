@@ -46,7 +46,7 @@ echo Checking if the dependencies are installed
 
 echo.
 
-echo Checking that MyoFInDer was correctly installed
+echo Checking that MyoFInDer is correctly installed
 %base_path%\venv\Scripts\python -c "import myofinder" && (
     echo MyoFInDer was correctly installed
 ) || (
@@ -57,5 +57,20 @@ echo Checking that MyoFInDer was correctly installed
 
 echo.
 
+echo Checking if MyoFInDer should run in test mode
+if "%1"=="-t" (
+    set test=true
+    echo Running in test mode
+) else (
+    set test=false
+    echo Running in regular mode
+)
+
+echo.
+
 echo Starting MyoFInDer
-%base_path%\venv\Scripts\python -m myofinder
+if "%test%"=="false" (
+    %base_path%\venv\Scripts\python -m myofinder
+) else (
+    %base_path%\venv\Scripts\python -m myofinder -t
+)
