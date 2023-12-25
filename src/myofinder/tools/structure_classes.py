@@ -121,7 +121,7 @@ class Fibers:
         return len(self.fibers)
 
 
-class Graphical_element(Frame):
+class GraphicalElement(Frame):
     """Class holding all the canvas elements for one image."""
 
     def __init__(self,
@@ -318,38 +318,38 @@ class Graphical_element(Frame):
 
 
 @dataclass
-class Table_entry:
+class TableEntry:
     """Class holding all the information associated with one image."""
 
     path: Union[Path, str]
     nuclei: Nuclei
     fibers: Fibers
-    graph_elt: Optional[Graphical_element] = None
+    graph_elt: Optional[GraphicalElement] = None
 
     @property
     def save_version(self):
         """Returns a simpler version of the current class, with no canvas
         object and with the path truncated to only the file name."""
 
-        return Table_entry(path=self.path.name,
-                           nuclei=self.nuclei,
-                           fibers=self.fibers,
-                           graph_elt=None)
+        return TableEntry(path=self.path.name,
+                          nuclei=self.nuclei,
+                          fibers=self.fibers,
+                          graph_elt=None)
 
 
 @dataclass
-class Table_items:
-    """Class storing all the Table_entry classes of the opened project.
+class TableItems:
+    """Class storing all the TableEntry classes of the opened project.
 
     It also implements many helper functions for simplifying the code in the
     rest of the project.
     """
 
-    entries: List[Table_entry] = field(default_factory=list)
+    entries: List[TableEntry] = field(default_factory=list)
     current_index: Optional[int] = None
 
-    def __getitem__(self, item: Path) -> Table_entry:
-        """Returns the Table_entry object whose path corresponds to the given
+    def __getitem__(self, item: Path) -> TableEntry:
+        """Returns the TableEntry object whose path corresponds to the given
         one."""
 
         # Searches for the first (hopefully the only) entry with a given path
@@ -360,32 +360,32 @@ class Table_items:
         # In the (unlikely) case when there's no entry for the requested path
         raise KeyError
 
-    def __iter__(self) -> Iterator[Table_entry]:
-        """Returns an iterator over the stored Table_entry objects."""
+    def __iter__(self) -> Iterator[TableEntry]:
+        """Returns an iterator over the stored TableEntry objects."""
 
         return iter(self.entries)
 
     def __bool__(self) -> bool:
-        """Returns True if there's at least one stored Table_entry, False
+        """Returns True if there's at least one stored TableEntry, False
         otherwise."""
 
         return bool(self.entries)
 
     def __len__(self) -> int:
-        """Returns the number of stored Table_entry objects."""
+        """Returns the number of stored TableEntry objects."""
 
         return len(self.entries)
 
     @property
     def file_names(self) -> List[Path]:
-        """Returns a list of all the paths of the stored Table_entry
+        """Returns a list of all the paths of the stored TableEntry
         objects."""
 
         return [entry.path for entry in self]
 
     @property
-    def current_entry(self) -> Optional[Table_entry]:
-        """Returns the Table_entry instance corresponding to the currently
+    def current_entry(self) -> Optional[TableEntry]:
+        """Returns the TableEntry instance corresponding to the currently
         displayed image."""
 
         if self.selected is None:
@@ -395,7 +395,7 @@ class Table_items:
 
     @property
     def selected(self) -> Optional[Path]:
-        """Returns the path of the Table_entry instance corresponding to the
+        """Returns the path of the TableEntry instance corresponding to the
         currently displayed image."""
 
         for entry in self.entries:
@@ -405,14 +405,14 @@ class Table_items:
     @property
     def save_version(self):
         """Returns a simpler version of the current class, with no canvas
-        object and with the paths of the Table_entry objects truncated to only
+        object and with the paths of the TableEntry objects truncated to only
         the file name."""
 
-        return Table_items(entries=[entry.save_version for entry
-                                    in self.entries])
+        return TableItems(entries=[entry.save_version for entry
+                                   in self.entries])
 
     def reset(self) -> None:
-        """Resets all the graphics and deletes all the stored Table_entry
+        """Resets all the graphics and deletes all the stored TableEntry
         objects."""
 
         self.reset_graphics()
@@ -427,13 +427,13 @@ class Table_items:
             entry.graph_elt.destroy()
             del entry.graph_elt
 
-    def append(self, entry: Table_entry) -> None:
-        """Adds a Table_entry object to the list of the stored ones."""
+    def append(self, entry: TableEntry) -> None:
+        """Adds a TableEntry object to the list of the stored ones."""
 
         self.entries.append(entry)
 
     def remove(self, path: Path) -> None:
-        """Removes the Table_entry object corresponding to the given path from
+        """Removes the TableEntry object corresponding to the given path from
         the list of the stored ones."""
 
         try:
@@ -442,8 +442,8 @@ class Table_items:
             raise ValueError(f"No table entry associated with the path {path}")
 
     def index(self, path: Path) -> int:
-        """Returns the position of the Table_entry corresponding to the given
-        path in the list of all the stored Table_entry objects."""
+        """Returns the position of the TableEntry corresponding to the given
+        path in the list of all the stored TableEntry objects."""
 
         for i, entry in enumerate(self):
             if entry.path == path:
@@ -453,7 +453,7 @@ class Table_items:
 
 
 @dataclass
-class Selection_box:
+class SelectionBox:
     """Class holding the data associated with the selection box of the image
     canvas."""
 

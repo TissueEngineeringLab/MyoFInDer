@@ -7,7 +7,7 @@ from time import sleep
 from pkg_resources import resource_filename
 
 
-class Splash_window(Tk):
+class SplashWindow(Tk):
     """Window displayed while loading the software.
 
     It gives information about the loading status.
@@ -104,12 +104,12 @@ class Splash_window(Tk):
         canvas.pack(fill="both", expand=True)
         self.update()
 
-        from ..image_segmentation import Image_segmentation
+        from ..image_segmentation import ImageSegmentation
 
         # Load the image segmentation and update the display
         canvas.itemconfig(label, text="Initializing Mesmer...")
         self.update()
-        segmentation = Image_segmentation()
+        segmentation = ImageSegmentation()
 
         # Update the display before starting the software
         canvas.itemconfig(label, text="Starting program...")

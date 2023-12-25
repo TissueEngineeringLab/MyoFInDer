@@ -15,7 +15,7 @@ numpy_color_to_int = {"red": 0,
                       "blue": 2}
 
 
-class Image_segmentation:
+class ImageSegmentation:
     """Class for processing images, detecting fibers and nuclei."""
 
     def __init__(self) -> None:

@@ -4,7 +4,7 @@ from tkinter import Toplevel, ttk, Scale
 from screeninfo import get_monitors
 
 
-class Settings_window(Toplevel):
+class SettingsWindow(Toplevel):
     """Popup window for setting the parameters of the software."""
 
     def __init__(self, main_window) -> None:

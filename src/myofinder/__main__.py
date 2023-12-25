@@ -3,7 +3,7 @@
 """This file contains the executable code that allows to run the MyoFInDer
 interface."""
 
-from . import Main_window
+from . import MainWindow
 import logging
 from sys import stdout, exit
 from pathlib import Path
@@ -72,7 +72,7 @@ def main():
     # Normal workflow
     try:
         logger.log(logging.INFO, "Launching MyoFInDer")
-        window = Main_window(app_folder)
+        window = MainWindow(app_folder)
         window.mainloop()
         logger.log(logging.INFO, "MyoFInDer terminated gracefully")
 

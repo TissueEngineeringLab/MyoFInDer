@@ -5,7 +5,7 @@ from screeninfo import get_monitors
 from pathlib import Path
 
 
-class Save_popup(Toplevel):
+class SavePopup(Toplevel):
     """Popup window displayed while the project is being saved to inform the
     user that saving is in progress."""
 

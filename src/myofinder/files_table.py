@@ -13,11 +13,11 @@ from pickle import dump, load
 from numpy import ndarray, array
 import logging
 
-from .tools import Nucleus, Fiber, Nuclei, Fibers, Graphical_element, \
-    check_image, Table_items, Table_entry
+from .tools import Nucleus, Fiber, Nuclei, Fibers, GraphicalElement, \
+    check_image, TableItems, TableEntry
 
 
-class Files_table(ttk.Frame):
+class FilesTable(ttk.Frame):
     """This frame stores and displays the different images of the project.
 
     It also stores the nuclei and fiber count, and handles the saving of images
@@ -48,7 +48,7 @@ class Files_table(ttk.Frame):
         self._canvas.bind('<Configure>', self._on_resize)
 
         self.image_canvas = None
-        self.table_items = Table_items()
+        self.table_items = TableItems()
 
     def log(self, msg: str) -> None:
         """Wrapper for reducing the verbosity of logging."""
@@ -75,7 +75,7 @@ class Files_table(ttk.Frame):
             table_items = load(save_file)
 
         # Keeping only the data corresponding to existing images
-        self.table_items = Table_items(
+        self.table_items = TableItems(
             entries=[entry for entry in table_items if
                      (directory / 'Original Images' / entry.path).is_file()])
 
@@ -200,9 +200,9 @@ class Files_table(ttk.Frame):
 
         # Adding the new images to the frame
         for file in filenames:
-            self.table_items.append(Table_entry(path=file,
-                                                nuclei=Nuclei(),
-                                                fibers=Fibers()))
+            self.table_items.append(TableEntry(path=file,
+                                               nuclei=Nuclei(),
+                                               fibers=Fibers()))
 
         # Redrawing the canvas
         self._make_table()
@@ -486,7 +486,7 @@ class Files_table(ttk.Frame):
             self._draw_nuclei_save(entry, directory)
 
     def _draw_nuclei_save(self,
-                          entry: Table_entry,
+                          entry: TableEntry,
                           project_name: Path) -> None:
         """Draws fibers and nuclei on an images and then saves it.
 
@@ -672,7 +672,7 @@ class Files_table(ttk.Frame):
                 file_name = f'...{file_name[-36:]}'
 
             # Creating a graphical element representing the entry
-            entry.graph_elt = Graphical_element(
+            entry.graph_elt = GraphicalElement(
                 canvas=self._scroll_window,
                 number=i,
                 name=file_name,
@@ -700,7 +700,7 @@ class Files_table(ttk.Frame):
         self.update()
         self._canvas.event_generate("<Configure>", when="tail")
 
-    def _update_data(self, entry: Table_entry) -> None:
+    def _update_data(self, entry: TableEntry) -> None:
         """Updates the display when data about an image has changed.
 
         Args:
