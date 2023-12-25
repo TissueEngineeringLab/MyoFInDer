@@ -25,6 +25,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      # Set up Python 3.10
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      # Build the wheel for the latest version
+      - name: Build Wheel
+        run: |
+          python -m venv ${{ github.workspace }}\venv
+          ${{ github.workspace }}\venv\Scripts\python.exe -m pip install --upgrade pip wheel build setuptools
+          ${{ github.workspace }}\venv\Scripts\python.exe -m build ${{ github.workspace }} -o ${{ github.workspace }}\dist
       # Generates the .msi file using Advanced Installer
       - name: Generate MSI
         uses: caphyon/advinst-github-action@v1.1
@@ -54,12 +65,14 @@ jobs:
       - name: Show Debug Info
         if: contains(fromJSON('["workflow_dispatch"]'), github.event_name)
         run: type ${{ github.workspace }}\setup\log.txt
-      # Run the startup script installed by the .msi installer
-      # Currently disabled, waiting for some features to be pushed
+      # Getting the name of the wheel, cannot do it in the Windows shell
+      - name: Get Wheel Name
+        shell: bash
+        run: echo "WHEEL_NAME=$(echo '${{ github.workspace }}\dist\')$(ls '${{ github.workspace }}\dist' | grep \.whl$ | head -n 1)" >> $GITHUB_ENV
+      # Run the startup script installed by the .msi installer in test mode
       - name: Run Startup Script
-        if: ${{ false }}
         shell: cmd
-        run:  '%localappdata%\MyoFInDer\start_myofinder.bat'
+        run: '%localappdata%\MyoFInDer\start_myofinder.bat -t ${{ env.WHEEL_NAME }}'
       # If the workflow is started manually or by a push, upload the .msi installer
       - name: Upload Artifact
         if: contains(fromJSON('["push", "workflow_dispatch"]'), github.event_name)
