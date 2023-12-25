@@ -56,7 +56,7 @@ echo Checking if the dependencies are installed
         %base_path%\venv\Scripts\python -m pip install myofinder==1.0.7
     ) else (
         echo Installing the locally built package in test mode
-        %base_path%\venv\Scripts\python -m pip install --no-index -f "%2"
+        %base_path%\venv\Scripts\python -m pip install --no-index -f "%2" myofinder
     )
 )
 
