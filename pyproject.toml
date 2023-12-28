@@ -1,3 +1,63 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = [
+    "setuptools >= 61.0",
+    "screeninfo",
+    "Pillow",
+    "opencv-python",
+    "XlsxWriter",
+    "DeepCell"
+]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "myofinder"
+dynamic = ["version", "readme", "dependencies"]
+description = "Automatic calculation of the fusion index by AI segmentation"
+license = {file = "LICENSE"}
+keywords = ["segmentation", "fusion index", "automation", "muscle culture"]
+requires-python = ">=3.7,<3.11"
+authors = [{name = "Tissue Engineering Lab", email = "antoine.weisrock@kuleuven.be"}]
+maintainers = [{name = "Antoine Weisrock", email = "antoine.weisrock@gmail.com"}]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Image Recognition"
+]
+
+[project.urls]
+Homepage = "https://github.com/TissueEngineeringLab/MyoFInDer"
+Documentation = "https://tissueengineeringlab.github.io/MyoFInDer/"
+Repository = "https://github.com/TissueEngineeringLab/MyoFInDer.git"
+Issues = "https://github.com/TissueEngineeringLab/MyoFInDer/issues"
+Download = "https://pypi.org/project/myofinder/#files"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = {attr = "myofinder.__version__"}
+readme = {file = "README.md", content-type = "text/markdown"}
+dependencies = {file = "requirements.txt"}
+
+[tool.setuptools.package-dir]
+crappy = "src/myofinder"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["*"]
+exclude = []
+namespaces = false
+
+[tool.setuptools.package-data]
+myofinder = [
+    "app_images/*"
+]
