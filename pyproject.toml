@@ -1,17 +1,11 @@
 [build-system]
-requires = [
-    "setuptools >= 61.0",
-    "screeninfo",
-    "Pillow",
-    "opencv-python",
-    "XlsxWriter",
-    "DeepCell"
-]
+requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "myofinder"
-dynamic = ["version", "readme", "dependencies"]
+dynamic = ["readme", "dependencies"]
+version = "1.0.7"
 description = "Automatic calculation of the fusion index by AI segmentation"
 license = {file = "LICENSE"}
 keywords = ["segmentation", "fusion index", "automation", "muscle culture"]
@@ -44,7 +38,6 @@ Download = "https://pypi.org/project/myofinder/#files"
 include-package-data = true
 
 [tool.setuptools.dynamic]
-version = {attr = "myofinder.__version__"}
 readme = {file = "README.md", content-type = "text/markdown"}
 dependencies = {file = "requirements.txt"}
 
