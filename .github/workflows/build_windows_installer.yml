@@ -97,7 +97,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: myofinder.msi
-          path: ${{ github.workspace }}\setup\myofinder.msi
       - name: Display Installer
         shell: bash
         run: ls ${{ github.workspace }}/setup
