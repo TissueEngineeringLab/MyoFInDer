@@ -74,10 +74,39 @@ jobs:
         shell: cmd
         run: '%localappdata%\MyoFInDer\start_myofinder.bat -t ${{ env.WHEEL_NAME }}'
       # If the workflow is started manually or by a push, upload the .msi installer
-      - name: Upload Artifact
+      - name: Upload Installer
         if: contains(fromJSON('["push", "workflow_dispatch"]'), github.event_name)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: myofinder.msi
           path: ${{ github.workspace }}\setup\myofinder.msi
           if-no-files-found: error
+
+  # Pushes the installer to the main branch after a pull request is merged
+  push-installer:
+    runs-on: windows-latest
+    needs: build-windows-installer
+    if: contains(fromJSON('["push"]'), github.event_name)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT }}
+      # Download the previously uploaded installer
+      - name: Download Installer
+        uses: actions/download-artifact@v4
+        with:
+          name: myofinder.msi
+          path: ${{ github.workspace }}\artifacts
+      # Replace the previous installer with the newly downloaded one
+      - name: Replace Installer File
+        shell: bash
+        run: mv '${{ github.workspace }}/artifacts/myofinder.msi' '${{ github.workspace }}/bin/myofinder.msi'
+      # Push the installer to the main branch
+      - name: Push Installer
+        run: |
+          git config user.name 'Antoine Weisrock'
+          git config user.email 'antoine.weisrock@gmail.com'
+          git add ${{ github.workspace }}\bin\myofinder.msi
+          git commit -m "ci: push Windows installer [actions skip]"
+          git push
