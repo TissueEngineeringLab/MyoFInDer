@@ -96,10 +96,10 @@ jobs:
       - name: Download Installer
         uses: actions/download-artifact@v4
         with:
-          name: myofinder.msi
+          path: ${{ github.workspace }}\artifacts
       - name: Display Installer
         shell: bash
-        run: ls ${{ github.workspace }}/setup
+        run: ls -R ${{ github.workspace }}/artifacts
       - name: Push Installer
         if: ${{ false }}
         shell: bash
