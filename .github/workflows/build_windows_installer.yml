@@ -100,13 +100,12 @@ jobs:
           path: ${{ github.workspace }}\artifacts
       - name: Display Installer
         shell: bash
-        run: ls -R '${{ github.workspace }}/artifacts'
+        run: mv '${{ github.workspace }}/artifacts/myofinder.msi' '${{ github.workspace }}/bin/myofinder.msi'
       - name: Push Installer
-        if: ${{ false }}
         shell: bash
         run: |
           git config user.name 'Antoine Weisrock'
           git config user.email 'antoine.weisrock@gmail.com'
           git add ${{ github.workspace }}/bin/myofinder.msi
-          git commit -m "ci: build installer [actions skip]"
+          git commit -m "ci: push Windows installer [actions skip]"
           git push
