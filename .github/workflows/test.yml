@@ -10,7 +10,7 @@ jobs:
     steps:
     - name: Create Source File
       shell: bash
-      run: echo -e "#include <stdio.h>\n\nint main()\n{\n    printf('Hello, World');\n    return 0;\n}" > source.c
+      run: echo -e "#include <stdio.h>\n\nint main()\n{\n    printf(\"Hello, World\");\n    return 0;\n}" > source.c
     - name: Build
       run: gcc source.c -o test.exe
     - name: Run
