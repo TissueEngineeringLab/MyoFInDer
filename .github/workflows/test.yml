@@ -1,8 +1,6 @@
-# Installs the Python dependencies, installs MyoFInDer, and checks that it imports
 name: Test Compile
 
 on:
-  # May also be started manually
   workflow_dispatch:
 
 jobs:
@@ -10,5 +8,10 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - name: Test
-      run: gcc
+    - name: Create Source File
+      shell: bash
+      run: echo -e "#include <stdio.h>\n\nint main()\n{\n    printf('Hello, World');\n    return 0;\n}" > source.c
+    - name: Build
+      run: gcc source.c -o test.exe
+    - name: Run
+      run: .\test.exe
