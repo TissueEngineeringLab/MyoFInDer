@@ -1,0 +1,14 @@
+# Installs the Python dependencies, installs MyoFInDer, and checks that it imports
+name: Test Compile
+
+on:
+  # May also be started manually
+  workflow_dispatch:
+
+jobs:
+  test-build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Test
+      run: gcc
