@@ -97,16 +97,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: myofinder.msi
-          path: ${{ github.workspace }}\bin\myofinderrr.msi
+          path: ${{ github.workspace }}\setup\myofinder.msi
       - name: Display Installer
         shell: bash
-        run: ls ${{ github.workspace }}/bin
+        run: ls ${{ github.workspace }}/setup
       - name: Push Installer
         if: ${{ false }}
         shell: bash
         run: |
           git config user.name 'Antoine Weisrock'
           git config user.email 'antoine.weisrock@gmail.com'
-          git add ${{ github.workspace }}/bin/myofinderr.msi
+          git add ${{ github.workspace }}/bin/myofinder.msi
           git commit -m "ci: build installer [actions skip]"
           git push
