@@ -8,10 +8,10 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - name: Create Source File
-      shell: bash
-      run: echo -e "#include <stdio.h>\n\nint main()\n{\n    printf(\"Hello, World\");\n    return 0;\n}" > source.c
+    - name: Checkout
+      uses: actions/checkout@v4
     - name: Build
-      run: gcc source.c -o test.exe
-    - name: Run
-      run: .\test.exe
+      run: gcc 'src\windows_installer\myofinder.cpp' -lshlwapi -o 'bin\myofinder.exe'
+    - name: Check If Built
+      shell: cmd
+      run: dir bin
