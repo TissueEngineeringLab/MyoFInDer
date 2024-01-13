@@ -465,9 +465,6 @@ class MainWindow(Tk):
                 saved.
         """
 
-        # Setting the save button, the project title and the menu entries
-        self._set_title_and_button(directory)
-
         # Creating the folder if needed
         try:
             if not (directory.is_dir() and directory.exists()):
@@ -490,13 +487,35 @@ class MainWindow(Tk):
             saving_popup = SavePopup(self, directory)
             sleep(1)
 
-        # Actually saving the project
-        self.save_settings(directory)
-        save_overlay = self.settings.save_overlay.get()
-        self._files_table.save_project(directory, save_overlay)
-        self.log(f"Project saved at {directory}")
+            # Actually saving the project
+            self.save_settings(directory)
+            self._files_table.save_project(directory,
+                                           self.settings.save_overlay.get())
 
-        saving_popup.destroy()
+            # Checking that all the mandatory files were created as expected
+            if ((directory / 'settings.pickle').exists() and
+                (directory / f"{directory.name}.xlsx").exists() and
+                (directory / 'data.pickle').exists() and
+                (directory / 'Original Images').exists() and
+                len(tuple((directory / 'Original Images').iterdir()))):
+
+                # Setting the save button, the project title and the menu entry
+                self._set_title_and_button(directory)
+                self.log(f"Project saved at {directory}")
+
+            else:
+                messagebox.showerror("Error !", "Could not save the project !")
+
+        # If an exception is raised, catching it and displaying
+        except (Exception,) as exc:
+            self._logger.exception(
+                f"Exception caught while saving the project !", exc_info=exc)
+            messagebox.showerror("Error !", "Could not save the project !")
+
+        # Delete the save popup if it was ever created
+        finally:
+            if saving_popup is not None:
+                saving_popup.destroy()
 
     def _load_project(self) -> None:
         """Loads a project, its images and its data."""
