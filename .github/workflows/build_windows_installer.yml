@@ -60,6 +60,7 @@ jobs:
         with:
           name: myofinder.exe
           path: '${{ github.workspace }}\bin\myofinder.exe'
+      - run: dir '${{ github.workspace }}\bin'
       # Generates the .msi file using Advanced Installer
       - name: Generate MSI
         uses: caphyon/advinst-github-action@v1.1
