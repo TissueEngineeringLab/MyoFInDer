@@ -469,14 +469,26 @@ class MainWindow(Tk):
         self._set_title_and_button(directory)
 
         # Creating the folder if needed
-        if not (directory.is_dir() and directory.exists()):
-            self.log(f"Creating the directory where to save the "
-                     f"project at {directory}")
-            Path.mkdir(directory, parents=True)
+        try:
+            if not (directory.is_dir() and directory.exists()):
+                self.log(f"Creating the directory where to save the "
+                         f"project at {directory}")
+                Path.mkdir(directory, parents=True)
 
-        # Displays a popup indicating the project is being saved
-        saving_popup = SavePopup(self, directory)
-        sleep(1)
+        # If an exception is raised, catching and displaying it
+        except (Exception,) as exc:
+            self._logger.exception(
+                f"Exception caught while creating the directory where to "
+                f"save the project !", exc_info=exc)
+            messagebox.showerror("Error !", "Could not create the folder "
+                                            "where to save the project !")
+            return
+
+        saving_popup: Optional[SavePopup] = None
+        try:
+            # Displays a popup indicating the project is being saved
+            saving_popup = SavePopup(self, directory)
+            sleep(1)
 
         # Actually saving the project
         self.save_settings(directory)
