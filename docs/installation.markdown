@@ -120,18 +120,21 @@ Note that compared to the command-line installation, the installer just
 installs additional features for easily starting MyoFInDer. Both installation 
 methods are strictly equivalent otherwise.
 
-To run the installer, just double-click on it and follow the displayed 
-instructions. You might have to enter an administrator password at some point. 
-Then, when opening the application for the first time, the required Python 
-modules and MyoFInDer will be installed automatically. Note that a working
-internet connection is required for this step, and that it might take up a few
-minutes for this step to complete. A number of messages will be displayed in 
-the console, which is totally normal. The console should look similar to:
+To run the installer, just double-click on the `myofinder.msi` file and follow 
+the displayed instructions. You might have to enter an administrator password 
+at some point. Then, when opening the application for the first time, the 
+required Python modules and MyoFInDer will be installed automatically. Note 
+that a working internet connection is required for this step, and that it might 
+take up a few minutes for this step to complete. A number of messages will be 
+displayed in the console, which is totally normal. The console should look 
+similar to:
 
 <img src="./pip_install.png" width="1000" title="Installation in console">
 
 **The Windows installer can be downloaded 
-[here](https://github.com/TissueEngineeringLab/MyoFInDer/blob/main/bin/myofinder.msi).**
+[here](https://github.com/TissueEngineeringLab/MyoFInDer/blob/main/bin/myofinder.msi).
+The installer is called `myofinder.msi`, do not mistake it for 
+`myofinder.exe`!**
 
 ## 1.4 Installation of MyoFInDer from console
 
