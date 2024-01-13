@@ -94,6 +94,7 @@ jobs:
         shell: bash
         run: echo "WHEEL_NAME=$(echo '${{ github.workspace }}\dist\')$(ls '${{ github.workspace }}\dist' | grep \.whl$ | head -n 1)" >> $GITHUB_ENV
       # Run the startup script installed by the .msi installer in test mode
+      - run: python -m venv C:\Users\runneradmin\AppData\Local\MyoFInDer\venv
       - name: Run Startup Script
         shell: cmd
         run: '%localappdata%\MyoFInDer\myofinder.exe -t ${{ env.WHEEL_NAME }}'
