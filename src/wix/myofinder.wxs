@@ -1,0 +1,117 @@
+﻿<!-- run using: wix build myofinder.wxs -o myofinder.msi -->
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+    <Package
+        Name="MyoFInDer Test"
+        Manufacturer="Tissue Engineering Lab"
+        UpgradeCode="D3F780C0-8A53-44E1-81EB-570D9AE61393"
+        Language="1033"
+        Codepage="1252"
+        Version="1.0.0"
+        InstallerVersion="100"
+        ProductCode="82C1CF17-504C-4306-A57C-5F9B72411D83">
+
+        <SummaryInformation
+            Keywords="Installer"
+            Description="MyoFInDer Test Installer"
+            Manufacturer="Tissue Engineering Lab" />
+
+        <Media
+            Id="1"
+            Cabinet="Sample.cab"
+            EmbedCab="yes"
+            DiskPrompt="CD-ROM #1" />
+
+        <Property
+            Id="DiskPrompt"
+            Value="MyoFInDer Test 1.0 Installation [1]" />
+
+        <StandardDirectory
+            Id="LocalAppDataFolder">
+
+            <Directory
+                Id="INSTALLDIR"
+                Name="MyoFInDer Test">
+
+                <Component
+                    Id="MainExecutable"
+                    Guid="12A42022-5082-45AE-807F-4B3580F9B1E3">
+                    <File
+                        Id="myofinder.exe"
+                        Name="myofinder.exe"
+                        DiskId="1"
+                        Source="..\..\bin\myofinder.exe"
+                        KeyPath="yes">
+                            <Shortcut
+                                Id="StartMenuShortcutExe"
+                                Directory="ProgramMenuDir"
+                                Name="MyoFInDer Test"
+                                WorkingDirectory="INSTALLDIR"
+                                Icon="myofinder.ico"
+                                IconIndex="0"
+                                Advertise="yes" />
+                            <Shortcut
+                                Id="DesktopShortcutExe"
+                                Directory="DesktopFolder"
+                                Name="MyoFInDer Test"
+                                WorkingDirectory="INSTALLDIR"
+                                Icon="myofinder.ico"
+                                IconIndex="0"
+                                Advertise="yes" />
+                    </File>
+                </Component>
+
+                <Component
+                    Id="READMEFile"
+                    Guid="9BDC1026-3146-4C36-96A2-91258A3F28BD">
+                    <File
+                        Id="README"
+                        Name="README.rtf"
+                        DiskId="1"
+                        Source="README.rtf"
+                        KeyPath="yes" />
+                </Component>
+
+            </Directory>
+        </StandardDirectory>
+
+        <StandardDirectory
+            Id="ProgramMenuFolder">
+
+            <Directory
+                Id="ProgramMenuDir"
+                Name="MyoFInDer Test">
+                <Component
+                    Id="ProgramMenuDir"
+                    Guid="099B9BB5-9893-4D07-8521-E0341CAEFF19">
+                    <RemoveFolder
+                        Id="ProgramMenuDir"
+                        On="uninstall" />
+                    <RegistryValue
+                        Root="HKCU"
+                        Key="Software\[Manufacturer]\[ProductName]"
+                        Type="string"
+                        Value=""
+                        KeyPath="yes" />
+                </Component>
+            </Directory>
+        </StandardDirectory>
+
+        <StandardDirectory
+            Id="DesktopFolder" />
+
+        <Feature
+            Id="Complete"
+            Level="1">
+            <ComponentRef Id="MainExecutable" />
+            <ComponentRef Id="READMEFile" />
+            <ComponentRef Id="ProgramMenuDir" />
+        </Feature>
+
+        <Icon
+            Id="myofinder.ico"
+            SourceFile="myofinder.ico" />
+
+    </Package>
+</Wix>
