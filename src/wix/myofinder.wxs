@@ -1,6 +1,9 @@
-﻿<!-- run using: wix build myofinder.wxs -o myofinder.msi -->
+﻿<!-- wix extension add -g WixToolset.UI.wixext
+     wix build myofinder.wxs -ext WixToolset.UI.wixext -o myofinder.msi -->
 
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Wix
+    xmlns="http://wixtoolset.org/schemas/v4/wxs"
+    xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
 
     <Package
         Name="MyoFInDer Test"
@@ -26,6 +29,42 @@
         <Property
             Id="DiskPrompt"
             Value="MyoFInDer Test 1.0 Installation [1]" />
+
+        <Feature
+            Id="Complete"
+            Title="MyoFInDer"
+            Description="The complete package"
+            Display="expand"
+            Level="1"
+            ConfigurableDirectory="INSTALLDIR">
+
+            <Feature
+                Id="MainProgram"
+                Title="Program"
+                Description="The main executable"
+                Level="1">
+                <ComponentRef Id="MainExecutable" />
+                <ComponentRef Id="ProgramMenuDir" />
+            </Feature>
+
+            <Feature
+                Id="Documentation"
+                Title="Documentation"
+                Description="The documentation manual"
+                Level="1000">
+                <ComponentRef Id="READMEFile" />
+            </Feature>
+        </Feature>
+
+        <Icon
+            Id="myofinder.ico"
+            SourceFile="myofinder.ico" />
+
+        <ui:WixUI Id="WixUI_Mondo" />
+        <UIRef Id="WixUI_ErrorProgressText" />
+
+        <StandardDirectory
+            Id="DesktopFolder" />
 
         <StandardDirectory
             Id="LocalAppDataFolder">
@@ -97,21 +136,6 @@
                 </Component>
             </Directory>
         </StandardDirectory>
-
-        <StandardDirectory
-            Id="DesktopFolder" />
-
-        <Feature
-            Id="Complete"
-            Level="1">
-            <ComponentRef Id="MainExecutable" />
-            <ComponentRef Id="READMEFile" />
-            <ComponentRef Id="ProgramMenuDir" />
-        </Feature>
-
-        <Icon
-            Id="myofinder.ico"
-            SourceFile="myofinder.ico" />
 
     </Package>
 </Wix>
