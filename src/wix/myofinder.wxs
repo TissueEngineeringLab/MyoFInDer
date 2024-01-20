@@ -5,6 +5,7 @@
     xmlns="http://wixtoolset.org/schemas/v4/wxs"
     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
 
+    <!-- Basic Information about the installer -->
     <Package
         Name="MyoFInDer Test"
         Manufacturer="Tissue Engineering Lab"
@@ -15,21 +16,25 @@
         InstallerVersion="100"
         ProductCode="82C1CF17-504C-4306-A57C-5F9B72411D83">
 
+        <!-- More information about the installer -->
         <SummaryInformation
             Keywords="Installer"
             Description="MyoFInDer Test Installer"
             Manufacturer="Tissue Engineering Lab" />
 
+        <!-- Default fields -->
         <Media
             Id="1"
             Cabinet="Sample.cab"
             EmbedCab="yes"
             DiskPrompt="CD-ROM #1" />
 
+        <!-- Default fields -->
         <Property
             Id="DiskPrompt"
             Value="MyoFInDer Test 1.0 Installation [1]" />
 
+        <!-- List of the features to install -->
         <Feature
             Id="Complete"
             Title="MyoFInDer"
@@ -56,6 +61,7 @@
             </Feature>
         </Feature>
 
+        <!-- The icon to use for the shortcuts -->
         <Icon
             Id="myofinder.ico"
             SourceFile="myofinder.ico" />
@@ -63,16 +69,20 @@
         <ui:WixUI Id="WixUI_Mondo" />
         <UIRef Id="WixUI_ErrorProgressText" />
 
+        <!-- Referencing the Desktop Folder where a shortcut will be added -->
         <StandardDirectory
             Id="DesktopFolder" />
 
+        <!-- Base standard directory where MyoFInDer will be added -->
         <StandardDirectory
             Id="LocalAppDataFolder">
 
+            <!-- New directory containing only MyoFInDer -->
             <Directory
                 Id="INSTALLDIR"
                 Name="MyoFInDer Test">
 
+                <!-- Component containing the myofinder.exe executable and its shortcuts -->
                 <Component
                     Id="MainExecutable"
                     Guid="12A42022-5082-45AE-807F-4B3580F9B1E3">
@@ -101,6 +111,7 @@
                     </File>
                 </Component>
 
+                <!-- Component containing the README file -->
                 <Component
                     Id="READMEFile"
                     Guid="9BDC1026-3146-4C36-96A2-91258A3F28BD">
@@ -115,9 +126,11 @@
             </Directory>
         </StandardDirectory>
 
+        <!-- Standard directory containing the start menu shortcut -->
         <StandardDirectory
             Id="ProgramMenuFolder">
 
+            <!-- New directory containing the shortcut to MyoFInDer executable -->
             <Directory
                 Id="ProgramMenuDir"
                 Name="MyoFInDer Test">
