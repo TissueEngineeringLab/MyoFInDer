@@ -71,6 +71,60 @@
             Message="MyoFInDer requires Windows 8 or higher !"
             Condition="Installed OR VersionNT &gt; 602" />
 
+        <!-- Checking if Python 3.7 is installed -->
+        <Property
+            Id="PYTHONPATH37">
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="PythonPath37"
+                    Key="Software\Python\PythonCore\3.7\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKCU"
+                    Type="raw" />
+        </Property>
+
+        <!-- Checking if Python 3.8 is installed -->
+        <Property
+            Id="PYTHONPATH38">
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="PythonPath38"
+                    Key="Software\Python\PythonCore\3.8\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKCU"
+                    Type="raw" />
+        </Property>
+
+        <!-- Checking if Python 3.9 is installed -->
+        <Property
+            Id="PYTHONPATH39">
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="PythonPath39"
+                    Key="Software\Python\PythonCore\3.9\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKCU"
+                    Type="raw" />
+        </Property>
+
+        <!-- Checking if Python 3.10 is installed -->
+        <Property
+            Id="PYTHONPATH310">
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="PythonPath310"
+                    Key="Software\Python\PythonCore\3.10\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKCU"
+                    Type="raw" />
+        </Property>
+
+        <!-- Condition checking that a valid version of Python is installed -->
+        <Launch
+            Message="MyoFInDer requires Python 3.7, 3.8, 3.9, or 3.10 to be installed !"
+            Condition="Installed OR PYTHONPATH37 OR PYTHONPATH38 OR PYTHONPATH39 OR PYTHONPATH310" />
+
+        <!-- Adding a nice GUI to the MSI installer -->
         <ui:WixUI Id="WixUI_Mondo" />
         <UIRef Id="WixUI_ErrorProgressText" />
 
