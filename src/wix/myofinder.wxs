@@ -66,6 +66,11 @@
             Id="myofinder.ico"
             SourceFile="myofinder.ico" />
 
+        <!-- Condition checking the current version of Windows -->
+        <Launch
+            Message="MyoFInDer requires Windows 8 or higher !"
+            Condition="Installed OR VersionNT &gt; 602" />
+
         <ui:WixUI Id="WixUI_Mondo" />
         <UIRef Id="WixUI_ErrorProgressText" />
 
