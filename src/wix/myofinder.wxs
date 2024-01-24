@@ -50,6 +50,7 @@
                 Level="1">
                 <ComponentRef Id="MainExecutable" />
                 <ComponentRef Id="ProgramMenuDir" />
+                <ComponentRef Id="RegistryValues" />
             </Feature>
 
             <Feature
@@ -170,6 +171,25 @@
                     </File>
                 </Component>
 
+                <!-- Component containing the registry keys -->
+                <Component
+                    Id="RegistryValues"
+                    Guid="AA2D3852-53CC-405E-9F05-EA77AD18BDF5">
+                    <RegistryKey
+                        ForceCreateOnInstall="no"
+                        ForceDeleteOnUninstall="no"
+                        Key="Software\[ProductName]"
+                        Root="HKCU" >
+                        <RegistryValue
+                            Action="write"
+                            Id="SystemPythonExePath"
+                            KeyPath="yes"
+                            Name="SystemPythonExePath"
+                            Type="string"
+                            Value="[USERPYTHONPATH39]" />
+                    </RegistryKey>
+                </Component>
+
                 <!-- Component containing the README file -->
                 <Component
                     Id="READMEFile"
@@ -201,7 +221,7 @@
                         On="uninstall" />
                     <RegistryValue
                         Root="HKCU"
-                        Key="Software\[Manufacturer]\[ProductName]"
+                        Key="Software\[ProductName]"
                         Type="string"
                         Value=""
                         KeyPath="yes" />
