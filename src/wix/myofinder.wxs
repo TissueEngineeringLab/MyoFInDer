@@ -72,58 +72,112 @@
             Message="MyoFInDer requires Windows 8 or higher !"
             Condition="Installed OR VersionNT &gt; 602" />
 
-        <!-- Checking if Python 3.7 is installed -->
+        <!-- Checking if Python 3.7 is installed at the user level -->
         <Property
-            Id="PYTHONPATH37">
+            Id="USERPYTHONPATH37">
             <RegistrySearch
                     Bitness="always64"
-                    Id="PythonPath37"
+                    Id="UserPythonPath37"
                     Key="Software\Python\PythonCore\3.7\InstallPath"
                     Name="ExecutablePath"
                     Root="HKCU"
                     Type="raw" />
         </Property>
 
-        <!-- Checking if Python 3.8 is installed -->
+        <!-- Checking if Python 3.7 is installed at the machine level -->
         <Property
-            Id="PYTHONPATH38">
+            Id="MACHINEPYTHONPATH37">
             <RegistrySearch
                     Bitness="always64"
-                    Id="PythonPath38"
+                    Id="MachinePythonPath37"
+                    Key="Software\Python\PythonCore\3.7\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKLM"
+                    Type="raw" />
+        </Property>
+
+        <!-- Checking if Python 3.8 is installed at the user level -->
+        <Property
+            Id="USERPYTHONPATH38">
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="UserPythonPath38"
                     Key="Software\Python\PythonCore\3.8\InstallPath"
                     Name="ExecutablePath"
                     Root="HKCU"
                     Type="raw" />
         </Property>
 
-        <!-- Checking if Python 3.9 is installed -->
+        <!-- Checking if Python 3.8 is installed at the machine level -->
         <Property
-            Id="PYTHONPATH39">
+            Id="MACHINEPYTHONPATH38">
             <RegistrySearch
                     Bitness="always64"
-                    Id="PythonPath39"
+                    Id="MachinePythonPath38"
+                    Key="Software\Python\PythonCore\3.8\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKLM"
+                    Type="raw" />
+        </Property>
+
+        <!-- Checking if Python 3.9 is installed at the user level -->
+        <Property
+            Id="USERPYTHONPATH39">
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="UserPythonPath39"
                     Key="Software\Python\PythonCore\3.9\InstallPath"
                     Name="ExecutablePath"
                     Root="HKCU"
                     Type="raw" />
         </Property>
 
-        <!-- Checking if Python 3.10 is installed -->
+        <!-- Checking if Python 3.9 is installed at the machine level -->
         <Property
-            Id="PYTHONPATH310">
+            Id="MACHINEPYTHONPATH39">
             <RegistrySearch
                     Bitness="always64"
-                    Id="PythonPath310"
+                    Id="MachinePythonPath39"
+                    Key="Software\Python\PythonCore\3.9\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKLM"
+                    Type="raw" />
+        </Property>
+
+        <!-- Checking if Python 3.10 is installed at the user level -->
+        <Property
+            Id="USERPYTHONPATH310">
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="UserPythonPath310"
                     Key="Software\Python\PythonCore\3.10\InstallPath"
                     Name="ExecutablePath"
                     Root="HKCU"
                     Type="raw" />
         </Property>
 
+        <!-- Checking if Python 3.10 is installed at the machine level -->
+        <Property
+            Id="MACHINEPYTHONPATH310">
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="MachinePythonPath310"
+                    Key="Software\Python\PythonCore\3.10\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKLM"
+                    Type="raw" />
+        </Property>
+
+        <Property
+            Id="TEST"
+            Value="[USERPYTHONPATH37] OR [USERPYTHONPATH38] OR [USERPYTHONPATH39]" />
+
         <!-- Condition checking that a valid version of Python is installed -->
         <Launch
             Message="MyoFInDer requires Python 3.7, 3.8, 3.9, or 3.10 to be installed !"
-            Condition="Installed OR PYTHONPATH37 OR PYTHONPATH38 OR PYTHONPATH39 OR PYTHONPATH310" />
+            Condition="Installed OR USERPYTHONPATH37 OR USERPYTHONPATH38 OR
+            USERPYTHONPATH39 OR USERPYTHONPATH310 OR MACHINEPYTHONPATH37 OR
+            MACHINEPYTHONPATH38 OR MACHINEPYTHONPATH39 OR MACHINEPYTHONPATH310" />
 
         <!-- Adding a nice GUI to the MSI installer -->
         <ui:WixUI Id="WixUI_Mondo" />
