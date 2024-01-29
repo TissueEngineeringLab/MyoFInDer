@@ -168,10 +168,6 @@
                     Type="raw" />
         </Property>
 
-        <Property
-            Id="TEST"
-            Value="[USERPYTHONPATH37] OR [USERPYTHONPATH38] OR [USERPYTHONPATH39]" />
-
         <!-- Condition checking that a valid version of Python is installed -->
         <Launch
             Message="MyoFInDer requires Python 3.7, 3.8, 3.9, or 3.10 to be installed !"
