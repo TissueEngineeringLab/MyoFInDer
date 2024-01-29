@@ -67,6 +67,63 @@
             Id="myofinder.ico"
             SourceFile="myofinder.ico" />
 
+        <SetProperty
+            Action="SetMachinePythonExePath3.7"
+            After="AppSearch"
+            Condition="MACHINEPYTHONPATH37"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[MACHINEPYTHONPATH37]" />
+        <SetProperty
+            Action="SetUserPythonExePath3.7"
+            After="AppSearch"
+            Condition="USERPYTHONPATH37"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[USERPYTHONPATH37]" />
+        <SetProperty
+            Action="SetMachinePythonExePath3.8"
+            After="AppSearch"
+            Condition="MACHINEPYTHONPATH38"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[MACHINEPYTHONPATH38]" />
+        <SetProperty
+            Action="SetUserPythonExePath3.8"
+            After="AppSearch"
+            Condition="USERPYTHONPATH38"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[USERPYTHONPATH38]" />
+        <SetProperty
+            Action="SetMachinePythonExePath3.9"
+            After="AppSearch"
+            Condition="MACHINEPYTHONPATH39"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[MACHINEPYTHONPATH39]" />
+        <SetProperty
+            Action="SetUserPythonExePath3.9"
+            After="AppSearch"
+            Condition="USERPYTHONPATH39"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[USERPYTHONPATH39]" />
+        <SetProperty
+            Action="SetMachinePythonExePath3.10"
+            After="AppSearch"
+            Condition="MACHINEPYTHONPATH310"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[MACHINEPYTHONPATH310]" />
+        <SetProperty
+            Action="SetUserPythonExePath3.10"
+            After="AppSearch"
+            Condition="USERPYTHONPATH310"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[USERPYTHONPATH310]" />
+
         <!-- Condition checking the current version of Windows -->
         <Launch
             Message="MyoFInDer requires Windows 8 or higher !"
