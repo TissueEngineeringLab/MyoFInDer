@@ -318,13 +318,15 @@
                         ForceDeleteOnUninstall="no"
                         Key="Software\[ProductName]"
                         Root="HKCU" >
+
+                        <!-- Path to the system Python executable -->
                         <RegistryValue
                             Action="write"
                             Id="SystemPythonExePath"
                             KeyPath="yes"
                             Name="SystemPythonExePath"
                             Type="string"
-                            Value="[USERPYTHONPATH39]" />
+                            Value="[SystemPythonExePath]" />
                     </RegistryKey>
                 </Component>
 
