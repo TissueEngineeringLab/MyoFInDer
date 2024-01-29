@@ -327,6 +327,15 @@
                             Name="SystemPythonExePath"
                             Type="string"
                             Value="[SystemPythonExePath]" />
+
+                        <!-- Path to the virtual environment of MyoFInDer -->
+                        <RegistryValue
+                            Action="write"
+                            Id="MyoFInDerVenvPath"
+                            KeyPath="no"
+                            Name="MyoFInDerVenvPath"
+                            Type="string"
+                            Value="[INSTALLDIR]venv" />
                     </RegistryKey>
                 </Component>
 
