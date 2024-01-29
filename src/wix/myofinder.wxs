@@ -1,9 +1,10 @@
 ﻿<!-- wix extension add -g WixToolset.UI.wixext
-     wix build myofinder.wxs -ext WixToolset.UI.wixext -o myofinder.msi -->
+     wix build myofinder.wxs -ext WixToolset.UI.wixext -ext WixToolset.UTIL.wixext -o myofinder.msi -->
 
 <Wix
     xmlns="http://wixtoolset.org/schemas/v4/wxs"
-    xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+    xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
+    xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
 
     <!-- Basic Information about the installer -->
     <Package
@@ -307,6 +308,19 @@
                                 IconIndex="0"
                                 Advertise="yes" />
                     </File>
+
+                    <!-- Remove the log file although it does not exist on installation -->
+                    <RemoveFile
+                        Id="LogFile"
+                        Name="logs.txt"
+                        On="uninstall" />
+
+                    <!-- Remove the settings file although it does not exist on installation -->
+                    <RemoveFile
+                        Id="SettingsFile"
+                        Name="settings.pickle"
+                        On="uninstall" />
+
                 </Component>
 
                 <!-- Component containing the registry keys -->
