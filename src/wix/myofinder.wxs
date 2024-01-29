@@ -361,7 +361,8 @@
                         Root="HKCU"
                         Key="Software\[ProductName]"
                         Type="string"
-                        Value=""
+                        Name="StartupMenuShortcut"
+                        Value="true"
                         KeyPath="yes" />
                 </Component>
             </Directory>
