@@ -264,6 +264,18 @@
             USERPYTHONPATH39 OR USERPYTHONPATH310 OR MACHINEPYTHONPATH37 OR
             MACHINEPYTHONPATH38 OR MACHINEPYTHONPATH39 OR MACHINEPYTHONPATH310" />
 
+        <!-- Property storing the location of the virtual environment -->
+        <Property
+            Id="VENVPATH">
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="VenvPath"
+                    Key="Software\[ProductName]"
+                    Name="MyoFInDerVenvPath"
+                    Root="HKCU"
+                    Type="raw" />
+        </Property>
+
         <!-- Adding a nice GUI to the MSI installer -->
         <ui:WixUI Id="WixUI_Mondo" />
         <UIRef Id="WixUI_ErrorProgressText" />
@@ -320,6 +332,11 @@
                         Id="SettingsFile"
                         Name="settings.pickle"
                         On="uninstall" />
+
+                    <util:RemoveFolderEx
+                        Condition="Uninstalling"
+                        On="uninstall"
+                        Property="VENVPATH" />
 
                 </Component>
 
