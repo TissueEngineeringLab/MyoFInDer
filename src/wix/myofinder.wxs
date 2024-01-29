@@ -67,6 +67,37 @@
             Id="myofinder.ico"
             SourceFile="myofinder.ico" />
 
+        <!-- Properties checking the type of installation -->
+        <SetProperty
+            Action="SetFirstInstall"
+            After="FindRelatedProducts"
+            Condition="NOT Installed AND NOT WIX_UPGRADE_DETECTED AND NOT WIX_DOWNGRADE_DETECTED"
+            Id="FirstInstall"
+            Sequence="both"
+            Value="true" />
+        <SetProperty
+            Action="SetUpgrading"
+            After="SetFirstInstall"
+            Condition="WIX_UPGRADE_DETECTED AND NOT (REMOVE=&quot;ALL&quot;)"
+            Id="Upgrading"
+            Sequence="both"
+            Value="true" />
+        <SetProperty
+            Action="SetUninstalling"
+            After="SetUpgrading"
+            Condition="Installed AND (REMOVE=&quot;ALL&quot;) AND NOT (WIX_UPGRADE_DETECTED OR UPGRADINGPRODUCTCODE)"
+            Id="Uninstalling"
+            Sequence="both"
+            Value="true" />
+        <SetProperty
+            Action="SetMaintenance"
+            After="SetUninstalling"
+            Condition="Installed AND NOT Upgrading AND NOT Uninstalling AND NOT UPGRADINGPRODUCTCODE"
+            Id="Maintenance"
+            Sequence="both"
+            Value="true" />
+
+        <!-- Properties checking the installed Python versions -->
         <SetProperty
             Action="SetMachinePythonExePath3.7"
             After="AppSearch"
