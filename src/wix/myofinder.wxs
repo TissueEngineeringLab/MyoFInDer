@@ -405,6 +405,19 @@
                 <Component
                     Id="ProgramMenuDir"
                     Guid="099B9BB5-9893-4D07-8521-E0341CAEFF19">
+
+                    <Shortcut
+                        Advertise="no"
+                        Arguments="/x [ProductCode]"
+                        Description="Uninstall MyoFInDer"
+                        Icon="recycle.ico"
+                        IconIndex="0"
+                        Id="StartMenuShortcutUninstall"
+                        Name="Uninstall MyoFInDer"
+                        Show="normal"
+                        Target="[System64Folder]msiexec.exe"
+                        WorkingDirectory="INSTALLDIR"/>
+
                     <RemoveFolder
                         Id="ProgramMenuDir"
                         On="uninstall" />
