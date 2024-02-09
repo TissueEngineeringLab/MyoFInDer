@@ -8,27 +8,31 @@
 
     <!-- Basic Information about the installer -->
     <Package
-        Name="MyoFInDer Test"
-        Manufacturer="Tissue Engineering Lab"
-        UpgradeCode="D3F780C0-8A53-44E1-81EB-570D9AE61393"
+        Compressed="yes"
+        InstallerVersion="500"
         Language="1033"
-        Codepage="1252"
-        Version="1.0.0"
-        InstallerVersion="100"
-        ProductCode="82C1CF17-504C-4306-A57C-5F9B72411D83">
+        Manufacturer="Tissue Engineering Lab"
+        Name="MyoFInDer Test"
+        ProductCode="82C1CF17-504C-4306-A57C-5F9B72411D83"
+        Scope="perUser"
+        ShortNames="no"
+        UpgradeCode="D3F780C0-8A53-44E1-81EB-570D9AE61393"
+        Version="1.0.0">
 
         <!-- More information about the installer -->
         <SummaryInformation
-            Keywords="Installer"
+            Codepage="1252"
             Description="MyoFInDer Test Installer"
+            Keywords="Installer"
             Manufacturer="Tissue Engineering Lab" />
 
         <!-- Default fields -->
         <Media
-            Id="1"
             Cabinet="Sample.cab"
+            CompressionLevel="medium"
+            DiskPrompt="CD-ROM #1"
             EmbedCab="yes"
-            DiskPrompt="CD-ROM #1" />
+            Id="1" />
 
         <!-- Default fields -->
         <Property
