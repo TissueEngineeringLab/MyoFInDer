@@ -41,28 +41,42 @@
 
         <!-- List of the features to install -->
         <Feature
-            Id="Complete"
-            Title="MyoFInDer"
+            AllowAbsent="no"
+            AllowAdvertise="no"
+            ConfigurableDirectory="INSTALLDIR"
             Description="The complete package"
             Display="expand"
+            Id="Complete"
+            InstallDefault="local"
             Level="1"
-            ConfigurableDirectory="INSTALLDIR">
+            Title="MyoFInDer"
+            TypicalDefault="install">
 
             <Feature
-                Id="MainProgram"
-                Title="Program"
+                AllowAbsent="no"
+                AllowAdvertise="no"
                 Description="The main executable"
-                Level="1">
+                Display="expand"
+                Id="MainProgram"
+                InstallDefault="followParent"
+                Level="1"
+                Title="Program"
+                TypicalDefault="install">
                 <ComponentRef Id="MainExecutable" />
                 <ComponentRef Id="ProgramMenuDir" />
                 <ComponentRef Id="RegistryValues" />
             </Feature>
 
             <Feature
-                Id="Documentation"
-                Title="Documentation"
+                AllowAbsent="yes"
+                AllowAdvertise="no"
                 Description="The documentation manual"
-                Level="1000">
+                Display="expand"
+                Id="Documentation"
+                InstallDefault="followParent"
+                Level="1"
+                Title="Documentation"
+                TypicalDefault="install">
                 <ComponentRef Id="READMEFile" />
             </Feature>
         </Feature>
