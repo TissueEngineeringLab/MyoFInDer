@@ -299,9 +299,30 @@
                     Type="raw" />
         </Property>
 
+        <!-- Mandatory properties for the WixUI_Advanced interface -->
+        <Property Id="ApplicationFolderName" Value="INSTALLDIR" />
+        <Property Id="WixAppFolder" Value="WixPerUserFolder" />
+
+        <!-- Property setting the logo in the Apps & Features menu -->
+        <Property Id="ARPPRODUCTICON" Value="myofinder.ico" />
+
+        <!-- Variables driving the appearance of the installer window -->
+        <WixVariable Id="WixUILicenseRtf" Value="LICENSE.rtf" />
+        <WixVariable Id="WixUIDialogBmp" Value="dialog.bmp" />
+        <WixVariable Id="WixUIBannerBmp" Value="banner.bmp" />
+        <WixVariable Id="WixUIExclamationIco" Value="logo32.ico" />
+        <WixVariable Id="WixUIInfoIco" Value="logo32.ico" />
+        <WixVariable Id="WixUINewIco" Value="logo16.ico" />
+        <WixVariable Id="WixUIUpIco" Value="logo16.ico" />
+
         <!-- Adding a nice GUI to the MSI installer -->
-        <ui:WixUI Id="WixUI_Mondo" />
-        <UIRef Id="WixUI_ErrorProgressText" />
+        <UI>
+            <ui:WixUI
+                Id="WixUI_Advanced"/>
+            <UIRef
+                Id="WixUI_ErrorProgressText" />
+
+        </UI>
 
         <!-- Referencing the Desktop Folder where a shortcut will be added -->
         <StandardDirectory
