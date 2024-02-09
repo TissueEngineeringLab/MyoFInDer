@@ -306,6 +306,20 @@
         <!-- Property setting the logo in the Apps & Features menu -->
         <Property Id="ARPPRODUCTICON" Value="myofinder.ico" />
 
+        <!-- Properties of the checkbox for starting MyoFInDer after installation -->
+        <Property Id="WIXUI_EXITDIALOGOPTIONALTEXT" Value="Thank you for installing MyoFInDer !" />
+        <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch MyoFInDer" />
+
+        <!-- Action to run when the checkbox is checked -->
+        <CustomAction
+            Execute="immediate"
+            ExeCommand=""
+            FileRef="myofinder.exe"
+            Id="LaunchApplication"
+            Impersonate="yes"
+            PatchUninstall="no"
+            Return="check" />
+
         <!-- Variables driving the appearance of the installer window -->
         <WixVariable Id="WixUILicenseRtf" Value="LICENSE.rtf" />
         <WixVariable Id="WixUIDialogBmp" Value="dialog.bmp" />
@@ -321,6 +335,14 @@
                 Id="WixUI_Advanced"/>
             <UIRef
                 Id="WixUI_ErrorProgressText" />
+
+            <!-- Linking the LaunchApplication action to the checkbox -->
+            <Publish
+                Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1"
+                Control="Finish"
+                Dialog="ExitDialog"
+                Event="DoAction"
+                Value="LaunchApplication" />
 
         </UI>
 
