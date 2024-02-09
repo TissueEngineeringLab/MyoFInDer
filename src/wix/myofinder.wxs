@@ -72,6 +72,11 @@
             Id="myofinder.ico"
             SourceFile="logo32.ico" />
 
+        <!-- The recycle bin icon -->
+        <Icon
+            Id="recycle.ico"
+            SourceFile="recycle_bin.ico" />
+
         <!-- Properties checking the type of installation -->
         <SetProperty
             Action="SetFirstInstall"
