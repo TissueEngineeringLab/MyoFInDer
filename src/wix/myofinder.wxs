@@ -327,21 +327,26 @@
                         Source="..\..\bin\myofinder.exe"
                         KeyPath="yes">
                             <Shortcut
-                                Id="StartMenuShortcutExe"
+                                Advertise="yes"
+                                Description="MyoFInDer Test"
                                 Directory="ProgramMenuDir"
-                                Name="MyoFInDer Test"
-                                WorkingDirectory="INSTALLDIR"
                                 Icon="myofinder.ico"
                                 IconIndex="0"
-                                Advertise="yes" />
+                                Id="StartMenuShortcutExe"
+                                Name="MyoFInDer Test"
+                                Show="normal"
+                                WorkingDirectory="INSTALLDIR" />
+
                             <Shortcut
-                                Id="DesktopShortcutExe"
+                                Advertise="yes"
+                                Description="MyoFInDer Test"
                                 Directory="DesktopFolder"
-                                Name="MyoFInDer Test"
-                                WorkingDirectory="INSTALLDIR"
                                 Icon="myofinder.ico"
                                 IconIndex="0"
-                                Advertise="yes" />
+                                Id="DesktopShortcutExe"
+                                Name="MyoFInDer Test"
+                                Show="normal"
+                                WorkingDirectory="INSTALLDIR" />
                     </File>
 
                     <!-- Remove the log file although it does not exist on installation -->
