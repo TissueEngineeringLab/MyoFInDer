@@ -395,6 +395,15 @@
                             Name="MyoFInDerVenvPath"
                             Type="string"
                             Value="[INSTALLDIR]venv" />
+
+                        <!-- Path to MyoFInDer's Python executable -->
+                        <RegistryValue
+                            Action="write"
+                            Id="MyoFInDerPythonPath"
+                            KeyPath="no"
+                            Name="MyoFInDerPythonPath"
+                            Type="string"
+                            Value="[INSTALLDIR]venv\Scripts\python.exe" />
                     </RegistryKey>
                 </Component>
 
