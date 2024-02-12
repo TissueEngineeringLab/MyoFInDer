@@ -186,7 +186,11 @@
 
         <!-- Checking if Python 3.7 is installed at the user level -->
         <Property
-            Id="USERPYTHONPATH37">
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="USERPYTHONPATH37"
+            Secure="yes" >
             <RegistrySearch
                     Bitness="always64"
                     Id="UserPythonPath37"
@@ -198,7 +202,11 @@
 
         <!-- Checking if Python 3.7 is installed at the machine level -->
         <Property
-            Id="MACHINEPYTHONPATH37">
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="MACHINEPYTHONPATH37"
+            Secure="yes" >
             <RegistrySearch
                     Bitness="always64"
                     Id="MachinePythonPath37"
@@ -210,7 +218,11 @@
 
         <!-- Checking if Python 3.8 is installed at the user level -->
         <Property
-            Id="USERPYTHONPATH38">
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="USERPYTHONPATH38"
+            Secure="yes" >
             <RegistrySearch
                     Bitness="always64"
                     Id="UserPythonPath38"
@@ -222,7 +234,11 @@
 
         <!-- Checking if Python 3.8 is installed at the machine level -->
         <Property
-            Id="MACHINEPYTHONPATH38">
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="MACHINEPYTHONPATH38"
+            Secure="yes" >
             <RegistrySearch
                     Bitness="always64"
                     Id="MachinePythonPath38"
@@ -234,7 +250,11 @@
 
         <!-- Checking if Python 3.9 is installed at the user level -->
         <Property
-            Id="USERPYTHONPATH39">
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="USERPYTHONPATH39"
+            Secure="yes" >
             <RegistrySearch
                     Bitness="always64"
                     Id="UserPythonPath39"
@@ -246,7 +266,11 @@
 
         <!-- Checking if Python 3.9 is installed at the machine level -->
         <Property
-            Id="MACHINEPYTHONPATH39">
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="MACHINEPYTHONPATH39"
+            Secure="yes" >
             <RegistrySearch
                     Bitness="always64"
                     Id="MachinePythonPath39"
@@ -258,7 +282,11 @@
 
         <!-- Checking if Python 3.10 is installed at the user level -->
         <Property
-            Id="USERPYTHONPATH310">
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="USERPYTHONPATH310"
+            Secure="yes" >
             <RegistrySearch
                     Bitness="always64"
                     Id="UserPythonPath310"
@@ -270,7 +298,11 @@
 
         <!-- Checking if Python 3.10 is installed at the machine level -->
         <Property
-            Id="MACHINEPYTHONPATH310">
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="MACHINEPYTHONPATH310"
+            Secure="yes" >
             <RegistrySearch
                     Bitness="always64"
                     Id="MachinePythonPath310"
@@ -289,7 +321,11 @@
 
         <!-- Property storing the location of the virtual environment -->
         <Property
-            Id="VENVPATH">
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="VENVPATH"
+            Secure="yes" >
             <RegistrySearch
                     Bitness="always64"
                     Id="VenvPath"
@@ -300,15 +336,40 @@
         </Property>
 
         <!-- Mandatory properties for the WixUI_Advanced interface -->
-        <Property Id="ApplicationFolderName" Value="INSTALLDIR" />
-        <Property Id="WixAppFolder" Value="WixPerUserFolder" />
+        <Property
+            Admin="no"
+            Hidden="no"
+            Id="ApplicationFolderName"
+            Secure="no"
+            Value="INSTALLDIR" />
+        <Property
+            Admin="no"
+            Hidden="no"
+            Id="WixAppFolder"
+            Secure="no"
+            Value="WixPerUserFolder" />
 
         <!-- Property setting the logo in the Apps & Features menu -->
-        <Property Id="ARPPRODUCTICON" Value="myofinder.ico" />
+        <Property
+            Admin="no"
+            Hidden="no"
+            Id="ARPPRODUCTICON"
+            Secure="yes"
+            Value="myofinder.ico" />
 
         <!-- Properties of the checkbox for starting MyoFInDer after installation -->
-        <Property Id="WIXUI_EXITDIALOGOPTIONALTEXT" Value="Thank you for installing MyoFInDer !" />
-        <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch MyoFInDer" />
+        <Property
+            Admin="no"
+            Hidden="no"
+            Id="WIXUI_EXITDIALOGOPTIONALTEXT"
+            Secure="yes"
+            Value="Thank you for installing MyoFInDer !" />
+        <Property
+            Admin="no"
+            Hidden="no"
+            Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT"
+            Secure="yes"
+            Value="Launch MyoFInDer" />
 
         <!-- Action to run when the checkbox is checked -->
         <CustomAction
