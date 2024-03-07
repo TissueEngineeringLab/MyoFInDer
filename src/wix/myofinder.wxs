@@ -382,7 +382,7 @@
             Return="check" />
 
         <!-- Variables driving the appearance of the installer window -->
-        <WixVariable Id="WixUILicenseRtf" Value="LICENSE.rtf" />
+        <WixVariable Id="WixUILicenseRtf" Value=".\docs\LICENSE.rtf" />
         <WixVariable Id="WixUIDialogBmp" Value=".\icons\dialog.bmp" />
         <WixVariable Id="WixUIBannerBmp" Value=".\icons\banner.bmp" />
         <WixVariable Id="WixUIExclamationIco" Value=".\icons\logo32.ico" />
@@ -519,7 +519,7 @@
                         Id="README"
                         Name="README.rtf"
                         DiskId="1"
-                        Source="README.rtf"
+                        Source=".\docs\README.rtf"
                         KeyPath="yes" />
                 </Component>
 
