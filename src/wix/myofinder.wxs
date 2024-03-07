@@ -182,6 +182,16 @@
             Sequence="both"
             Value="[USERPYTHONPATH310]" />
 
+        <!-- Property to set to the path of a wheel in order to install a local
+        wheel version instead of the one distributed on PyPI -->
+        <SetProperty
+            Action="SetTestInstall"
+            After="AppSearch"
+            Condition="TESTINSTALL=&quot;&quot;"
+            Id="TESTINSTALL"
+            Sequence="both"
+            Value="myofinder==1.0.7" />
+
         <!-- Condition checking the current version of Windows -->
         <Launch
             Message="MyoFInDer requires Windows 8 or higher !"
