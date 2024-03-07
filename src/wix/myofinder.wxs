@@ -465,7 +465,7 @@
         <!-- Adding the custom executable uninstaller to the install sequence -->
         <InstallExecuteSequence>
             <Custom
-                Action="Uninstall"
+                Action="UninstallPythonModule"
                 After="PublishProduct"
                 Condition="not Installed"
                 Overridable="no" />
