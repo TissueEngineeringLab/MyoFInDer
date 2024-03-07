@@ -84,12 +84,12 @@
         <!-- The icon to use for the shortcuts -->
         <Icon
             Id="myofinder.ico"
-            SourceFile="logo32.ico" />
+            SourceFile=".\icons\logo32.ico" />
 
         <!-- The recycle bin icon -->
         <Icon
             Id="recycle.ico"
-            SourceFile="recycle_bin.ico" />
+            SourceFile=".\icons\recycle_bin.ico" />
 
         <!-- Properties checking the type of installation -->
         <SetProperty
@@ -383,12 +383,12 @@
 
         <!-- Variables driving the appearance of the installer window -->
         <WixVariable Id="WixUILicenseRtf" Value="LICENSE.rtf" />
-        <WixVariable Id="WixUIDialogBmp" Value="dialog.bmp" />
-        <WixVariable Id="WixUIBannerBmp" Value="banner.bmp" />
-        <WixVariable Id="WixUIExclamationIco" Value="logo32.ico" />
-        <WixVariable Id="WixUIInfoIco" Value="logo32.ico" />
-        <WixVariable Id="WixUINewIco" Value="logo16.ico" />
-        <WixVariable Id="WixUIUpIco" Value="logo16.ico" />
+        <WixVariable Id="WixUIDialogBmp" Value=".\icons\dialog.bmp" />
+        <WixVariable Id="WixUIBannerBmp" Value=".\icons\banner.bmp" />
+        <WixVariable Id="WixUIExclamationIco" Value=".\icons\logo32.ico" />
+        <WixVariable Id="WixUIInfoIco" Value=".\icons\logo32.ico" />
+        <WixVariable Id="WixUINewIco" Value=".\icons\logo16.ico" />
+        <WixVariable Id="WixUIUpIco" Value=".\icons\logo16.ico" />
 
         <!-- Adding a nice GUI to the MSI installer -->
         <UI>
