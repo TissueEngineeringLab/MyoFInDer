@@ -394,6 +394,40 @@
             PatchUninstall="no"
             Return="check" />
 
+        <!-- Executable file creating a virtual environment and installing
+        MyoFInDer inside during the installation -->
+        <Binary
+            Id="PythonModuleInstaller"
+            SourceFile=".\..\..\bin\install_venv.exe"
+            SuppressModularization="no" />
+
+        <!-- executable file deleting the created virtual environment in case
+        the installation fails and needs to be rolled-back -->
+        <Binary
+            Id="PythonModuleUninstaller"
+            SourceFile=".\..\..\bin\rollback_install.exe"
+            SuppressModularization="no" />
+
+        <!-- Embedding the virtual environment installer into a custom action -->
+        <CustomAction
+            BinaryRef="PythonModuleInstaller"
+            Execute="deferred"
+            ExeCommand="&quot;[SystemPythonExePath]&quot; &quot;[INSTALLDIR]venv&quot; &quot;[INSTALLDIR]venv\Scripts\python.exe&quot; &quot;[TESTINSTALL]&quot;"
+            Id="InstallPythonModule"
+            Impersonate="yes"
+            PatchUninstall="no"
+            Return="check" />
+
+        <!-- Embedding the virtual environment uninstaller into a custom action -->
+        <CustomAction
+            BinaryRef="PythonModuleUninstaller"
+            Execute="rollback"
+            ExeCommand="&quot;[INSTALLDIR]venv&quot;"
+            Id="UninstallPythonModule"
+            Impersonate="yes"
+            PatchUninstall="no"
+            Return="check" />
+
         <!-- Variables driving the appearance of the installer window -->
         <WixVariable Id="WixUILicenseRtf" Value=".\docs\LICENSE.rtf" />
         <WixVariable Id="WixUIDialogBmp" Value=".\icons\dialog.bmp" />
@@ -418,6 +452,24 @@
                 Value="LaunchApplication" />
 
         </UI>
+
+        <!-- Adding the custom executable installer to the install sequence -->
+        <InstallExecuteSequence>
+            <Custom
+                Action="InstallPythonModule"
+                After="UninstallPythonModule"
+                Condition="not Installed"
+                Overridable="no" />
+        </InstallExecuteSequence>
+
+        <!-- Adding the custom executable uninstaller to the install sequence -->
+        <InstallExecuteSequence>
+            <Custom
+                Action="Uninstall"
+                After="PublishProduct"
+                Condition="not Installed"
+                Overridable="no" />
+        </InstallExecuteSequence>
 
         <!-- Referencing the Desktop Folder where a shortcut will be added -->
         <StandardDirectory
