@@ -431,7 +431,7 @@
                         Id="myofinder.exe"
                         Name="myofinder.exe"
                         DiskId="1"
-                        Source="..\..\bin\myofinder.exe"
+                        Source=".\..\..\bin\myofinder.exe"
                         KeyPath="yes">
                             <Shortcut
                                 Advertise="yes"
