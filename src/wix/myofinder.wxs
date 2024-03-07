@@ -397,8 +397,6 @@
         <UI>
             <ui:WixUI
                 Id="WixUI_Advanced"/>
-            <UIRef
-                Id="WixUI_ErrorProgressText" />
 
             <!-- Linking the LaunchApplication action to the checkbox -->
             <Publish
@@ -406,6 +404,7 @@
                 Control="Finish"
                 Dialog="ExitDialog"
                 Event="DoAction"
+                Order="1"
                 Value="LaunchApplication" />
 
         </UI>
