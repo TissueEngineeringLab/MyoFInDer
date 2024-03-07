@@ -77,7 +77,10 @@
                 Level="1"
                 Title="Documentation"
                 TypicalDefault="install">
-                <ComponentRef Id="READMEFile" />
+                <ComponentRef
+                    Id="READMEFile" />
+                <ComponentRef
+                    Id="LICENSEFile" />
             </Feature>
         </Feature>
 
@@ -520,6 +523,18 @@
                         Name="README.rtf"
                         DiskId="1"
                         Source=".\docs\README.rtf"
+                        KeyPath="yes" />
+                </Component>
+
+                <!-- Component containing the LICENSE file -->
+                <Component
+                    Id="LICENSEFile"
+                    Guid="D925E2FF-2FAE-41FA-8492-6A777F1E8495">
+                    <File
+                        Id="LICENSE"
+                        Name="LICENSE.rtf"
+                        DiskId="1"
+                        Source=".\docs\LICENSE.rtf"
                         KeyPath="yes" />
                 </Component>
 
