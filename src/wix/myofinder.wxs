@@ -1,5 +1,4 @@
-﻿<!-- wix extension add -g WixToolset.UI.wixext
-     wix build myofinder.wxs -ext WixToolset.UI.wixext -ext WixToolset.UTIL.wixext -o myofinder.msi -->
+﻿<!-- This file contains the configuration for building the myofinder.msi installer using WiX 4.0.3 -->
 
 <Wix
     xmlns="http://wixtoolset.org/schemas/v4/wxs"
@@ -52,6 +51,7 @@
             Title="[ProductName]"
             TypicalDefault="install">
 
+            <!-- The main executable, shortcuts, and registry values are always installed -->
             <Feature
                 AllowAbsent="no"
                 AllowAdvertise="no"
@@ -67,10 +67,11 @@
                 <ComponentRef Id="RegistryValues" />
             </Feature>
 
+            <!-- Optionally, the user can disable the LICENSE and README file installation -->
             <Feature
                 AllowAbsent="yes"
                 AllowAdvertise="no"
-                Description="The documentation manual"
+                Description="The README and LICENSE files"
                 Display="expand"
                 Id="Documentation"
                 InstallDefault="followParent"
@@ -401,7 +402,7 @@
             SourceFile=".\..\..\bin\install_venv.exe"
             SuppressModularization="no" />
 
-        <!-- executable file deleting the created virtual environment in case
+        <!-- Executable file deleting the created virtual environment in case
         the installation fails and needs to be rolled-back -->
         <Binary
             Id="PythonModuleUninstaller"
