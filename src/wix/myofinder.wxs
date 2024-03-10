@@ -21,7 +21,7 @@
         <!-- More information about the installer -->
         <SummaryInformation
             Codepage="1252"
-            Description="[ProductName] Installer"
+            Description="MyoFInDer Installer"
             Keywords="Installer"
             Manufacturer="Tissue Engineering Lab" />
 
@@ -48,7 +48,7 @@
             Id="Complete"
             InstallDefault="local"
             Level="1"
-            Title="[ProductName]"
+            Title="MyoFInDer"
             TypicalDefault="install">
 
             <!-- The main executable, shortcuts, and registry values are always installed -->
@@ -195,7 +195,7 @@
 
         <!-- Condition checking the current version of Windows -->
         <Launch
-            Message="[ProductName] requires Windows 8 or higher !"
+            Message="MyoFInDer requires Windows 8 or higher !"
             Condition="Installed OR VersionNT &gt; 602" />
 
         <!-- Checking if Python 3.7 is installed at the user level -->
@@ -328,7 +328,7 @@
 
         <!-- Condition checking that a valid version of Python is installed -->
         <Launch
-            Message="[ProductName] requires Python 3.7, 3.8, 3.9, or 3.10 to be installed !"
+            Message="MyoFInDer requires Python 3.7, 3.8, 3.9, or 3.10 to be installed !"
             Condition="Installed OR USERPYTHONPATH37 OR USERPYTHONPATH38 OR
             USERPYTHONPATH39 OR USERPYTHONPATH310 OR MACHINEPYTHONPATH37 OR
             MACHINEPYTHONPATH38 OR MACHINEPYTHONPATH39 OR MACHINEPYTHONPATH310" />
@@ -343,7 +343,7 @@
             <RegistrySearch
                     Bitness="always64"
                     Id="VenvPath"
-                    Key="Software\[ProductName]"
+                    Key="Software\MyoFInDer"
                     Name="MyoFInDerVenvPath"
                     Root="HKCU"
                     Type="raw" />
@@ -483,7 +483,7 @@
             <!-- New directory containing only MyoFInDer -->
             <Directory
                 Id="INSTALLDIR"
-                Name="[ProductName]">
+                Name="MyoFInDer">
 
                 <!-- Component containing the myofinder.exe executable and its shortcuts -->
                 <Component
@@ -497,23 +497,23 @@
                         KeyPath="yes">
                             <Shortcut
                                 Advertise="yes"
-                                Description="[ProductName]"
+                                Description="MyoFInDer"
                                 Directory="ProgramMenuDir"
                                 Icon="myofinder.ico"
                                 IconIndex="0"
                                 Id="StartMenuShortcutExe"
-                                Name="[ProductName]"
+                                Name="MyoFInDer"
                                 Show="normal"
                                 WorkingDirectory="INSTALLDIR" />
 
                             <Shortcut
                                 Advertise="yes"
-                                Description="[ProductName]"
+                                Description="MyoFInDer"
                                 Directory="DesktopFolder"
                                 Icon="myofinder.ico"
                                 IconIndex="0"
                                 Id="DesktopShortcutExe"
-                                Name="[ProductName]"
+                                Name="MyoFInDer"
                                 Show="normal"
                                 WorkingDirectory="INSTALLDIR" />
                     </File>
@@ -544,7 +544,7 @@
                     <RegistryKey
                         ForceCreateOnInstall="no"
                         ForceDeleteOnUninstall="no"
-                        Key="Software\[ProductName]"
+                        Key="Software\MyoFInDer"
                         Root="HKCU" >
 
                         <!-- Path to the system Python executable -->
@@ -610,7 +610,7 @@
             <!-- New directory containing the shortcut to MyoFInDer executable -->
             <Directory
                 Id="ProgramMenuDir"
-                Name="[ProductName]">
+                Name="MyoFInDer">
                 <Component
                     Id="ProgramMenuDir"
                     Guid="099B9BB5-9893-4D07-8521-E0341CAEFF19">
@@ -618,11 +618,11 @@
                     <Shortcut
                         Advertise="no"
                         Arguments="/x [ProductCode]"
-                        Description="Uninstall [ProductName]"
+                        Description="Uninstall MyoFInDer"
                         Icon="recycle.ico"
                         IconIndex="0"
                         Id="StartMenuShortcutUninstall"
-                        Name="Uninstall [ProductName]"
+                        Name="Uninstall MyoFInDer"
                         Show="normal"
                         Target="[System64Folder]msiexec.exe"
                         WorkingDirectory="INSTALLDIR"/>
@@ -632,7 +632,7 @@
                         On="uninstall" />
                     <RegistryValue
                         Root="HKCU"
-                        Key="Software\[ProductName]"
+                        Key="Software\MyoFInDer"
                         Type="string"
                         Name="StartupMenuShortcut"
                         Value="true"
