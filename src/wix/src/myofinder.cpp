@@ -36,7 +36,8 @@ int main(int argc, char* argv[]){
     else {
         std::cout << "Starting MyoFInDer.\n\n";
     }
-    run_cmd((char*) myofinder_cmd.data(), CREATE_NEW_CONSOLE);
+    // No new console in test mode, so that GitHub Actions can display the log
+    run_cmd((char*) myofinder_cmd.data(), (argc > 1 && strcmp(argv[1], "-t") == 0) ? 0 : CREATE_NEW_CONSOLE);
 
     return 0;
 }
