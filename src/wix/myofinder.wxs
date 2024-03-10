@@ -49,7 +49,7 @@
             Id="Complete"
             InstallDefault="local"
             Level="1"
-            Title="MyoFInDer"
+            Title="[ProductName]"
             TypicalDefault="install">
 
             <Feature
@@ -194,7 +194,7 @@
 
         <!-- Condition checking the current version of Windows -->
         <Launch
-            Message="MyoFInDer requires Windows 8 or higher !"
+            Message="[ProductName] requires Windows 8 or higher !"
             Condition="Installed OR VersionNT &gt; 602" />
 
         <!-- Checking if Python 3.7 is installed at the user level -->
@@ -327,7 +327,7 @@
 
         <!-- Condition checking that a valid version of Python is installed -->
         <Launch
-            Message="MyoFInDer requires Python 3.7, 3.8, 3.9, or 3.10 to be installed !"
+            Message="[ProductName] requires Python 3.7, 3.8, 3.9, or 3.10 to be installed !"
             Condition="Installed OR USERPYTHONPATH37 OR USERPYTHONPATH38 OR
             USERPYTHONPATH39 OR USERPYTHONPATH310 OR MACHINEPYTHONPATH37 OR
             MACHINEPYTHONPATH38 OR MACHINEPYTHONPATH39 OR MACHINEPYTHONPATH310" />
@@ -376,13 +376,13 @@
             Hidden="no"
             Id="WIXUI_EXITDIALOGOPTIONALTEXT"
             Secure="yes"
-            Value="Thank you for installing MyoFInDer !" />
+            Value="Thank you for installing [ProductName] !" />
         <Property
             Admin="no"
             Hidden="no"
             Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT"
             Secure="yes"
-            Value="Launch MyoFInDer" />
+            Value="Launch [ProductName]" />
 
         <!-- Action to run when the checkbox is checked -->
         <CustomAction
@@ -617,11 +617,11 @@
                     <Shortcut
                         Advertise="no"
                         Arguments="/x [ProductCode]"
-                        Description="Uninstall MyoFInDer"
+                        Description="Uninstall [ProductName]"
                         Icon="recycle.ico"
                         IconIndex="0"
                         Id="StartMenuShortcutUninstall"
-                        Name="Uninstall MyoFInDer"
+                        Name="Uninstall [ProductName]"
                         Show="normal"
                         Target="[System64Folder]msiexec.exe"
                         WorkingDirectory="INSTALLDIR"/>
