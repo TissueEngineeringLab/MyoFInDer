@@ -12,7 +12,7 @@
         InstallerVersion="500"
         Language="1033"
         Manufacturer="Tissue Engineering Lab"
-        Name="MyoFInDer Test"
+        Name="MyoFInDer"
         ProductCode="82C1CF17-504C-4306-A57C-5F9B72411D83"
         Scope="perUser"
         ShortNames="no"
@@ -22,7 +22,7 @@
         <!-- More information about the installer -->
         <SummaryInformation
             Codepage="1252"
-            Description="MyoFInDer Test Installer"
+            Description="[ProductName] Installer"
             Keywords="Installer"
             Manufacturer="Tissue Engineering Lab" />
 
@@ -37,7 +37,7 @@
         <!-- Default fields -->
         <Property
             Id="DiskPrompt"
-            Value="MyoFInDer Test 1.0 Installation [1]" />
+            Value="[ProductName] [ProductVersion] Installation [1]" />
 
         <!-- List of the features to install -->
         <Feature
@@ -482,7 +482,7 @@
             <!-- New directory containing only MyoFInDer -->
             <Directory
                 Id="INSTALLDIR"
-                Name="MyoFInDer Test">
+                Name="[ProductName]">
 
                 <!-- Component containing the myofinder.exe executable and its shortcuts -->
                 <Component
@@ -496,23 +496,23 @@
                         KeyPath="yes">
                             <Shortcut
                                 Advertise="yes"
-                                Description="MyoFInDer Test"
+                                Description="[ProductName]"
                                 Directory="ProgramMenuDir"
                                 Icon="myofinder.ico"
                                 IconIndex="0"
                                 Id="StartMenuShortcutExe"
-                                Name="MyoFInDer Test"
+                                Name="[ProductName]"
                                 Show="normal"
                                 WorkingDirectory="INSTALLDIR" />
 
                             <Shortcut
                                 Advertise="yes"
-                                Description="MyoFInDer Test"
+                                Description="[ProductName]"
                                 Directory="DesktopFolder"
                                 Icon="myofinder.ico"
                                 IconIndex="0"
                                 Id="DesktopShortcutExe"
-                                Name="MyoFInDer Test"
+                                Name="[ProductName]"
                                 Show="normal"
                                 WorkingDirectory="INSTALLDIR" />
                     </File>
@@ -609,7 +609,7 @@
             <!-- New directory containing the shortcut to MyoFInDer executable -->
             <Directory
                 Id="ProgramMenuDir"
-                Name="MyoFInDer Test">
+                Name="[ProductName]">
                 <Component
                     Id="ProgramMenuDir"
                     Guid="099B9BB5-9893-4D07-8521-E0341CAEFF19">

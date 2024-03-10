@@ -11,7 +11,7 @@ mode, and finally launches MyoFInDer.
 int main(int argc, char* argv[]){
 
     // Retrieving the path to the Python executable of MyoFInDer
-    std::string python_exe_path = read_reg(HKEY_CURRENT_USER, "SOFTWARE\\MyoFInDer Test", "MyoFInDerPythonPath");
+    std::string python_exe_path = read_reg(HKEY_CURRENT_USER, "SOFTWARE\\MyoFInDer", "MyoFInDerPythonPath");
     std::cout << "Python executable path: \"" + python_exe_path + "\"\n\n";
 
     // Checking if the myofinder module should be started in test mode, and

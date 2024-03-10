@@ -126,7 +126,7 @@ jobs:
       # For some reason the installation directory needs to be manually created
       - name: Create Installation Folder
         shell: pwsh
-        run: mkdir "$env:localappdata\MyoFInDer Test"
+        run: mkdir "$env:localappdata\MyoFInDer"
       # Getting the name of the wheel, cannot do it in the Windows shell
       - name: Get Wheel Name
         shell: bash
@@ -150,7 +150,7 @@ jobs:
       # Run the installed MyoFInDer program
       - name: Run MyoFInDer
         shell: cmd
-        run: '"%localappdata%\MyoFInDer Test\myofinder.exe" -t'
+        run: '"%localappdata%\MyoFInDer\myofinder.exe" -t'
 
   # Pushes the installer to the main branch
   push-installer:
