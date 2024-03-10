@@ -17,7 +17,7 @@
         Scope="perUser"
         ShortNames="no"
         UpgradeCode="D3F780C0-8A53-44E1-81EB-570D9AE61393"
-        Version="1.0.0">
+        Version="1.0.7">
 
         <!-- More information about the installer -->
         <SummaryInformation
@@ -190,7 +190,7 @@
             Condition="TESTINSTALL=&quot;&quot;"
             Id="TESTINSTALL"
             Sequence="both"
-            Value="myofinder==1.0.7" />
+            Value="myofinder==[ProductVersion]" />
 
         <!-- Condition checking the current version of Windows -->
         <Launch
