@@ -135,6 +135,6 @@ jobs:
         run: |
           git config user.name 'Antoine Weisrock'
           git config user.email 'antoine.weisrock@gmail.com'
-          git add '${{ github.workspace }}\bin\myofinder.msi' '${{ github.workspace }}\bin\myofinder.exe'
-          git commit -m "ci: push Windows binaries [actions skip]"
+          git add '${{ github.workspace }}\bin\myofinder.msi'
+          git commit -m "ci: push Windows installer [actions skip]"
           git push
