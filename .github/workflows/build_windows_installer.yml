@@ -19,31 +19,30 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Compiles the myofinder.cpp source into a myofinder.exe executable
+  # Compiles the .cpp sources into .exe executables and uploads them
   compile-executable:
     runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      # Compile the source into an executable file
-      # Always upload the executable file, so that the installer can be tested
-      - name: Upload Executable
+      # Compile the sources into executable files
       - name: Build Main Executable
         run: gcc '${{ github.workspace }}\src\wix\src\myofinder.cpp' -lstdc++ -lshlwapi  -static -static-libgcc -static-libstdc++ -o '${{ github.workspace }}\bin\myofinder.exe'
       - name: Build Venv Installer
         run: gcc '${{ github.workspace }}\src\wix\src\install_venv.cpp' -lstdc++ -lshlwapi  -static -static-libgcc -static-libstdc++ -o '${{ github.workspace }}\bin\install_venv.exe'
       - name: Build Venv Uninstaller
         run: gcc '${{ github.workspace }}\src\wix\src\rollback_install.cpp' -lstdc++ -lshlwapi  -static -static-libgcc -static-libstdc++ -o '${{ github.workspace }}\bin\rollback_install.exe'
+      # Upload the compiled files, so that they can be used by other jobs later
+      - name: Upload Executable Files
         uses: actions/upload-artifact@v4
         with:
-          name: myofinder.exe
+          name: myofinder_binaries
           path: '${{ github.workspace }}\bin\*.exe'
           if-no-files-found: error
 
-  # Builds the Windows installer, tests it, and uploads it
-  build-windows-installer:
+  # Builds the wheel from the latest project version and uploads it
+  build-wheel:
     runs-on: windows-latest
-    needs: compile-executable
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -55,83 +54,123 @@ jobs:
       # Builds the wheel for the latest version
       - name: Build Wheel
         run: |
-          python -m venv ${{ github.workspace }}\venv
+          python -m venv '${{ github.workspace }}\venv'
           ${{ github.workspace }}\venv\Scripts\python.exe -m pip install --upgrade pip wheel build setuptools
           ${{ github.workspace }}\venv\Scripts\python.exe -m build ${{ github.workspace }} -o ${{ github.workspace }}\dist
-      # Gets the compiled executable from the previous job
-      - name: Download Executable
+      # Upload the built wheel, so that it can be used by other jobs later
+      - name: Upload Wheel
+        uses: actions/upload-artifact@v4
+        with:
+          name: myofinder_wheel
+          path: '${{ github.workspace }}\dist\*.whl'
+          if-no-files-found: error
+
+  # Builds the .msi Windows installer and uploads it
+  build-installer:
+    runs-on: windows-latest
+    needs: compile-executable
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      # Gets the compiled executables from a previous job
+      - name: Download Executables
         uses: actions/download-artifact@v4
         with:
-          name: myofinder.exe
+          name: myofinder_binaries
           path: '${{ github.workspace }}\bin'
-      # Generates the .msi file using Advanced Installer
+          merge-multiple: 'true'
+      # Installs WiX
+      - name: Install WiX
+        shell: cmd
+        run: |
+          dotnet tool install --global wix --version 4.0.3
+          wix extension add --global WixToolset.UTIL.wixext/4.0.3
+          wix extension add --global WixToolset.UI.wixext/4.0.3
+      - shell: cmd
+        run: wix extension list --global
+      # Generates the .msi file using WiX
       - name: Generate MSI
-        uses: caphyon/advinst-github-action@v1.1
+        shell: cmd
+        run: |
+          cd ${{ github.workspace }}\src\wix\
+          wix build ${{ github.workspace }}\src\wix\myofinder.wxs -ext WixToolset.UI.wixext -ext WixToolset.UTIL.wixext -o ${{ github.workspace }}\bin\myofinder.msi
+      # Upload the generated .msi installer, so that it can be used by other jobs later
+      - name: Upload MSI
+        uses: actions/upload-artifact@v4
         with:
-          advinst-version: '20.9.1'
-          advinst-enable-automation: 'true'
-          aip-path: '${{ github.workspace }}\src\windows_installer\config.aip'
-          aip-build-name: DefaultBuild
-          aip-package-name: myofinder.msi
-          aip-output-dir:  '${{ github.workspace }}\setup'
+          name: myofinder_msi
+          path: '${{ github.workspace }}\bin\*.msi'
+          if-no-files-found: error
+
+  # Pushes the installer and the executable to the main branch
+  test-installer:
+    runs-on: windows-latest
+    needs: [build-installer, build-wheel]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      # Gets the generated .msi installer from a previous job
+      - name: Download MSI
+        uses: actions/download-artifact@v4
+        with:
+          name: myofinder_msi
+          path: '${{ github.workspace }}\bin'
+          merge-multiple: 'true'
+      # Gets the built wheel from a previous job
+      - name: Download Wheel
+        uses: actions/download-artifact@v4
+        with:
+          name: myofinder_wheel
+          path: '${{ github.workspace }}\dist'
+          merge-multiple: 'true'
       # For some reason the installation directory needs to be manually created
       - name: Create Installation Folder
         shell: pwsh
-        run: mkdir "$env:localappdata\MyoFInDer"
+        run: mkdir "$env:localappdata\MyoFInDer Test"
+      # Getting the name of the wheel, cannot do it in the Windows shell
+      - name: Get Wheel Name
+        shell: bash
+        run: echo "WHEEL_NAME=$(echo '${{ github.workspace }}\dist\')$(ls '${{ github.workspace }}\dist' | grep \.whl$ | head -n 1)" >> $GITHUB_ENV
       # Execute the .msi installer to check that it operates as expected
       # Also, record the logs to a log file
       - name: Run Installer
         shell: pwsh
         run: If ((Start-Process msiexec -Wait -PassThru -ArgumentList "/I",
-             "${{ github.workspace }}\setup\myofinder.msi", 
+             "${{ github.workspace }}\bin\myofinder.msi",
+             "TESTINSTALL=${{ env.WHEEL_NAME }}",
              "/qn",
              "/l*vx",
-             "${{ github.workspace }}\setup\log.txt").ExitCode -ne 0)
+             "${{ github.workspace }}\log.txt").ExitCode -ne 0)
              {exit 1} else
              {Write-Output "::notice ::{MSI Installation succeeded}"}
       # If the workflow is manually started, show some debug information
       - name: Show Debug Info
         if: contains(fromJSON('["workflow_dispatch"]'), github.event_name)
-        run: type '${{ github.workspace }}\setup\log.txt'
-      # Getting the name of the wheel, cannot do it in the Windows shell
-      - name: Get Wheel Name
-        shell: bash
-        run: echo "WHEEL_NAME=$(echo '${{ github.workspace }}\dist\')$(ls '${{ github.workspace }}\dist' | grep \.whl$ | head -n 1)" >> $GITHUB_ENV
-      # For some reason the virtual environment cannot be created from the startup script
-      - name: Create Virtual Environment
-        shell: pwsh
-        run: python -m venv "$env:localappdata\MyoFInDer\venv"
-      # Run the startup script installed by the .msi installer in test mode
-      - name: Run Startup Script
+        run: type '${{ github.workspace }}\log.txt'
+      # Run the installed MyoFInDer program
+      - name: Run MyoFInDer
         shell: cmd
-        run: '%localappdata%\MyoFInDer\myofinder.exe -t ${{ env.WHEEL_NAME }}'
-      # If the workflow is started manually or by a push, upload the .msi installer
-      - name: Upload Installer
-        if: contains(fromJSON('["push", "workflow_dispatch"]'), github.event_name)
-        uses: actions/upload-artifact@v4
-        with:
-          name: myofinder.msi
-          path: '${{ github.workspace }}\setup\myofinder.msi'
-          if-no-files-found: error
+        run: '"%localappdata%\MyoFInDer Test\myofinder.exe" -t'
 
-  # Pushes the installer and the executable to the main branch
-  push-binaries:
+  # Pushes the installer to the main branch
+  push-installer:
     runs-on: windows-latest
-    needs: build-windows-installer
+    needs: test-installer
     if: contains(fromJSON('["push", "workflow_dispatch"]'), github.event_name)
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT }}
-      # Download the previously uploaded installer and executable
-      - name: Download Binaries
+      # Gets the generated .msi installer from a previous job
+      - name: Download MSI
         uses: actions/download-artifact@v4
         with:
-          pattern: myofinder*
+          name: myofinder_msi
           path: '${{ github.workspace }}\bin'
-          merge-multiple: true
-      - name: Push Binaries
+          merge-multiple: 'true'
+      # Push the .msi installer to the current branch
+      - name: Push MSI
         run: |
           git config user.name 'Antoine Weisrock'
           git config user.email 'antoine.weisrock@gmail.com'
