@@ -26,14 +26,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       # Compile the source into an executable file
-      - name: Build Executable
-        run: gcc '${{ github.workspace }}\src\windows_installer\myofinder.cpp' -lshlwapi -o '${{ github.workspace }}\bin\myofinder.exe'
       # Always upload the executable file, so that the installer can be tested
       - name: Upload Executable
+      - name: Build Main Executable
+        run: gcc '${{ github.workspace }}\src\wix\src\myofinder.cpp' -lstdc++ -lshlwapi  -static -static-libgcc -static-libstdc++ -o '${{ github.workspace }}\bin\myofinder.exe'
+      - name: Build Venv Installer
+        run: gcc '${{ github.workspace }}\src\wix\src\install_venv.cpp' -lstdc++ -lshlwapi  -static -static-libgcc -static-libstdc++ -o '${{ github.workspace }}\bin\install_venv.exe'
+      - name: Build Venv Uninstaller
+        run: gcc '${{ github.workspace }}\src\wix\src\rollback_install.cpp' -lstdc++ -lshlwapi  -static -static-libgcc -static-libstdc++ -o '${{ github.workspace }}\bin\rollback_install.exe'
         uses: actions/upload-artifact@v4
         with:
           name: myofinder.exe
-          path: '${{ github.workspace }}\bin\myofinder.exe'
+          path: '${{ github.workspace }}\bin\*.exe'
           if-no-files-found: error
 
   # Builds the Windows installer, tests it, and uploads it
