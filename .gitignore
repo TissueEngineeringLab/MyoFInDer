@@ -130,3 +130,6 @@ dmypy.json
 
 # Pycharm
 .idea/
+
+# Gemfile lock file
+docs/Gemfile.lock
