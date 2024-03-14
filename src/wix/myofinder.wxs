@@ -556,6 +556,15 @@
                             Type="string"
                             Value="[SystemPythonExePath]" />
 
+                        <!-- Path to the installation directory of MyoFInDer -->
+                        <RegistryValue
+                            Action="write"
+                            Id="MyoFInDerInstallDir"
+                            KeyPath="no"
+                            Name="MyoFInDerInstallDir"
+                            Type="string"
+                            Value="[INSTALLDIR]" />
+
                         <!-- Path to the virtual environment of MyoFInDer -->
                         <RegistryValue
                             Action="write"
