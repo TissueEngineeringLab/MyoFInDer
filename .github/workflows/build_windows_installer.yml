@@ -150,7 +150,7 @@ jobs:
       # Run the installed MyoFInDer program
       - name: Run MyoFInDer
         shell: cmd
-        run: '"%localappdata%\MyoFInDer\myofinder.exe" -t'
+        run: '"%localappdata%\MyoFInDer\myofinder.exe" --test'
 
   # Pushes the installer to the main branch
   push-installer:
