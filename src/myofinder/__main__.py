@@ -9,6 +9,7 @@ from sys import stdout, exit
 from pathlib import Path
 import argparse
 from platform import system
+from typing import Optional
 
 
 def main():
@@ -30,19 +31,24 @@ def main():
                         help="If provided, the main window is created but its "
                              "main loop is never started and the window is "
                              "destroyed as soon as it is initialized.")
+    parser.add_argument('-f', '--app-folder', action='store', nargs=1,
+                        type=Path, required=False, dest='app_folder',
+                        help="If provided, should contain the path to the "
+                             "folder where to store the log messages and the "
+                             "settings file.")
     args = parser.parse_args()
 
     # Retrieving the command-line arguments
     log: bool = args.nolog
     test: bool = args.test
+    app_folder: Optional[Path] = args.app_folder
 
-    # Setting the path to the application folder
-    if system() in ('Linux', 'Darwin'):
-        app_folder = Path.home() / '.MyoFInDer'
-    elif system() == 'Windows':
-        app_folder = (Path.home() / 'AppData' / 'Local' / 'MyoFInDer')
-    else:
-        app_folder = None
+    # Setting the path to the application folder if not already provided
+    if app_folder is None:
+        if system() in ('Linux', 'Darwin'):
+            app_folder = Path.home() / '.MyoFInDer'
+        elif system() == 'Windows':
+            app_folder = (Path.home() / 'AppData' / 'Local' / 'MyoFInDer')
 
     # Creating the application folder, if needed
     if app_folder is not None:
