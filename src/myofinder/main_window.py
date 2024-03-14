@@ -79,7 +79,7 @@ class MainWindow(Tk):
         # Initializes the main window
         super().__init__()
         self.title("MyoFInDer - New Project (Unsaved)")
-        if system() == "Windows":
+        if system() in ("Windows", "Darwin"):
             self.state('zoomed')
         else:
             self.attributes('-zoomed', True)
