@@ -60,7 +60,8 @@ Python 3.9.7
 
 If Python is not installed, or if the installed version is not between 3.7 and 
 3.10 **you need to install a Python version between 3.7 and 3.10**. To do so,
-you have two possible options.
+you have several possible options. The two most convenient ones are described 
+here.
 
 ### 1.1.1 Install Python from the Microsoft Store
 
@@ -107,34 +108,41 @@ available disk space.
 
 ## 1.3 Installation of MyoFInDer using the Windows installer
 
-For convenience, **a very basic installer is provided for Windows users**. It 
-requires a compatible version of Python to be installed, as described in the
-previous section.
+For convenience, **a basic installer is provided for Windows users**. It 
+requires a compatible version of Python and the C++ build tools to be 
+installed, as described in the previous section.
 
 This installer makes user's life easier by :
 
-- Handling the installation of the MyoFInDer module
+- Handling the installation of the MyoFInDer Python module
 - Adding Desktop and Menu Bar shortcuts for starting MyoFInDer
+- Managing the Windows internals for a clean installation as a regular application
 
-Note that compared to the command-line installation, the installer just 
-installs additional features for easily starting MyoFInDer. Both installation 
-methods are strictly equivalent otherwise.
+Note that the program executed by MyoFInDer is the exact same using the 
+command-line installation and using the Windows installer. The installer only 
+handles steps that might prove difficult for some users, and provides easier 
+ways to start MyoFInDer.
 
 To run the installer, just double-click on the `myofinder.msi` file and follow 
-the displayed instructions. You might have to enter an administrator password 
-at some point. Then, when opening the application for the first time, the 
-required Python modules and MyoFInDer will be installed automatically. Note 
-that a working internet connection is required for this step, and that it might 
-take up a few minutes for this step to complete. A number of messages will be 
-displayed in the console, which is totally normal. The console should look 
-similar to:
+the displayed instructions. MyoFInDer is always installed at the user-level, so
+that no admin privilege should be requested in most cases. Depending on your 
+configuration, you might still have to enter an administrator password 
+at some point. During installation, the required Python modules and MyoFInDer 
+will be installed automatically. A console should appear, in which a number of 
+messages will be displayed. This steps requires a working internet connection, 
+and can take up to 5 or even 10 minutes. **Be patient even if the display 
+seems stuck, your computer is likely working just fine!** The displayed console 
+should look similar to:
 
 <img src="./pip_install.png" width="1000" title="Installation in console">
 
+If this step fails, an error message will be displayed in the console and the 
+installation will roll back. To give you a chance to copy the error message and 
+report it as described in the [Troubleshooting page](troubleshooting.markdown), 
+the console won't close automatically.
+
 **The Windows installer can be downloaded 
-[here](https://github.com/TissueEngineeringLab/MyoFInDer/blob/main/bin/myofinder.msi).
-The installer is called `myofinder.msi`, do not mistake it for 
-`myofinder.exe`!**
+[here](https://github.com/TissueEngineeringLab/MyoFInDer/blob/main/bin/myofinder.msi).**
 
 ## 1.4 Installation of MyoFInDer from console
 

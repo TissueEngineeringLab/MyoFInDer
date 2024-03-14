@@ -1,0 +1,645 @@
+﻿<!-- This file contains the configuration for building the myofinder.msi installer using WiX 4.0.3 -->
+
+<Wix
+    xmlns="http://wixtoolset.org/schemas/v4/wxs"
+    xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
+    xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+    <!-- Basic Information about the installer -->
+    <Package
+        Compressed="yes"
+        InstallerVersion="500"
+        Language="1033"
+        Manufacturer="Tissue Engineering Lab"
+        Name="MyoFInDer"
+        ProductCode="82C1CF17-504C-4306-A57C-5F9B72411D83"
+        Scope="perUser"
+        ShortNames="no"
+        UpgradeCode="D3F780C0-8A53-44E1-81EB-570D9AE61393"
+        Version="1.0.7">
+
+        <!-- More information about the installer -->
+        <SummaryInformation
+            Codepage="1252"
+            Description="MyoFInDer Installer"
+            Keywords="Installer"
+            Manufacturer="Tissue Engineering Lab" />
+
+        <!-- Default fields -->
+        <Media
+            Cabinet="Sample.cab"
+            CompressionLevel="medium"
+            DiskPrompt="CD-ROM #1"
+            EmbedCab="yes"
+            Id="1" />
+
+        <!-- Default fields -->
+        <Property
+            Id="DiskPrompt"
+            Value="MyoFInDer 1.0.7 Installation [1]" />
+
+        <!-- List of the features to install -->
+        <Feature
+            AllowAbsent="no"
+            AllowAdvertise="no"
+            ConfigurableDirectory="INSTALLDIR"
+            Description="The complete package"
+            Display="expand"
+            Id="Complete"
+            InstallDefault="local"
+            Level="1"
+            Title="MyoFInDer"
+            TypicalDefault="install">
+
+            <!-- The main executable, shortcuts, and registry values are always installed -->
+            <Feature
+                AllowAbsent="no"
+                AllowAdvertise="no"
+                Description="The main executable"
+                Display="expand"
+                Id="MainProgram"
+                InstallDefault="followParent"
+                Level="1"
+                Title="Program"
+                TypicalDefault="install">
+                <ComponentRef Id="MainExecutable" />
+                <ComponentRef Id="ProgramMenuDir" />
+                <ComponentRef Id="RegistryValues" />
+            </Feature>
+
+            <!-- Optionally, the user can disable the LICENSE and README file installation -->
+            <Feature
+                AllowAbsent="yes"
+                AllowAdvertise="no"
+                Description="The README and LICENSE files"
+                Display="expand"
+                Id="Documentation"
+                InstallDefault="followParent"
+                Level="1"
+                Title="Documentation"
+                TypicalDefault="install">
+                <ComponentRef
+                    Id="READMEFile" />
+                <ComponentRef
+                    Id="LICENSEFile" />
+            </Feature>
+        </Feature>
+
+        <!-- The icon to use for the shortcuts -->
+        <Icon
+            Id="myofinder.ico"
+            SourceFile=".\icons\logo32.ico" />
+
+        <!-- The recycle bin icon -->
+        <Icon
+            Id="recycle.ico"
+            SourceFile=".\icons\recycle_bin.ico" />
+
+        <!-- Properties checking the type of installation -->
+        <SetProperty
+            Action="SetFirstInstall"
+            After="FindRelatedProducts"
+            Condition="NOT Installed AND NOT WIX_UPGRADE_DETECTED AND NOT WIX_DOWNGRADE_DETECTED"
+            Id="FirstInstall"
+            Sequence="both"
+            Value="true" />
+        <SetProperty
+            Action="SetUpgrading"
+            After="SetFirstInstall"
+            Condition="WIX_UPGRADE_DETECTED AND NOT (REMOVE=&quot;ALL&quot;)"
+            Id="Upgrading"
+            Sequence="both"
+            Value="true" />
+        <SetProperty
+            Action="SetUninstalling"
+            After="SetUpgrading"
+            Condition="Installed AND (REMOVE=&quot;ALL&quot;) AND NOT (WIX_UPGRADE_DETECTED OR UPGRADINGPRODUCTCODE)"
+            Id="Uninstalling"
+            Sequence="both"
+            Value="true" />
+        <SetProperty
+            Action="SetMaintenance"
+            After="SetUninstalling"
+            Condition="Installed AND NOT Upgrading AND NOT Uninstalling AND NOT UPGRADINGPRODUCTCODE"
+            Id="Maintenance"
+            Sequence="both"
+            Value="true" />
+
+        <!-- Properties checking the installed Python versions -->
+        <SetProperty
+            Action="SetMachinePythonExePath3.7"
+            After="AppSearch"
+            Condition="MACHINEPYTHONPATH37"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[MACHINEPYTHONPATH37]" />
+        <SetProperty
+            Action="SetUserPythonExePath3.7"
+            After="AppSearch"
+            Condition="USERPYTHONPATH37"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[USERPYTHONPATH37]" />
+        <SetProperty
+            Action="SetMachinePythonExePath3.8"
+            After="AppSearch"
+            Condition="MACHINEPYTHONPATH38"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[MACHINEPYTHONPATH38]" />
+        <SetProperty
+            Action="SetUserPythonExePath3.8"
+            After="AppSearch"
+            Condition="USERPYTHONPATH38"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[USERPYTHONPATH38]" />
+        <SetProperty
+            Action="SetMachinePythonExePath3.9"
+            After="AppSearch"
+            Condition="MACHINEPYTHONPATH39"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[MACHINEPYTHONPATH39]" />
+        <SetProperty
+            Action="SetUserPythonExePath3.9"
+            After="AppSearch"
+            Condition="USERPYTHONPATH39"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[USERPYTHONPATH39]" />
+        <SetProperty
+            Action="SetMachinePythonExePath3.10"
+            After="AppSearch"
+            Condition="MACHINEPYTHONPATH310"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[MACHINEPYTHONPATH310]" />
+        <SetProperty
+            Action="SetUserPythonExePath3.10"
+            After="AppSearch"
+            Condition="USERPYTHONPATH310"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[USERPYTHONPATH310]" />
+
+        <!-- Property to set to the path of a wheel in order to install a local
+        wheel version instead of the one distributed on PyPI -->
+        <SetProperty
+            Action="SetTestInstall"
+            After="AppSearch"
+            Condition="TESTINSTALL=&quot;&quot;"
+            Id="TESTINSTALL"
+            Sequence="both"
+            Value="myofinder==[ProductVersion]" />
+
+        <!-- Condition checking the current version of Windows -->
+        <Launch
+            Message="MyoFInDer requires Windows 8 or higher !"
+            Condition="Installed OR VersionNT &gt; 602" />
+
+        <!-- Checking if Python 3.7 is installed at the user level -->
+        <Property
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="USERPYTHONPATH37"
+            Secure="yes" >
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="UserPythonPath37"
+                    Key="Software\Python\PythonCore\3.7\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKCU"
+                    Type="raw" />
+        </Property>
+
+        <!-- Checking if Python 3.7 is installed at the machine level -->
+        <Property
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="MACHINEPYTHONPATH37"
+            Secure="yes" >
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="MachinePythonPath37"
+                    Key="Software\Python\PythonCore\3.7\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKLM"
+                    Type="raw" />
+        </Property>
+
+        <!-- Checking if Python 3.8 is installed at the user level -->
+        <Property
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="USERPYTHONPATH38"
+            Secure="yes" >
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="UserPythonPath38"
+                    Key="Software\Python\PythonCore\3.8\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKCU"
+                    Type="raw" />
+        </Property>
+
+        <!-- Checking if Python 3.8 is installed at the machine level -->
+        <Property
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="MACHINEPYTHONPATH38"
+            Secure="yes" >
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="MachinePythonPath38"
+                    Key="Software\Python\PythonCore\3.8\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKLM"
+                    Type="raw" />
+        </Property>
+
+        <!-- Checking if Python 3.9 is installed at the user level -->
+        <Property
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="USERPYTHONPATH39"
+            Secure="yes" >
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="UserPythonPath39"
+                    Key="Software\Python\PythonCore\3.9\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKCU"
+                    Type="raw" />
+        </Property>
+
+        <!-- Checking if Python 3.9 is installed at the machine level -->
+        <Property
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="MACHINEPYTHONPATH39"
+            Secure="yes" >
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="MachinePythonPath39"
+                    Key="Software\Python\PythonCore\3.9\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKLM"
+                    Type="raw" />
+        </Property>
+
+        <!-- Checking if Python 3.10 is installed at the user level -->
+        <Property
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="USERPYTHONPATH310"
+            Secure="yes" >
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="UserPythonPath310"
+                    Key="Software\Python\PythonCore\3.10\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKCU"
+                    Type="raw" />
+        </Property>
+
+        <!-- Checking if Python 3.10 is installed at the machine level -->
+        <Property
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="MACHINEPYTHONPATH310"
+            Secure="yes" >
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="MachinePythonPath310"
+                    Key="Software\Python\PythonCore\3.10\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKLM"
+                    Type="raw" />
+        </Property>
+
+        <!-- Condition checking that a valid version of Python is installed -->
+        <Launch
+            Message="MyoFInDer requires Python 3.7, 3.8, 3.9, or 3.10 to be installed !"
+            Condition="Installed OR USERPYTHONPATH37 OR USERPYTHONPATH38 OR
+            USERPYTHONPATH39 OR USERPYTHONPATH310 OR MACHINEPYTHONPATH37 OR
+            MACHINEPYTHONPATH38 OR MACHINEPYTHONPATH39 OR MACHINEPYTHONPATH310" />
+
+        <!-- Property storing the location of the virtual environment -->
+        <Property
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="VENVPATH"
+            Secure="yes" >
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="VenvPath"
+                    Key="Software\MyoFInDer"
+                    Name="MyoFInDerVenvPath"
+                    Root="HKCU"
+                    Type="raw" />
+        </Property>
+
+        <!-- Mandatory properties for the WixUI_Advanced interface -->
+        <Property
+            Admin="no"
+            Hidden="no"
+            Id="ApplicationFolderName"
+            Secure="no"
+            Value="INSTALLDIR" />
+        <Property
+            Admin="no"
+            Hidden="no"
+            Id="WixAppFolder"
+            Secure="no"
+            Value="WixPerUserFolder" />
+
+        <!-- Property setting the logo in the Apps & Features menu -->
+        <Property
+            Admin="no"
+            Hidden="no"
+            Id="ARPPRODUCTICON"
+            Secure="yes"
+            Value="myofinder.ico" />
+
+        <!-- Properties of the checkbox for starting MyoFInDer after installation -->
+        <Property
+            Admin="no"
+            Hidden="no"
+            Id="WIXUI_EXITDIALOGOPTIONALTEXT"
+            Secure="yes"
+            Value="Thank you for installing MyoFInDer !" />
+        <Property
+            Admin="no"
+            Hidden="no"
+            Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT"
+            Secure="yes"
+            Value="Launch MyoFInDer" />
+
+        <!-- Action to run when the checkbox is checked -->
+        <CustomAction
+            Execute="immediate"
+            ExeCommand=""
+            FileRef="myofinder.exe"
+            Id="LaunchApplication"
+            Impersonate="yes"
+            PatchUninstall="no"
+            Return="check" />
+
+        <!-- Executable file creating a virtual environment and installing
+        MyoFInDer inside during the installation -->
+        <Binary
+            Id="PythonModuleInstaller"
+            SourceFile=".\..\..\bin\install_venv.exe"
+            SuppressModularization="no" />
+
+        <!-- Executable file deleting the created virtual environment in case
+        the installation fails and needs to be rolled-back -->
+        <Binary
+            Id="PythonModuleUninstaller"
+            SourceFile=".\..\..\bin\rollback_install.exe"
+            SuppressModularization="no" />
+
+        <!-- Embedding the virtual environment installer into a custom action -->
+        <CustomAction
+            BinaryRef="PythonModuleInstaller"
+            Execute="deferred"
+            ExeCommand="&quot;[SystemPythonExePath]&quot; &quot;[INSTALLDIR]venv&quot; &quot;[INSTALLDIR]venv\Scripts\python.exe&quot; &quot;[TESTINSTALL]&quot;"
+            Id="InstallPythonModule"
+            Impersonate="yes"
+            PatchUninstall="no"
+            Return="check" />
+
+        <!-- Embedding the virtual environment uninstaller into a custom action -->
+        <CustomAction
+            BinaryRef="PythonModuleUninstaller"
+            Execute="rollback"
+            ExeCommand="&quot;[INSTALLDIR]venv&quot;"
+            Id="UninstallPythonModule"
+            Impersonate="yes"
+            PatchUninstall="no"
+            Return="check" />
+
+        <!-- Variables driving the appearance of the installer window -->
+        <WixVariable Id="WixUILicenseRtf" Value=".\docs\LICENSE.rtf" />
+        <WixVariable Id="WixUIDialogBmp" Value=".\icons\dialog.bmp" />
+        <WixVariable Id="WixUIBannerBmp" Value=".\icons\banner.bmp" />
+        <WixVariable Id="WixUIExclamationIco" Value=".\icons\logo32.ico" />
+        <WixVariable Id="WixUIInfoIco" Value=".\icons\logo32.ico" />
+        <WixVariable Id="WixUINewIco" Value=".\icons\logo16.ico" />
+        <WixVariable Id="WixUIUpIco" Value=".\icons\logo16.ico" />
+
+        <!-- Adding a nice GUI to the MSI installer -->
+        <UI>
+            <ui:WixUI
+                Id="WixUI_Advanced"/>
+
+            <!-- Linking the LaunchApplication action to the checkbox -->
+            <Publish
+                Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1"
+                Control="Finish"
+                Dialog="ExitDialog"
+                Event="DoAction"
+                Order="1"
+                Value="LaunchApplication" />
+
+        </UI>
+
+        <!-- Adding the custom executable installer to the install sequence -->
+        <InstallExecuteSequence>
+            <Custom
+                Action="InstallPythonModule"
+                After="UninstallPythonModule"
+                Condition="not Installed"
+                Overridable="no" />
+        </InstallExecuteSequence>
+
+        <!-- Adding the custom executable uninstaller to the install sequence -->
+        <InstallExecuteSequence>
+            <Custom
+                Action="UninstallPythonModule"
+                After="PublishProduct"
+                Condition="not Installed"
+                Overridable="no" />
+        </InstallExecuteSequence>
+
+        <!-- Referencing the Desktop Folder where a shortcut will be added -->
+        <StandardDirectory
+            Id="DesktopFolder" />
+
+        <!-- Base standard directory where MyoFInDer will be added -->
+        <StandardDirectory
+            Id="LocalAppDataFolder">
+
+            <!-- New directory containing only MyoFInDer -->
+            <Directory
+                Id="INSTALLDIR"
+                Name="MyoFInDer">
+
+                <!-- Component containing the myofinder.exe executable and its shortcuts -->
+                <Component
+                    Id="MainExecutable"
+                    Guid="12A42022-5082-45AE-807F-4B3580F9B1E3">
+                    <File
+                        Id="myofinder.exe"
+                        Name="myofinder.exe"
+                        DiskId="1"
+                        Source=".\..\..\bin\myofinder.exe"
+                        KeyPath="yes">
+                            <Shortcut
+                                Advertise="yes"
+                                Description="MyoFInDer"
+                                Directory="ProgramMenuDir"
+                                Icon="myofinder.ico"
+                                IconIndex="0"
+                                Id="StartMenuShortcutExe"
+                                Name="MyoFInDer"
+                                Show="normal"
+                                WorkingDirectory="INSTALLDIR" />
+
+                            <Shortcut
+                                Advertise="yes"
+                                Description="MyoFInDer"
+                                Directory="DesktopFolder"
+                                Icon="myofinder.ico"
+                                IconIndex="0"
+                                Id="DesktopShortcutExe"
+                                Name="MyoFInDer"
+                                Show="normal"
+                                WorkingDirectory="INSTALLDIR" />
+                    </File>
+
+                    <!-- Remove the log file although it does not exist on installation -->
+                    <RemoveFile
+                        Id="LogFile"
+                        Name="logs.txt"
+                        On="uninstall" />
+
+                    <!-- Remove the settings file although it does not exist on installation -->
+                    <RemoveFile
+                        Id="SettingsFile"
+                        Name="settings.pickle"
+                        On="uninstall" />
+
+                    <util:RemoveFolderEx
+                        Condition="Uninstalling"
+                        On="uninstall"
+                        Property="VENVPATH" />
+
+                </Component>
+
+                <!-- Component containing the registry keys -->
+                <Component
+                    Id="RegistryValues"
+                    Guid="AA2D3852-53CC-405E-9F05-EA77AD18BDF5">
+                    <RegistryKey
+                        ForceCreateOnInstall="no"
+                        ForceDeleteOnUninstall="no"
+                        Key="Software\MyoFInDer"
+                        Root="HKCU" >
+
+                        <!-- Path to the system Python executable -->
+                        <RegistryValue
+                            Action="write"
+                            Id="SystemPythonExePath"
+                            KeyPath="yes"
+                            Name="SystemPythonExePath"
+                            Type="string"
+                            Value="[SystemPythonExePath]" />
+
+                        <!-- Path to the virtual environment of MyoFInDer -->
+                        <RegistryValue
+                            Action="write"
+                            Id="MyoFInDerVenvPath"
+                            KeyPath="no"
+                            Name="MyoFInDerVenvPath"
+                            Type="string"
+                            Value="[INSTALLDIR]venv" />
+
+                        <!-- Path to MyoFInDer's Python executable -->
+                        <RegistryValue
+                            Action="write"
+                            Id="MyoFInDerPythonPath"
+                            KeyPath="no"
+                            Name="MyoFInDerPythonPath"
+                            Type="string"
+                            Value="[INSTALLDIR]venv\Scripts\python.exe" />
+                    </RegistryKey>
+                </Component>
+
+                <!-- Component containing the README file -->
+                <Component
+                    Id="READMEFile"
+                    Guid="9BDC1026-3146-4C36-96A2-91258A3F28BD">
+                    <File
+                        Id="README"
+                        Name="README.rtf"
+                        DiskId="1"
+                        Source=".\docs\README.rtf"
+                        KeyPath="yes" />
+                </Component>
+
+                <!-- Component containing the LICENSE file -->
+                <Component
+                    Id="LICENSEFile"
+                    Guid="D925E2FF-2FAE-41FA-8492-6A777F1E8495">
+                    <File
+                        Id="LICENSE"
+                        Name="LICENSE.rtf"
+                        DiskId="1"
+                        Source=".\docs\LICENSE.rtf"
+                        KeyPath="yes" />
+                </Component>
+
+            </Directory>
+        </StandardDirectory>
+
+        <!-- Standard directory containing the start menu shortcut -->
+        <StandardDirectory
+            Id="ProgramMenuFolder">
+
+            <!-- New directory containing the shortcut to MyoFInDer executable -->
+            <Directory
+                Id="ProgramMenuDir"
+                Name="MyoFInDer">
+                <Component
+                    Id="ProgramMenuDir"
+                    Guid="099B9BB5-9893-4D07-8521-E0341CAEFF19">
+
+                    <Shortcut
+                        Advertise="no"
+                        Arguments="/x [ProductCode]"
+                        Description="Uninstall MyoFInDer"
+                        Icon="recycle.ico"
+                        IconIndex="0"
+                        Id="StartMenuShortcutUninstall"
+                        Name="Uninstall MyoFInDer"
+                        Show="normal"
+                        Target="[System64Folder]msiexec.exe"
+                        WorkingDirectory="INSTALLDIR"/>
+
+                    <RemoveFolder
+                        Id="ProgramMenuDir"
+                        On="uninstall" />
+                    <RegistryValue
+                        Root="HKCU"
+                        Key="Software\MyoFInDer"
+                        Type="string"
+                        Name="StartupMenuShortcut"
+                        Value="true"
+                        KeyPath="yes" />
+                </Component>
+            </Directory>
+        </StandardDirectory>
+
+    </Package>
+</Wix>
