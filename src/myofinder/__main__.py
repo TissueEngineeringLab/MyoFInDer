@@ -41,7 +41,11 @@ def main():
     # Retrieving the command-line arguments
     log: bool = args.nolog
     test: bool = args.test
-    app_folder: Optional[Path] = args.app_folder[0]
+    app_folder: Optional[Path]
+    if args.app_folder is None:
+        app_folder = None
+    else:
+        app_folder = args.app_folder[0]
 
     # Setting the path to the application folder if not already provided
     if app_folder is None:
