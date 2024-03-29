@@ -1,0 +1,117 @@
+<Wix
+    xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+    <Fragment>
+        <UI>
+
+            <Dialog
+                CustomPalette="no"
+                ErrorDialog="no"
+                Height="85"
+                Hidden="no"
+                Id="ConfirmExitDialog"
+                KeepModeless="no"
+                LeftScroll="no"
+                Modeless="no"
+                NoMinimize="yes"
+                RightAligned="no"
+                RightToLeft="no"
+                SystemModal="no"
+                Title="MyoFInDer Setup"
+                TrackDiskSpace="no"
+                Width="260"
+                X="50"
+                Y="50" >
+
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    FormatSize="no"
+                    Height="30"
+                    Hidden="no"
+                    Id="Message"
+                    LeftScroll="no"
+                    NoPrefix="yes"
+                    NoWrap="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Are you sure you want to exit MyoFInDer&apos;s installation ?"
+                    Transparent="yes"
+                    Type="Text"
+                    Width="194"
+                    X="48"
+                    Y="15" />
+
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    FixedSize="yes"
+                    Height="24"
+                    Hidden="no"
+                    Id="Icon"
+                    IconSize="32"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="WixUIInfoIco"
+                    Type="Icon"
+                    Width="24"
+                    X="15"
+                    Y="15" />
+
+                <Control
+                    Bitmap="no"
+                    Cancel="yes"
+                    Default="no"
+                    Disabled="no"
+                    ElevationShield="no"
+                    FixedSize="no"
+                    Height="17"
+                    Hidden="no"
+                    Icon="no"
+                    Id="Yes"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Yes"
+                    Type="PushButton"
+                    Width="56"
+                    X="72"
+                    Y="57" />
+
+                <Control
+                    Bitmap="no"
+                    Cancel="no"
+                    Default="yes"
+                    Disabled="no"
+                    ElevationShield="no"
+                    FixedSize="no"
+                    Height="17"
+                    Hidden="no"
+                    Icon="no"
+                    Id="No"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="No"
+                    Type="PushButton"
+                    Width="56"
+                    X="132"
+                    Y="57" />
+
+            </Dialog>
+        </UI>
+    </Fragment>
+</Wix>

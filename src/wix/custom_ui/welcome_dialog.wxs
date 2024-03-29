@@ -1,0 +1,149 @@
+<Wix
+    xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+    <Fragment>
+        <UI>
+
+            <Dialog
+                CustomPalette="no"
+                ErrorDialog="no"
+                Height="397"
+                Hidden="no"
+                Id="WelcomeDialog"
+                KeepModeless="no"
+                LeftScroll="no"
+                Modeless="no"
+                NoMinimize="yes"
+                RightAligned="no"
+                RightToLeft="no"
+                SystemModal="no"
+                Title="MyoFInDer Setup"
+                TrackDiskSpace="no"
+                Width="513"
+                X="50"
+                Y="50" >
+
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="0"
+                    Hidden="no"
+                    Id="TopLine"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Type="Line"
+                    Width="370"
+                    X="0"
+                    Y="58" />
+
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="0"
+                    Hidden="no"
+                    Id="BottomLine"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Type="Line"
+                    Width="370"
+                    X="0"
+                    Y="234" />
+
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="58"
+                    Hidden="no"
+                    Id="Banner"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="WixUIBannerBmp"
+                    Type="Bitmap"
+                    Width="370"
+                    X="0"
+                    Y="0" />
+
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    FormatSize="no"
+                    Height="15"
+                    Hidden="no"
+                    Id="Title"
+                    LeftScroll="no"
+                    NoPrefix="yes"
+                    NoWrap="yes"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="{\DlgTitleFont}Welcome to MyoFInDer&apos;s installer"
+                    Transparent="yes"
+                    Type="Text"
+                    Width="200"
+                    X="15"
+                    Y="6" />
+
+                <Control
+                    Bitmap="no"
+                    Cancel="yes"
+                    Default="no"
+                    Disabled="no"
+                    ElevationShield="no"
+                    FixedSize="no"
+                    Height="17"
+                    Hidden="no"
+                    Icon="no"
+                    Id="Cancel"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Cancel"
+                    Type="PushButton"
+                    Width="56"
+                    X="10"
+                    Y="243" />
+
+                <Control
+                    Bitmap="no"
+                    Cancel="no"
+                    Default="yes"
+                    Disabled="no"
+                    ElevationShield="no"
+                    FixedSize="no"
+                    Height="17"
+                    Hidden="no"
+                    Icon="no"
+                    Id="Next"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Next &gt;"
+                    Type="PushButton"
+                    Width="56"
+                    X="304"
+                    Y="243" />
+
+            </Dialog>
+        </UI>
+    </Fragment>
+</Wix>

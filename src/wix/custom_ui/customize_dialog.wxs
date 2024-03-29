@@ -1,0 +1,365 @@
+<Wix
+    xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+    <Fragment>
+        <UI>
+
+            <Dialog
+                CustomPalette="no"
+                ErrorDialog="no"
+                Height="270"
+                Hidden="no"
+                Id="CustomizeDialog"
+                KeepModeless="no"
+                LeftScroll="no"
+                Modeless="no"
+                NoMinimize="yes"
+                RightAligned="no"
+                RightToLeft="no"
+                SystemModal="no"
+                Title="MyoFInDer Setup"
+                TrackDiskSpace="no"
+                Width="370"
+                X="50"
+                Y="50" >
+
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="58"
+                    Hidden="no"
+                    Id="Banner"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="WixUIBannerBmp"
+                    Type="Bitmap"
+                    Width="370"
+                    X="0"
+                    Y="0" />
+
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="0"
+                    Hidden="no"
+                    Id="BottomLine"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Type="Line"
+                    Width="370"
+                    X="0"
+                    Y="234" />
+
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="0"
+                    Hidden="no"
+                    Id="TopLine"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Type="Line"
+                    Width="370"
+                    X="0"
+                    Y="58" />
+
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    FormatSize="no"
+                    Height="15"
+                    Hidden="no"
+                    Id="Title"
+                    LeftScroll="no"
+                    NoPrefix="yes"
+                    NoWrap="yes"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="{\DlgTitleFont}Custom setup"
+                    Transparent="yes"
+                    Type="Text"
+                    Width="200"
+                    X="15"
+                    Y="6" />
+
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="95"
+                    Hidden="no"
+                    Id="Tree"
+                    LeftScroll="no"
+                    Property="BrowseProperty"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="yes"
+                    TabSkip="no"
+                    Text="Selection tree"
+                    Type="SelectionTree"
+                    Width="175"
+                    X="25"
+                    Y="85" />
+
+                <Control
+                    Bitmap="no"
+                    Cancel="yes"
+                    Default="no"
+                    Disabled="no"
+                    ElevationShield="no"
+                    FixedSize="no"
+                    Height="17"
+                    Hidden="no"
+                    Icon="no"
+                    Id="Browse"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Browse"
+                    Type="PushButton"
+                    Width="56"
+                    X="304"
+                    Y="200" />
+
+                <Control
+                    Bitmap="no"
+                    Cancel="yes"
+                    Default="no"
+                    Disabled="no"
+                    ElevationShield="no"
+                    FixedSize="no"
+                    Height="17"
+                    Hidden="no"
+                    Icon="no"
+                    Id="Reset"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Reset"
+                    Type="PushButton"
+                    Width="56"
+                    X="77"
+                    Y="243" >
+                    <Subscribe
+                        Attribute="Enabled"
+                        Event="SelectionNoItems" />
+                </Control>
+
+                <Control
+                    Cancel="yes"
+                    Default="no"
+                    Disabled="no"
+                    Height="98"
+                    Hidden="no"
+                    Id="Box"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Type="GroupBox"
+                    Width="140"
+                    X="210"
+                    Y="81" />
+
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    FormatSize="no"
+                    Height="30"
+                    Hidden="no"
+                    Id="ItemDescription"
+                    LeftScroll="no"
+                    NoPrefix="yes"
+                    NoWrap="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Multiline description of the currently selected item"
+                    Transparent="yes"
+                    Type="Text"
+                    Width="131"
+                    X="215"
+                    Y="90" >
+                    <Subscribe
+                        Attribute="Text"
+                        Event="SelectionDescription" />
+                </Control>
+
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    FormatSize="no"
+                    Height="55"
+                    Hidden="no"
+                    Id="ItemSize"
+                    LeftScroll="no"
+                    NoPrefix="yes"
+                    NoWrap="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="The size of the currently selected item"
+                    Transparent="yes"
+                    Type="Text"
+                    Width="131"
+                    X="215"
+                    Y="120" >
+                    <Subscribe
+                        Attribute="Text"
+                        Event="SelectionSize" />
+                </Control>
+
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    FormatSize="no"
+                    Height="20"
+                    Hidden="no"
+                    Id="Location"
+                    LeftScroll="no"
+                    NoPrefix="yes"
+                    NoWrap="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="The selections path"
+                    Transparent="yes"
+                    Type="Text"
+                    Width="215"
+                    X="75"
+                    Y="200" >
+                    <Subscribe
+                        Attribute="Text"
+                        Event="SelectionPath" />
+                    <Subscribe
+                        Attribute="Visible"
+                        Event="SelectionPathOn" />
+                </Control>
+
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    FormatSize="no"
+                    Height="10"
+                    Hidden="no"
+                    Id="LocationLabel"
+                    LeftScroll="no"
+                    NoPrefix="yes"
+                    NoWrap="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Location:"
+                    Transparent="yes"
+                    Type="Text"
+                    Width="50"
+                    X="25"
+                    Y="200" >
+                    <Subscribe
+                        Attribute="Visible"
+                        Event="SelectionPathOn" />
+                </Control>
+
+                <Control
+                    Bitmap="no"
+                    Cancel="yes"
+                    Default="no"
+                    Disabled="no"
+                    ElevationShield="no"
+                    FixedSize="no"
+                    Height="17"
+                    Hidden="no"
+                    Icon="no"
+                    Id="Cancel"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Cancel"
+                    Type="PushButton"
+                    Width="56"
+                    X="10"
+                    Y="243" />
+
+                <Control
+                    Bitmap="no"
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    ElevationShield="no"
+                    FixedSize="no"
+                    Height="17"
+                    Hidden="no"
+                    Icon="no"
+                    Id="Back"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="&lt; Back"
+                    Type="PushButton"
+                    Width="56"
+                    X="238"
+                    Y="243" />
+
+                <Control
+                    Bitmap="no"
+                    Cancel="no"
+                    Default="yes"
+                    Disabled="no"
+                    ElevationShield="no"
+                    FixedSize="no"
+                    Height="17"
+                    Hidden="no"
+                    Icon="no"
+                    Id="Install"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Install"
+                    Type="PushButton"
+                    Width="56"
+                    X="304"
+                    Y="243" />
+
+            </Dialog>
+        </UI>
+    </Fragment>
+</Wix>
