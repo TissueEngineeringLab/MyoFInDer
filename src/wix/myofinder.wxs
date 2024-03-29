@@ -430,28 +430,31 @@
             Return="check" />
 
         <!-- Variables driving the appearance of the installer window -->
-        <WixVariable Id="WixUILicenseRtf" Value=".\docs\LICENSE.rtf" />
-        <WixVariable Id="WixUIDialogBmp" Value=".\icons\dialog.bmp" />
-        <WixVariable Id="WixUIBannerBmp" Value=".\icons\banner.bmp" />
-        <WixVariable Id="WixUIExclamationIco" Value=".\icons\logo32.ico" />
-        <WixVariable Id="WixUIInfoIco" Value=".\icons\logo32.ico" />
-        <WixVariable Id="WixUINewIco" Value=".\icons\logo16.ico" />
-        <WixVariable Id="WixUIUpIco" Value=".\icons\logo16.ico" />
+        <Binary
+            Id="WixUIDialogBmp"
+            SourceFile=".\icons\dialog.bmp"
+            SuppressModularization="no" />
+        <Binary
+            Id="WixUIBannerBmp"
+            SourceFile=".\icons\banner.bmp"
+            SuppressModularization="no" />
+        <Binary
+            Id="WixUIInfoIco"
+            SourceFile=".\icons\logo32.ico"
+            SuppressModularization="no" />
+        <Binary
+            Id="UpIco"
+            SourceFile=".\icons\up.ico"
+            SuppressModularization="no" />
+        <Binary
+            Id="NewFolderIco"
+            SourceFile=".\icons\new_folder.ico"
+            SuppressModularization="no" />
 
         <!-- Adding a nice GUI to the MSI installer -->
         <UI>
-            <ui:WixUI
-                Id="WixUI_Advanced"/>
-
-            <!-- Linking the LaunchApplication action to the checkbox -->
-            <Publish
-                Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1"
-                Control="Finish"
-                Dialog="ExitDialog"
-                Event="DoAction"
-                Order="1"
-                Value="LaunchApplication" />
-
+            <UIRef
+                Id="CustomUI" />
         </UI>
 
         <!-- Adding the custom executable installer to the install sequence -->
