@@ -357,16 +357,6 @@
             Secure="yes"
             Value="myofinder.ico" />
 
-        <!-- Action to run when the checkbox is checked -->
-        <CustomAction
-            Execute="immediate"
-            ExeCommand=""
-            FileRef="myofinder.exe"
-            Id="LaunchApplication"
-            Impersonate="yes"
-            PatchUninstall="no"
-            Return="check" />
-
         <!-- Executable file creating a virtual environment and installing
         MyoFInDer inside during the installation -->
         <Binary
@@ -397,6 +387,16 @@
             Execute="rollback"
             ExeCommand="&quot;[INSTALLDIR]venv&quot;"
             Id="UninstallPythonModule"
+            Impersonate="yes"
+            PatchUninstall="no"
+            Return="check" />
+
+        <!-- Action to run when the checkbox is checked -->
+        <CustomAction
+            Execute="immediate"
+            ExeCommand=""
+            FileRef="myofinder.exe"
+            Id="LaunchApplication"
             Impersonate="yes"
             PatchUninstall="no"
             Return="check" />
