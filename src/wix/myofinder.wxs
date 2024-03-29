@@ -349,20 +349,6 @@
                     Type="raw" />
         </Property>
 
-        <!-- Mandatory properties for the WixUI_Advanced interface -->
-        <Property
-            Admin="no"
-            Hidden="no"
-            Id="ApplicationFolderName"
-            Secure="no"
-            Value="INSTALLDIR" />
-        <Property
-            Admin="no"
-            Hidden="no"
-            Id="WixAppFolder"
-            Secure="no"
-            Value="WixPerUserFolder" />
-
         <!-- Property setting the logo in the Apps & Features menu -->
         <Property
             Admin="no"
@@ -370,20 +356,6 @@
             Id="ARPPRODUCTICON"
             Secure="yes"
             Value="myofinder.ico" />
-
-        <!-- Properties of the checkbox for starting MyoFInDer after installation -->
-        <Property
-            Admin="no"
-            Hidden="no"
-            Id="WIXUI_EXITDIALOGOPTIONALTEXT"
-            Secure="yes"
-            Value="Thank you for installing MyoFInDer !" />
-        <Property
-            Admin="no"
-            Hidden="no"
-            Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT"
-            Secure="yes"
-            Value="Launch MyoFInDer" />
 
         <!-- Action to run when the checkbox is checked -->
         <CustomAction
