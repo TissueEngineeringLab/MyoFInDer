@@ -9,7 +9,7 @@
             <Dialog
                 CustomPalette="no"
                 ErrorDialog="no"
-                Height="270"
+                Height="312"
                 Hidden="no"
                 Id="ProgressDialog"
                 KeepModeless="no"
@@ -21,7 +21,7 @@
                 SystemModal="no"
                 Title="MyoFInDer Setup"
                 TrackDiskSpace="no"
-                Width="370"
+                Width="493"
                 X="50"
                 Y="50" >
 
@@ -58,9 +58,9 @@
                     Sunken="no"
                     TabSkip="no"
                     Type="Line"
-                    Width="370"
+                    Width="493"
                     X="0"
-                    Y="234" />
+                    Y="276" />
 
                 <!-- MyoFInDer banner just for aesthetics -->
                 <Control
@@ -86,7 +86,7 @@
                     Default="no"
                     Disabled="no"
                     FormatSize="no"
-                    Height="15"
+                    Height="30"
                     Hidden="no"
                     Id="Title"
                     LeftScroll="no"
@@ -101,7 +101,7 @@
                     Type="Text"
                     Width="200"
                     X="15"
-                    Y="6" />
+                    Y="20" />
 
                 <!-- Text describing the current status of the installation -->
                 <Control
@@ -122,9 +122,9 @@
                     Text="{\DlgTitleFont}Custom setup"
                     Transparent="yes"
                     Type="Text"
-                    Width="265"
+                    Width="388"
                     X="70"
-                    Y="100" >
+                    Y="121" >
                     <Subscribe
                         Attribute="Text"
                         Event="ActionData" />
@@ -151,14 +151,14 @@
                     Type="Text"
                     Width="35"
                     X="35"
-                    Y="100" />
+                    Y="121" />
 
                 <!-- Progress bar showing the completion level of the installation -->
                 <Control
                     Cancel="no"
                     Default="no"
                     Disabled="no"
-                    Height="10"
+                    Height="15"
                     Hidden="no"
                     Id="ProgressBar"
                     LeftScroll="no"
@@ -169,9 +169,9 @@
                     TabSkip="no"
                     Text="Progress done"
                     Type="ProgressBar"
-                    Width="300"
+                    Width="423"
                     X="35"
-                    Y="115" >
+                    Y="136" >
                     <Subscribe
                         Attribute="Progress"
                         Event="SetProgress" />
@@ -199,7 +199,7 @@
                     Type="PushButton"
                     Width="56"
                     X="10"
-                    Y="243" />
+                    Y="285" />
 
                 <!-- Button for switching back to the previous installer window - disabled -->
                 <Control
@@ -222,8 +222,8 @@
                     Text="&lt; Back"
                     Type="PushButton"
                     Width="56"
-                    X="238"
-                    Y="243" />
+                    X="361"
+                    Y="285" />
 
                 <!-- Button for switching to the next installer window - disabled -->
                 <Control
@@ -246,8 +246,8 @@
                     Text="Next &gt;"
                     Type="PushButton"
                     Width="56"
-                    X="304"
-                    Y="243" />
+                    X="427"
+                    Y="285" />
 
             </Dialog>
         </UI>

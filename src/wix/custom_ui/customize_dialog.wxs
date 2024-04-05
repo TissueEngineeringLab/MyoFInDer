@@ -9,7 +9,7 @@
             <Dialog
                 CustomPalette="no"
                 ErrorDialog="no"
-                Height="270"
+                Height="312"
                 Hidden="no"
                 Id="CustomizeDialog"
                 KeepModeless="no"
@@ -21,7 +21,7 @@
                 SystemModal="no"
                 Title="MyoFInDer Setup"
                 TrackDiskSpace="no"
-                Width="370"
+                Width="493"
                 X="50"
                 Y="50" >
 
@@ -58,9 +58,9 @@
                     Sunken="no"
                     TabSkip="no"
                     Type="Line"
-                    Width="370"
+                    Width="493"
                     X="0"
-                    Y="234" />
+                    Y="276" />
 
                 <!-- MyoFInDer banner just for aesthetics -->
                 <Control
@@ -86,7 +86,7 @@
                     Default="no"
                     Disabled="no"
                     FormatSize="no"
-                    Height="15"
+                    Height="30"
                     Hidden="no"
                     Id="Title"
                     LeftScroll="no"
@@ -99,16 +99,16 @@
                     Text="{\DlgTitleFont}Custom setup"
                     Transparent="yes"
                     Type="Text"
-                    Width="200"
+                    Width="463"
                     X="15"
-                    Y="6" />
+                    Y="20" />
 
                 <!-- Selection tree allowing to choose which features to install or not -->
                 <Control
                     Cancel="no"
                     Default="no"
                     Disabled="no"
-                    Height="95"
+                    Height="130"
                     Hidden="no"
                     Id="Tree"
                     LeftScroll="no"
@@ -119,7 +119,7 @@
                     TabSkip="no"
                     Text="Selection tree"
                     Type="SelectionTree"
-                    Width="175"
+                    Width="235"
                     X="25"
                     Y="85" />
 
@@ -177,7 +177,7 @@
                     Cancel="yes"
                     Default="no"
                     Disabled="no"
-                    Height="98"
+                    Height="130"
                     Hidden="no"
                     Id="Box"
                     LeftScroll="no"
@@ -186,8 +186,8 @@
                     Sunken="no"
                     TabSkip="no"
                     Type="GroupBox"
-                    Width="140"
-                    X="210"
+                    Width="190"
+                    X="280"
                     Y="81" />
 
                 <!-- Brief description of the selected feature -->
@@ -209,8 +209,8 @@
                     Text="Multiline description of the currently selected item"
                     Transparent="yes"
                     Type="Text"
-                    Width="131"
-                    X="215"
+                    Width="181"
+                    X="285"
                     Y="90" >
                     <Subscribe
                         Attribute="Text"
@@ -223,7 +223,7 @@
                     Default="no"
                     Disabled="no"
                     FormatSize="no"
-                    Height="55"
+                    Height="71"
                     Hidden="no"
                     Id="ItemSize"
                     LeftScroll="no"
@@ -236,9 +236,9 @@
                     Text="The size of the currently selected item"
                     Transparent="yes"
                     Type="Text"
-                    Width="131"
-                    X="215"
-                    Y="120" >
+                    Width="181"
+                    X="285"
+                    Y="136" >
                     <Subscribe
                         Attribute="Text"
                         Event="SelectionSize" />
@@ -263,8 +263,8 @@
                     Transparent="yes"
                     Type="Text"
                     Width="215"
-                    X="75"
-                    Y="200" >
+                    X="192"
+                    Y="240" >
                     <Subscribe
                         Attribute="Text"
                         Event="SelectionPath" />
@@ -292,9 +292,9 @@
                     Text="Location:"
                     Transparent="yes"
                     Type="Text"
-                    Width="50"
+                    Width="100"
                     X="25"
-                    Y="200" >
+                    Y="240" >
                     <Subscribe
                         Attribute="Visible"
                         Event="SelectionPathOn" />
@@ -322,7 +322,7 @@
                     Type="PushButton"
                     Width="56"
                     X="10"
-                    Y="243" />
+                    Y="285" />
 
                 <Control
                     Bitmap="no"
@@ -344,8 +344,8 @@
                     Text="&lt; Back"
                     Type="PushButton"
                     Width="56"
-                    X="238"
-                    Y="243" />
+                    X="361"
+                    Y="285" />
 
                 <!-- Button for starting MyoFInDer's installation -->
                 <Control
@@ -368,8 +368,8 @@
                     Text="Install"
                     Type="PushButton"
                     Width="56"
-                    X="304"
-                    Y="243" />
+                    X="427"
+                    Y="285" />
 
             </Dialog>
         </UI>

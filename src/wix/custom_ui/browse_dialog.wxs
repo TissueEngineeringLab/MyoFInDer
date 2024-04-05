@@ -86,7 +86,7 @@
                     Default="no"
                     Disabled="no"
                     FormatSize="no"
-                    Height="15"
+                    Height="30"
                     Hidden="no"
                     Id="Title"
                     LeftScroll="no"
@@ -99,9 +99,9 @@
                     Text="{\DlgTitleFont}Custom setup"
                     Transparent="yes"
                     Type="Text"
-                    Width="200"
+                    Width="300"
                     X="15"
-                    Y="6" />
+                    Y="20" />
 
                 <!-- Editable entry displaying the current installation path -->
                 <Control
@@ -119,8 +119,8 @@
                     Sunken="no"
                     TabSkip="no"
                     Type="PathEdit"
-                    Width="261"
-                    X="84"
+                    Width="241"
+                    X="104"
                     Y="202" />
 
                 <!-- Information text -->

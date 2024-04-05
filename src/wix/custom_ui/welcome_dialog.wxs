@@ -9,7 +9,7 @@
             <Dialog
                 CustomPalette="no"
                 ErrorDialog="no"
-                Height="397"
+                Height="312"
                 Hidden="no"
                 Id="WelcomeDialog"
                 KeepModeless="no"
@@ -21,7 +21,7 @@
                 SystemModal="no"
                 Title="MyoFInDer Setup"
                 TrackDiskSpace="no"
-                Width="513"
+                Width="493"
                 X="50"
                 Y="50" >
 
@@ -39,7 +39,7 @@
                     Sunken="no"
                     TabSkip="no"
                     Type="Line"
-                    Width="370"
+                    Width="493"
                     X="0"
                     Y="58" />
 
@@ -57,9 +57,9 @@
                     Sunken="no"
                     TabSkip="no"
                     Type="Line"
-                    Width="370"
+                    Width="493"
                     X="0"
-                    Y="234" />
+                    Y="276" />
 
                 <!-- MyoFInDer banner just for aesthetics -->
                 <Control
@@ -76,7 +76,7 @@
                     TabSkip="no"
                     Text="WixUIBannerBmp"
                     Type="Bitmap"
-                    Width="370"
+                    Width="493"
                     X="0"
                     Y="0" />
 
@@ -86,7 +86,7 @@
                     Default="no"
                     Disabled="no"
                     FormatSize="no"
-                    Height="15"
+                    Height="30"
                     Hidden="no"
                     Id="Title"
                     LeftScroll="no"
@@ -124,7 +124,7 @@
                     Type="PushButton"
                     Width="56"
                     X="10"
-                    Y="243" />
+                    Y="285" />
 
                 <!-- Button for switching to the next installer window -->
                 <Control
@@ -147,8 +147,8 @@
                     Text="Next &gt;"
                     Type="PushButton"
                     Width="56"
-                    X="304"
-                    Y="243" />
+                    X="427"
+                    Y="285" />
 
             </Dialog>
         </UI>

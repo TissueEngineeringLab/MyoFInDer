@@ -9,7 +9,7 @@
             <Dialog
                 CustomPalette="no"
                 ErrorDialog="no"
-                Height="270"
+                Height="312"
                 Hidden="no"
                 Id="FailureDialog"
                 KeepModeless="no"
@@ -21,7 +21,7 @@
                 SystemModal="no"
                 Title="MyoFInDer Setup"
                 TrackDiskSpace="no"
-                Width="370"
+                Width="493"
                 X="50"
                 Y="50" >
 
@@ -40,7 +40,7 @@
                     TabSkip="no"
                     Text="WixUIDialogBmp"
                     Type="Bitmap"
-                    Width="370"
+                    Width="171"
                     X="0"
                     Y="0" />
 
@@ -68,7 +68,7 @@
                     Default="no"
                     Disabled="no"
                     FormatSize="no"
-                    Height="15"
+                    Height="70"
                     Hidden="no"
                     Id="Title"
                     LeftScroll="no"
@@ -81,9 +81,9 @@
                     Text="{\DlgTitleFont}Ready to Install"
                     Transparent="yes"
                     Type="Text"
-                    Width="200"
-                    X="15"
-                    Y="6" />
+                    Width="288"
+                    X="190"
+                    Y="110" />
 
                 <Control
                     Bitmap="no"
@@ -105,8 +105,8 @@
                     Text="Cancel"
                     Type="PushButton"
                     Width="56"
-                    X="10"
-                    Y="243" />
+                    X="185"
+                    Y="285" />
 
                 <!-- Button for switching back to the previous installer window - disabled -->
                 <Control
@@ -129,8 +129,8 @@
                     Text="&lt; Back"
                     Type="PushButton"
                     Width="56"
-                    X="238"
-                    Y="243" />
+                    X="361"
+                    Y="285" />
 
                 <!-- Button for exiting the installer -->
                 <Control
@@ -153,8 +153,8 @@
                     Text="Finish"
                     Type="PushButton"
                     Width="56"
-                    X="304"
-                    Y="243" />
+                    X="427"
+                    Y="285" />
 
             </Dialog>
         </UI>

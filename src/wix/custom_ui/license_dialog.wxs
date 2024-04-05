@@ -9,7 +9,7 @@
             <Dialog
                 CustomPalette="no"
                 ErrorDialog="no"
-                Height="270"
+                Height="312"
                 Hidden="no"
                 Id="LicenseDialog"
                 KeepModeless="no"
@@ -21,7 +21,7 @@
                 SystemModal="no"
                 Title="MyoFInDer Setup"
                 TrackDiskSpace="no"
-                Width="370"
+                Width="493"
                 X="50"
                 Y="50" >
 
@@ -58,9 +58,9 @@
                     Sunken="no"
                     TabSkip="no"
                     Type="Line"
-                    Width="370"
+                    Width="493"
                     X="0"
-                    Y="234" />
+                    Y="276" />
 
                 <!-- MyoFInDer banner just for aesthetics -->
                 <Control
@@ -86,7 +86,7 @@
                     Default="no"
                     Disabled="no"
                     FormatSize="no"
-                    Height="15"
+                    Height="30"
                     Hidden="no"
                     Id="Title"
                     LeftScroll="no"
@@ -99,9 +99,9 @@
                     Text="{\DlgTitleFont}Ready to Install"
                     Transparent="yes"
                     Type="Text"
-                    Width="200"
+                    Width="463"
                     X="15"
-                    Y="6" />
+                    Y="20" />
 
                 <!-- Checkbox to check for accepting the license agreement -->
                 <Control
@@ -120,16 +120,16 @@
                     TabSkip="no"
                     Text="I accept the terms of the License Agreement"
                     Type="CheckBox"
-                    Width="56"
+                    Width="300"
                     X="20"
-                    Y="187" />
+                    Y="242" />
 
                 <!-- Box displaying the content of the LICENSE file -->
                 <Control
                     Cancel="no"
                     Default="no"
                     Disabled="no"
-                    Height="120"
+                    Height="160"
                     Hidden="no"
                     Id="AgreementText"
                     LeftScroll="no"
@@ -138,9 +138,9 @@
                     Sunken="yes"
                     TabSkip="no"
                     Type="ScrollableText"
-                    Width="330"
+                    Width="453"
                     X="20"
-                    Y="60" >
+                    Y="70" >
                     <Text
                         SourceFile=".\docs\LICENSE.rtf" />
                 </Control>
@@ -167,7 +167,7 @@
                     Type="PushButton"
                     Width="56"
                     X="10"
-                    Y="243" />
+                    Y="285" />
 
                 <!-- Button for switching back to the previous installer window -->
                 <Control
@@ -190,8 +190,8 @@
                     Text="&lt; Back"
                     Type="PushButton"
                     Width="56"
-                    X="238"
-                    Y="243" />
+                    X="361"
+                    Y="285" />
 
                 <!-- Button for switching to the next installer window -->
                 <Control
@@ -215,8 +215,8 @@
                     Text="Next &gt;"
                     Type="PushButton"
                     Width="56"
-                    X="304"
-                    Y="243" />
+                    X="427"
+                    Y="285" />
 
             </Dialog>
         </UI>
