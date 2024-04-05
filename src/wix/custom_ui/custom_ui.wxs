@@ -1,9 +1,11 @@
+<!-- This file is the source of the custom user interface -->
 <Wix
     xmlns="http://wixtoolset.org/schemas/v4/wxs">
     <Fragment>
         <UI
             Id="CustomUI" >
 
+            <!-- Setting the default font to use -->
             <Property
                 Admin="no"
                 Hidden="no"
@@ -11,6 +13,7 @@
                 Secure="no"
                 Value="DlgFont8" />
 
+            <!-- Defining the font to use for titles -->
             <TextStyle
                 Bold="yes"
                 FaceName="Tahoma"
@@ -20,6 +23,7 @@
                 Strike="no"
                 Underline="no" />
 
+            <!-- Defining a larger font -->
             <TextStyle
                 Bold="no"
                 FaceName="Tahoma"
@@ -29,6 +33,7 @@
                 Strike="no"
                 Underline="no" />
 
+            <!-- Defining the user interactions for the different dialogs -->
             <Publish
                 Control="Cancel"
                 Dialog="WelcomeDialog"
@@ -148,6 +153,7 @@
                 Event="EndDialog"
                 Value="Return" />
 
+            <!-- Positioning the different dialogs in the installation sequence -->
             <InstallUISequence>
                 <Show
                     After="CostFinalize"
@@ -173,6 +179,7 @@
                     Overridable="no" />
             </InstallUISequence>
 
+            <!-- Defining various variables for the UI to correctly display text -->
             <UIText
                 Id="MenuLocal"
                 Value="Will be installed on local hard drive" />

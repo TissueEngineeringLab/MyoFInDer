@@ -1,9 +1,11 @@
+<!-- This file contains the window that first opens when starting the MyoFInDer Windows installer -->
 <Wix
     xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
     <Fragment>
         <UI>
 
+            <!-- The dialog containing the welcome page -->
             <Dialog
                 CustomPalette="no"
                 ErrorDialog="no"
@@ -23,6 +25,7 @@
                 X="50"
                 Y="50" >
 
+                <!-- Top line just for aesthetics -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -40,6 +43,7 @@
                     X="0"
                     Y="58" />
 
+                <!-- Bottom line just for aesthetics -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -57,6 +61,7 @@
                     X="0"
                     Y="234" />
 
+                <!-- MyoFInDer banner just for aesthetics -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -75,6 +80,7 @@
                     X="0"
                     Y="0" />
 
+                <!-- Title describing the content of the current window -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -120,6 +126,7 @@
                     X="10"
                     Y="243" />
 
+                <!-- Button for switching to the next installer window -->
                 <Control
                     Bitmap="no"
                     Cancel="no"

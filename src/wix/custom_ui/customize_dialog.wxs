@@ -1,9 +1,11 @@
+<!-- This file contains the customization dialog of the MyoFInDer Windows installer -->
 <Wix
     xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
     <Fragment>
         <UI>
 
+            <!-- The dialog containing the customization options -->
             <Dialog
                 CustomPalette="no"
                 ErrorDialog="no"
@@ -23,6 +25,7 @@
                 X="50"
                 Y="50" >
 
+                <!-- Top line just for aesthetics -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -41,6 +44,7 @@
                     X="0"
                     Y="0" />
 
+                <!-- Bottom line just for aesthetics -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -58,6 +62,7 @@
                     X="0"
                     Y="234" />
 
+                <!-- MyoFInDer banner just for aesthetics -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -75,6 +80,7 @@
                     X="0"
                     Y="58" />
 
+                <!-- Title describing the content of the current window -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -97,6 +103,7 @@
                     X="15"
                     Y="6" />
 
+                <!-- Selection tree allowing to choose which features to install or not -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -183,6 +190,7 @@
                     X="210"
                     Y="81" />
 
+                <!-- Brief description of the selected feature -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -209,6 +217,7 @@
                         Event="SelectionDescription" />
                 </Control>
 
+                <!-- Description of the size of the selected feature -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -264,6 +273,7 @@
                         Event="SelectionPathOn" />
                 </Control>
 
+                <!-- Label explaining the installation path -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -290,6 +300,7 @@
                         Event="SelectionPathOn" />
                 </Control>
 
+                <!-- Button for cancelling the installation -->
                 <Control
                     Bitmap="no"
                     Cancel="yes"
@@ -336,6 +347,7 @@
                     X="238"
                     Y="243" />
 
+                <!-- Button for starting MyoFInDer's installation -->
                 <Control
                     Bitmap="no"
                     Cancel="no"

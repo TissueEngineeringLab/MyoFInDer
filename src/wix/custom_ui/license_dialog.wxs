@@ -1,9 +1,11 @@
+<!-- This file contains the license agreement dialog of the MyoFInDer Windows installer -->
 <Wix
     xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
     <Fragment>
         <UI>
 
+            <!-- The dialog containing the license agreement -->
             <Dialog
                 CustomPalette="no"
                 ErrorDialog="no"
@@ -23,6 +25,7 @@
                 X="50"
                 Y="50" >
 
+                <!-- Top line just for aesthetics -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -41,6 +44,7 @@
                     X="0"
                     Y="0" />
 
+                <!-- Bottom line just for aesthetics -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -58,6 +62,7 @@
                     X="0"
                     Y="234" />
 
+                <!-- MyoFInDer banner just for aesthetics -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -75,6 +80,7 @@
                     X="0"
                     Y="58" />
 
+                <!-- Title describing the content of the current window -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -97,6 +103,7 @@
                     X="15"
                     Y="6" />
 
+                <!-- Checkbox to check for accepting the license agreement -->
                 <Control
                     Cancel="no"
                     CheckBoxValue='1'
@@ -117,6 +124,7 @@
                     X="20"
                     Y="187" />
 
+                <!-- Box displaying the content of the LICENSE file -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -137,6 +145,7 @@
                         SourceFile=".\docs\LICENSE.rtf" />
                 </Control>
 
+                <!-- Button for cancelling the installation -->
                 <Control
                     Bitmap="no"
                     Cancel="yes"
@@ -160,6 +169,7 @@
                     X="10"
                     Y="243" />
 
+                <!-- Button for switching back to the previous installer window -->
                 <Control
                     Bitmap="no"
                     Cancel="no"
@@ -183,6 +193,7 @@
                     X="238"
                     Y="243" />
 
+                <!-- Button for switching to the next installer window -->
                 <Control
                     Bitmap="no"
                     Cancel="no"

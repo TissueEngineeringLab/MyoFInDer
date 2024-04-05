@@ -1,9 +1,11 @@
+<!-- This file contains the browse dialog for selecting MyoFInDer's installation folder -->
 <Wix
     xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
     <Fragment>
         <UI>
 
+            <!-- The dialog for selecting the installation path -->
             <Dialog
                 CustomPalette="no"
                 ErrorDialog="no"
@@ -23,6 +25,7 @@
                 X="50"
                 Y="50" >
 
+                <!-- Top line just for aesthetics -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -41,7 +44,8 @@
                     X="0"
                     Y="0" />
 
-                 <Control
+                <!-- Bottom line just for aesthetics -->
+                <Control
                     Cancel="no"
                     Default="no"
                     Disabled="no"
@@ -58,6 +62,7 @@
                     X="0"
                     Y="234" />
 
+                <!-- MyoFInDer banner just for aesthetics -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -75,6 +80,7 @@
                     X="0"
                     Y="58" />
 
+                <!-- Title describing the content of the current window -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -97,6 +103,7 @@
                     X="15"
                     Y="6" />
 
+                <!-- Editable entry displaying the current installation path -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -116,6 +123,7 @@
                     X="84"
                     Y="202" />
 
+                <!-- Information text -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -138,6 +146,7 @@
                     X="25"
                     Y="78" />
 
+                <!-- Expandable field showing a directory tree of the current installation folder -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -163,6 +172,7 @@
                         Event="IgnoreChange" />
                 </Control>
 
+                <!-- Button for navigating in the installation folders -->
                 <Control
                     Bitmap="no"
                     Cancel="no"
@@ -188,6 +198,7 @@
                     X="298"
                     Y="75" />
 
+                <!-- Button for creating a new installation folder -->
                 <Control
                     Bitmap="no"
                     Cancel="no"
@@ -232,6 +243,7 @@
                     X="25"
                     Y="103" />
 
+                <!-- Button for aborting the folder selection and resetting it -->
                 <Control
                     Bitmap="no"
                     Cancel="no"
@@ -255,6 +267,7 @@
                     X="238"
                     Y="243" />
 
+                <!-- Button for validating the folder selection -->
                 <Control
                     Bitmap="no"
                     Cancel="no"

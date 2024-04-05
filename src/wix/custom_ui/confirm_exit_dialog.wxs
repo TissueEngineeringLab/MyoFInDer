@@ -1,9 +1,11 @@
+<!-- This file contains the confirmation dialog that appears when cancelling the MyoFInDer's installation -->
 <Wix
     xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
     <Fragment>
         <UI>
 
+            <!-- The confirmation dialog -->
             <Dialog
                 CustomPalette="no"
                 ErrorDialog="no"
@@ -23,6 +25,7 @@
                 X="50"
                 Y="50" >
 
+                <!-- Text asking whether the user wants to exit or not -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -45,6 +48,7 @@
                     X="48"
                     Y="15" />
 
+                <!-- MyoFInDer's logo for aesthetics -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -65,6 +69,7 @@
                     X="15"
                     Y="15" />
 
+                <!-- Button for cancelling MyoFInDer's installation -->
                 <Control
                     Bitmap="no"
                     Cancel="yes"
@@ -88,6 +93,7 @@
                     X="72"
                     Y="57" />
 
+                <!-- Button for resuming MyoFInDer's installation -->
                 <Control
                     Bitmap="no"
                     Cancel="no"

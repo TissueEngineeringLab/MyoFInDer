@@ -1,9 +1,11 @@
+<!-- This file contains the dialog displayed when the user cancels MyoFInDer's installation -->
 <Wix
     xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
     <Fragment>
         <UI>
 
+            <!-- The user exit dialog -->
             <Dialog
                 CustomPalette="no"
                 ErrorDialog="no"
@@ -41,6 +43,7 @@
                     X="0"
                     Y="0" />
 
+                <!-- Title describing the content of the current window -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -58,6 +61,7 @@
                     X="0"
                     Y="234" />
 
+                <!-- Message informing the user that nothing was modified -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -80,6 +84,7 @@
                     X="15"
                     Y="6" />
 
+                <!-- Button for cancelling the installation - disabled -->
                 <Control
                     Bitmap="no"
                     Cancel="yes"
@@ -103,6 +108,7 @@
                     X="10"
                     Y="243" />
 
+                <!-- Button for switching back to the previous installer window - disabled -->
                 <Control
                     Bitmap="no"
                     Cancel="no"
@@ -126,6 +132,7 @@
                     X="238"
                     Y="243" />
 
+                <!-- Button for exiting the installer -->
                 <Control
                     Bitmap="no"
                     Cancel="yes"
