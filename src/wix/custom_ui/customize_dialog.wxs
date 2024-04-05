@@ -30,19 +30,18 @@
                     Cancel="no"
                     Default="no"
                     Disabled="no"
-                    Height="58"
+                    Height="0"
                     Hidden="no"
-                    Id="Banner"
+                    Id="TopLine"
                     LeftScroll="no"
                     RightAligned="no"
                     RightToLeft="no"
                     Sunken="no"
                     TabSkip="no"
-                    Text="WixUIBannerBmp"
-                    Type="Bitmap"
-                    Width="370"
+                    Type="Line"
+                    Width="493"
                     X="0"
-                    Y="0" />
+                    Y="58" />
 
                 <!-- Bottom line just for aesthetics -->
                 <Control
@@ -67,18 +66,19 @@
                     Cancel="no"
                     Default="no"
                     Disabled="no"
-                    Height="0"
+                    Height="58"
                     Hidden="no"
-                    Id="TopLine"
+                    Id="Banner"
                     LeftScroll="no"
                     RightAligned="no"
                     RightToLeft="no"
                     Sunken="no"
                     TabSkip="no"
-                    Type="Line"
-                    Width="370"
+                    Text="WixUIBannerBmp"
+                    Type="Bitmap"
+                    Width="493"
                     X="0"
-                    Y="58" />
+                    Y="0" />
 
                 <!-- Title describing the content of the current window -->
                 <Control

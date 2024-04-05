@@ -30,7 +30,25 @@
                     Cancel="no"
                     Default="no"
                     Disabled="no"
-                    Height="234"
+                    Height="0"
+                    Hidden="no"
+                    Id="BottomLine"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Type="Line"
+                    Width="493"
+                    X="0"
+                    Y="276" />
+
+                <!-- MyoFInDer banner just for aesthetics -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="312"
                     Hidden="no"
                     Id="Banner"
                     LeftScroll="no"
@@ -49,18 +67,23 @@
                     Cancel="no"
                     Default="no"
                     Disabled="no"
-                    Height="0"
+                    FormatSize="no"
+                    Height="30"
                     Hidden="no"
-                    Id="BottomLine"
+                    Id="Title"
                     LeftScroll="no"
+                    NoPrefix="yes"
+                    NoWrap="yes"
                     RightAligned="no"
                     RightToLeft="no"
                     Sunken="no"
                     TabSkip="no"
-                    Type="Line"
-                    Width="370"
-                    X="0"
-                    Y="234" />
+                    Text="{\DlgTitleFont}MyoFInDer was successfully installed !"
+                    Transparent="yes"
+                    Type="Text"
+                    Width="288"
+                    X="190"
+                    Y="20" />
 
                 <!-- Message informing the user that the installation was successful -->
                 <Control

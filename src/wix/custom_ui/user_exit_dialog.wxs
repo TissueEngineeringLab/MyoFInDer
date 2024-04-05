@@ -25,6 +25,25 @@
                 X="50"
                 Y="50" >
 
+                <!-- Bottom line just for aesthetics -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="0"
+                    Hidden="no"
+                    Id="BottomLine"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Type="Line"
+                    Width="493"
+                    X="0"
+                    Y="276" />
+
+                <!-- MyoFInDer banner just for aesthetics -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -48,18 +67,21 @@
                     Cancel="no"
                     Default="no"
                     Disabled="no"
-                    Height="0"
+                    FormatSize="no"
+                    Height="30"
                     Hidden="no"
-                    Id="BottomLine"
+                    Id="Title"
                     LeftScroll="no"
                     RightAligned="no"
                     RightToLeft="no"
                     Sunken="no"
                     TabSkip="no"
-                    Type="Line"
-                    Width="370"
-                    X="0"
-                    Y="234" />
+                    Text="{\DlgTitleFont}Installation cancelled"
+                    Transparent="yes"
+                    Type="Text"
+                    Width="288"
+                    X="190"
+                    Y="20" />
 
                 <!-- Message informing the user that nothing was modified -->
                 <Control
