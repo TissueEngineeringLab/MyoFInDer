@@ -72,7 +72,7 @@
                 <!-- Button for cancelling MyoFInDer's installation -->
                 <Control
                     Bitmap="no"
-                    Cancel="yes"
+                    Cancel="no"
                     Default="no"
                     Disabled="no"
                     ElevationShield="no"
@@ -86,7 +86,7 @@
                     RightAligned="no"
                     RightToLeft="no"
                     Sunken="no"
-                    TabSkip="no"
+                    TabSkip="yes"
                     Text="Yes"
                     Type="PushButton"
                     Width="56"
@@ -96,7 +96,7 @@
                 <!-- Button for resuming MyoFInDer's installation -->
                 <Control
                     Bitmap="no"
-                    Cancel="no"
+                    Cancel="yes"
                     Default="yes"
                     Disabled="no"
                     ElevationShield="no"

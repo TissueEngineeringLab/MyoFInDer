@@ -246,7 +246,7 @@
                 <!-- Button for aborting the folder selection and resetting it -->
                 <Control
                     Bitmap="no"
-                    Cancel="no"
+                    Cancel="yes"
                     Default="no"
                     Disabled="no"
                     ElevationShield="no"

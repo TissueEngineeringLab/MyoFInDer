@@ -119,7 +119,7 @@
                     RightAligned="no"
                     RightToLeft="no"
                     Sunken="no"
-                    TabSkip="no"
+                    TabSkip="yes"
                     Text="Cancel"
                     Type="PushButton"
                     Width="56"
