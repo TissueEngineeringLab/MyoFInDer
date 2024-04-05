@@ -90,7 +90,7 @@ jobs:
         shell: cmd
         run: |
           cd ${{ github.workspace }}\src\wix\
-          wix build ${{ github.workspace }}\src\wix\myofinder.wxs -ext WixToolset.UTIL.wixext -o ${{ github.workspace }}\bin\myofinder.msi
+          wix build ${{ github.workspace }}\src\wix\myofinder.wxs .\custom_ui\*.wxs -ext WixToolset.UTIL.wixext -o ${{ github.workspace }}\bin\myofinder.msi
       # Upload the generated .msi installer, so that it can be used by other jobs later
       - name: Upload MSI
         uses: actions/upload-artifact@v4
