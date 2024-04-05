@@ -19,6 +19,16 @@
                 FaceName="Tahoma"
                 Id="DlgTitleFont"
                 Italic="no"
+                Size="14"
+                Strike="no"
+                Underline="no" />
+
+            <!-- Defining the default font -->
+            <TextStyle
+                Bold="no"
+                FaceName="Tahoma"
+                Id="DlgFont8"
+                Italic="no"
                 Size="8"
                 Strike="no"
                 Underline="no" />
@@ -27,7 +37,17 @@
             <TextStyle
                 Bold="no"
                 FaceName="Tahoma"
-                Id="DlgFont8"
+                Id="DlgFont9"
+                Italic="no"
+                Size="9"
+                Strike="no"
+                Underline="no" />
+
+            <!-- Defining a bold font -->
+            <TextStyle
+                Bold="yes"
+                FaceName="Tahoma"
+                Id="DlgFontBold8"
                 Italic="no"
                 Size="8"
                 Strike="no"
