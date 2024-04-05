@@ -93,21 +93,47 @@
                     FormatSize="no"
                     Height="70"
                     Hidden="no"
-                    Id="Title"
+                    Id="Message"
                     LeftScroll="no"
                     NoPrefix="yes"
-                    NoWrap="yes"
+                    NoWrap="no"
                     RightAligned="no"
                     RightToLeft="no"
                     Sunken="no"
                     TabSkip="no"
-                    Text="{\DlgTitleFont}Ready to Install"
+                    Text="MyoFInDer was successfully installed and set up on
+your computer. It can now be started using the Desktop or Menu Bar shortcuts.
+Note that data will be downloaded when starting the application for the first
+time, a working internet connection is therefore required for the first run."
                     Transparent="yes"
                     Type="Text"
                     Width="288"
                     X="190"
                     Y="110" />
 
+                <!-- Text providing a hyperlink to the usage page of MyoFInDer's documentation -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="15"
+                    Hidden="no"
+                    Id="UsageLink"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="yes"
+                    Text="Refer to the
+&lt;a href=&quot;https://tissueengineeringlab.github.io/MyoFInDer/usage.html&quot;&gt;usage section&lt;/a&gt;
+of MyoFInDer's website for usage guidelines."
+                    Transparent="no"
+                    Type="Hyperlink"
+                    Width="288"
+                    X="190"
+                    Y="180" />
+
+                <!-- Checkbox for starting MyoFInDer once the installation is complete -->
                 <Control
                     Cancel="no"
                     CheckBoxValue='1'

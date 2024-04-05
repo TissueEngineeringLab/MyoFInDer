@@ -96,7 +96,7 @@
                     RightToLeft="no"
                     Sunken="no"
                     TabSkip="no"
-                    Text="{\DlgTitleFont}Custom setup"
+                    Text="{\DlgTitleFont}Customize your installation"
                     Transparent="yes"
                     Type="Text"
                     Width="463"
@@ -123,56 +123,7 @@
                     X="25"
                     Y="85" />
 
-                <Control
-                    Bitmap="no"
-                    Cancel="yes"
-                    Default="no"
-                    Disabled="no"
-                    ElevationShield="no"
-                    FixedSize="no"
-                    Height="17"
-                    Hidden="no"
-                    Icon="no"
-                    Id="Browse"
-                    Image="no"
-                    LeftScroll="no"
-                    RightAligned="no"
-                    RightToLeft="no"
-                    Sunken="no"
-                    TabSkip="no"
-                    Text="Browse"
-                    Type="PushButton"
-                    Width="56"
-                    X="304"
-                    Y="200" />
-
-                <Control
-                    Bitmap="no"
-                    Cancel="yes"
-                    Default="no"
-                    Disabled="no"
-                    ElevationShield="no"
-                    FixedSize="no"
-                    Height="17"
-                    Hidden="no"
-                    Icon="no"
-                    Id="Reset"
-                    Image="no"
-                    LeftScroll="no"
-                    RightAligned="no"
-                    RightToLeft="no"
-                    Sunken="no"
-                    TabSkip="no"
-                    Text="Reset"
-                    Type="PushButton"
-                    Width="56"
-                    X="77"
-                    Y="243" >
-                    <Subscribe
-                        Attribute="Enabled"
-                        Event="SelectionNoItems" />
-                </Control>
-
+                <!-- Box displayed around the legend describing the selected feature -->
                 <Control
                     Cancel="yes"
                     Default="no"
@@ -206,7 +157,7 @@
                     RightToLeft="no"
                     Sunken="no"
                     TabSkip="no"
-                    Text="Multiline description of the currently selected item"
+                    Text="{\DlgFontBold8}Multiline description of the currently selected item"
                     Transparent="yes"
                     Type="Text"
                     Width="181"
@@ -244,6 +195,31 @@
                         Event="SelectionSize" />
                 </Control>
 
+                <!-- Button for opening a window allowing to choose where to install MyoFInDer -->
+                <Control
+                    Bitmap="no"
+                    Cancel="yes"
+                    Default="no"
+                    Disabled="no"
+                    ElevationShield="no"
+                    FixedSize="no"
+                    Height="17"
+                    Hidden="no"
+                    Icon="no"
+                    Id="Browse"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Browse"
+                    Type="PushButton"
+                    Width="56"
+                    X="427"
+                    Y="238" />
+
+                <!-- Text displaying the location where MyoFInDer will be installed -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -255,7 +231,7 @@
                     LeftScroll="no"
                     NoPrefix="yes"
                     NoWrap="no"
-                    RightAligned="no"
+                    RightAligned="yes"
                     RightToLeft="no"
                     Sunken="no"
                     TabSkip="no"
@@ -289,7 +265,7 @@
                     RightToLeft="no"
                     Sunken="no"
                     TabSkip="no"
-                    Text="Location:"
+                    Text="{\DlgFontBold8}Installation location:"
                     Transparent="yes"
                     Type="Text"
                     Width="100"
@@ -324,6 +300,35 @@
                     X="10"
                     Y="285" />
 
+                <!-- Button for resetting the customization choices -->
+                <Control
+                    Bitmap="no"
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    ElevationShield="no"
+                    FixedSize="no"
+                    Height="17"
+                    Hidden="no"
+                    Icon="no"
+                    Id="Reset"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Reset"
+                    Type="PushButton"
+                    Width="56"
+                    X="77"
+                    Y="285" >
+                    <Subscribe
+                        Attribute="Enabled"
+                        Event="SelectionNoItems" />
+                </Control>
+
+                <!-- Button for switching back to the previous installer window -->
                 <Control
                     Bitmap="no"
                     Cancel="no"

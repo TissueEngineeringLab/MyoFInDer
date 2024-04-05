@@ -93,21 +93,47 @@
                     FormatSize="no"
                     Height="70"
                     Hidden="no"
-                    Id="Title"
+                    Id="Message"
                     LeftScroll="no"
                     NoPrefix="yes"
-                    NoWrap="yes"
+                    NoWrap="no"
                     RightAligned="no"
                     RightToLeft="no"
                     Sunken="no"
                     TabSkip="no"
-                    Text="{\DlgTitleFont}Ready to Install"
-                    Transparent="yes"
+                    Text="Something went wrong, and MyoFInDer couldn't be
+installed on your computer! Please make sure that you have installed a
+compatible version of Python and of the C++ build tools. Your system should have
+been rolled back to its previous state and should not have been modified."
+                    Transparent="no"
                     Type="Text"
                     Width="288"
                     X="190"
                     Y="110" />
 
+                <!-- Text providing a hyperlink to the troubleshooting information of MyoFInDer -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="15"
+                    Hidden="no"
+                    Id="TroubleshootingLink"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="yes"
+                    Text="Refer to the
+&lt;a href=&quot;https://tissueengineeringlab.github.io/MyoFInDer/troubleshooting.html&quot;&gt;troubleshooting section&lt;/a&gt;
+of MyoFInDer's website to get assistance."
+                    Transparent="no"
+                    Type="Hyperlink"
+                    Width="288"
+                    X="190"
+                    Y="180" />
+
+                <!-- Button for cancelling the installation - disabled -->
                 <Control
                     Bitmap="no"
                     Cancel="yes"

@@ -96,7 +96,7 @@
                     RightToLeft="no"
                     Sunken="no"
                     TabSkip="no"
-                    Text="{\DlgTitleFont}Custom setup"
+                    Text="{\DlgTitleFont}Select MyoFInDer&apos;s installation path"
                     Transparent="yes"
                     Type="Text"
                     Width="300"
@@ -224,6 +224,30 @@
                     X="325"
                     Y="75" />
 
+                <!-- Information text -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    FormatSize="no"
+                    Height="10"
+                    Hidden="no"
+                    Id="EditLabel"
+                    LeftScroll="no"
+                    NoPrefix="yes"
+                    NoWrap="yes"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Installation path:"
+                    Transparent="yes"
+                    Type="Text"
+                    Width="70"
+                    X="25"
+                    Y="204" />
+
+                <!-- Box displaying the content of the current installation folder -->
                 <Control
                     Cancel="no"
                     Default="no"

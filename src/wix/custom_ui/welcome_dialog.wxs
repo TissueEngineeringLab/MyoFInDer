@@ -99,10 +99,80 @@
                     Text="{\DlgTitleFont}Welcome to MyoFInDer&apos;s installer"
                     Transparent="yes"
                     Type="Text"
-                    Width="200"
+                    Width="463"
                     X="15"
-                    Y="6" />
+                    Y="20" />
 
+                <!-- Title describing the content of the current window -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    FormatSize="no"
+                    Height="60"
+                    Hidden="no"
+                    Id="Text"
+                    LeftScroll="no"
+                    NoPrefix="yes"
+                    NoWrap="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="This installer will handle the installation of MyoFInDer on your machine.
+It requires that you first install a compatible version of Python and Windows C++ build tools.
+It also requires a working internet connection. Note that the complete installation process
+can last up to several minutes."
+                    Transparent="no"
+                    Type="Text"
+                    Width="443"
+                    X="25"
+                    Y="100" />
+
+                <!-- Text providing a hyperlink to the online documentation of MyoFInDer -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="15"
+                    Hidden="no"
+                    Id="InstallLink"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="yes"
+                    Text="You'll find more information on the installation of
+MyoFInDer in the &lt;a href=&quot;https://tissueengineeringlab.github.io/MyoFInDer/installation.html&quot;&gt;online documentation&lt;/a&gt;."
+                    Transparent="no"
+                    Type="Hyperlink"
+                    Width="443"
+                    X="25"
+                    Y="190" />
+
+                <!-- Text providing a hyperlink to the troubleshooting information of MyoFInDer -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="15"
+                    Hidden="no"
+                    Id="TroubleshootingLink"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="yes"
+                    Text="In case the installation with this installer fails, please refer to
+the &lt;a href=&quot;https://tissueengineeringlab.github.io/MyoFInDer/troubleshooting.html&quot;&gt;troubleshooting section&lt;/a&gt;
+to report it and get assistance."
+                    Transparent="no"
+                    Type="Hyperlink"
+                    Width="443"
+                    X="25"
+                    Y="220" />
+
+                <!-- Button for cancelling the installation -->
                 <Control
                     Bitmap="no"
                     Cancel="yes"
