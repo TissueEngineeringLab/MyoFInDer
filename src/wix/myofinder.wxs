@@ -2,7 +2,6 @@
 
 <Wix
     xmlns="http://wixtoolset.org/schemas/v4/wxs"
-    xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
 
     <!-- Basic Information about the installer -->
@@ -349,20 +348,6 @@
                     Type="raw" />
         </Property>
 
-        <!-- Mandatory properties for the WixUI_Advanced interface -->
-        <Property
-            Admin="no"
-            Hidden="no"
-            Id="ApplicationFolderName"
-            Secure="no"
-            Value="INSTALLDIR" />
-        <Property
-            Admin="no"
-            Hidden="no"
-            Id="WixAppFolder"
-            Secure="no"
-            Value="WixPerUserFolder" />
-
         <!-- Property setting the logo in the Apps & Features menu -->
         <Property
             Admin="no"
@@ -370,30 +355,6 @@
             Id="ARPPRODUCTICON"
             Secure="yes"
             Value="myofinder.ico" />
-
-        <!-- Properties of the checkbox for starting MyoFInDer after installation -->
-        <Property
-            Admin="no"
-            Hidden="no"
-            Id="WIXUI_EXITDIALOGOPTIONALTEXT"
-            Secure="yes"
-            Value="Thank you for installing MyoFInDer !" />
-        <Property
-            Admin="no"
-            Hidden="no"
-            Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT"
-            Secure="yes"
-            Value="Launch MyoFInDer" />
-
-        <!-- Action to run when the checkbox is checked -->
-        <CustomAction
-            Execute="immediate"
-            ExeCommand=""
-            FileRef="myofinder.exe"
-            Id="LaunchApplication"
-            Impersonate="yes"
-            PatchUninstall="no"
-            Return="check" />
 
         <!-- Executable file creating a virtual environment and installing
         MyoFInDer inside during the installation -->
@@ -429,29 +390,42 @@
             PatchUninstall="no"
             Return="check" />
 
+        <!-- Action to run when the checkbox is checked -->
+        <CustomAction
+            Execute="immediate"
+            ExeCommand=""
+            FileRef="myofinder.exe"
+            Id="LaunchApplication"
+            Impersonate="yes"
+            PatchUninstall="no"
+            Return="check" />
+
         <!-- Variables driving the appearance of the installer window -->
-        <WixVariable Id="WixUILicenseRtf" Value=".\docs\LICENSE.rtf" />
-        <WixVariable Id="WixUIDialogBmp" Value=".\icons\dialog.bmp" />
-        <WixVariable Id="WixUIBannerBmp" Value=".\icons\banner.bmp" />
-        <WixVariable Id="WixUIExclamationIco" Value=".\icons\logo32.ico" />
-        <WixVariable Id="WixUIInfoIco" Value=".\icons\logo32.ico" />
-        <WixVariable Id="WixUINewIco" Value=".\icons\logo16.ico" />
-        <WixVariable Id="WixUIUpIco" Value=".\icons\logo16.ico" />
+        <Binary
+            Id="WixUIDialogBmp"
+            SourceFile=".\icons\dialog.bmp"
+            SuppressModularization="no" />
+        <Binary
+            Id="WixUIBannerBmp"
+            SourceFile=".\icons\banner.bmp"
+            SuppressModularization="no" />
+        <Binary
+            Id="WixUIInfoIco"
+            SourceFile=".\icons\logo32.ico"
+            SuppressModularization="no" />
+        <Binary
+            Id="UpIco"
+            SourceFile=".\icons\up.ico"
+            SuppressModularization="no" />
+        <Binary
+            Id="NewFolderIco"
+            SourceFile=".\icons\new_folder.ico"
+            SuppressModularization="no" />
 
         <!-- Adding a nice GUI to the MSI installer -->
         <UI>
-            <ui:WixUI
-                Id="WixUI_Advanced"/>
-
-            <!-- Linking the LaunchApplication action to the checkbox -->
-            <Publish
-                Condition="WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1"
-                Control="Finish"
-                Dialog="ExitDialog"
-                Event="DoAction"
-                Order="1"
-                Value="LaunchApplication" />
-
+            <UIRef
+                Id="CustomUI" />
         </UI>
 
         <!-- Adding the custom executable installer to the install sequence -->

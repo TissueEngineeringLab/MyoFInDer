@@ -1,0 +1,241 @@
+<!-- This file is the source of the custom user interface -->
+<Wix
+    xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Fragment>
+        <UI
+            Id="CustomUI" >
+
+            <!-- Setting the default font to use -->
+            <Property
+                Admin="no"
+                Hidden="no"
+                Id="DefaultUIFont"
+                Secure="no"
+                Value="DlgFont8" />
+
+            <!-- Defining the font to use for titles -->
+            <TextStyle
+                Bold="yes"
+                FaceName="Tahoma"
+                Id="DlgTitleFont"
+                Italic="no"
+                Size="14"
+                Strike="no"
+                Underline="no" />
+
+            <!-- Defining the default font -->
+            <TextStyle
+                Bold="no"
+                FaceName="Tahoma"
+                Id="DlgFont8"
+                Italic="no"
+                Size="8"
+                Strike="no"
+                Underline="no" />
+
+            <!-- Defining a larger font -->
+            <TextStyle
+                Bold="no"
+                FaceName="Tahoma"
+                Id="DlgFont9"
+                Italic="no"
+                Size="9"
+                Strike="no"
+                Underline="no" />
+
+            <!-- Defining a bold font -->
+            <TextStyle
+                Bold="yes"
+                FaceName="Tahoma"
+                Id="DlgFontBold8"
+                Italic="no"
+                Size="8"
+                Strike="no"
+                Underline="no" />
+
+            <!-- Defining the user interactions for the different dialogs -->
+            <Publish
+                Control="Cancel"
+                Dialog="WelcomeDialog"
+                Event="SpawnDialog"
+                Value="ConfirmExitDialog" />
+            <Publish
+                Control="Next"
+                Dialog="WelcomeDialog"
+                Event="NewDialog"
+                Value="LicenseDialog" />
+
+            <Publish
+                Control="Cancel"
+                Dialog="LicenseDialog"
+                Event="SpawnDialog"
+                Value="ConfirmExitDialog" />
+            <Publish
+                Control="Back"
+                Dialog="LicenseDialog"
+                Event="NewDialog"
+                Value="WelcomeDialog" />
+            <Publish
+                Control="Next"
+                Dialog="LicenseDialog"
+                Event="NewDialog"
+                Value="CustomizeDialog" />
+
+            <Publish
+                Control="Browse"
+                Dialog="CustomizeDialog"
+                Event="SelectionBrowse"
+                Value="BrowseDialog" />
+             <Publish
+                Control="Reset"
+                Dialog="CustomizeDialog"
+                Event="Reset"
+                Value="0" />
+            <Publish
+                Control="Cancel"
+                Dialog="CustomizeDialog"
+                Event="SpawnDialog"
+                Value="ConfirmExitDialog" />
+            <Publish
+                Control="Back"
+                Dialog="CustomizeDialog"
+                Event="NewDialog"
+                Value="LicenseDialog" />
+            <Publish
+                Control="Install"
+                Dialog="CustomizeDialog"
+                Event="NewDialog"
+                Value="ProgressDialog" />
+
+            <Publish
+                Control="Finish"
+                Dialog="SuccessDialog"
+                Event="EndDialog"
+                Value="Return" />
+            <Publish
+                Condition="LAUNCH_PRODUCT=1"
+                Control="Finish"
+                Dialog="SuccessDialog"
+                Event="DoAction"
+                Value="LaunchApplication" />
+
+             <Publish
+                Control="Finish"
+                Dialog="FailureDialog"
+                Event="EndDialog"
+                Value="Return" />
+
+             <Publish
+                Control="Finish"
+                Dialog="UserExitDialog"
+                Event="EndDialog"
+                Value="Exit" />
+
+            <Publish
+                Control="Up"
+                Dialog="BrowseDialog"
+                Event="DirectoryListUp"
+                Value="0" />
+            <Publish
+                Control="NewFolder"
+                Dialog="BrowseDialog"
+                Event="DirectoryListNew"
+                Value="0" />
+            <Publish
+                Control="Cancel"
+                Dialog="BrowseDialog"
+                Event="Reset"
+                Value="0" />
+            <Publish
+                Control="Cancel"
+                Dialog="BrowseDialog"
+                Event="EndDialog"
+                Value="Return" />
+            <Publish
+                Control="OK"
+                Dialog="BrowseDialog"
+                Event="SetTargetPath"
+                Value="[BrowseProperty]" />
+            <Publish
+                Control="OK"
+                Dialog="BrowseDialog"
+                Event="EndDialog"
+                Value="Return" />
+
+            <Publish
+                Control="Yes"
+                Dialog="ConfirmExitDialog"
+                Event="EndDialog"
+                Value="Exit" />
+            <Publish
+                Control="No"
+                Dialog="ConfirmExitDialog"
+                Event="EndDialog"
+                Value="Return" />
+
+            <!-- Positioning the different dialogs in the installation sequence -->
+            <InstallUISequence>
+                <Show
+                    After="CostFinalize"
+                    Dialog="WelcomeDialog"
+                    Overridable="no" />
+            </InstallUISequence>
+            <InstallUISequence>
+                <Show
+                    Dialog="SuccessDialog"
+                    OnExit="success"
+                    Overridable="no" />
+            </InstallUISequence>
+            <InstallUISequence>
+                <Show
+                    Dialog="FailureDialog"
+                    OnExit="error"
+                    Overridable="no" />
+            </InstallUISequence>
+            <InstallUISequence>
+                <Show
+                    Dialog="UserExitDialog"
+                    OnExit="cancel"
+                    Overridable="no" />
+            </InstallUISequence>
+
+            <!-- Defining various variables for the UI to correctly display text -->
+            <UIText
+                Id="MenuLocal"
+                Value="Will be installed on local hard drive" />
+            <UIText
+                Id="MenuAllLocal"
+                Value="Entire feature will be installed on local hard drive" />
+            <UIText
+                Id="MenuAbsent"
+                Value="Entire feature will be unavailable" />
+            <UIText
+                Id="MenuNetwork"
+                Value="Will be installed to run from network" />
+            <UIText
+                Id="MenuAllNetwork"
+                Value="Entire feature will be installed to run from network" />
+            <UIText
+                Id="SelParentCostPosPos"
+                Value="This features requires [1] on your hard drive. It has [2] of [3] sub-features selected. The sub-features require [4] on your hard drive." />
+            <UIText
+                Id="SelChildCostPos"
+                Value="This feature requires [1] on your hard drive." />
+            <UIText
+                Id="AbsentPath" />
+            <UIText
+                Id="Bytes"
+                Value="Bytes" />
+            <UIText
+                Id="KB"
+                Value="KB" />
+            <UIText
+                Id="MB"
+                Value="MB" />
+            <UIText
+                Id="GB"
+                Value="GB" />
+
+        </UI>
+    </Fragment>
+</Wix>

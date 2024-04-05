@@ -1,0 +1,321 @@
+<!-- This file contains the browse dialog for selecting MyoFInDer's installation folder -->
+<Wix
+    xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+    <Fragment>
+        <UI>
+
+            <!-- The dialog for selecting the installation path -->
+            <Dialog
+                CustomPalette="no"
+                ErrorDialog="no"
+                Height="270"
+                Hidden="no"
+                Id="BrowseDialog"
+                KeepModeless="no"
+                LeftScroll="no"
+                Modeless="no"
+                NoMinimize="yes"
+                RightAligned="no"
+                RightToLeft="no"
+                SystemModal="no"
+                Title="MyoFInDer Setup"
+                TrackDiskSpace="no"
+                Width="370"
+                X="50"
+                Y="50" >
+
+                <!-- Top line just for aesthetics -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="0"
+                    Hidden="no"
+                    Id="TopLine"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Type="Line"
+                    Width="370"
+                    X="0"
+                    Y="58" />
+
+                <!-- Bottom line just for aesthetics -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="0"
+                    Hidden="no"
+                    Id="BottomLine"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Type="Line"
+                    Width="370"
+                    X="0"
+                    Y="234" />
+
+                <!-- MyoFInDer banner just for aesthetics -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="58"
+                    Hidden="no"
+                    Id="Banner"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="WixUIBannerBmp"
+                    Type="Bitmap"
+                    Width="370"
+                    X="0"
+                    Y="0" />
+
+                <!-- Title describing the content of the current window -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    FormatSize="no"
+                    Height="30"
+                    Hidden="no"
+                    Id="Title"
+                    LeftScroll="no"
+                    NoPrefix="yes"
+                    NoWrap="yes"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="{\DlgTitleFont}Select MyoFInDer&apos;s installation path"
+                    Transparent="yes"
+                    Type="Text"
+                    Width="300"
+                    X="15"
+                    Y="20" />
+
+                <!-- Editable entry displaying the current installation path -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="18"
+                    Hidden="no"
+                    Id="PathEdit"
+                    Indirect="yes"
+                    LeftScroll="no"
+                    Property="BrowseProperty"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Type="PathEdit"
+                    Width="241"
+                    X="104"
+                    Y="202" />
+
+                <!-- Information text -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    FormatSize="no"
+                    Height="10"
+                    Hidden="no"
+                    Id="ComboLabel"
+                    LeftScroll="no"
+                    NoPrefix="yes"
+                    NoWrap="yes"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Look in:"
+                    Transparent="yes"
+                    Type="Text"
+                    Width="44"
+                    X="25"
+                    Y="78" />
+
+                <!-- Expandable field showing a directory tree of the current installation folder -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Fixed="yes"
+                    Height="80"
+                    Hidden="no"
+                    Id="DirectoryCombo"
+                    Indirect="yes"
+                    LeftScroll="no"
+                    Property="BrowseProperty"
+                    Remote="yes"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Type="DirectoryCombo"
+                    Width="220"
+                    X="70"
+                    Y="75" >
+                    <Subscribe
+                        Attribute="IgnoreChange"
+                        Event="IgnoreChange" />
+                </Control>
+
+                <!-- Button for navigating in the installation folders -->
+                <Control
+                    Bitmap="no"
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    ElevationShield="no"
+                    FixedSize="yes"
+                    Height="19"
+                    Hidden="no"
+                    Icon="yes"
+                    IconSize="16"
+                    Id="Up"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="UpIco"
+                    ToolTip="Up One Level"
+                    Type="PushButton"
+                    Width="19"
+                    X="298"
+                    Y="75" />
+
+                <!-- Button for creating a new installation folder -->
+                <Control
+                    Bitmap="no"
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    ElevationShield="no"
+                    FixedSize="yes"
+                    Height="19"
+                    Hidden="no"
+                    Icon="yes"
+                    IconSize="16"
+                    Id="NewFolder"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="NewFolderIco"
+                    ToolTip="Create A New Folder"
+                    Type="PushButton"
+                    Width="19"
+                    X="325"
+                    Y="75" />
+
+                <!-- Information text -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    FormatSize="no"
+                    Height="10"
+                    Hidden="no"
+                    Id="EditLabel"
+                    LeftScroll="no"
+                    NoPrefix="yes"
+                    NoWrap="yes"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Installation path:"
+                    Transparent="yes"
+                    Type="Text"
+                    Width="70"
+                    X="25"
+                    Y="204" />
+
+                <!-- Box displaying the content of the current installation folder -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="90"
+                    Hidden="no"
+                    Id="DirectoryList"
+                    Indirect="yes"
+                    LeftScroll="no"
+                    Property="BrowseProperty"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="yes"
+                    TabSkip="no"
+                    Type="DirectoryList"
+                    Width="320"
+                    X="25"
+                    Y="103" />
+
+                <!-- Button for aborting the folder selection and resetting it -->
+                <Control
+                    Bitmap="no"
+                    Cancel="yes"
+                    Default="no"
+                    Disabled="no"
+                    ElevationShield="no"
+                    FixedSize="no"
+                    Height="17"
+                    Hidden="no"
+                    Icon="no"
+                    Id="Cancel"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Cancel"
+                    Type="PushButton"
+                    Width="56"
+                    X="238"
+                    Y="243" />
+
+                <!-- Button for validating the folder selection -->
+                <Control
+                    Bitmap="no"
+                    Cancel="no"
+                    Default="yes"
+                    Disabled="no"
+                    ElevationShield="no"
+                    FixedSize="no"
+                    Height="17"
+                    Hidden="no"
+                    Icon="no"
+                    Id="OK"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="OK"
+                    Type="PushButton"
+                    Width="56"
+                    X="304"
+                    Y="243" />
+
+            </Dialog>
+        </UI>
+    </Fragment>
+</Wix>

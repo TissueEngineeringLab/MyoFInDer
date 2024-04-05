@@ -1,0 +1,232 @@
+<!-- This file contains the dialog displayed upon successful installation of MyoFInDer -->
+<Wix
+    xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+    <Fragment>
+        <UI>
+
+            <!-- The success dialog -->
+            <Dialog
+                CustomPalette="no"
+                ErrorDialog="no"
+                Height="312"
+                Hidden="no"
+                Id="SuccessDialog"
+                KeepModeless="no"
+                LeftScroll="no"
+                Modeless="no"
+                NoMinimize="yes"
+                RightAligned="no"
+                RightToLeft="no"
+                SystemModal="no"
+                Title="MyoFInDer Setup"
+                TrackDiskSpace="no"
+                Width="493"
+                X="50"
+                Y="50" >
+
+                <!-- Bottom line just for aesthetics -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="0"
+                    Hidden="no"
+                    Id="BottomLine"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Type="Line"
+                    Width="493"
+                    X="0"
+                    Y="276" />
+
+                <!-- MyoFInDer banner just for aesthetics -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="312"
+                    Hidden="no"
+                    Id="Banner"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="WixUIDialogBmp"
+                    Type="Bitmap"
+                    Width="171"
+                    X="0"
+                    Y="0" />
+
+                <!-- Title describing the content of the current window -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    FormatSize="no"
+                    Height="30"
+                    Hidden="no"
+                    Id="Title"
+                    LeftScroll="no"
+                    NoPrefix="yes"
+                    NoWrap="yes"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="{\DlgTitleFont}MyoFInDer was successfully installed !"
+                    Transparent="yes"
+                    Type="Text"
+                    Width="288"
+                    X="190"
+                    Y="20" />
+
+                <!-- Message informing the user that the installation was successful -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    FormatSize="no"
+                    Height="70"
+                    Hidden="no"
+                    Id="Message"
+                    LeftScroll="no"
+                    NoPrefix="yes"
+                    NoWrap="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="MyoFInDer was successfully installed and set up on
+your computer. It can now be started using the Desktop or Menu Bar shortcuts.
+Note that data will be downloaded when starting the application for the first
+time, a working internet connection is therefore required for the first run."
+                    Transparent="yes"
+                    Type="Text"
+                    Width="288"
+                    X="190"
+                    Y="110" />
+
+                <!-- Text providing a hyperlink to the usage page of MyoFInDer's documentation -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="15"
+                    Hidden="no"
+                    Id="UsageLink"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="yes"
+                    Text="Refer to the
+&lt;a href=&quot;https://tissueengineeringlab.github.io/MyoFInDer/usage.html&quot;&gt;usage section&lt;/a&gt;
+of MyoFInDer's website for usage guidelines."
+                    Transparent="no"
+                    Type="Hyperlink"
+                    Width="288"
+                    X="190"
+                    Y="180" />
+
+                <!-- Checkbox for starting MyoFInDer once the installation is complete -->
+                <Control
+                    Cancel="no"
+                    CheckBoxValue='1'
+                    Default="no"
+                    Disabled="no"
+                    Height="15"
+                    Hidden="no"
+                    Id="Launch"
+                    LeftScroll="no"
+                    Property='LAUNCH_PRODUCT'
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="  Launch MyoFInDer"
+                    Type="CheckBox"
+                    Width="150"
+                    X="190"
+                    Y="230" />
+
+                <!-- Button for cancelling the installation - disabled -->
+                <Control
+                    Bitmap="no"
+                    Cancel="yes"
+                    Default="no"
+                    Disabled="yes"
+                    ElevationShield="no"
+                    FixedSize="no"
+                    Height="17"
+                    Hidden="no"
+                    Icon="no"
+                    Id="Cancel"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Cancel"
+                    Type="PushButton"
+                    Width="56"
+                    X="185"
+                    Y="285" />
+
+                <!-- Button for switching back to the previous installer window - disabled -->
+                <Control
+                    Bitmap="no"
+                    Cancel="no"
+                    Default="no"
+                    Disabled="yes"
+                    ElevationShield="no"
+                    FixedSize="no"
+                    Height="17"
+                    Hidden="no"
+                    Icon="no"
+                    Id="Back"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="&lt; Back"
+                    Type="PushButton"
+                    Width="56"
+                    X="361"
+                    Y="285" />
+
+                <!-- Button for exiting the installer -->
+                <Control
+                    Bitmap="no"
+                    Cancel="yes"
+                    Default="yes"
+                    Disabled="no"
+                    ElevationShield="no"
+                    FixedSize="no"
+                    Height="17"
+                    Hidden="no"
+                    Icon="no"
+                    Id="Finish"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Finish"
+                    Type="PushButton"
+                    Width="56"
+                    X="427"
+                    Y="285" />
+
+            </Dialog>
+        </UI>
+    </Fragment>
+</Wix>

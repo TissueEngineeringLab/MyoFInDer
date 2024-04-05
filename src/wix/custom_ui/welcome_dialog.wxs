@@ -1,0 +1,226 @@
+<!-- This file contains the window that first opens when starting the MyoFInDer Windows installer -->
+<Wix
+    xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+    <Fragment>
+        <UI>
+
+            <!-- The dialog containing the welcome page -->
+            <Dialog
+                CustomPalette="no"
+                ErrorDialog="no"
+                Height="312"
+                Hidden="no"
+                Id="WelcomeDialog"
+                KeepModeless="no"
+                LeftScroll="no"
+                Modeless="no"
+                NoMinimize="yes"
+                RightAligned="no"
+                RightToLeft="no"
+                SystemModal="no"
+                Title="MyoFInDer Setup"
+                TrackDiskSpace="no"
+                Width="493"
+                X="50"
+                Y="50" >
+
+                <!-- Top line just for aesthetics -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="0"
+                    Hidden="no"
+                    Id="TopLine"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Type="Line"
+                    Width="493"
+                    X="0"
+                    Y="58" />
+
+                <!-- Bottom line just for aesthetics -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="0"
+                    Hidden="no"
+                    Id="BottomLine"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Type="Line"
+                    Width="493"
+                    X="0"
+                    Y="276" />
+
+                <!-- MyoFInDer banner just for aesthetics -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="58"
+                    Hidden="no"
+                    Id="Banner"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="WixUIBannerBmp"
+                    Type="Bitmap"
+                    Width="493"
+                    X="0"
+                    Y="0" />
+
+                <!-- Title describing the content of the current window -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    FormatSize="no"
+                    Height="30"
+                    Hidden="no"
+                    Id="Title"
+                    LeftScroll="no"
+                    NoPrefix="yes"
+                    NoWrap="yes"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="{\DlgTitleFont}Welcome to MyoFInDer&apos;s installer"
+                    Transparent="yes"
+                    Type="Text"
+                    Width="463"
+                    X="15"
+                    Y="20" />
+
+                <!-- Title describing the content of the current window -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    FormatSize="no"
+                    Height="60"
+                    Hidden="no"
+                    Id="Text"
+                    LeftScroll="no"
+                    NoPrefix="yes"
+                    NoWrap="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="This installer will handle the installation of MyoFInDer on your machine.
+It requires that you first install a compatible version of Python and Windows C++ build tools.
+It also requires a working internet connection. Note that the complete installation process
+can last up to several minutes."
+                    Transparent="no"
+                    Type="Text"
+                    Width="443"
+                    X="25"
+                    Y="100" />
+
+                <!-- Text providing a hyperlink to the online documentation of MyoFInDer -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="15"
+                    Hidden="no"
+                    Id="InstallLink"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="yes"
+                    Text="You'll find more information on the installation of
+MyoFInDer in the &lt;a href=&quot;https://tissueengineeringlab.github.io/MyoFInDer/installation.html&quot;&gt;online documentation&lt;/a&gt;."
+                    Transparent="no"
+                    Type="Hyperlink"
+                    Width="443"
+                    X="25"
+                    Y="190" />
+
+                <!-- Text providing a hyperlink to the troubleshooting information of MyoFInDer -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    Height="15"
+                    Hidden="no"
+                    Id="TroubleshootingLink"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="yes"
+                    Text="In case the installation with this installer fails, please refer to
+the &lt;a href=&quot;https://tissueengineeringlab.github.io/MyoFInDer/troubleshooting.html&quot;&gt;troubleshooting section&lt;/a&gt;
+to report it and get assistance."
+                    Transparent="no"
+                    Type="Hyperlink"
+                    Width="443"
+                    X="25"
+                    Y="220" />
+
+                <!-- Button for cancelling the installation -->
+                <Control
+                    Bitmap="no"
+                    Cancel="yes"
+                    Default="no"
+                    Disabled="no"
+                    ElevationShield="no"
+                    FixedSize="no"
+                    Height="17"
+                    Hidden="no"
+                    Icon="no"
+                    Id="Cancel"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="yes"
+                    Text="Cancel"
+                    Type="PushButton"
+                    Width="56"
+                    X="10"
+                    Y="285" />
+
+                <!-- Button for switching to the next installer window -->
+                <Control
+                    Bitmap="no"
+                    Cancel="no"
+                    Default="yes"
+                    Disabled="no"
+                    ElevationShield="no"
+                    FixedSize="no"
+                    Height="17"
+                    Hidden="no"
+                    Icon="no"
+                    Id="Next"
+                    Image="no"
+                    LeftScroll="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Next &gt;"
+                    Type="PushButton"
+                    Width="56"
+                    X="427"
+                    Y="285" />
+
+            </Dialog>
+        </UI>
+    </Fragment>
+</Wix>
