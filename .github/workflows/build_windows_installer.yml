@@ -83,8 +83,8 @@ jobs:
       - name: Install WiX
         shell: cmd
         run: |
-          dotnet tool install --global wix --version 4.0.3
-          wix extension add --global WixToolset.UTIL.wixext/4.0.3
+          dotnet tool install --global wix --version 4.0.5
+          wix extension add --global WixToolset.UTIL.wixext/4.0.5
       - shell: cmd
         run: wix extension list --global
       # Generates the .msi file using WiX
