@@ -13,7 +13,7 @@ int main(int argc, char* argv[]){
     std::cout << "Virtual environment path: \"" << venv_path << "\"\n\n";
 
     // Trying to delete the virtual environment files using the rmdir command
-    std::string delete_venv_cmd = "cmd.exe /C rmdir /s /q \"" + venv_path + "\"";
+    std::string delete_venv_cmd = "cmd.exe /C if exist \"" + venv_path + "\" rmdir /s /q \"" + venv_path + "\"";
     if (!run_cmd((char*) delete_venv_cmd.data(), 0)){
         std::cout << "Successfully deleted the virtual environment.\n\n";
     }
