@@ -53,5 +53,5 @@ jobs:
     - name: Import MyoFInDer (macOS)
       if: runner.os == 'macOS'
       run: |
-        brew install python-tk
+        brew install python-tk@${{ matrix.python-version }}
         python -c "import myofinder;print(myofinder.__version__)"
