@@ -51,7 +51,9 @@ jobs:
     # On macOS, it is not possible to start the module without a graphical environment
     # Also, tkinter needs to be separately configured
     - name: Import MyoFInDer (macOS)
-      if: runner.os == 'macOS'
+      if: |
+        runner.os == 'macOS' ||
+        contains(fromJSON('["3.9", "3.10"]'), matrix.python-version)
       run: |
         brew install python-tk@${{ matrix.python-version }}
         python -c "import myofinder;print(myofinder.__version__)"
