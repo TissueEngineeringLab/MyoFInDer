@@ -23,7 +23,7 @@ jobs:
         # Run on all the supported Python versions
         python-version: ["3.7", "3.8", "3.9", "3.10"]
         # Run on all the supported platforms
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-13]
 
     steps:
     # Checkout the repository
@@ -44,7 +44,23 @@ jobs:
     - name: Run MyoFInDer (Windows)
       if: runner.os == 'Windows'
       run: python -m myofinder -t
-    # On macOS and Linux, it is not possible to start the module without a graphical environment
-    - name: Import MyoFInDer (macOS and Linux)
-      if: contains(fromJSON('["macOS", "Linux"]'), runner.os)
+      # On Linux, it is not possible to start the module without a graphical environment
+    - name: Import MyoFInDer (Linux)
+      if: runner.os == 'Linux'
       run: python -c "import myofinder;print(myofinder.__version__)"
+    # On macOS, it is not possible to start the module without a graphical environment
+    # Also, tkinter needs to be separately configured, but python-tk is only available for Python 3.9 and 3.10
+    - name: Import MyoFInDer (macOS <3.9)
+      if: |
+        runner.os == 'macOS' &&
+        contains(fromJSON('["3.7", "3.8"]'), matrix.python-version)
+      run: |
+        brew install python-tk@3.9
+        python -c "import myofinder;print(myofinder.__version__)"
+    - name: Import MyoFInDer (macOS 3.9+)
+      if: |
+        runner.os == 'macOS' &&
+        contains(fromJSON('["3.9", "3.10"]'), matrix.python-version)
+      run: |
+        brew install python-tk@${{ matrix.python-version }}
+        python -c "import myofinder;print(myofinder.__version__)"
