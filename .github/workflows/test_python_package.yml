@@ -55,7 +55,7 @@ jobs:
         runner.os == 'macOS' &&
         contains(fromJSON('["3.7", "3.8"]'), matrix.python-version)
       run: |
-        brew install python-tk@$3.9
+        brew install python-tk@3.9
         python -c "import myofinder;print(myofinder.__version__)"
     - name: Import MyoFInDer (macOS 3.9+)
       if: |
