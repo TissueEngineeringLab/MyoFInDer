@@ -23,7 +23,7 @@ jobs:
         # Run on all the supported Python versions
         python-version: ["3.7", "3.8", "3.9", "3.10"]
         # Run on all the supported platforms
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-13]
 
     steps:
     # Checkout the repository
