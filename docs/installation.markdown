@@ -63,7 +63,18 @@ If Python is not installed, or if the installed version is not between 3.7 and
 you have several possible options. The two most convenient ones are described 
 here.
 
-### 1.1.1 Install Python from the Microsoft Store
+### 1.1.1 Install Python from an installer
+
+**On Python's [website](https://www.python.org/downloads/windows/) you can find 
+.exe Windows installers for a number of Python versions**. Select the one you 
+want (preferably a stable release), download the installer, run it, and follow
+the instructions of the installation wizard. Make sure to check the 
+*Add python.exe to PATH* checkbox.
+
+Once Python is installed, you can **double-check the installation** by running 
+again `python --version`.
+
+### 1.1.2 Install Python from the Microsoft Store (nor recommended)
 
 **All the maintained versions of Python are available for installation in the 
 Microsoft Store** application. This is the easiest way to install Python on a 
@@ -76,16 +87,9 @@ and install the desired version.
 Once Python is installed, you can **double-check the installation** by running 
 again `python --version`.
 
-### 1.1.2 Install Python from an installer
-
-**On Python's [website](https://www.python.org/downloads/windows/) you can find 
-.exe Windows installers for a number of Python versions**. Select the one you 
-want (preferably a stable release), download the installer, run it, and follow
-the instructions of the installation wizard. Make sure to check the 
-*Add python.exe to PATH* checkbox.
-
-Once Python is installed, you can **double-check the installation** by running 
-again `python --version`.
+> Some users have reported that MyoFInDer might not install with Python 
+> obtained from the Microsoft Store. The previous installation method should 
+> therefore be preferred.
 
 ## 1.2 Install the C++ Build tools
 
