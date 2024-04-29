@@ -21,6 +21,10 @@ int main(int argc, char* argv[]){
 
     // Retrieving the path to the installation directory of MyoFInDer
     std::string install_dir = read_reg(HKEY_CURRENT_USER, "SOFTWARE\\MyoFInDer", "MyoFInDerInstallDir");
+    // Remove trailing backslash if any, as it would escape the quotation mark later
+    if (!install_dir.compare(install_dir.length() - 1, 1, "\\")){
+        install_dir = install_dir.substr(0, install_dir.length() - 1);
+    }
     std::cout << "Installation directory: \"" + install_dir + "\"\n\n";
 
     // String containing the application folder argument to pass to MyoFInDer
