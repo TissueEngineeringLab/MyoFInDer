@@ -349,11 +349,19 @@ impact on the behavior of MyoFInDer.
 ## 4.1 Command-line options
 
 Two command-line options are available when starting MyoFInDer from the
-console. The first one allows to **disable logging**, by adding the `-n` or 
+console. 
+
+The first one allows to **disable logging**, by adding the `-n` or 
 `--nolog` option. It disables both the display of log messages in the console, 
-and recording of the log messages to the log file. The second option is for
-**testing only**. It will initialize the interface in a normal way, but close 
-it right away. This behavior is enabled by passing the `-t` or `--test` option.
+and recording of the log messages to the log file. 
+
+The second option is for **testing only**. It will initialize the interface in 
+a normal way, but close it right away. This behavior is enabled by passing the 
+`-t` or `--test` option.
+
+The third command-line option, added in version `1.0.8`, is the `-f` or 
+`--app-folder` option. It allows to specify the path to the directory where to 
+read and store the application files, such as the log file or settings file.
 
 ## 4.2 Retrieving the log messages
 
