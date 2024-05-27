@@ -2,4 +2,6 @@
 
 from .interface import (Test01Exit, Test02LoadNoImages, Test03LoadImages,
                         Test04ClickTable, Test05ClickImage,
-                        Test06ZoomInOut,  Test07Drag, Test08SetChannels)
+                        Test06ZoomInOut,  Test07Drag, Test08SetChannels,
+                        Test09DeleteImage, Test10DeletePartial,
+                        Test11ProcessImages, Test12StopProcessImages)

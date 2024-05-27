@@ -10,9 +10,12 @@ import logging
 from _tkinter import TclError
 from PIL import Image
 from platform import system
+from time import sleep
+from threading import Thread
 
 from . import mock_warning_window
 from . import mock_filedialog
+from . import mock_messagebox
 
 
 class BaseTestInterface(unittest.TestCase):
@@ -30,6 +33,7 @@ class BaseTestInterface(unittest.TestCase):
         """"""
 
         sys.modules['tkinter.filedialog'] = mock_filedialog
+        sys.modules['tkinter.messagebox'] = mock_messagebox
         sys.modules['myofinder.tools.warning_window'] = mock_warning_window
         from myofinder import MainWindow
 
@@ -400,3 +404,261 @@ class Test08SetChannels(BaseTestInterface):
         self.assertIs(bool(r), new_r)
         self.assertIs(bool(g), new_g)
         self.assertIs(bool(b), new_b)
+
+
+class Test09DeleteImage(BaseTestInterface):
+    """"""
+
+    def testDeleteImage(self) -> None:
+        """"""
+
+        mock_filedialog.return_value = [
+            str(Path(__file__).parent / 'data' / f'image_{i}.jpg')
+            for i in (1, 2)]
+        mock_warning_window.WarningWindow.value = 1
+        self._window._select_images()
+
+        self.assertIsInstance(self._window._image_canvas._image, Image.Image)
+        self.assertIsInstance(self._window._image_canvas._image_path, Path)
+        self.assertEqual(self._window._image_canvas._image_path.name,
+                         'image_1.jpg')
+
+        self.assertEqual(len(self._window._files_table.table_items), 2)
+        self.assertEqual(
+            self._window._files_table.table_items.current_entry.path.name,
+            'image_1.jpg')
+        self.assertCountEqual(
+            [item.path.name for item in self._window._files_table.table_items],
+            [f'image_{i}.jpg' for i in (1, 2)])
+
+        (self._window._files_table.table_items.current_entry.graph_elt.
+         close_button.invoke())
+
+        self.assertIsInstance(self._window._image_canvas._image, Image.Image)
+        self.assertIsInstance(self._window._image_canvas._image_path, Path)
+        self.assertEqual(self._window._image_canvas._image_path.name,
+                         'image_2.jpg')
+
+        self.assertEqual(len(self._window._files_table.table_items), 1)
+        self.assertEqual(
+            self._window._files_table.table_items.current_entry.path.name,
+            'image_2.jpg')
+
+        (self._window._files_table.table_items.current_entry.graph_elt.
+         close_button.invoke())
+
+        self.assertIsNone(self._window._image_canvas._image)
+        self.assertIsNone(self._window._image_canvas._image_path)
+
+        self.assertEqual(len(self._window._files_table.table_items), 0)
+
+
+class Test10DeletePartial(BaseTestInterface):
+    """"""
+
+    def testDeletePartial(self) -> None:
+        """"""
+
+        mock_filedialog.return_value = [
+            str(Path(__file__).parent / 'data' / f'image_{i}.jpg')
+            for i in (1, 2, 3)]
+        mock_warning_window.WarningWindow.value = 1
+        self._window._select_images()
+
+        self.assertIsInstance(self._window._image_canvas._image, Image.Image)
+        self.assertIsInstance(self._window._image_canvas._image_path, Path)
+        self.assertEqual(self._window._image_canvas._image_path.name,
+                         'image_1.jpg')
+
+        self.assertEqual(len(self._window._files_table.table_items), 3)
+        self.assertEqual(
+            self._window._files_table.table_items.current_entry.path.name,
+            'image_1.jpg')
+        self.assertCountEqual(
+            [item.path.name for item in self._window._files_table.table_items],
+            [f'image_{i}.jpg' for i in (1, 2, 3)])
+
+        self._window._select_all_button.invoke()
+        (self._window._files_table.table_items.current_entry.graph_elt.
+         check_button.invoke())
+        self._window._delete_all_button.invoke()
+
+        self.assertIsInstance(self._window._image_canvas._image, Image.Image)
+        self.assertIsInstance(self._window._image_canvas._image_path, Path)
+        self.assertEqual(self._window._image_canvas._image_path.name,
+                         'image_2.jpg')
+
+        self.assertEqual(len(self._window._files_table.table_items), 2)
+        self.assertEqual(
+            self._window._files_table.table_items.current_entry.path.name,
+            'image_2.jpg')
+        self.assertCountEqual(
+            [item.path.name for item in self._window._files_table.table_items],
+            [f'image_{i}.jpg' for i in (2, 3)])
+
+        self._window._delete_all_button.invoke()
+
+        self.assertIsNone(self._window._image_canvas._image)
+        self.assertIsNone(self._window._image_canvas._image_path)
+
+        self.assertEqual(len(self._window._files_table.table_items), 0)
+
+
+class BaseTestInterfaceProcessing(BaseTestInterface):
+    """"""
+
+    def _stop_thread(self):
+        """"""
+
+        sleep(5)
+        while not self._window._queue.empty():
+            sleep(1)
+        self._window._stop_thread = True
+
+
+class Test11ProcessImages(BaseTestInterfaceProcessing):
+    """"""
+
+    def testProcessImages(self) -> None:
+        """"""
+
+        mock_filedialog.return_value = [
+            str(Path(__file__).parent / 'data' / f'image_{i}.jpg')
+            for i in (1, 2, 3)]
+        mock_warning_window.WarningWindow.value = 1
+        self._window._select_images()
+
+        self._window._stop_thread = True
+        sleep(2)
+        stop_thread = Thread(target=self._stop_thread)
+
+        self.assertEqual(len(self._window._image_canvas._nuclei), 0)
+        self.assertEqual(self._window._image_canvas._nuclei.nuclei_in_count,
+                         0)
+        self.assertEqual(self._window._image_canvas._nuclei.nuclei_out_count,
+                         0)
+        for i in range(3):
+            self.assertEqual(
+                len(self._window._files_table.table_items.entries[i].nuclei),
+                0)
+            self.assertEqual((self._window._files_table.table_items.entries[i].
+                              nuclei.nuclei_in_count), 0)
+            self.assertEqual((self._window._files_table.table_items.entries[i].
+                              nuclei.nuclei_out_count), 0)
+            self.assertEqual(
+                len(self._window._files_table.table_items.entries[i].fibers),
+                0)
+            self.assertEqual((self._window._files_table.table_items.entries[i].
+                              fibers.area), 0)
+
+        (self._window._files_table.table_items.entries[-1].graph_elt.
+         check_button.invoke())
+        self._window._process_images_button.invoke()
+
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+        self._window.update()
+
+        self.assertGreater(len(self._window._image_canvas._nuclei), 0)
+        self.assertGreater(self._window._image_canvas._nuclei.nuclei_in_count,
+                           0)
+        self.assertGreater(self._window._image_canvas._nuclei.nuclei_out_count,
+                           0)
+        for i in range(2):
+            self.assertGreater(
+                len(self._window._files_table.table_items.entries[i].nuclei),
+                0)
+            self.assertGreater((self._window._files_table.table_items.
+                                entries[i].nuclei.nuclei_in_count), 0)
+            self.assertGreater((self._window._files_table.table_items.
+                                entries[i].nuclei.nuclei_out_count), 0)
+            self.assertGreater(
+                len(self._window._files_table.table_items.entries[i].fibers),
+                0)
+            self.assertGreater((self._window._files_table.table_items.
+                                entries[i].fibers.area), 0)
+
+        self.assertEqual(
+            len(self._window._files_table.table_items.entries[2].nuclei),
+            0)
+        self.assertEqual((self._window._files_table.table_items.entries[2].
+                          nuclei.nuclei_in_count), 0)
+        self.assertEqual((self._window._files_table.table_items.entries[2].
+                          nuclei.nuclei_out_count), 0)
+        self.assertEqual(
+            len(self._window._files_table.table_items.entries[2].fibers),
+            0)
+        self.assertEqual((self._window._files_table.table_items.entries[2].
+                          fibers.area), 0)
+
+
+class Test12StopProcessImages(BaseTestInterfaceProcessing):
+    """"""
+
+    def _stop_processing(self):
+        """"""
+
+        sleep(1)
+        self._window._stop_event.set()
+
+    def testStopProcessImages(self) -> None:
+        """"""
+
+        mock_filedialog.return_value = [
+            str(Path(__file__).parent / 'data' / f'image_{i}.jpg')
+            for i in (1, 2, 3)]
+        mock_warning_window.WarningWindow.value = 1
+        self._window._select_images()
+
+        self._window._stop_thread = True
+        sleep(2)
+        stop_thread = Thread(target=self._stop_thread)
+        click_thread = Thread(target=self._stop_processing)
+
+        self.assertEqual(len(self._window._image_canvas._nuclei), 0)
+        self.assertEqual(self._window._image_canvas._nuclei.nuclei_in_count,
+                         0)
+        self.assertEqual(self._window._image_canvas._nuclei.nuclei_out_count,
+                         0)
+        for i in range(3):
+            self.assertEqual(
+                len(self._window._files_table.table_items.entries[i].nuclei),
+                0)
+            self.assertEqual((self._window._files_table.table_items.entries[i].
+                              nuclei.nuclei_in_count), 0)
+            self.assertEqual((self._window._files_table.table_items.entries[i].
+                              nuclei.nuclei_out_count), 0)
+            self.assertEqual(
+                len(self._window._files_table.table_items.entries[i].fibers),
+                0)
+            self.assertEqual((self._window._files_table.table_items.entries[i].
+                              fibers.area), 0)
+
+        self._window._process_images_button.invoke()
+
+        self._window._stop_thread = False
+        stop_thread.start()
+        click_thread.start()
+        self._window._process_thread()
+        self._window.update()
+
+        self.assertEqual(len(self._window._image_canvas._nuclei), 0)
+        self.assertEqual(self._window._image_canvas._nuclei.nuclei_in_count,
+                         0)
+        self.assertEqual(self._window._image_canvas._nuclei.nuclei_out_count,
+                         0)
+
+        for i in range(3):
+            self.assertEqual(
+                len(self._window._files_table.table_items.entries[i].nuclei),
+                0)
+            self.assertEqual((self._window._files_table.table_items.entries[i].
+                              nuclei.nuclei_in_count), 0)
+            self.assertEqual((self._window._files_table.table_items.entries[i].
+                              nuclei.nuclei_out_count), 0)
+            self.assertEqual(
+                len(self._window._files_table.table_items.entries[i].fibers),
+                0)
+            self.assertEqual((self._window._files_table.table_items.entries[i].
+                              fibers.area), 0)
