@@ -51,7 +51,7 @@ class BaseTestInterface(unittest.TestCase):
             self._dir.cleanup()
 
 
-class Test1Exit(BaseTestInterface):
+class Test01Exit(BaseTestInterface):
     """"""
 
     def testExit(self) -> None:
@@ -63,7 +63,7 @@ class Test1Exit(BaseTestInterface):
         self._exit = True
 
 
-class Test2LoadNoImages(BaseTestInterface):
+class Test02LoadNoImages(BaseTestInterface):
     """"""
 
     def testLoadNoImages(self) -> None:
@@ -77,7 +77,7 @@ class Test2LoadNoImages(BaseTestInterface):
         self.assertEqual(len(self._window._files_table.table_items), 0)
 
 
-class Test3LoadImages(BaseTestInterface):
+class Test03LoadImages(BaseTestInterface):
     """"""
 
     def testLoadImages(self) -> None:
@@ -103,7 +103,7 @@ class Test3LoadImages(BaseTestInterface):
             [f'image_{i}.jpg' for i in range(1, 4)])
 
 
-class Test4ClickTable(BaseTestInterface):
+class Test04ClickTable(BaseTestInterface):
     """"""
 
     def testClickTable(self) -> None:
@@ -131,7 +131,7 @@ class Test4ClickTable(BaseTestInterface):
             'image_3.jpg')
 
 
-class Test5ClickImage(BaseTestInterface):
+class Test05ClickImage(BaseTestInterface):
     """"""
 
     def testClickImage(self) -> None:
@@ -248,7 +248,7 @@ class Test5ClickImage(BaseTestInterface):
                           nuclei.nuclei_out_count), 0)
 
 
-class Test6ZoomInOut(BaseTestInterface):
+class Test06ZoomInOut(BaseTestInterface):
     """"""
 
     def testZoomInOut(self) -> None:
@@ -320,7 +320,7 @@ class Test6ZoomInOut(BaseTestInterface):
                         height_0)
 
 
-class Test7Drag(BaseTestInterface):
+class Test07Drag(BaseTestInterface):
     """"""
 
     def testDrag(self) -> None:
@@ -360,7 +360,7 @@ class Test7Drag(BaseTestInterface):
                          50)
 
 
-class Test8SetChannels(BaseTestInterface):
+class Test08SetChannels(BaseTestInterface):
     """"""
 
     def testSetChannels(self) -> None:

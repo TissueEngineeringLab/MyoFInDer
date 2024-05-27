@@ -1,5 +1,5 @@
 # coding: utf-8
 
-from .interface import (Test1Exit, Test2LoadNoImages, Test3LoadImages,
-                        Test4ClickTable, Test5ClickImage, Test6ZoomInOut,
-                        Test7Drag, Test8SetChannels)
+from .interface import (Test01Exit, Test02LoadNoImages, Test03LoadImages,
+                        Test04ClickTable, Test05ClickImage,
+                        Test06ZoomInOut,  Test07Drag, Test08SetChannels)
