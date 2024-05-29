@@ -12,6 +12,9 @@ from PIL import Image
 from platform import system
 from time import sleep
 from threading import Thread
+import filecmp
+import shutil
+from copy import deepcopy
 
 from . import mock_warning_window
 from . import mock_filedialog
@@ -662,3 +665,203 @@ class Test12StopProcessImages(BaseTestInterfaceProcessing):
                 0)
             self.assertEqual((self._window._files_table.table_items.entries[i].
                               fibers.area), 0)
+
+
+class Test13IndicatorsDisplay(BaseTestInterfaceProcessing):
+    """"""
+
+    def testIndicatorsDisplay(self) -> None:
+        """"""
+
+        mock_filedialog.return_value = [
+            str(Path(__file__).parent / 'data' / 'image_1.jpg')]
+        mock_warning_window.WarningWindow.value = 1
+        self._window._select_images()
+
+        self._window._stop_thread = True
+        sleep(2)
+        stop_thread = Thread(target=self._stop_thread)
+
+        self.assertTrue(not any(nuc.tk_obj is not None for nuc
+                                in self._window._image_canvas._nuclei))
+        self.assertTrue(not any(fib.polygon is not None for fib
+                                in self._window._image_canvas._fibers))
+
+        self._window._process_images_button.invoke()
+
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+        self._window.update()
+
+        display_nuc = self._window.settings.show_nuclei.get()
+        display_fib = self._window.settings.show_fibers.get()
+
+        if display_nuc:
+            self.assertTrue(all(nuc.tk_obj is not None for nuc
+                                in self._window._image_canvas._nuclei))
+        else:
+            self.assertTrue(not any(nuc.tk_obj is not None for nuc
+                                    in self._window._image_canvas._nuclei))
+        if display_fib:
+            self.assertTrue(all(fib.polygon is not None for fib
+                                in self._window._image_canvas._fibers))
+        else:
+            self.assertTrue(not any(fib.polygon is not None for fib
+                                    in self._window._image_canvas._fibers))
+
+        self._window._show_nuclei_check_button.invoke()
+        self._window._show_fibers_check_button.invoke()
+
+        if display_nuc:
+            self.assertTrue(not any(nuc.tk_obj is not None for nuc
+                                    in self._window._image_canvas._nuclei))
+        else:
+            self.assertTrue(all(nuc.tk_obj is not None for nuc
+                                in self._window._image_canvas._nuclei))
+        if display_fib:
+            self.assertTrue(not any(fib.polygon is not None for fib
+                                    in self._window._image_canvas._fibers))
+        else:
+            self.assertTrue(all(fib.polygon is not None for fib
+                                in self._window._image_canvas._fibers))
+
+
+class Test14SaveProject(BaseTestInterfaceProcessing):
+    """"""
+
+    def testSaveProject(self) -> None:
+        """"""
+
+        mock_filedialog.return_value = [
+            str(Path(__file__).parent / 'data' / 'image_1.jpg')]
+        mock_warning_window.WarningWindow.value = 1
+        mock_filedialog.save_folder = str(Path(self._dir.name) / 'save_folder')
+        self._window._select_images()
+
+        self._window._stop_thread = True
+        sleep(2)
+        stop_thread = Thread(target=self._stop_thread)
+
+        self._window._process_images_button.invoke()
+
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+        self._window.update()
+
+        self._window._save_button.invoke()
+
+        save_path = Path(mock_filedialog.save_folder)
+        self.assertTrue(save_path.exists())
+        self.assertTrue(save_path.is_dir())
+        self.assertTrue((save_path / 'settings.pickle').exists())
+        self.assertTrue((save_path / 'save_folder.xlsx').exists())
+        self.assertTrue((save_path / 'data.pickle').exists())
+        self.assertTrue((save_path / 'Original Images').exists())
+        self.assertTrue((save_path / 'Original Images').is_dir())
+        self.assertGreater(len(tuple((save_path /
+                                      'Original Images').iterdir())), 0)
+
+        shutil.copytree(save_path, save_path / 'copy')
+
+        self._window._save_button.invoke()
+
+        comp = filecmp.cmpfiles(save_path, save_path / 'copy',
+                                ('data.pickle', 'settings.pickle',
+                                 'save_folder.xlsx',
+                                 'Original Images/image_1.jpg'), shallow=False)
+        self.assertCountEqual(('data.pickle', 'settings.pickle',
+                               'save_folder.xlsx',
+                               'Original Images/image_1.jpg'), comp[0])
+        self.assertFalse(comp[1] or comp[2])
+
+        self._window._image_canvas._canvas.event_generate(
+            '<ButtonPress-1>', when="now", x=10, y=10)
+        self._window._image_canvas._canvas.event_generate(
+            '<ButtonRelease-1>', when="now", x=10, y=10)
+        self._window._show_nuclei_check_button.invoke()
+
+        self._window._save_button.invoke()
+
+        comp = filecmp.cmpfiles(save_path, save_path / 'copy',
+                                ('data.pickle', 'settings.pickle',
+                                 'save_folder.xlsx',
+                                 'Original Images/image_1.jpg'), shallow=False)
+        self.assertCountEqual(('Original Images/image_1.jpg',), comp[0])
+        self.assertCountEqual(('data.pickle', 'save_folder.xlsx',
+                               'settings.pickle'), comp[1])
+        self.assertFalse(comp[2])
+
+
+class Test15NewProject(BaseTestInterfaceProcessing):
+    """"""
+
+    def testNewProject(self) -> None:
+        """"""
+
+        mock_filedialog.return_value = [
+            str(Path(__file__).parent / 'data' / 'image_1.jpg')]
+        mock_warning_window.WarningWindow.value = 1
+        mock_filedialog.save_folder = str(Path(self._dir.name) / 'save_folder')
+        self._window._select_images()
+
+        self._window._stop_thread = True
+        sleep(2)
+        stop_thread = Thread(target=self._stop_thread)
+
+        self._window._process_images_button.invoke()
+
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+        self._window.update()
+
+        self._window._save_button.invoke()
+
+        index = self._window._file_menu.index("New Empty Project")
+        self._window._file_menu.invoke(index)
+
+        self.assertIsNone(self._window._image_canvas._image)
+        self.assertIsNone(self._window._image_canvas._image_path)
+        self.assertEqual(len(self._window._files_table.table_items), 0)
+
+
+class Test16LoadProject(BaseTestInterfaceProcessing):
+    """"""
+
+    def testLoadProject(self) -> None:
+        """"""
+
+        mock_filedialog.return_value = [
+            str(Path(__file__).parent / 'data' / 'image_1.jpg')]
+        mock_warning_window.WarningWindow.value = 1
+        mock_filedialog.save_folder = str(Path(self._dir.name) / 'save_folder')
+        mock_filedialog.load_directory = mock_filedialog.save_folder
+        self._window._select_images()
+
+        self._window._stop_thread = True
+        sleep(2)
+        stop_thread = Thread(target=self._stop_thread)
+
+        self._window._process_images_button.invoke()
+
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+        self._window.update()
+
+        settings = deepcopy(self._window.settings.get_all())
+        table = deepcopy(self._window._files_table.table_items.save_version)
+
+        self._window._save_button.invoke()
+
+        index = self._window._file_menu.index("New Empty Project")
+        self._window._file_menu.invoke(index)
+
+        index = self._window._file_menu.index("Load From Explorer")
+        self._window._file_menu.invoke(index)
+
+        self.assertEqual(settings, self._window.settings.get_all())
+        self.assertEqual(table,
+                         self._window._files_table.table_items.save_version)
