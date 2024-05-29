@@ -1,6 +1,6 @@
 # coding: utf-8
 
-return_value = None
+file_name = None
 save_folder = None
 load_directory = None
 
@@ -8,7 +8,7 @@ load_directory = None
 def askopenfilenames(*_, **__):
     """"""
 
-    return return_value
+    return file_name
 
 
 def asksaveasfilename(*_, **__):

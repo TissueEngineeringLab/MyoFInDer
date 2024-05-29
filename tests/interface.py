@@ -76,7 +76,7 @@ class Test02LoadNoImages(BaseTestInterface):
     def testLoadNoImages(self) -> None:
         """"""
 
-        mock_filedialog.return_value = None
+        mock_filedialog.file_name = None
         self._window._select_images()
 
         self.assertIsNone(self._window._image_canvas._image)
@@ -90,7 +90,7 @@ class Test03LoadImages(BaseTestInterface):
     def testLoadImages(self) -> None:
         """"""
 
-        mock_filedialog.return_value = [
+        mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / f'image_{i}.jpg')
             for i in range(1, 4)]
         mock_warning_window.WarningWindow.value = 1
@@ -116,7 +116,7 @@ class Test04ClickTable(BaseTestInterface):
     def testClickTable(self) -> None:
         """"""
 
-        mock_filedialog.return_value = [
+        mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / f'image_{i}.jpg')
             for i in range(1, 4)]
         mock_warning_window.WarningWindow.value = 1
@@ -144,8 +144,8 @@ class Test05ClickImage(BaseTestInterface):
     def testClickImage(self) -> None:
         """"""
 
-        mock_filedialog.return_value = [str(Path(__file__).parent / 'data' /
-                                            'image_1.jpg')]
+        mock_filedialog.file_name = [str(Path(__file__).parent / 'data' /
+                                         'image_1.jpg')]
         mock_warning_window.WarningWindow.value = 1
         self._window._select_images()
 
@@ -261,8 +261,8 @@ class Test06ZoomInOut(BaseTestInterface):
     def testZoomInOut(self) -> None:
         """"""
 
-        mock_filedialog.return_value = [str(Path(__file__).parent / 'data' /
-                                            'image_1.jpg')]
+        mock_filedialog.file_name = [str(Path(__file__).parent / 'data' /
+                                         'image_1.jpg')]
         mock_warning_window.WarningWindow.value = 1
         self._window._select_images()
 
@@ -333,8 +333,8 @@ class Test07Drag(BaseTestInterface):
     def testDrag(self) -> None:
         """"""
 
-        mock_filedialog.return_value = [str(Path(__file__).parent / 'data' /
-                                            'image_1.jpg')]
+        mock_filedialog.file_name = [str(Path(__file__).parent / 'data' /
+                                         'image_1.jpg')]
         mock_warning_window.WarningWindow.value = 1
         self._window._select_images()
 
@@ -373,8 +373,8 @@ class Test08SetChannels(BaseTestInterface):
     def testSetChannels(self) -> None:
         """"""
 
-        mock_filedialog.return_value = [str(Path(__file__).parent / 'data' /
-                                            'image_3.jpg')]
+        mock_filedialog.file_name = [str(Path(__file__).parent / 'data' /
+                                         'image_3.jpg')]
         mock_warning_window.WarningWindow.value = 1
         self._window._select_images()
 
@@ -415,7 +415,7 @@ class Test09DeleteImage(BaseTestInterface):
     def testDeleteImage(self) -> None:
         """"""
 
-        mock_filedialog.return_value = [
+        mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / f'image_{i}.jpg')
             for i in (1, 2)]
         mock_warning_window.WarningWindow.value = 1
@@ -462,7 +462,7 @@ class Test10DeletePartial(BaseTestInterface):
     def testDeletePartial(self) -> None:
         """"""
 
-        mock_filedialog.return_value = [
+        mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / f'image_{i}.jpg')
             for i in (1, 2, 3)]
         mock_warning_window.WarningWindow.value = 1
@@ -525,7 +525,7 @@ class Test11ProcessImages(BaseTestInterfaceProcessing):
     def testProcessImages(self) -> None:
         """"""
 
-        mock_filedialog.return_value = [
+        mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / f'image_{i}.jpg')
             for i in (1, 2, 3)]
         mock_warning_window.WarningWindow.value = 1
@@ -608,7 +608,7 @@ class Test12StopProcessImages(BaseTestInterfaceProcessing):
     def testStopProcessImages(self) -> None:
         """"""
 
-        mock_filedialog.return_value = [
+        mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / f'image_{i}.jpg')
             for i in (1, 2, 3)]
         mock_warning_window.WarningWindow.value = 1
@@ -673,7 +673,7 @@ class Test13IndicatorsDisplay(BaseTestInterfaceProcessing):
     def testIndicatorsDisplay(self) -> None:
         """"""
 
-        mock_filedialog.return_value = [
+        mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / 'image_1.jpg')]
         mock_warning_window.WarningWindow.value = 1
         self._window._select_images()
@@ -733,7 +733,7 @@ class Test14SaveProject(BaseTestInterfaceProcessing):
     def testSaveProject(self) -> None:
         """"""
 
-        mock_filedialog.return_value = [
+        mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / 'image_1.jpg')]
         mock_warning_window.WarningWindow.value = 1
         mock_filedialog.save_folder = str(Path(self._dir.name) / 'save_folder')
@@ -800,7 +800,7 @@ class Test15NewProject(BaseTestInterfaceProcessing):
     def testNewProject(self) -> None:
         """"""
 
-        mock_filedialog.return_value = [
+        mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / 'image_1.jpg')]
         mock_warning_window.WarningWindow.value = 1
         mock_filedialog.save_folder = str(Path(self._dir.name) / 'save_folder')
@@ -833,7 +833,7 @@ class Test16LoadProject(BaseTestInterfaceProcessing):
     def testLoadProject(self) -> None:
         """"""
 
-        mock_filedialog.return_value = [
+        mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / 'image_1.jpg')]
         mock_warning_window.WarningWindow.value = 1
         mock_filedialog.save_folder = str(Path(self._dir.name) / 'save_folder')
