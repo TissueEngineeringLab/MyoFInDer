@@ -36,6 +36,7 @@ class SettingsWindow(Toplevel):
 
         if self._main_window.app_folder is not None:
             self._main_window.save_settings(self._main_window.app_folder)
+        self._main_window._settings_window = None
         super().destroy()
 
     def _set_layout(self) -> None:
