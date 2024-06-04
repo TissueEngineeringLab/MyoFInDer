@@ -6,4 +6,7 @@ from .interface import (Test01Exit, Test02LoadNoImages, Test03LoadImages,
                         Test09DeleteImage, Test10DeletePartial,
                         Test11ProcessImages, Test12StopProcessImages,
                         Test13IndicatorsDisplay, Test14SaveProject,
-                        Test15NewProject, Test16LoadProject)
+                        Test15NewProject, Test16LoadProject,
+                        Test17DeleteProject, Test18ChangeSettings,
+                        Test19ProcessVarySettings, Test20SaveVarySettings,
+                        Test21ProcessVaryChannels)

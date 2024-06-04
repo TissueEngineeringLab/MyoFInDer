@@ -859,3 +859,581 @@ class Test16LoadProject(BaseTestInterfaceProcessing):
         self.assertEqual(settings, self._window.settings.get_all())
         self.assertEqual(table,
                          self._window._files_table.table_items.save_version)
+
+
+class Test17DeleteProject(BaseTestInterfaceProcessing):
+    """"""
+
+    def testDeleteProject(self) -> None:
+        """"""
+
+        mock_filedialog.file_name = [
+            str(Path(__file__).parent / 'data' / 'image_1.jpg')]
+        mock_warning_window.WarningWindow.value = 1
+        mock_filedialog.save_folder = str(Path(self._dir.name) / 'save_folder')
+        self._window._select_images()
+
+        self._window._stop_thread = True
+        sleep(2)
+        stop_thread = Thread(target=self._stop_thread)
+
+        self._window._process_images_button.invoke()
+
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+
+        self._window._save_button.invoke()
+
+        self.assertTrue((Path(self._dir.name) / 'save_folder').exists())
+
+        index = self._window._file_menu.index("Delete Current Project")
+        self._window._file_menu.invoke(index)
+
+        self.assertIsNone(self._window._image_canvas._image)
+        self.assertIsNone(self._window._image_canvas._image_path)
+        self.assertEqual(len(self._window._files_table.table_items), 0)
+
+        self.assertFalse((Path(self._dir.name) / 'save_folder').exists())
+
+
+class Test18ChangeSettings(BaseTestInterface):
+    """"""
+
+    def testChangeSettings(self) -> None:
+        """"""
+
+        init_settings = deepcopy(self._window.settings.get_all())
+
+        self.assertIsNone(self._window._settings_window)
+
+        index = self._window._settings_menu.index("Settings")
+        self._window._settings_menu.invoke(index)
+
+        self.assertIsNotNone(self._window._settings_window)
+
+        if init_settings['nuclei_colour'] == 'blue':
+            self._window._settings_window._nuclei_colour_r2.invoke()
+        elif init_settings['nuclei_colour'] == 'green':
+            self._window._settings_window._nuclei_colour_r3.invoke()
+        elif init_settings['nuclei_colour'] == 'red':
+            self._window._settings_window._nuclei_colour_r1.invoke()
+
+        if init_settings['fiber_colour'] == 'blue':
+            self._window._settings_window._fiber_colour_r2.invoke()
+        elif init_settings['fiber_colour'] == 'green':
+            self._window._settings_window._fiber_colour_r3.invoke()
+        elif init_settings['fiber_colour'] == 'red':
+            self._window._settings_window._fiber_colour_r1.invoke()
+
+        if init_settings['save_overlay']:
+            self._window._settings_window._overlay_off_button.invoke()
+        else:
+            self._window._settings_window._overlay_on_button.invoke()
+
+        min_fib_int = init_settings['minimum_fiber_intensity']
+        if int(min_fib_int - 1) > 0:
+            self._window._settings_window._min_fib_int_slider.set(
+                int(min_fib_int - 1))
+        else:
+            self._window._settings_window._min_fib_int_slider.set(
+                int(min_fib_int + 1))
+
+        max_fib_int = init_settings['maximum_fiber_intensity']
+        if int(max_fib_int + 1) < 255:
+            self._window._settings_window._max_fib_int_slider.set(
+                int(max_fib_int + 1))
+        else:
+            self._window._settings_window._max_fib_int_slider.set(
+                int(max_fib_int - 1))
+
+        min_nuc_int = init_settings['minimum_nucleus_intensity']
+        if int(min_nuc_int - 1) > 0:
+            self._window._settings_window._min_nuc_int_slider.set(
+                int(min_nuc_int - 1))
+        else:
+            self._window._settings_window._min_nuc_int_slider.set(
+                int(min_nuc_int + 1))
+
+        max_nuc_int = init_settings['maximum_nucleus_intensity']
+        if int(max_nuc_int + 1) < 255:
+            self._window._settings_window._max_nuc_int_slider.set(
+                int(max_nuc_int + 1))
+        else:
+            self._window._settings_window._max_nuc_int_slider.set(
+                int(max_nuc_int - 1))
+
+        min_nuc_diam = init_settings['minimum_nuc_diameter']
+        if int(min_nuc_diam - 1) > 0:
+            self._window._settings_window._min_nuc_diam_slider.set(
+                int(min_nuc_diam - 1))
+        else:
+            self._window._settings_window._min_nuc_diam_slider.set(
+                int(min_nuc_diam + 1))
+
+        self._window._red_channel_check_button.invoke()
+        self._window._green_channel_check_button.invoke()
+        self._window._blue_channel_check_button.invoke()
+
+        self._window._show_nuclei_check_button.invoke()
+        self._window._show_fibers_check_button.invoke()
+
+        self._window._settings_window.destroy()
+        self.assertIsNone(self._window._settings_window)
+
+        self.assertTrue(all(key in init_settings for key
+                            in self._window.settings.get_all()))
+
+        self.assertFalse(any(val_1 == val_2 for (_, val_1), (_, val_2)
+                             in zip(init_settings.items(),
+                                    self._window.settings.get_all().items())))
+
+
+class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
+    """"""
+
+    def testProcessVarySettings(self) -> None:
+        """"""
+
+        init_settings = deepcopy(self._window.settings.get_all())
+
+        mock_filedialog.file_name = [
+            str(Path(__file__).parent / 'data' / 'image_1.jpg')]
+        mock_warning_window.WarningWindow.value = 1
+        mock_filedialog.save_folder = str(Path(self._dir.name) / 'save_folder')
+        self._window._select_images()
+
+        self._window._stop_thread = True
+        sleep(2)
+        stop_thread = Thread(target=self._stop_thread)
+
+        self._window._process_images_button.invoke()
+
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+
+        nuc = len(self._window._files_table.table_items.entries[0].nuclei)
+        nuc_in = (self._window._files_table.table_items.entries[0].
+                  nuclei.nuclei_in_count)
+        nuc_out = (self._window._files_table.table_items.entries[0].
+                   nuclei.nuclei_out_count)
+        fib = len(self._window._files_table.table_items.entries[0].fibers)
+        area = self._window._files_table.table_items.entries[0].fibers.area
+
+        self._window.settings.update(init_settings)
+
+        index = self._window._settings_menu.index("Settings")
+        self._window._settings_menu.invoke(index)
+
+        self._window._settings_window._min_fib_int_slider.set(
+            self._window._settings_window._min_fib_int_slider.cget('to'))
+
+        self._window._settings_window.destroy()
+
+        stop_thread = Thread(target=self._stop_thread)
+        self._window._process_images_button.invoke()
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+
+        self.assertEqual(
+            nuc, len(self._window._files_table.table_items.entries[0].nuclei))
+        self.assertNotEqual(
+            nuc_in, self._window._files_table.table_items.entries[0].
+            nuclei.nuclei_in_count)
+        self.assertNotEqual(
+            nuc_out, self._window._files_table.table_items.entries[0].
+            nuclei.nuclei_out_count)
+        self.assertNotEqual(
+            fib, len(self._window._files_table.table_items.entries[0].fibers))
+        self.assertNotEqual(
+            area, self._window._files_table.table_items.entries[0].fibers.area)
+
+        self._window.settings.update(init_settings)
+
+        index = self._window._settings_menu.index("Settings")
+        self._window._settings_menu.invoke(index)
+
+        self._window._settings_window._max_fib_int_slider.set(
+            self._window._settings_window._max_fib_int_slider.cget('from'))
+
+        self._window._settings_window.destroy()
+
+        stop_thread = Thread(target=self._stop_thread)
+        self._window._process_images_button.invoke()
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+
+        self.assertEqual(
+            nuc, len(self._window._files_table.table_items.entries[0].nuclei))
+        self.assertNotEqual(
+            nuc_in, self._window._files_table.table_items.entries[0].
+            nuclei.nuclei_in_count)
+        self.assertNotEqual(
+            nuc_out, self._window._files_table.table_items.entries[0].
+            nuclei.nuclei_out_count)
+        self.assertNotEqual(
+            fib, len(self._window._files_table.table_items.entries[0].fibers))
+        self.assertNotEqual(
+            area, self._window._files_table.table_items.entries[0].fibers.area)
+
+        self._window.settings.update(init_settings)
+
+        index = self._window._settings_menu.index("Settings")
+        self._window._settings_menu.invoke(index)
+
+        self._window._settings_window._min_nuc_int_slider.set(
+            self._window._settings_window._min_nuc_int_slider.cget('to'))
+
+        self._window._settings_window.destroy()
+
+        stop_thread = Thread(target=self._stop_thread)
+        self._window._process_images_button.invoke()
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+
+        self.assertNotEqual(
+            nuc, len(self._window._files_table.table_items.entries[0].nuclei))
+        self.assertNotEqual(
+            nuc_in, self._window._files_table.table_items.entries[0].
+            nuclei.nuclei_in_count)
+        self.assertNotEqual(
+            nuc_out, self._window._files_table.table_items.entries[0].
+            nuclei.nuclei_out_count)
+        self.assertEqual(
+            fib, len(self._window._files_table.table_items.entries[0].fibers))
+        self.assertEqual(
+            area, self._window._files_table.table_items.entries[0].fibers.area)
+
+        self._window.settings.update(init_settings)
+
+        index = self._window._settings_menu.index("Settings")
+        self._window._settings_menu.invoke(index)
+
+        self._window._settings_window._max_nuc_int_slider.set(
+            self._window._settings_window._max_nuc_int_slider.cget('from'))
+
+        self._window._settings_window.destroy()
+
+        stop_thread = Thread(target=self._stop_thread)
+        self._window._process_images_button.invoke()
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+
+        self.assertNotEqual(
+            nuc, len(self._window._files_table.table_items.entries[0].nuclei))
+        self.assertNotEqual(
+            nuc_in, self._window._files_table.table_items.entries[0].
+            nuclei.nuclei_in_count)
+        self.assertNotEqual(
+            nuc_out, self._window._files_table.table_items.entries[0].
+            nuclei.nuclei_out_count)
+        self.assertEqual(
+            fib, len(self._window._files_table.table_items.entries[0].fibers))
+        self.assertEqual(
+            area, self._window._files_table.table_items.entries[0].fibers.area)
+
+        self._window.settings.update(init_settings)
+
+        index = self._window._settings_menu.index("Settings")
+        self._window._settings_menu.invoke(index)
+
+        self._window._settings_window._min_nuc_diam_slider.set(
+            self._window._settings_window._min_nuc_diam_slider.cget('to'))
+
+        self._window._settings_window.destroy()
+
+        stop_thread = Thread(target=self._stop_thread)
+        self._window._process_images_button.invoke()
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+
+        self.assertNotEqual(
+            nuc, len(self._window._files_table.table_items.entries[0].nuclei))
+        self.assertNotEqual(
+            nuc_in, self._window._files_table.table_items.entries[0].
+            nuclei.nuclei_in_count)
+        self.assertNotEqual(
+            nuc_out, self._window._files_table.table_items.entries[0].
+            nuclei.nuclei_out_count)
+        self.assertEqual(
+            fib, len(self._window._files_table.table_items.entries[0].fibers))
+        self.assertEqual(
+            area, self._window._files_table.table_items.entries[0].fibers.area)
+
+
+class Test20SaveVarySettings(BaseTestInterfaceProcessing):
+    """"""
+
+    def testSaveVarySettings(self) -> None:
+        """"""
+
+        mock_filedialog.file_name = [
+            str(Path(__file__).parent / 'data' / 'image_1.jpg')]
+        mock_warning_window.WarningWindow.value = 1
+        mock_filedialog.save_folder = str(Path(self._dir.name) / 'save_folder')
+        self._window._select_images()
+
+        self._window._stop_thread = True
+        sleep(2)
+        stop_thread = Thread(target=self._stop_thread)
+
+        self._window._process_images_button.invoke()
+
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+
+        index = self._window._settings_menu.index("Settings")
+        self._window._settings_menu.invoke(index)
+        self._window._settings_window._overlay_off_button.invoke()
+        self._window._settings_window.destroy()
+
+        self._window._save_button.invoke()
+
+        save_path = Path(mock_filedialog.save_folder)
+        self.assertTrue(save_path.exists())
+        self.assertFalse((save_path / 'Overlay Images').exists())
+
+        index = self._window._file_menu.index("Delete Current Project")
+        self._window._file_menu.invoke(index)
+
+        self._window._select_images()
+
+        self._window._stop_thread = True
+        sleep(2)
+        stop_thread = Thread(target=self._stop_thread)
+
+        self._window._process_images_button.invoke()
+
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+
+        index = self._window._settings_menu.index("Settings")
+        self._window._settings_menu.invoke(index)
+        self._window._settings_window._overlay_on_button.invoke()
+        self._window._settings_window.destroy()
+
+        self._window._save_button.invoke()
+
+        self.assertTrue(save_path.exists())
+        self.assertTrue((save_path / 'Overlay Images' /
+                         'image_1.jpg').exists())
+
+
+class Test21ProcessVaryChannels(BaseTestInterfaceProcessing):
+    """"""
+
+    def testProcessVaryChannels(self) -> None:
+        """"""
+
+        mock_filedialog.file_name = [
+            str(Path(__file__).parent / 'data' / 'image_1.jpg')]
+        mock_warning_window.WarningWindow.value = 1
+        self._window._select_images()
+
+        self._window._stop_thread = True
+        sleep(2)
+        stop_thread = Thread(target=self._stop_thread)
+
+        index = self._window._settings_menu.index("Settings")
+        self._window._settings_menu.invoke(index)
+        self._window._settings_window._nuclei_colour_r1.invoke()
+        self._window._settings_window._fiber_colour_r2.invoke()
+        self._window._settings_window.destroy()
+
+        self._window._process_images_button.invoke()
+
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+
+        nuc = len(self._window._files_table.table_items.entries[0].nuclei)
+        nuc_in = (self._window._files_table.table_items.entries[0].
+                  nuclei.nuclei_in_count)
+        nuc_out = (self._window._files_table.table_items.entries[0].
+                   nuclei.nuclei_out_count)
+        fib = len(self._window._files_table.table_items.entries[0].fibers)
+        area = self._window._files_table.table_items.entries[0].fibers.area
+
+        self.assertGreater(nuc, 0)
+        self.assertGreater(nuc_in, 0)
+        self.assertGreater(nuc_out, 0)
+        self.assertGreater(fib, 0)
+        self.assertGreater(area, 0)
+
+        self._window._delete_all_button.invoke()
+
+        mock_filedialog.file_name = [
+            str(Path(__file__).parent / 'data' / 'image_4.jpg')]
+        self._window._select_images()
+
+        index = self._window._settings_menu.index("Settings")
+        self._window._settings_menu.invoke(index)
+        self._window._settings_window._nuclei_colour_r2.invoke()
+        self._window._settings_window._fiber_colour_r1.invoke()
+        self._window._settings_window.destroy()
+
+        stop_thread = Thread(target=self._stop_thread)
+        self._window._process_images_button.invoke()
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+
+        self.assertLessEqual(
+            abs(nuc - len(self._window._files_table.table_items.
+                          entries[0].nuclei)), 5)
+        self.assertLessEqual(
+            abs(nuc_in - self._window._files_table.table_items.entries[0].
+                nuclei.nuclei_in_count), 5)
+        self.assertLessEqual(
+            abs(nuc_out - self._window._files_table.table_items.entries[0].
+                nuclei.nuclei_out_count), 5)
+        self.assertLessEqual(
+            abs(fib - len(self._window._files_table.table_items.
+                          entries[0].fibers)), 3)
+        self.assertLessEqual(
+            abs(area - self._window._files_table.table_items.entries[0].
+                fibers.area), 0.05)
+
+        self._window._delete_all_button.invoke()
+
+        mock_filedialog.file_name = [
+            str(Path(__file__).parent / 'data' / 'image_5.jpg')]
+        self._window._select_images()
+
+        index = self._window._settings_menu.index("Settings")
+        self._window._settings_menu.invoke(index)
+        self._window._settings_window._nuclei_colour_r1.invoke()
+        self._window._settings_window._fiber_colour_r3.invoke()
+        self._window._settings_window.destroy()
+
+        stop_thread = Thread(target=self._stop_thread)
+        self._window._process_images_button.invoke()
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+
+        self.assertLessEqual(
+            abs(nuc - len(self._window._files_table.table_items.
+                          entries[0].nuclei)), 5)
+        self.assertLessEqual(
+            abs(nuc_in - self._window._files_table.table_items.entries[0].
+                nuclei.nuclei_in_count), 5)
+        self.assertLessEqual(
+            abs(nuc_out - self._window._files_table.table_items.entries[0].
+                nuclei.nuclei_out_count), 5)
+        self.assertLessEqual(
+            abs(fib - len(self._window._files_table.table_items.
+                          entries[0].fibers)), 3)
+        self.assertLessEqual(
+            abs(area - self._window._files_table.table_items.entries[0].
+                fibers.area), 0.05)
+
+        self._window._delete_all_button.invoke()
+
+        mock_filedialog.file_name = [
+            str(Path(__file__).parent / 'data' / 'image_6.jpg')]
+        self._window._select_images()
+
+        index = self._window._settings_menu.index("Settings")
+        self._window._settings_menu.invoke(index)
+        self._window._settings_window._nuclei_colour_r2.invoke()
+        self._window._settings_window._fiber_colour_r3.invoke()
+        self._window._settings_window.destroy()
+
+        stop_thread = Thread(target=self._stop_thread)
+        self._window._process_images_button.invoke()
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+
+        self.assertLessEqual(
+            abs(nuc - len(self._window._files_table.table_items.
+                          entries[0].nuclei)), 5)
+        self.assertLessEqual(
+            abs(nuc_in - self._window._files_table.table_items.entries[0].
+                nuclei.nuclei_in_count), 5)
+        self.assertLessEqual(
+            abs(nuc_out - self._window._files_table.table_items.entries[0].
+                nuclei.nuclei_out_count), 5)
+        self.assertLessEqual(
+            abs(fib - len(self._window._files_table.table_items.
+                          entries[0].fibers)), 3)
+        self.assertLessEqual(
+            abs(area - self._window._files_table.table_items.entries[0].
+                fibers.area), 0.05)
+
+        self._window._delete_all_button.invoke()
+
+        mock_filedialog.file_name = [
+            str(Path(__file__).parent / 'data' / 'image_7.jpg')]
+        self._window._select_images()
+
+        index = self._window._settings_menu.index("Settings")
+        self._window._settings_menu.invoke(index)
+        self._window._settings_window._nuclei_colour_r3.invoke()
+        self._window._settings_window._fiber_colour_r1.invoke()
+        self._window._settings_window.destroy()
+
+        stop_thread = Thread(target=self._stop_thread)
+        self._window._process_images_button.invoke()
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+
+        self.assertLessEqual(
+            abs(nuc - len(self._window._files_table.table_items.
+                          entries[0].nuclei)), 5)
+        self.assertLessEqual(
+            abs(nuc_in - self._window._files_table.table_items.entries[0].
+                nuclei.nuclei_in_count), 5)
+        self.assertLessEqual(
+            abs(nuc_out - self._window._files_table.table_items.entries[0].
+                nuclei.nuclei_out_count), 5)
+        self.assertLessEqual(
+            abs(fib - len(self._window._files_table.table_items.
+                          entries[0].fibers)), 3)
+        self.assertLessEqual(
+            abs(area - self._window._files_table.table_items.entries[0].
+                fibers.area), 0.05)
+
+        self._window._delete_all_button.invoke()
+
+        mock_filedialog.file_name = [
+            str(Path(__file__).parent / 'data' / 'image_8.jpg')]
+        self._window._select_images()
+
+        index = self._window._settings_menu.index("Settings")
+        self._window._settings_menu.invoke(index)
+        self._window._settings_window._nuclei_colour_r3.invoke()
+        self._window._settings_window._fiber_colour_r2.invoke()
+        self._window._settings_window.destroy()
+
+        stop_thread = Thread(target=self._stop_thread)
+        self._window._process_images_button.invoke()
+        self._window._stop_thread = False
+        stop_thread.start()
+        self._window._process_thread()
+
+        self.assertLessEqual(
+            abs(nuc - len(self._window._files_table.table_items.
+                          entries[0].nuclei)), 5)
+        self.assertLessEqual(
+            abs(nuc_in - self._window._files_table.table_items.entries[0].
+                nuclei.nuclei_in_count), 5)
+        self.assertLessEqual(
+            abs(nuc_out - self._window._files_table.table_items.entries[0].
+                nuclei.nuclei_out_count), 5)
+        self.assertLessEqual(
+            abs(fib - len(self._window._files_table.table_items.
+                          entries[0].fibers)), 3)
+        self.assertLessEqual(
+            abs(area - self._window._files_table.table_items.entries[0].
+                fibers.area), 0.05)
