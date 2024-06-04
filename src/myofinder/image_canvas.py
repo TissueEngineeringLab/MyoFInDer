@@ -272,7 +272,9 @@ class ImageCanvas(ttk.Frame):
         self.log("Deleting all the nuclei on the canvas")
 
         for nuc in self._nuclei:
-            self._canvas.delete(nuc.tk_obj)
+            if nuc.tk_obj is not None:
+                self._canvas.delete(nuc.tk_obj)
+                nuc.tk_obj = None
 
     def _delete_fibers(self) -> None:
         """Removes all fibers from the canvas, but doesn't delete the fibers
@@ -281,7 +283,9 @@ class ImageCanvas(ttk.Frame):
         self.log("Deleting all the fibers on the canvas")
 
         for fiber in self._fibers:
-            self._canvas.delete(fiber.polygon)
+            if fiber.polygon is not None:
+                self._canvas.delete(fiber.polygon)
+                fiber.polygon = None
 
     def _set_layout(self) -> None:
         """Creates the frame, canvas and scrollbar objects, places them and
