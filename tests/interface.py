@@ -561,7 +561,6 @@ class Test11ProcessImages(BaseTestInterfaceProcessing):
         self._window._stop_thread = False
         stop_thread.start()
         self._window._process_thread()
-        self._window.update()
 
         self.assertGreater(len(self._window._image_canvas._nuclei), 0)
         self.assertGreater(self._window._image_canvas._nuclei.nuclei_in_count,
@@ -644,7 +643,6 @@ class Test12StopProcessImages(BaseTestInterfaceProcessing):
         stop_thread.start()
         click_thread.start()
         self._window._process_thread()
-        self._window.update()
 
         self.assertEqual(len(self._window._image_canvas._nuclei), 0)
         self.assertEqual(self._window._image_canvas._nuclei.nuclei_in_count,
@@ -692,7 +690,6 @@ class Test13IndicatorsDisplay(BaseTestInterfaceProcessing):
         self._window._stop_thread = False
         stop_thread.start()
         self._window._process_thread()
-        self._window.update()
 
         display_nuc = self._window.settings.show_nuclei.get()
         display_fib = self._window.settings.show_fibers.get()
@@ -748,7 +745,6 @@ class Test14SaveProject(BaseTestInterfaceProcessing):
         self._window._stop_thread = False
         stop_thread.start()
         self._window._process_thread()
-        self._window.update()
 
         self._window._save_button.invoke()
 
@@ -815,7 +811,6 @@ class Test15NewProject(BaseTestInterfaceProcessing):
         self._window._stop_thread = False
         stop_thread.start()
         self._window._process_thread()
-        self._window.update()
 
         self._window._save_button.invoke()
 
@@ -849,7 +844,6 @@ class Test16LoadProject(BaseTestInterfaceProcessing):
         self._window._stop_thread = False
         stop_thread.start()
         self._window._process_thread()
-        self._window.update()
 
         settings = deepcopy(self._window.settings.get_all())
         table = deepcopy(self._window._files_table.table_items.save_version)
