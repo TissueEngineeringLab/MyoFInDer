@@ -144,6 +144,7 @@ class ImageCanvas(ttk.Frame):
 
         # Resetting the variables
         self._image = None
+        self._image_path = None
         self._img_scale = 1.0
         self._can_scale = 1.0
         self._current_zoom = 0
