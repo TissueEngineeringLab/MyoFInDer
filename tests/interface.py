@@ -700,7 +700,7 @@ class Test11ProcessImages(BaseTestInterfaceProcessing):
         # Starting the Thread for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
-        # Starting the processing loop in the main Thread rather tha in a
+        # Starting the processing loop in the main Thread rather than in a
         # separate one
         self._window._process_thread()
 
@@ -757,24 +757,32 @@ class Test12StopProcessImages(BaseTestInterfaceProcessing):
         self._window._stop_event.set()
 
     def testStopProcessImages(self) -> None:
-        """"""
+        """This test checks that the image processing can be successfully
+        interrupted by clicking on the "Stop Processing" button after it was
+        started."""
 
+        # The mock selection window returns the paths to three images to load
         mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / f'image_{i}.jpg')
             for i in (1, 2, 3)]
         mock_warning_window.WarningWindow.value = 1
         self._window._select_images()
 
+        # Stopping the regular processing Thread
         self._window._stop_thread = True
         sleep(2)
+        # Instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
+        # Instantiating a Thread that will stop the image processing later on
         click_thread = Thread(target=self._stop_processing)
 
+        # Checking that the image canvas is empty of nuclei
         self.assertEqual(len(self._window._image_canvas._nuclei), 0)
         self.assertEqual(self._window._image_canvas._nuclei.nuclei_in_count,
                          0)
         self.assertEqual(self._window._image_canvas._nuclei.nuclei_out_count,
                          0)
+        # Checking that the files table is empty of nuclei and fibers
         for i in range(3):
             self.assertEqual(
                 len(self._window._files_table.table_items.entries[i].nuclei),
@@ -789,19 +797,27 @@ class Test12StopProcessImages(BaseTestInterfaceProcessing):
             self.assertEqual((self._window._files_table.table_items.entries[i].
                               fibers.area), 0)
 
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
 
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
         click_thread.start()
+        # Starting the processing loop in the main Thread rather than in a
+        # separate one
         self._window._process_thread()
 
+        # Checking that the image canvas is still empty of nuclei due to the
+        # processing being interrupted
         self.assertEqual(len(self._window._image_canvas._nuclei), 0)
         self.assertEqual(self._window._image_canvas._nuclei.nuclei_in_count,
                          0)
         self.assertEqual(self._window._image_canvas._nuclei.nuclei_out_count,
                          0)
 
+        # Checking that the files table is still empty of nuclei and fibers due
+        # to the processing being interrupted
         for i in range(3):
             self.assertEqual(
                 len(self._window._files_table.table_items.entries[i].nuclei),
@@ -820,26 +836,36 @@ class Test12StopProcessImages(BaseTestInterfaceProcessing):
 class Test13IndicatorsDisplay(BaseTestInterfaceProcessing):
 
     def testIndicatorsDisplay(self) -> None:
-        """"""
+        """This test checks that the checkboxes driving the display of the
+        detected nuclei and fibers are working as expected."""
 
+        # The mock selection window returns the path to one image to load
         mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / 'image_1.jpg')]
         mock_warning_window.WarningWindow.value = 1
         self._window._select_images()
 
+        # Stopping the regular processing Thread
         self._window._stop_thread = True
         sleep(2)
+        # Instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
 
+        # Checking that no Tkinter objects representing nuclei or fibers are
+        # present on the image canvas
         self.assertTrue(not any(nuc.tk_obj is not None for nuc
                                 in self._window._image_canvas._nuclei))
         self.assertTrue(not any(fib.polygon is not None for fib
                                 in self._window._image_canvas._fibers))
 
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
 
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Starting the processing loop in the main Thread rather than in a
+        # separate one
         self._window._process_thread()
 
         display_nuc = self._window.settings.show_nuclei.get()
@@ -878,26 +904,38 @@ class Test13IndicatorsDisplay(BaseTestInterfaceProcessing):
 class Test14SaveProject(BaseTestInterfaceProcessing):
 
     def testSaveProject(self) -> None:
-        """"""
+        """This test checks that the correct files are being created when
+        saving a project."""
 
+        # The mock selection window returns the path to one image to load
         mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / 'image_1.jpg')]
         mock_warning_window.WarningWindow.value = 1
+        # The images will be saved to the existing temporary folder created
+        # before starting the test
         mock_filedialog.save_folder = str(Path(self._dir.name) / 'save_folder')
         self._window._select_images()
 
+        # Stopping the regular processing Thread
         self._window._stop_thread = True
         sleep(2)
+        # Instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
 
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
 
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Starting the processing loop in the main Thread rather than in a
+        # separate one
         self._window._process_thread()
 
+        # Triggering a save action using the "Save" button
         self._window._save_button.invoke()
 
+        # Checking that all the files that should be saved were indeed created
         save_path = Path(mock_filedialog.save_folder)
         self.assertTrue(save_path.exists())
         self.assertTrue(save_path.is_dir())
@@ -909,10 +947,13 @@ class Test14SaveProject(BaseTestInterfaceProcessing):
         self.assertGreater(len(tuple((save_path /
                                       'Original Images').iterdir())), 0)
 
+        # Copying all the files that were just saved to a different folder
         shutil.copytree(save_path, save_path / 'copy')
 
+        # Triggering for a second time a save action using the "Save" button
         self._window._save_button.invoke()
 
+        # Checking that the recorded files are still the same as the first ones
         comp = filecmp.cmpfiles(save_path, save_path / 'copy',
                                 ('data.pickle', 'settings.pickle',
                                  'save_folder.xlsx',
@@ -922,14 +963,19 @@ class Test14SaveProject(BaseTestInterfaceProcessing):
                                'Original Images/image_1.jpg'), comp[0])
         self.assertFalse(comp[1] or comp[2])
 
+        # Adding a single nucleus by clicking on the image canvas, so that the
+        # project is now different
         self._window._image_canvas._canvas.event_generate(
             '<ButtonPress-1>', when="now", x=10, y=10)
         self._window._image_canvas._canvas.event_generate(
             '<ButtonRelease-1>', when="now", x=10, y=10)
         self._window._show_nuclei_check_button.invoke()
 
+        # Triggering a third save action using the "Save" button
         self._window._save_button.invoke()
 
+        # Checking that some recorded files are now different to the original
+        # due to the modification
         comp = filecmp.cmpfiles(save_path, save_path / 'copy',
                                 ('data.pickle', 'settings.pickle',
                                  'save_folder.xlsx',
@@ -943,29 +989,42 @@ class Test14SaveProject(BaseTestInterfaceProcessing):
 class Test15NewProject(BaseTestInterfaceProcessing):
 
     def testNewProject(self) -> None:
-        """"""
+        """This test checks that creating a new empty project erases all the
+        previous modifications."""
 
+        # The mock selection window returns the path to one image to load
         mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / 'image_1.jpg')]
         mock_warning_window.WarningWindow.value = 1
+        # The images will be saved to the existing temporary folder created
+        # before starting the test
         mock_filedialog.save_folder = str(Path(self._dir.name) / 'save_folder')
         self._window._select_images()
 
+        # Stopping the regular processing Thread
         self._window._stop_thread = True
         sleep(2)
+        # Instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
 
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
 
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Starting the processing loop in the main Thread rather than in a
+        # separate one
         self._window._process_thread()
 
+        # Triggering a save action using the "Save" button
         self._window._save_button.invoke()
 
+        # Overriding the current changes with a new empty project
         index = self._window._file_menu.index("New Empty Project")
         self._window._file_menu.invoke(index)
 
+        # Checking that the image canvas and the files table are now empty
         self.assertIsNone(self._window._image_canvas._image)
         self.assertIsNone(self._window._image_canvas._image_path)
         self.assertEqual(len(self._window._files_table.table_items), 0)
@@ -974,36 +1033,52 @@ class Test15NewProject(BaseTestInterfaceProcessing):
 class Test16LoadProject(BaseTestInterfaceProcessing):
 
     def testLoadProject(self) -> None:
-        """"""
+        """This test checks that the settings and image data can successfully
+        be loaded from a previously saved project without altering the
+        information."""
 
+        # The mock selection window returns the path to one image to load
         mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / 'image_1.jpg')]
         mock_warning_window.WarningWindow.value = 1
+        # The images will be saved to the existing temporary folder created
+        # before starting the test
         mock_filedialog.save_folder = str(Path(self._dir.name) / 'save_folder')
         mock_filedialog.load_directory = mock_filedialog.save_folder
         self._window._select_images()
 
+        # Stopping the regular processing Thread
         self._window._stop_thread = True
         sleep(2)
+        # Instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
 
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
 
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Starting the processing loop in the main Thread rather than in a
+        # separate one
         self._window._process_thread()
 
+        # Copying the current parameters and image data to later compare it
         settings = deepcopy(self._window.settings.get_all())
         table = deepcopy(self._window._files_table.table_items.save_version)
 
+        # Triggering a save action using the "Save" button
         self._window._save_button.invoke()
 
+        # Overriding the current changes with a new empty project
         index = self._window._file_menu.index("New Empty Project")
         self._window._file_menu.invoke(index)
 
+        # Re-loading the data that was just saved and erased
         index = self._window._file_menu.index("Load From Explorer")
         self._window._file_menu.invoke(index)
 
+        # Checking that the loaded data matches the one copied earlier
         self.assertEqual(settings, self._window.settings.get_all())
         self.assertEqual(table,
                          self._window._files_table.table_items.save_version)
@@ -1012,52 +1087,75 @@ class Test16LoadProject(BaseTestInterfaceProcessing):
 class Test17DeleteProject(BaseTestInterfaceProcessing):
 
     def testDeleteProject(self) -> None:
-        """"""
+        """This test checks that deleting the current project successfully
+        removes all the recorded files and resets the image canvas and the
+        files table."""
 
+        # The mock selection window returns the path to one image to load
         mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / 'image_1.jpg')]
         mock_warning_window.WarningWindow.value = 1
+        # The images will be saved to the existing temporary folder created
+        # before starting the test
         mock_filedialog.save_folder = str(Path(self._dir.name) / 'save_folder')
         self._window._select_images()
 
+        # Stopping the regular processing Thread
         self._window._stop_thread = True
         sleep(2)
+        # Instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
 
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
 
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Starting the processing loop in the main Thread rather than in a
+        # separate one
         self._window._process_thread()
 
+        # Triggering a save action using the "Save" button
         self._window._save_button.invoke()
 
+        # Checking quickly that the project was saved as expected
         self.assertTrue((Path(self._dir.name) / 'save_folder').exists())
 
+        # Deleting the current project and flushing the interface
         index = self._window._file_menu.index("Delete Current Project")
         self._window._file_menu.invoke(index)
 
+        # Checking that the image canvas and the files table are now empty
         self.assertIsNone(self._window._image_canvas._image)
         self.assertIsNone(self._window._image_canvas._image_path)
         self.assertEqual(len(self._window._files_table.table_items), 0)
 
+        # Checking that all the recorded files were now deleted
         self.assertFalse((Path(self._dir.name) / 'save_folder').exists())
 
 
 class Test18ChangeSettings(BaseTestInterface):
 
     def testChangeSettings(self) -> None:
-        """"""
+        """This test checks that interacting with the settings-related
+        graphical objects does change the internal variables storing the
+        settings values."""
 
+        # Copying the initial state of the settings for later comparing it
         init_settings = deepcopy(self._window.settings.get_all())
 
+        # Checking that no settings window was created so far
         self.assertIsNone(self._window._settings_window)
 
+        # Invoking the creation of a settings window
         index = self._window._settings_menu.index("Settings")
         self._window._settings_menu.invoke(index)
 
+        # Checking that the settings window was now created
         self.assertIsNotNone(self._window._settings_window)
 
+        # Modifying the nuclei colour setting value
         if init_settings['nuclei_colour'] == 'blue':
             self._window._settings_window._nuclei_colour_r2.invoke()
         elif init_settings['nuclei_colour'] == 'green':
@@ -1065,6 +1163,7 @@ class Test18ChangeSettings(BaseTestInterface):
         elif init_settings['nuclei_colour'] == 'red':
             self._window._settings_window._nuclei_colour_r1.invoke()
 
+        # Modifying the fiber colour setting value
         if init_settings['fiber_colour'] == 'blue':
             self._window._settings_window._fiber_colour_r2.invoke()
         elif init_settings['fiber_colour'] == 'green':
@@ -1072,11 +1171,13 @@ class Test18ChangeSettings(BaseTestInterface):
         elif init_settings['fiber_colour'] == 'red':
             self._window._settings_window._fiber_colour_r1.invoke()
 
+        # Modifying the save overlay setting value
         if init_settings['save_overlay']:
             self._window._settings_window._overlay_off_button.invoke()
         else:
             self._window._settings_window._overlay_on_button.invoke()
 
+        # Modifying the minimum fiber intensity setting value
         min_fib_int = init_settings['minimum_fiber_intensity']
         if int(min_fib_int - 1) > 0:
             self._window._settings_window._min_fib_int_slider.set(
@@ -1085,6 +1186,7 @@ class Test18ChangeSettings(BaseTestInterface):
             self._window._settings_window._min_fib_int_slider.set(
                 int(min_fib_int + 1))
 
+        # Modifying the maximum fiber intensity setting value
         max_fib_int = init_settings['maximum_fiber_intensity']
         if int(max_fib_int + 1) < 255:
             self._window._settings_window._max_fib_int_slider.set(
@@ -1093,6 +1195,7 @@ class Test18ChangeSettings(BaseTestInterface):
             self._window._settings_window._max_fib_int_slider.set(
                 int(max_fib_int - 1))
 
+        # Modifying the minimum nucleus intensity setting value
         min_nuc_int = init_settings['minimum_nucleus_intensity']
         if int(min_nuc_int - 1) > 0:
             self._window._settings_window._min_nuc_int_slider.set(
@@ -1101,6 +1204,7 @@ class Test18ChangeSettings(BaseTestInterface):
             self._window._settings_window._min_nuc_int_slider.set(
                 int(min_nuc_int + 1))
 
+        # Modifying the maximum nucleus intensity setting value
         max_nuc_int = init_settings['maximum_nucleus_intensity']
         if int(max_nuc_int + 1) < 255:
             self._window._settings_window._max_nuc_int_slider.set(
@@ -1109,6 +1213,7 @@ class Test18ChangeSettings(BaseTestInterface):
             self._window._settings_window._max_nuc_int_slider.set(
                 int(max_nuc_int - 1))
 
+        # Modifying the minimum nucleus diameter setting value
         min_nuc_diam = init_settings['minimum_nuc_diameter']
         if int(min_nuc_diam - 1) > 0:
             self._window._settings_window._min_nuc_diam_slider.set(
@@ -1117,19 +1222,24 @@ class Test18ChangeSettings(BaseTestInterface):
             self._window._settings_window._min_nuc_diam_slider.set(
                 int(min_nuc_diam + 1))
 
+        # Modifying the channels display settings values
         self._window._red_channel_check_button.invoke()
         self._window._green_channel_check_button.invoke()
         self._window._blue_channel_check_button.invoke()
 
+        # Modifying the results display settings values
         self._window._show_nuclei_check_button.invoke()
         self._window._show_fibers_check_button.invoke()
 
+        # Closing the settings window and checking that it was destroyed
         self._window._settings_window.destroy()
         self.assertIsNone(self._window._settings_window)
 
+        # Checking that the same settings are still available
         self.assertTrue(all(key in init_settings for key
                             in self._window.settings.get_all()))
 
+        # Checking that no setting value was left unchanged
         self.assertFalse(any(val_1 == val_2 for (_, val_1), (_, val_2)
                              in zip(init_settings.items(),
                                     self._window.settings.get_all().items())))
@@ -1138,26 +1248,38 @@ class Test18ChangeSettings(BaseTestInterface):
 class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
 
     def testProcessVarySettings(self) -> None:
-        """"""
+        """This test checks that the output of the processing is influenced as
+        expected by the value of some settings."""
 
+        # Copying the initial state of the settings for later restoring it
         init_settings = deepcopy(self._window.settings.get_all())
 
+        # The mock selection window returns the path to one image to load
         mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / 'image_1.jpg')]
         mock_warning_window.WarningWindow.value = 1
+        # The images will be saved to the existing temporary folder created
+        # before starting the test
         mock_filedialog.save_folder = str(Path(self._dir.name) / 'save_folder')
         self._window._select_images()
 
+        # Stopping the regular processing Thread
         self._window._stop_thread = True
         sleep(2)
+        # Instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
 
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
 
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Starting the processing loop in the main Thread rather than in a
+        # separate one
         self._window._process_thread()
 
+        # Recording the result of the first computation for later comparing it
         nuc = len(self._window._files_table.table_items.entries[0].nuclei)
         nuc_in = (self._window._files_table.table_items.entries[0].
                   nuclei.nuclei_in_count)
@@ -1166,22 +1288,32 @@ class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
         fib = len(self._window._files_table.table_items.entries[0].fibers)
         area = self._window._files_table.table_items.entries[0].fibers.area
 
+        # Restoring the initial state of the settings
         self._window.settings.update(init_settings)
 
+        # Invoking the creation of a settings window
         index = self._window._settings_menu.index("Settings")
         self._window._settings_menu.invoke(index)
 
+        # Setting the minimum fiber intensity setting to the maximum
         self._window._settings_window._min_fib_int_slider.set(
             self._window._settings_window._min_fib_int_slider.cget('to'))
 
+        # Closing the settings window
         self._window._settings_window.destroy()
 
+        # Re-instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Re-starting the processing loop in the main Thread
         self._window._process_thread()
 
+        # Checking that the correct computation output changed and the correct
+        # ones were preserved
         self.assertEqual(
             nuc, len(self._window._files_table.table_items.entries[0].nuclei))
         self.assertNotEqual(
@@ -1195,22 +1327,32 @@ class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
         self.assertNotEqual(
             area, self._window._files_table.table_items.entries[0].fibers.area)
 
+        # Restoring the initial state of the settings
         self._window.settings.update(init_settings)
 
+        # Invoking the creation of a settings window
         index = self._window._settings_menu.index("Settings")
         self._window._settings_menu.invoke(index)
 
+        # Setting the maximum fiber intensity setting to the minimum
         self._window._settings_window._max_fib_int_slider.set(
             self._window._settings_window._max_fib_int_slider.cget('from'))
 
+        # Closing the settings window
         self._window._settings_window.destroy()
 
+        # Re-instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Re-starting the processing loop in the main Thread
         self._window._process_thread()
 
+        # Checking that the correct computation output changed and the correct
+        # ones were preserved
         self.assertEqual(
             nuc, len(self._window._files_table.table_items.entries[0].nuclei))
         self.assertNotEqual(
@@ -1224,22 +1366,32 @@ class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
         self.assertNotEqual(
             area, self._window._files_table.table_items.entries[0].fibers.area)
 
+        # Restoring the initial state of the settings
         self._window.settings.update(init_settings)
 
+        # Invoking the creation of a settings window
         index = self._window._settings_menu.index("Settings")
         self._window._settings_menu.invoke(index)
 
+        # Setting the minimum nucleus intensity setting to the maximum
         self._window._settings_window._min_nuc_int_slider.set(
             self._window._settings_window._min_nuc_int_slider.cget('to'))
 
+        # Closing the settings window
         self._window._settings_window.destroy()
 
+        # Re-instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Re-starting the processing loop in the main Thread
         self._window._process_thread()
 
+        # Checking that the correct computation output changed and the correct
+        # ones were preserved
         self.assertNotEqual(
             nuc, len(self._window._files_table.table_items.entries[0].nuclei))
         self.assertNotEqual(
@@ -1253,22 +1405,32 @@ class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
         self.assertEqual(
             area, self._window._files_table.table_items.entries[0].fibers.area)
 
+        # Restoring the initial state of the settings
         self._window.settings.update(init_settings)
 
+        # Invoking the creation of a settings window
         index = self._window._settings_menu.index("Settings")
         self._window._settings_menu.invoke(index)
 
+        # Setting the maximum nucleus intensity setting to the minimum
         self._window._settings_window._max_nuc_int_slider.set(
             self._window._settings_window._max_nuc_int_slider.cget('from'))
 
+        # Closing the settings window
         self._window._settings_window.destroy()
 
+        # Re-instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Re-starting the processing loop in the main Thread
         self._window._process_thread()
 
+        # Checking that the correct computation output changed and the correct
+        # ones were preserved
         self.assertNotEqual(
             nuc, len(self._window._files_table.table_items.entries[0].nuclei))
         self.assertNotEqual(
@@ -1282,22 +1444,32 @@ class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
         self.assertEqual(
             area, self._window._files_table.table_items.entries[0].fibers.area)
 
+        # Restoring the initial state of the settings
         self._window.settings.update(init_settings)
 
+        # Invoking the creation of a settings window
         index = self._window._settings_menu.index("Settings")
         self._window._settings_menu.invoke(index)
 
+        # Setting the minimum nucleus diameter setting to the maximum
         self._window._settings_window._min_nuc_diam_slider.set(
             self._window._settings_window._min_nuc_diam_slider.cget('to'))
 
+        # Closing the settings window
         self._window._settings_window.destroy()
 
+        # Re-instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Re-starting the processing loop in the main Thread
         self._window._process_thread()
 
+        # Checking that the correct computation output changed and the correct
+        # ones were preserved
         self.assertNotEqual(
             nuc, len(self._window._files_table.table_items.entries[0].nuclei))
         self.assertNotEqual(
