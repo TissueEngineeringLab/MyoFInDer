@@ -1,12 +1,23 @@
 # coding: utf-8
 
-from .interface import (Test01Exit, Test02LoadNoImages, Test03LoadImages,
-                        Test04ClickTable, Test05ClickImage,
-                        Test06ZoomInOut,  Test07Drag, Test08SetChannels,
-                        Test09DeleteImage, Test10DeletePartial,
-                        Test11ProcessImages, Test12StopProcessImages,
-                        Test13IndicatorsDisplay, Test14SaveProject,
-                        Test15NewProject, Test16LoadProject,
-                        Test17DeleteProject, Test18ChangeSettings,
-                        Test19ProcessVarySettings, Test20SaveVarySettings,
-                        Test21ProcessVaryChannels)
+from .test_01_exit import Test01Exit
+from .test_02_load_no_images import Test02LoadNoImages
+from .test_03_load_images import Test03LoadImages
+from .test_04_click_table import Test04ClickTable
+from .test_05_click_image import Test05ClickImage
+from .test_06_zoom_in_out import Test06ZoomInOut
+from .test_07_drag import Test07Drag
+from .test_08_set_channels import Test08SetChannels
+from .test_09_delete_image import Test09DeleteImage
+from .test_10_delete_partial import Test10DeletePartial
+from .test_11_process_images import Test11ProcessImages
+from .test_12_stop_process_images import Test12StopProcessImages
+from .test_13_indicators_display import Test13IndicatorsDisplay
+from .test_14_save_project import Test14SaveProject
+from .test_15_new_project import Test15NewProject
+from .test_16_load_project import Test16LoadProject
+from .test_17_delete_project import Test17DeleteProject
+from .test_18_change_settings import Test18ChangeSettings
+from .test_19_process_vary_settings import Test19ProcessVarySettings
+from .test_20_save_vary_settings import Test20SaveVarySettings
+from .test_21_process_vary_channels import Test21ProcessVaryChannels
