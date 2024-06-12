@@ -1487,57 +1487,84 @@ class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
 class Test20SaveVarySettings(BaseTestInterfaceProcessing):
 
     def testSaveVarySettings(self) -> None:
-        """"""
+        """This test checks that the project recording process is influenced as
+        expected by the value of some settings."""
 
+        # The mock selection window returns the path to one image to load
         mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / 'image_1.jpg')]
         mock_warning_window.WarningWindow.value = 1
+        # The images will be saved to the existing temporary folder created
+        # before starting the test
         mock_filedialog.save_folder = str(Path(self._dir.name) / 'save_folder')
         self._window._select_images()
 
+        # Stopping the regular processing Thread
         self._window._stop_thread = True
         sleep(2)
+        # Instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
 
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
 
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Starting the processing loop in the main Thread rather than in a
+        # separate one
         self._window._process_thread()
 
+        # Invoking the creation of a settings window
         index = self._window._settings_menu.index("Settings")
         self._window._settings_menu.invoke(index)
+        # Disabling the recording of overlay images
         self._window._settings_window._overlay_off_button.invoke()
+        # Closing the settings window
         self._window._settings_window.destroy()
 
+        # Triggering a save action using the "Save" button
         self._window._save_button.invoke()
 
+        # Checking that the project was recorded but not the overlay images
         save_path = Path(mock_filedialog.save_folder)
         self.assertTrue(save_path.exists())
         self.assertFalse((save_path / 'Overlay Images').exists())
 
+        # Deleting the current project and flushing the interface
         index = self._window._file_menu.index("Delete Current Project")
         self._window._file_menu.invoke(index)
 
+        # Re-loading the same image in the interface as previously
         self._window._select_images()
 
+        # Stopping the regular processing Thread
         self._window._stop_thread = True
         sleep(2)
+        # Instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
 
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
 
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Re-starting the processing loop in the main Thread
         self._window._process_thread()
 
+        # Invoking the creation of a settings window
         index = self._window._settings_menu.index("Settings")
         self._window._settings_menu.invoke(index)
+        # Enabling the recording of overlay images
         self._window._settings_window._overlay_on_button.invoke()
+        # Closing the settings window
         self._window._settings_window.destroy()
 
+        # Triggering a save action using the "Save" button
         self._window._save_button.invoke()
 
+        # Checking that the project was recorded along with the overlay images
         self.assertTrue(save_path.exists())
         self.assertTrue((save_path / 'Overlay Images' /
                          'image_1.jpg').exists())
@@ -1546,29 +1573,45 @@ class Test20SaveVarySettings(BaseTestInterfaceProcessing):
 class Test21ProcessVaryChannels(BaseTestInterfaceProcessing):
 
     def testProcessVaryChannels(self) -> None:
-        """"""
+        """This test checks that the image processing gives a similar output
+        with all the possible combinations of channels colors.
 
+        To this end, a same image was duplicated but with its colors shuffled
+        across all the possible channel combinations.
+        """
+
+        # The mock selection window returns the path to one image to load
+        # The nuclei are on the blue channel, the fibers on the green channel
         mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / 'image_1.jpg')]
         mock_warning_window.WarningWindow.value = 1
         self._window._select_images()
 
+        # Stopping the regular processing Thread
         self._window._stop_thread = True
         sleep(2)
+        # Instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
 
+        # Invoking the creation of a settings window
         index = self._window._settings_menu.index("Settings")
         self._window._settings_menu.invoke(index)
+        # Setting the nuclei channel to blue, the fibers channel to green
         self._window._settings_window._nuclei_colour_r1.invoke()
         self._window._settings_window._fiber_colour_r2.invoke()
+        # Closing the settings window
         self._window._settings_window.destroy()
 
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
 
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Re-starting the processing loop in the main Thread
         self._window._process_thread()
 
+        # Reading the processing output to later compare it with other runs
         nuc = len(self._window._files_table.table_items.entries[0].nuclei)
         nuc_in = (self._window._files_table.table_items.entries[0].
                   nuclei.nuclei_in_count)
@@ -1577,30 +1620,42 @@ class Test21ProcessVaryChannels(BaseTestInterfaceProcessing):
         fib = len(self._window._files_table.table_items.entries[0].fibers)
         area = self._window._files_table.table_items.entries[0].fibers.area
 
+        # Making sure that some nuclei and some fibers were detected
         self.assertGreater(nuc, 0)
         self.assertGreater(nuc_in, 0)
         self.assertGreater(nuc_out, 0)
         self.assertGreater(fib, 0)
         self.assertGreater(area, 0)
 
+        # Removing the existing image from the image canvas and the files table
         self._window._delete_all_button.invoke()
 
+        # The nuclei are on the green channel, the fibers on the blue channel
         mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / 'image_4.jpg')]
         self._window._select_images()
 
+        # Invoking the creation of a settings window
         index = self._window._settings_menu.index("Settings")
         self._window._settings_menu.invoke(index)
+        # Setting the nuclei channel to green, the fibers channel to blue
         self._window._settings_window._nuclei_colour_r2.invoke()
         self._window._settings_window._fiber_colour_r1.invoke()
+        # Closing the settings window
         self._window._settings_window.destroy()
 
+        # Re-instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Re-starting the processing loop in the main Thread
         self._window._process_thread()
 
+        # Checking that the output of the processing is reasonably close to the
+        # one with the regular colors
         self.assertLessEqual(
             abs(nuc - len(self._window._files_table.table_items.
                           entries[0].nuclei)), 5)
@@ -1617,24 +1672,35 @@ class Test21ProcessVaryChannels(BaseTestInterfaceProcessing):
             abs(area - self._window._files_table.table_items.entries[0].
                 fibers.area), 0.05)
 
+        # Removing the existing image from the image canvas and the files table
         self._window._delete_all_button.invoke()
 
+        # The nuclei are on the blue channel, the fibers on the red channel
         mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / 'image_5.jpg')]
         self._window._select_images()
 
+        # Invoking the creation of a settings window
         index = self._window._settings_menu.index("Settings")
         self._window._settings_menu.invoke(index)
+        # Setting the nuclei channel to blue, the fibers channel to red
         self._window._settings_window._nuclei_colour_r1.invoke()
         self._window._settings_window._fiber_colour_r3.invoke()
+        # Closing the settings window
         self._window._settings_window.destroy()
 
+        # Re-instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Re-starting the processing loop in the main Thread
         self._window._process_thread()
 
+        # Checking that the output of the processing is reasonably close to the
+        # one with the regular colors
         self.assertLessEqual(
             abs(nuc - len(self._window._files_table.table_items.
                           entries[0].nuclei)), 5)
@@ -1651,24 +1717,35 @@ class Test21ProcessVaryChannels(BaseTestInterfaceProcessing):
             abs(area - self._window._files_table.table_items.entries[0].
                 fibers.area), 0.05)
 
+        # Removing the existing image from the image canvas and the files table
         self._window._delete_all_button.invoke()
 
+        # The nuclei are on the green channel, the fibers on the red channel
         mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / 'image_6.jpg')]
         self._window._select_images()
 
+        # Invoking the creation of a settings window
         index = self._window._settings_menu.index("Settings")
         self._window._settings_menu.invoke(index)
+        # Setting the nuclei channel to green, the fibers channel to red
         self._window._settings_window._nuclei_colour_r2.invoke()
         self._window._settings_window._fiber_colour_r3.invoke()
+        # Closing the settings window
         self._window._settings_window.destroy()
 
+        # Re-instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Re-starting the processing loop in the main Thread
         self._window._process_thread()
 
+        # Checking that the output of the processing is reasonably close to the
+        # one with the regular colors
         self.assertLessEqual(
             abs(nuc - len(self._window._files_table.table_items.
                           entries[0].nuclei)), 5)
@@ -1685,24 +1762,35 @@ class Test21ProcessVaryChannels(BaseTestInterfaceProcessing):
             abs(area - self._window._files_table.table_items.entries[0].
                 fibers.area), 0.05)
 
+        # Removing the existing image from the image canvas and the files table
         self._window._delete_all_button.invoke()
 
+        # The nuclei are on the red channel, the fibers on the blue channel
         mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / 'image_7.jpg')]
         self._window._select_images()
 
+        # Invoking the creation of a settings window
         index = self._window._settings_menu.index("Settings")
         self._window._settings_menu.invoke(index)
+        # Setting the nuclei channel to red, the fibers channel to blue
         self._window._settings_window._nuclei_colour_r3.invoke()
         self._window._settings_window._fiber_colour_r1.invoke()
+        # Closing the settings window
         self._window._settings_window.destroy()
 
+        # Re-instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Re-starting the processing loop in the main Thread
         self._window._process_thread()
 
+        # Checking that the output of the processing is reasonably close to the
+        # one with the regular colors
         self.assertLessEqual(
             abs(nuc - len(self._window._files_table.table_items.
                           entries[0].nuclei)), 5)
@@ -1719,24 +1807,35 @@ class Test21ProcessVaryChannels(BaseTestInterfaceProcessing):
             abs(area - self._window._files_table.table_items.entries[0].
                 fibers.area), 0.05)
 
+        # Removing the existing image from the image canvas and the files table
         self._window._delete_all_button.invoke()
 
+        # The nuclei are on the red channel, the fibers on the green channel
         mock_filedialog.file_name = [
             str(Path(__file__).parent / 'data' / 'image_8.jpg')]
         self._window._select_images()
 
+        # Invoking the creation of a settings window
         index = self._window._settings_menu.index("Settings")
         self._window._settings_menu.invoke(index)
+        # Setting the nuclei channel to red, the fibers channel to green
         self._window._settings_window._nuclei_colour_r3.invoke()
         self._window._settings_window._fiber_colour_r2.invoke()
+        # Closing the settings window
         self._window._settings_window.destroy()
 
+        # Re-instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
+        # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
+        # Starting the Threads for later stopping the processing loop
         self._window._stop_thread = False
         stop_thread.start()
+        # Re-starting the processing loop in the main Thread
         self._window._process_thread()
 
+        # Checking that the output of the processing is reasonably close to the
+        # one with the regular colors
         self.assertLessEqual(
             abs(nuc - len(self._window._files_table.table_items.
                           entries[0].nuclei)), 5)
