@@ -184,6 +184,7 @@ class MainWindow(Tk):
         self.log("Setting the main windows's variables")
 
         self.settings = Settings()
+        self._settings_window: Optional[SettingsWindow] = None
 
         # Variables used when there's a conflict in the choice of colors for
         # the fibers and nuclei
@@ -264,7 +265,7 @@ class MainWindow(Tk):
         # Sets the settings menu
         self._settings_menu = Menu(self._menu_bar, tearoff=0)
         self._settings_menu.add_command(
-            label="Settings", command=partial(SettingsWindow, self))
+            label="Settings", command=self._open_settings_window)
         self._menu_bar.add_cascade(label="Settings", menu=self._settings_menu)
 
         # Sets the help menu
@@ -384,6 +385,11 @@ class MainWindow(Tk):
         """Some settings should enable the save button when modified."""
 
         self._save_button['state'] = 'enabled'
+
+    def _open_settings_window(self) -> None:
+        """Opens the window where users can adjust the settings."""
+
+        self._settings_window = SettingsWindow(self)
 
     def _load_settings(self, project_path: Path) -> None:
         """Loads the settings from the settings file if any is present.
