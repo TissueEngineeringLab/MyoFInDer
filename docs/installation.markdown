@@ -74,7 +74,7 @@ the instructions of the installation wizard. Make sure to check the
 Once Python is installed, you can **double-check the installation** by running 
 again `python --version`.
 
-### 1.1.2 Install Python from the Microsoft Store (nor recommended)
+### 1.1.2 Install Python from the Microsoft Store (not recommended)
 
 **All the maintained versions of Python are available for installation in the 
 Microsoft Store** application. This is the easiest way to install Python on a 
