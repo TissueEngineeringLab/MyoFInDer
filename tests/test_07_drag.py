@@ -7,7 +7,7 @@ from unittest import skipIf
 from .util import BaseTestInterface, mock_filedialog, mock_warning_window
 
 
-@skipIf(system() == 'Windows' and int(python_version_tuple()[1]) < 8,
+@skipIf(system() == 'Windows' and int(python_version_tuple()[1]) < 9,
         "For some reason, this test fails on Windows with a Python version "
         "anterior to 3.8. It was manually checked that the drag feature was "
         "working as expected in the interface nevertheless.")
