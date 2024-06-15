@@ -20,8 +20,8 @@ class Test06ZoomInOut(BaseTestInterface):
 
         # Reading the scale and dimension of the image before any interaction
         scale_0 = self._window._image_canvas._img_scale
-        width_0 = self._window._image_canvas._image.width
-        height_0 = self._window._image_canvas._image.height
+        width_0 = self._window._image_canvas._canvas.image_tk.width()
+        height_0 = self._window._image_canvas._canvas.image_tk.height()
 
         # Checking that the displayed image is by default not zoomed in or out
         self.assertEqual(self._window._image_canvas._can_scale, 1.0)
