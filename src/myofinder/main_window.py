@@ -29,9 +29,6 @@ if system() == "Windows" and int(release()) >= 8:
     from ctypes import windll
     windll.shcore.SetProcessDpiAwareness(True)
 
-# Todo:
-#   Set up unit tests
-
 
 def _save_before_closing(func: Callable) -> Callable:
     """Decorator for warning the user when an action that may cause unwanted
