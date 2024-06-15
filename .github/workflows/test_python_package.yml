@@ -45,11 +45,15 @@ jobs:
     - name: Test MyoFInDer (Windows)
       if: runner.os == 'Windows'
       run: python -m unittest -v tests
-      # On Linux, it is not possible to start the module without a graphical environment
+      # On Linux, the Xvfb virtual X server can be used
+      # Therefore, it is possible to run the automated test suite
     - name: Import MyoFInDer (Linux)
       if: runner.os == 'Linux'
-      run: python -c "import myofinder;print(myofinder.__version__)"
-    # On macOS, it is not possible to start the module without a graphical environment
+      run: |
+        export DISPLAY=:99
+        Xvfb :99 -screen 0 1920x1080x24 & python -m unittest -v tests
+    # On macOS, it is not possible to set up a virtual graphical environment
+    # Therefore, no automated tests can be run on macOS
     # Also, tkinter needs to be separately configured, but python-tk is only available for Python 3.9 and 3.10
     - name: Import MyoFInDer (macOS <3.9)
       if: |
