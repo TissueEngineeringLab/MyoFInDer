@@ -54,6 +54,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         export DISPLAY=:99
+        export DEEPCELL_ACCESS_TOKEN="::add-mask::${{ secrets.DeepCellPAT }}"
         Xvfb :99 -screen 0 1920x1080x24 & python -m unittest -v tests
     # On macOS, it is not possible to set up a virtual graphical environment
     # Therefore, no automated tests can be run on macOS
