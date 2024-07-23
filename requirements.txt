@@ -1,6 +1,6 @@
 Pillow>=9.1.0
 opencv-python>=4.5.6
-DeepCell==0.12.7
+DeepCell==0.12.9
 XlsxWriter>=3.0.0
 screeninfo>=0.7
 numpy>=1.20,<1.24
