@@ -32,6 +32,8 @@ jobs:
         run: gcc '${{ github.workspace }}\src\wix\src\install_venv.cpp' -lstdc++ -lshlwapi  -static -static-libgcc -static-libstdc++ -o '${{ github.workspace }}\bin\install_venv.exe'
       - name: Build Venv Uninstaller
         run: gcc '${{ github.workspace }}\src\wix\src\rollback_install.cpp' -lstdc++ -lshlwapi  -static -static-libgcc -static-libstdc++ -o '${{ github.workspace }}\bin\rollback_install.exe'
+      - name: Build Token Saver
+        run: gcc '${{ github.workspace }}\src\wix\src\save_token.cpp' -lstdc++ -lshlwapi  -static -static-libgcc -static-libstdc++ -o '${{ github.workspace }}\bin\save_token.exe'
       # Upload the compiled files, so that they can be used by other jobs later
       - name: Upload Executable Files
         uses: actions/upload-artifact@v4
