@@ -48,7 +48,7 @@ jobs:
     - name: Test MyoFInDer (Windows)
       if: runner.os == 'Windows'
       run: |
-        set DEEPCELL_ACCESS_TOKEN="::add-mask::${{ secrets.DEEPCELLPAT }}"
+        $Env:DEEPCELL_ACCESS_TOKEN = "::add-mask::${{ secrets.DEEPCELLPAT }}"
         python -m unittest -v tests
       # On Linux, the Xvfb virtual X server can be used
       # Therefore, it is possible to run the automated test suite
@@ -57,6 +57,7 @@ jobs:
       run: |
         export DISPLAY=:99
         export DEEPCELL_ACCESS_TOKEN="::add-mask::${{ secrets.DEEPCELLPAT }}"
+        echo Booobobobobobo
         echo $DEEPCELL_ACCESS_TOKEN
         Xvfb :99 -screen 0 1920x1080x24 & python -m unittest -v tests
     # On macOS, it is not possible to set up a virtual graphical environment
