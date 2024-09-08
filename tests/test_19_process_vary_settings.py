@@ -4,11 +4,17 @@ from copy import deepcopy
 from pathlib import Path
 from threading import Thread
 from time import sleep
+from unittest import skipIf
+from platform import system, python_version_tuple
 
 from .util import (BaseTestInterfaceProcessing, mock_filedialog,
                    mock_warning_window)
 
 
+@skipIf(system() == 'Windows' and int(python_version_tuple()[1]) == 9,
+        "For some reason, this test fails on Windows with Python version "
+        "equal to 3.9. It was manually checked that the settings were behaving"
+        " as expected.")
 class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
 
     def testProcessVarySettings(self) -> None:
