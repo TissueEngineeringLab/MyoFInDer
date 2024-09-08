@@ -1,7 +1,7 @@
 #include <iostream>
 #include "run_cmd.cpp"
 
-/* This executable is called when somthing goes wrong with the installation of
+/* This executable is called when something goes wrong with the installation of
 the virtual environment, and the whole installation needs to be rolled back. It
 simply deletes all the files that might have been created with the virtual
 environment, to make sure everything is left clean after rolling back.
