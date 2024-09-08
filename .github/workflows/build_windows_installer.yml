@@ -152,6 +152,7 @@ jobs:
         run: |
           echo "::add-mask::${{ secrets.DEEPCELLPAT }}"
           set DEEPCELL_ACCESS_TOKEN="${{ secrets.DEEPCELLPAT }}"
+          echo '"%localappdata%\MyoFInDer\myofinder.exe" --test'
           '"%localappdata%\MyoFInDer\myofinder.exe" --test'
 
   # Pushes the installer to the main branch
