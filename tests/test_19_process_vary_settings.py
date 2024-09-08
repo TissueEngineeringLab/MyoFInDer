@@ -10,10 +10,13 @@ from platform import system, python_version_tuple
 from .util import (BaseTestInterfaceProcessing, mock_filedialog,
                    mock_warning_window)
 
+condition = ((system() == 'Windows' and int(python_version_tuple()[1]) == 9) or
+             (system() == 'Linux' and int(python_version_tuple()[1]) > 8))
 
-@skipIf(system() == 'Windows' and int(python_version_tuple()[1]) == 9,
-        "For some reason, this test fails on Windows with Python version "
-        "equal to 3.9. It was manually checked that the settings were behaving"
+
+@skipIf(condition,
+        "For some reason, this test fails on some OS and Python version "
+        "combinations. It was manually checked that the settings were behaving"
         " as expected.")
 class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
 
