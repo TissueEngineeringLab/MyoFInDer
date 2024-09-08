@@ -1,17 +1,17 @@
-<!-- This file contains the customization dialog of the MyoFInDer Windows installer -->
+<!-- This file contains a text input for entering the user's DeepCell token -->
 <Wix
     xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
     <Fragment>
         <UI>
 
-            <!-- The dialog containing the customization options -->
+            <!-- The dialog for providing the token -->
             <Dialog
                 CustomPalette="no"
                 ErrorDialog="no"
                 Height="312"
                 Hidden="no"
-                Id="CustomizeDialog"
+                Id="TokenDialog"
                 KeepModeless="no"
                 LeftScroll="no"
                 Modeless="no"
@@ -96,52 +96,14 @@
                     RightToLeft="no"
                     Sunken="no"
                     TabSkip="no"
-                    Text="{\DlgTitleFont}Customize your installation"
+                    Text="{\DlgTitleFont}Provide your DeepCell API token"
                     Transparent="yes"
                     Type="Text"
                     Width="463"
                     X="15"
                     Y="20" />
 
-                <!-- Selection tree allowing to choose which features to install or not -->
-                <Control
-                    Cancel="no"
-                    Default="no"
-                    Disabled="no"
-                    Height="130"
-                    Hidden="no"
-                    Id="Tree"
-                    LeftScroll="no"
-                    Property="BrowseProperty"
-                    RightAligned="no"
-                    RightToLeft="no"
-                    Sunken="yes"
-                    TabSkip="no"
-                    Text="Selection tree"
-                    Type="SelectionTree"
-                    Width="235"
-                    X="25"
-                    Y="85" />
-
-                <!-- Box displayed around the legend describing the selected feature -->
-                <Control
-                    Cancel="yes"
-                    Default="no"
-                    Disabled="no"
-                    Height="130"
-                    Hidden="no"
-                    Id="Box"
-                    LeftScroll="no"
-                    RightAligned="no"
-                    RightToLeft="no"
-                    Sunken="no"
-                    TabSkip="no"
-                    Type="GroupBox"
-                    Width="190"
-                    X="280"
-                    Y="81" />
-
-                <!-- Brief description of the selected feature -->
+                <!-- Text informing the user to enter their token -->
                 <Control
                     Cancel="no"
                     Default="no"
@@ -149,7 +111,7 @@
                     FormatSize="no"
                     Height="30"
                     Hidden="no"
-                    Id="ItemDescription"
+                    Id="Message"
                     LeftScroll="no"
                     NoPrefix="yes"
                     NoWrap="no"
@@ -157,107 +119,65 @@
                     RightToLeft="no"
                     Sunken="no"
                     TabSkip="no"
-                    Text="{\DlgFontBold8}Multiline description of the currently selected item"
+                    Text="Please enter your personal DeepCell API token."
                     Transparent="yes"
                     Type="Text"
-                    Width="181"
-                    X="285"
-                    Y="90" >
-                    <Subscribe
-                        Attribute="Text"
-                        Event="SelectionDescription" />
-                </Control>
+                    Width="400"
+                    X="25"
+                    Y="100" />
 
-                <!-- Description of the size of the selected feature -->
+                <!-- Text providing a hyperlink to DeepCell's website -->
                 <Control
                     Cancel="no"
                     Default="no"
                     Disabled="no"
-                    FormatSize="no"
-                    Height="71"
+                    Height="15"
                     Hidden="no"
-                    Id="ItemSize"
-                    LeftScroll="no"
-                    NoPrefix="yes"
-                    NoWrap="no"
-                    RightAligned="no"
-                    RightToLeft="no"
-                    Sunken="no"
-                    TabSkip="no"
-                    Text="The size of the currently selected item"
-                    Transparent="yes"
-                    Type="Text"
-                    Width="181"
-                    X="285"
-                    Y="136" >
-                    <Subscribe
-                        Attribute="Text"
-                        Event="SelectionSize" />
-                </Control>
-
-                <!-- Button for opening a window allowing to choose where to install MyoFInDer -->
-                <Control
-                    Bitmap="no"
-                    Cancel="yes"
-                    Default="no"
-                    Disabled="no"
-                    ElevationShield="no"
-                    FixedSize="no"
-                    Height="17"
-                    Hidden="no"
-                    Icon="no"
-                    Id="Browse"
-                    Image="no"
+                    Id="DeepCellLink"
                     LeftScroll="no"
                     RightAligned="no"
                     RightToLeft="no"
                     Sunken="no"
-                    TabSkip="no"
-                    Text="Browse"
-                    Type="PushButton"
-                    Width="56"
-                    X="427"
-                    Y="238" />
+                    TabSkip="yes"
+                    Text="If you don't have a token, please visit
+&lt;a href=&quot;https://users.deepcell.org/register&quot;&gt;DeepCell&apos;s website&lt;/a&gt;
+to create your DeepCell API token."
+                    Transparent="no"
+                    Type="Hyperlink"
+                    Width="443"
+                    X="25"
+                    Y="115" />
 
-                <!-- Text displaying the location where MyoFInDer will be installed -->
+                <!-- Editable field where the user should input their token -->
                 <Control
                     Cancel="no"
                     Default="no"
                     Disabled="no"
-                    FormatSize="no"
                     Height="20"
                     Hidden="no"
-                    Id="Location"
+                    Id="Token"
                     LeftScroll="no"
-                    NoPrefix="yes"
-                    NoWrap="no"
-                    RightAligned="yes"
+                    Multiline="no"
+                    Password="no"
+                    Property="TOKEN"
+                    RightAligned="no"
                     RightToLeft="no"
                     Sunken="no"
                     TabSkip="no"
-                    Text="The selections path"
-                    Transparent="yes"
-                    Type="Text"
-                    Width="215"
-                    X="192"
-                    Y="240" >
-                    <Subscribe
-                        Attribute="Text"
-                        Event="SelectionPath" />
-                    <Subscribe
-                        Attribute="Visible"
-                        Event="SelectionPathOn" />
-                </Control>
+                    Type="Edit"
+                    Width="443"
+                    X="25"
+                    Y="140" />
 
-                <!-- Label explaining the installation path -->
+                <!-- Text informing the user that providing a token is mandatory -->
                 <Control
                     Cancel="no"
                     Default="no"
                     Disabled="no"
                     FormatSize="no"
-                    Height="10"
+                    Height="30"
                     Hidden="no"
-                    Id="LocationLabel"
+                    Id="Warning"
                     LeftScroll="no"
                     NoPrefix="yes"
                     NoWrap="no"
@@ -265,16 +185,14 @@
                     RightToLeft="no"
                     Sunken="no"
                     TabSkip="no"
-                    Text="{\DlgFontBold8}Installation location:"
+                    Text="{\DlgFontBold8}Warning: You can skip this step, but
+you'll be asked again later to enter your token. MyoFInDer won't start without
+a valid DeepCell API token!"
                     Transparent="yes"
                     Type="Text"
-                    Width="100"
+                    Width="370"
                     X="25"
-                    Y="240" >
-                    <Subscribe
-                        Attribute="Visible"
-                        Event="SelectionPathOn" />
-                </Control>
+                    Y="200" />
 
                 <!-- Button for cancelling the installation -->
                 <Control
@@ -293,40 +211,12 @@
                     RightAligned="no"
                     RightToLeft="no"
                     Sunken="no"
-                    TabSkip="no"
+                    TabSkip="yes"
                     Text="Cancel"
                     Type="PushButton"
                     Width="56"
                     X="10"
                     Y="285" />
-
-                <!-- Button for resetting the customization choices -->
-                <Control
-                    Bitmap="no"
-                    Cancel="no"
-                    Default="no"
-                    Disabled="no"
-                    ElevationShield="no"
-                    FixedSize="no"
-                    Height="17"
-                    Hidden="no"
-                    Icon="no"
-                    Id="Reset"
-                    Image="no"
-                    LeftScroll="no"
-                    RightAligned="no"
-                    RightToLeft="no"
-                    Sunken="no"
-                    TabSkip="no"
-                    Text="Reset"
-                    Type="PushButton"
-                    Width="56"
-                    X="77"
-                    Y="285" >
-                    <Subscribe
-                        Attribute="Enabled"
-                        Event="SelectionNoItems" />
-                </Control>
 
                 <!-- Button for switching back to the previous installer window -->
                 <Control
@@ -352,7 +242,7 @@
                     X="361"
                     Y="285" />
 
-                <!-- Button for switching to the next installer window -->
+                <!-- Button for starting MyoFInDer's installation -->
                 <Control
                     Bitmap="no"
                     Cancel="no"
@@ -363,14 +253,14 @@
                     Height="17"
                     Hidden="no"
                     Icon="no"
-                    Id="Next"
+                    Id="Install"
                     Image="no"
                     LeftScroll="no"
                     RightAligned="no"
                     RightToLeft="no"
                     Sunken="no"
                     TabSkip="no"
-                    Text="Next &gt;"
+                    Text="Install"
                     Type="PushButton"
                     Width="56"
                     X="427"

@@ -102,8 +102,30 @@
                 Event="NewDialog"
                 Value="LicenseDialog" />
             <Publish
-                Control="Install"
+                Control="Next"
                 Dialog="CustomizeDialog"
+                Event="NewDialog"
+                Value="TokenDialog" />
+
+            <Publish
+                Control="Cancel"
+                Dialog="TokenDialog"
+                Event="SpawnDialog"
+                Value="ConfirmExitDialog" />
+            <Publish
+                Control="Back"
+                Dialog="TokenDialog"
+                Event="NewDialog"
+                Value="CustomizeDialog" />
+            <Publish
+                Condition="TOKEN"
+                Control="Install"
+                Dialog="TokenDialog"
+                Event="DoAction"
+                Value="SaveToken" />
+            <Publish
+                Control="Install"
+                Dialog="TokenDialog"
                 Event="NewDialog"
                 Value="ProgressDialog" />
 
