@@ -23,7 +23,10 @@ jobs:
         # Run on all the supported Python versions
         python-version: ["3.7", "3.8", "3.9", "3.10"]
         # Run on all the supported platforms
-        os: [ubuntu-latest, windows-latest, macos-13]
+        os: [ubuntu-22.04, windows-latest, macos-13]
+        exclude:
+          - os: macos-13
+            python-version: "3.8"
 
     steps:
     # Checkout the repository
@@ -54,18 +57,8 @@ jobs:
         Xvfb :99 -screen 0 1920x1080x24 & python -m unittest -v tests
     # On macOS, it is not possible to set up a virtual graphical environment
     # Therefore, no automated tests can be run on macOS
-    # Also, tkinter needs to be separately configured, but python-tk is only available for Python 3.9 and 3.10
-    - name: Import MyoFInDer (macOS <3.9)
-      if: |
-        runner.os == 'macOS' &&
-        contains(fromJSON('["3.7", "3.8"]'), matrix.python-version)
+    - name: Import MyoFInDer (macOS)
+      if: runner.os == 'macOS'
       run: |
-        brew install python-tk@3.9
-        python -c "import myofinder;print(myofinder.__version__)"
-    - name: Import MyoFInDer (macOS 3.9+)
-      if: |
-        runner.os == 'macOS' &&
-        contains(fromJSON('["3.9", "3.10"]'), matrix.python-version)
-      run: |
-        brew install python-tk@${{ matrix.python-version }}
+        ln -sf /usr/local/opt/tcl-tk@8 /usr/local/opt/tcl-tk
         python -c "import myofinder;print(myofinder.__version__)"
