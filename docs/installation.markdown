@@ -22,20 +22,32 @@ image-processing software.
 
 Index of the Installation page :
 
-1. [On Windows](#1-on-windows)
-   1. [Install Python](#11-install-python)
-   2. [Install the C++ build tools](#12-install-the-c-build-tools)
-   3. [Installation of MyoFInDer using the Windows installer](#13-installation-of-myofinder-using-the-windows-installer)
-   4. [Installation of MyoFInDer from console](#14-installation-of-myofinder-from-console)
-2. [On Linux and macOS](#2-on-linux-and-macos)
-   1. [Check your Python version](#21-check-your-python-version)
-   2. [[Optional] Deploy a virtual environment](#22-optional-deploy-a-virtual-environment)
-   3. [Install MyoFInDer](#23-install-myofinder)
-3. [GPU acceleration](#3-gpu-acceleration)
+1. [DeepCell API Token](#1-deepcell-api-token)
+2. [On Windows](#2-on-windows)
+   1. [Install Python](#21-install-python)
+   2. [Install the C++ build tools](#22-install-the-c-build-tools)
+   3. [Installation of MyoFInDer using the Windows installer](#23-installation-of-myofinder-using-the-windows-installer)
+   4. [Installation of MyoFInDer from console](#24-installation-of-myofinder-from-console)
+3. [On Linux and macOS](#3-on-linux-and-macos)
+   1. [Check your Python version](#31-check-your-python-version)
+   2. [[Optional] Deploy a virtual environment](#32-optional-deploy-a-virtual-environment)
+   3. [Install MyoFInDer](#33-install-myofinder)
+4. [GPU acceleration](#4-gpu-acceleration)
 
-# 1. On Windows
+# 1. DeepCell API Token
 
-## 1.1 Install Python
+For using MyoFInDer, you'll need to have a valid DeepCell API token. This 
+token can be requested on DeepCell's [website](https://users.deepcell.org/register).
+This token will be requested a first time during installation, for Windows 
+users. If you do not provide it at this moment, or install MyoFInDer on a 
+different platform, MyoFInDer will display a window requesting you to enter 
+your token the first time you start it.
+
+**MyoFInDer cannot run without a valid DeepCell APi token !**
+
+# 2. On Windows
+
+## 2.1 Install Python
 
 On Windows, Python is not natively installed. You can **first check if it is 
 already installed on your machine** by typing `python --version` in a terminal. 
@@ -63,7 +75,7 @@ If Python is not installed, or if the installed version is not between 3.7 and
 you have several possible options. The two most convenient ones are described 
 here.
 
-### 1.1.1 Install Python from an installer
+### 2.1.1 Install Python from an installer
 
 **On Python's [website](https://www.python.org/downloads/windows/) you can find 
 .exe Windows installers for a number of Python versions**. Select the one you 
@@ -74,7 +86,7 @@ the instructions of the installation wizard. Make sure to check the
 Once Python is installed, you can **double-check the installation** by running 
 again `python --version`.
 
-### 1.1.2 Install Python from the Microsoft Store (not recommended)
+### 2.1.2 Install Python from the Microsoft Store (not recommended)
 
 **All the maintained versions of Python are available for installation in the 
 Microsoft Store** application. This is the easiest way to install Python on a 
@@ -91,7 +103,7 @@ again `python --version`.
 > obtained from the Microsoft Store. The previous installation method should 
 > therefore be preferred.
 
-## 1.2 Install the C++ Build tools
+## 2.2 Install the C++ Build tools
 
 On Windows only, **some extra tools need to be installed before installing
 MyoFInDer**. These extra tools are necessary for successfully installing one of
@@ -110,7 +122,7 @@ available disk space.
 
 <img src="./cpp_build_tools.png" title="Components to select for build tools">
 
-## 1.3 Installation of MyoFInDer using the Windows installer
+## 2.3 Installation of MyoFInDer using the Windows installer
 
 For convenience, **a basic installer is provided for Windows users**. It 
 requires a compatible version of Python and the C++ build tools to be 
@@ -148,17 +160,17 @@ the console won't close automatically.
 **The Windows installer can be downloaded 
 [here](https://github.com/TissueEngineeringLab/MyoFInDer/blob/main/bin/myofinder.msi).**
 
-## 1.4 Installation of MyoFInDer from console
+## 2.4 Installation of MyoFInDer from console
 
 In case the provided installer does not work properly, or simply if you prefer
 using MyoFInDer from the command-line, **it is also possible to install it
 using `pip` like any other Python module**. 
 
-### 1.4.1 \[Optional] Deploy a virtual environment
+### 2.4.1 \[Optional] Deploy a virtual environment
 
 > The commands below are intended for experimented users who know what they're
 > doing ! Do not try to run them unless you understand what they do ! For 
-> Windows users, the [installation using the Windows installer](#13-installation-of-myofinder-using-the-windows-installer) 
+> Windows users, the [installation using the Windows installer](#23-installation-of-myofinder-using-the-windows-installer) 
 > is recommended. If you face any problem with the installation and don't know 
 > what to do, please refer to the [Troubleshooting page](troubleshooting.markdown) 
 > or get in touch with the maintainer.
@@ -214,11 +226,11 @@ C:\Users\User><Path to your venv>\Scripts\activate.bat
 
 Where `<Path to your venv>` is the path to the created virtual environment.
 
-### 1.4.2 Install MyoFInDer
+### 2.4.2 Install MyoFInDer
 
 > The commands below are intended for experimented users who know what they're
 > doing ! Do not try to run them unless you understand what they do ! For 
-> Windows users, the [installation using the Windows installer](#13-installation-of-myofinder-using-the-windows-installer) 
+> Windows users, the [installation using the Windows installer](#23-installation-of-myofinder-using-the-windows-installer) 
 > is recommended. If you face any problem with the installation and don't know 
 > what to do, please refer to the [Troubleshooting page](troubleshooting.markdown) 
 > or get in touch with the maintainer.
@@ -252,7 +264,7 @@ Or if installed in a virtual environment :
 1.0.0
 ```
 
-# 2. On Linux and macOS
+# 3. On Linux and macOS
 
 On Linux and macOS, **MyoFInDer can only be installed as a Python module using 
 `pip`**. Therefore, a very basic knowledge of Python and command-line terminals 
@@ -266,7 +278,7 @@ is the part of the line located after the `$` symbol. The lines that do not
 contain a `user@machine:~$` header represent the output of the commands, and 
 you should therefore not try to type and execute them !
 
-## 2.1 Check your Python version
+## 3.1 Check your Python version
 
 On both Linux and macOS, **Python is natively installed**. In a terminal, you 
 can check the current version of Python as follows :
@@ -292,7 +304,7 @@ If the current version of Python is not between 3.7 and 3.10, you will need to
 [other workarounds](https://hackersandslackers.com/multiple-
 python-versions-ubuntu-20-04/) in Ubuntu.
 
-## 2.2 \[Optional] Deploy a virtual environment
+## 3.2 \[Optional] Deploy a virtual environment
 
 *In this section, replace* `python` *with* `python3` *or* `python3.x` 
 *(7<=x<=10) if necessary.*
@@ -340,7 +352,7 @@ user@machine:~$ source <Path to your venv>/bin/activate
 
 Where `<Path to your venv>` is the path to the created virtual environment.
 
-## 2.3 Install MyoFInDer
+## 3.3 Install MyoFInDer
 
 *In this section, replace* `python` *with* `python3` *or* `python3.x` 
 *(7<=x<=10) if necessary.*
@@ -381,7 +393,7 @@ Or if installed in a virtual environment :
 > have to install it manually. On Ubuntu, that can be done by calling
 > `sudo apt install python3-tk`.
 
-# 3. GPU-acceleration
+# 4. GPU-acceleration
 
 The [TensorFlow](https://www.tensorflow.org/) library that runs the AI model 
 used by MyoFInDern supports GPU acceleration. When it is enabled, it can 

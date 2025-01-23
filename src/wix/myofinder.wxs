@@ -356,6 +356,13 @@
             Secure="yes"
             Value="myofinder.ico" />
 
+        <!-- Executable file saving the token to a text file when clicking on
+        the Next button in the dedicated installer window -->
+        <Binary
+            Id="TokenSaver"
+            SourceFile=".\..\..\bin\save_token.exe"
+            SuppressModularization="no" />
+
         <!-- Executable file creating a virtual environment and installing
         MyoFInDer inside during the installation -->
         <Binary
@@ -369,6 +376,16 @@
             Id="PythonModuleUninstaller"
             SourceFile=".\..\..\bin\rollback_install.exe"
             SuppressModularization="no" />
+
+        <!-- Saving the token to a text file -->
+        <CustomAction
+            BinaryRef="TokenSaver"
+            Execute="immediate"
+            ExeCommand="[INSTALLDIR] &quot;[INSTALLDIR]token.txt&quot; [TOKEN]"
+            Id="SaveToken"
+            Impersonate="yes"
+            PatchUninstall="no"
+            Return="check" />
 
         <!-- Embedding the virtual environment installer into a custom action -->
         <CustomAction
@@ -502,6 +519,12 @@
                     <RemoveFile
                         Id="SettingsFile"
                         Name="settings.pickle"
+                        On="uninstall" />
+
+                    <!-- Remove the token file if it does not exist on installation -->
+                    <RemoveFile
+                        Id="TokenFile"
+                        Name="token.txt"
                         On="uninstall" />
 
                     <util:RemoveFolderEx
