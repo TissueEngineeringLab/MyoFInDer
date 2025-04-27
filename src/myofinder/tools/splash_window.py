@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from tkinter import Tk, Canvas
+from tkinter import Tk, Canvas, TclError
 from PIL import ImageTk, Image
 from screeninfo import get_monitors
 from time import sleep
@@ -17,7 +17,11 @@ class SplashWindow(Tk):
         """Sets a few instance attributes."""
 
         super().__init__()
-        self.overrideredirect(True)
+        # On macOS, some Tkinter versions crash on this call
+        try:
+            self.overrideredirect(True)
+        except TclError:
+            pass
         self.grab_set()
 
         self._image = Image.open(resource_filename(
