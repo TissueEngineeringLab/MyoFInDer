@@ -7,6 +7,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import sleep
 from typing import Optional
+import os
 
 from . import mock_filedialog, mock_messagebox, mock_warning_window
 
@@ -33,6 +34,11 @@ class BaseTestInterface(unittest.TestCase):
         Overrides the default Tkinter dialogs, creates a temporary directory
         for the tests, and starts the main window of MyoFInDer.
         """
+
+        # Not strictly needed, but avoids initializing DeepCell in vain
+        if os.environ.get('DEEPCELL_ACCESS_TOKEN') is None:
+            raise EnvironmentError("The DEEPCELL_ACCESS_TOKEN environment "
+                                   "variable is not set, cannot run the tests")
 
         # Overwriting the dialog windows so that no user input is required
         # These default windows cannot be controlled from the code
