@@ -7,7 +7,7 @@ import os
 
 from .util import BaseTestInterface, mock_filedialog, mock_warning_window
 
-condition = (os.getenv('MYOFINDER_GITHUB_ACTION', 0) == 1
+condition = (os.getenv('MYOFINDER_GITHUB_ACTION', 0) == '1'
              and system() == 'Windows'
              and int(python_version_tuple()[1]) < 9)
 
