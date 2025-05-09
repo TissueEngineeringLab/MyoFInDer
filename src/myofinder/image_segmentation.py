@@ -55,6 +55,9 @@ class ImageSegmentation:
                 greater than this value will be discarded.
             minimum_nucleus_diameter: Objects whose area is lower than this
                 value (in pixels) will not be considered.
+            minimum_nuclei_count: Nuclei located in a fiber containing less
+                than this number of positive nuclei will be counted as
+                negative.
 
         Returns:
             The list of nuclei outside the fibers, the list of nuclei inside
@@ -240,6 +243,9 @@ class ImageSegmentation:
                 lower than this value will be discarded.
             maximum_nucleus_intensity: Any nucleus whose average brightness is
                 greater than this value will be discarded.
+            minimum_nuclei_count: Nuclei located in a fiber containing less
+                than this number of positive nuclei will be counted as
+                negative.
 
         Returns:
             The list of the centers of nuclei outside of fibers, and the list
