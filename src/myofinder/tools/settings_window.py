@@ -224,6 +224,31 @@ class SettingsWindow(Toplevel):
         self._diameter_slider_frame.grid(column=1, row=17, sticky='NW',
                                          pady=(10, 0))
 
+        # Slider to adjust the minimum nucleus count
+        self._min_nuclei_count_label = ttk.Label(
+            self._frame, text='Minimum nuclei count :')
+        self._min_nuclei_count_label.grid(
+            column=0, row=18, sticky='E', pady=(10, 0), padx=(0, 10))
+
+        self._count_slider_frame = ttk.Frame(self._frame)
+
+        self._count_slide_val_label = ttk.Label(
+            self._count_slider_frame,
+            textvariable=self._settings.minimum_nuclei_count, width=3)
+        self._count_slide_val_label.pack(
+            side='left', anchor='w', fill='none', expand=False, padx=(0, 20))
+
+        self._count_slider = Scale(
+            self._count_slider_frame, from_=0, to=8,
+            variable=self._settings.minimum_nuclei_count,
+            orient="horizontal", length=150, showvalue=False,
+            tickinterval=1)
+        self._count_slider.pack(side='left', anchor='w',
+                                fill='none', expand=False)
+
+        self._count_slider_frame.grid(column=1, row=18, sticky='NW',
+                                      pady=(10, 0))
+
     def _center(self) -> None:
         """Centers the popup window on the currently used monitor."""
 

@@ -6,6 +6,7 @@ import numpy.ma as ma
 from pathlib import Path
 import cv2
 from typing import List, Tuple, Any
+from collections import defaultdict
 
 from .tools import check_image
 
@@ -31,9 +32,11 @@ class ImageSegmentation:
                  maximum_fiber_intensity: int,
                  minimum_nucleus_intensity: int,
                  maximum_nucleus_intensity: int,
-                 minimum_nucleus_diameter: int) -> \
-            (Path, List[Tuple[np.ndarray, np.ndarray]],
-             List[Tuple[np.ndarray, np.ndarray]], Tuple[Any], float):
+                 minimum_nucleus_diameter: int,
+                 minimum_nuclei_count: int
+                 ) -> Tuple[Path, List[Tuple[np.ndarray, np.ndarray]],
+                            List[Tuple[np.ndarray, np.ndarray]],
+                            Tuple[Any, ...], float]:
         """Computes the nuclei positions and optionally the fibers positions.
 
         Also returns whether the nuclei are inside or outside the fibers.
@@ -139,7 +142,8 @@ class ImageSegmentation:
         # Getting the position of the nuclei
         nuclei_out, nuclei_in = self._get_nuclei_positions(
             labeled_image, mask, nuclei_channel, 0.75,
-            minimum_nucleus_intensity, maximum_nucleus_intensity)
+            minimum_nucleus_intensity, maximum_nucleus_intensity,
+            minimum_nuclei_count)
 
         return path, nuclei_out, nuclei_in, fiber_contours, area
 
@@ -219,9 +223,10 @@ class ImageSegmentation:
                               nuclei_channel: np.ndarray,
                               fiber_overlap_threshold: float,
                               minimum_nucleus_intensity: int,
-                              maximum_nucleus_intensity: int) -> \
-            (List[Tuple[np.ndarray, np.ndarray]],
-             List[Tuple[np.ndarray, np.ndarray]]):
+                              maximum_nucleus_intensity: int,
+                              minimum_nuclei_count: int
+                              ) -> Tuple[List[Tuple[np.ndarray, np.ndarray]],
+                                         List[Tuple[np.ndarray, np.ndarray]]]:
         """Computes the center of the nuclei and determines whether they're
         positive or not.
 
@@ -241,8 +246,35 @@ class ImageSegmentation:
             of centers of nuclei inside fibers
         """
 
-        nuclei_out_fiber = []
-        nuclei_in_fiber = []
+        nuclei_out_fiber = list()
+        nuclei_in_fiber = list()
+
+        # Detect the contours of the detected fibers
+        contours, hierarchy = cv2.findContours(mask.astype(np.uint8),
+                                               cv2.RETR_CCOMP,
+                                               cv2.CHAIN_APPROX_SIMPLE)
+        hierarchy = np.squeeze(hierarchy).tolist()
+
+        # Group the contours so that the holes are with their parents
+        grouped = defaultdict(list)
+        for i, (contour, (_, _, _, parent)) in enumerate(zip(contours,
+                                                             hierarchy)):
+            if parent < 0:
+                grouped[i].append(contour)
+            else:
+                grouped[parent].append(contour)
+
+        # Dict to keep track of the nuclei count in each fiber
+        nuc_count = {i: 0 for i in grouped.keys()}
+
+        # Create fiber masks to check in which fiber each positive nucleus is
+        fib_masks = dict()
+        for i, cont in grouped.items():
+            fib_mask = np.zeros_like(mask, dtype=np.uint8)
+            cv2.drawContours(fib_mask, cont, -1, 255, -1)
+            fib_mask = fib_mask.astype(bool)
+            fib_mask = ma.masked_array(labeled_image, fib_mask)
+            fib_masks[i] = fib_mask
 
         # Masking the image containing the nuclei with the boolean mask of the
         # fibers
@@ -250,6 +282,12 @@ class ImageSegmentation:
 
         # Each gray level on the nuclei image corresponds to one nucleus
         nb_nuc = np.max(labeled_image)
+
+        # Buffers for storing the nuclei, their positivity status, and the
+        # index of the fiber in which they are located
+        nuclei = dict()
+        positivity = dict()
+        fiber_num = dict()
 
         # Iterating through the detected nuclei
         for i in range(1, nb_nuc + 1):
@@ -262,13 +300,55 @@ class ImageSegmentation:
             if not (minimum_nucleus_intensity <=
                     np.average(nuclei_channel[nucleus_y, nucleus_x]) <=
                     maximum_nucleus_intensity):
+                nuclei[i] = None
+                positivity[i] = None
+                fiber_num[i] = None
                 continue
 
             # Determining whether the nucleus is positive or negative
             in_fiber = ma.count_masked(masked_image[nucleus_y, nucleus_x])
             if in_fiber < fiber_overlap_threshold * nucleus_x.shape[0]:
-                nuclei_out_fiber.append((center_x, center_y))
+                positive = False
             else:
+                positive = True
+
+            # Storing the nucleus position and positivity
+            nuclei[i] = (center_x, center_y)
+            positivity[i] = positive
+
+            # Searching for the first fiber that contains part of the nucleus
+            if positive:
+                for j, fib_mask in fib_masks.items():
+                    if ma.count_masked(fib_mask[nucleus_y, nucleus_x]):
+                        nuc_count[j] += 1
+                        fiber_num[i] = j
+                        break
+            else:
+                fiber_num[i] = None
+
+        # Excluding the fibers that contain too few nuclei
+        fib_to_ban = tuple(i for i, count in nuc_count.items()
+                           if count < minimum_nuclei_count)
+
+        # Iterating again over the detected nuclei
+        for i in range(1, nb_nuc + 1):
+
+            # Means that the nucleus was skipped due to out-of-bounds intensity
+            if nuclei[i] is None:
+                continue
+
+            center_x, center_y = nuclei[i]
+            positive = positivity[i]
+            fib_num = fiber_num[i]
+
+            # Excluding the nuclei belonging to fibers with too few nuclei
+            if fib_num is not None and fib_num in fib_to_ban:
+                positive = False
+
+            # Building the final lists of positive and negative nuclei
+            if positive:
                 nuclei_in_fiber.append((center_x, center_y))
+            else:
+                nuclei_out_fiber.append((center_x, center_y))
 
         return nuclei_out_fiber, nuclei_in_fiber
