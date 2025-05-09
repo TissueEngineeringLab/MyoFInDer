@@ -183,23 +183,30 @@ class ImageSegmentation:
         # Closing, to remove noise inside the fibers
         processed = cv2.morphologyEx(processed, cv2.MORPH_CLOSE, kernel)
 
-        # Inverting black and white
-        processed = cv2.bitwise_not(processed)
+        # Find contours and hierarchy of the holes inside the fibers
+        contours, hierarchy = cv2.findContours(processed, cv2.RETR_TREE,
+                                               cv2.CHAIN_APPROX_SIMPLE)
+        hierarchy = np.squeeze(hierarchy).tolist()
 
-        # Find contours of the holes inside the fibers
-        contours, _ = cv2.findContours(processed, cv2.RETR_TREE,
-                                       cv2.CHAIN_APPROX_SIMPLE)
+        # Define thresholds for filling up the inside holes
+        thresh_nuc, _ = cv2.threshold(nuclei_channel, 0, 255, cv2.THRESH_OTSU)
+        med_excl = np.median(nuclei_channel[processed > 0])
 
-        for contour in contours:
+        for contour, (_, _, _, parent) in zip(contours, hierarchy):
 
+            # Only consider inside contours
+            if parent < 0:
+                continue
+
+            # Create a mask for the current contour
             mask = np.zeros_like(processed)
-            cv2.drawContours(mask, contour, -1, 255, -1)
+            cv2.drawContours(mask, (contour,), -1, 255, -1)
 
-            if np.average(nuclei_channel[mask == 255]) > 50:
-                cv2.drawContours(processed, contour, -1, 0, -1)
-
-        # Inverting black and white again
-        processed = cv2.bitwise_not(processed)
+            # If the hole in the fiber signal is below a nucleus, and the fiber
+            # signal is still quite bright, then fill up the hole
+            if (np.average(nuclei_channel[mask.nonzero()]) > thresh_nuc and
+                np.average(fiber_channel[mask.nonzero()]) > med_excl):
+                cv2.drawContours(processed, (contour,), -1, 255, -1)
 
         # Creating a boolean mask, later used to generate a masked array
         mask = processed.astype(bool)
