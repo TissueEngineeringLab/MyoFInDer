@@ -163,6 +163,10 @@ class ImageSegmentation:
             A boolean mask containing the position of the fibers
         """
 
+        # Apply a Gaussian filter to smoothen the fiber signal
+        dim = int(min(fiber_channel.shape) / 50) // 2 * 2 - 1
+        fiber_channel = cv2.GaussianBlur(fiber_channel, (dim, dim), 0)
+
         # First, apply a base threshold
         kernel = np.ones((4, 4), np.uint8)
         _, min_thresh = cv2.threshold(fiber_channel, minimum_intensity, 255,
