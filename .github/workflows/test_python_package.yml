@@ -48,7 +48,7 @@ jobs:
     - name: Test MyoFInDer (Windows)
       if: runner.os == 'Windows'
       run: |
-        set MYOFINDER_GITHUB_ACTION=1
+        $Env:MYOFINDER_GITHUB_ACTION = 1
         python -m unittest -v tests
       # On Linux, the Xvfb virtual X server can be used
       # Therefore, it is possible to run the automated test suite
