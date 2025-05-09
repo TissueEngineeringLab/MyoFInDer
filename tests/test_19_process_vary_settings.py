@@ -6,12 +6,14 @@ from threading import Thread
 from time import sleep
 from unittest import skipIf
 from platform import system, python_version_tuple
+import os
 
 from .util import (BaseTestInterfaceProcessing, mock_filedialog,
                    mock_warning_window)
 
-condition = ((system() == 'Windows' and int(python_version_tuple()[1]) == 9) or
-             (system() == 'Linux' and int(python_version_tuple()[1]) > 8))
+condition = (os.getenv('MYOFINDER_GITHUB_ACTION', 0) == 1 and
+             ((system() == 'Windows' and int(python_version_tuple()[1]) == 9)
+              or (system() == 'Linux' and int(python_version_tuple()[1]) > 8)))
 
 
 @skipIf(condition,
