@@ -138,7 +138,7 @@ class ImageSegmentation:
 
         # Getting the position of the nuclei
         nuclei_out, nuclei_in = self._get_nuclei_positions(
-            labeled_image, mask, nuclei_channel, 0.4,
+            labeled_image, mask, nuclei_channel, 0.75,
             minimum_nucleus_intensity, maximum_nucleus_intensity)
 
         return path, nuclei_out, nuclei_in, fiber_contours, area
