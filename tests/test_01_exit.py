@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from _tkinter import TclError
+from tkinter import TclError
 
 from .util import BaseTestInterface
 
