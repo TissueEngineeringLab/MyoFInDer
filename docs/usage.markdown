@@ -218,6 +218,10 @@ The available settings are:
    must have in order to be detected, in pixels. More precisely, the area of
    detected nuclei must be superior or equal to the area of a circle whose
    diameter is the value of this setting. Defaults to 20.
+ * **Minimum nuclei count**: If a fiber does not contain at least this number 
+   of nuclei, then all its positive nuclei will be counted as negative. This 
+   prevents nuclei in unfused myoblasts to be counted as positive for the 
+   fusion index calculation. Defaults to 3.
 
 ## 2.3 Starting a computation
 

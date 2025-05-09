@@ -230,6 +230,8 @@ class MainWindow(Tk):
             "write", self._enable_save_button)
         self.settings.minimum_nuc_diameter.trace_add(
             "write", self._enable_save_button)
+        self.settings.minimum_nuclei_count.trace_add(
+            "write", self._enable_save_button)
 
         # Updates the display when an image has been processed
         self._processed_images_count.trace_add("write",
@@ -844,7 +846,8 @@ class MainWindow(Tk):
                  self.settings.maximum_fiber_intensity.get(),
                  self.settings.minimum_nucleus_intensity.get(),
                  self.settings.maximum_nucleus_intensity.get(),
-                 self.settings.minimum_nuc_diameter.get()))
+                 self.settings.minimum_nuc_diameter.get(),
+                 self.settings.minimum_nuclei_count.get()))
 
     def _process_thread(self) -> None:
         """Main loop of the thread in charge of processing the images.
@@ -880,7 +883,8 @@ class MainWindow(Tk):
                     job = self._queue.get_nowait()
                     (path, nuclei_color, fiber_color, minimum_fiber_intensity,
                      maximum_fiber_intensity, minimum_nucleus_intensity,
-                     maximum_nucleus_intensity, minimum_nucleus_diameter) = job
+                     maximum_nucleus_intensity, minimum_nucleus_diameter,
+                     minimum_nuclei_count) = job
                     self.log(f"Processing thread received job: "
                              f"{', '.join(map(str, job))}")
                 except Empty:
@@ -902,7 +906,8 @@ class MainWindow(Tk):
                                            maximum_fiber_intensity,
                                            minimum_nucleus_intensity,
                                            maximum_nucleus_intensity,
-                                           minimum_nucleus_diameter)
+                                           minimum_nucleus_diameter,
+                                           minimum_nuclei_count)
                     self.log(f"Segmentation returned file: {file}, "
                              f"nuclei out: {len(nuclei_out)}, "
                              f"nuclei in: {len(nuclei_in)}, "
