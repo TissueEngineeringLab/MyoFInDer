@@ -60,5 +60,4 @@ jobs:
     - name: Import MyoFInDer (macOS)
       if: runner.os == 'macOS'
       run: |
-        ln -sf /usr/local/opt/tcl-tk@8 /usr/local/opt/tcl-tk
         python -c "import myofinder;print(myofinder.__version__)"
