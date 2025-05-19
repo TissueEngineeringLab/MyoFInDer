@@ -5,14 +5,13 @@ from pathlib import Path
 from threading import Thread
 from time import sleep
 from unittest import skipIf
-from platform import system, python_version_tuple
+from platform import system
 import os
 
 from .util import (BaseTestInterfaceProcessing, mock_filedialog,
                    mock_warning_window)
 
-condition = (os.getenv('MYOFINDER_GITHUB_ACTION', 0) == '1' and
-             (system() == 'Windows' and int(python_version_tuple()[1]) == 9))
+condition = os.getenv('MYOFINDER_GITHUB_ACTION', 0) == '1'
 
 
 @skipIf(condition,
