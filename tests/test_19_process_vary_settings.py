@@ -4,20 +4,10 @@ from copy import deepcopy
 from pathlib import Path
 from threading import Thread
 from time import sleep
-from unittest import skipIf
-from platform import system
-import os
 
 from .util import (BaseTestInterfaceProcessing, mock_filedialog,
                    mock_warning_window)
 
-condition = os.getenv('MYOFINDER_GITHUB_ACTION', 0) == '1'
-
-
-@skipIf(condition,
-        "For some reason, this test fails on some OS and Python version "
-        "combinations. It was manually checked that the settings were behaving"
-        " as expected.")
 class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
 
     def testProcessVarySettings(self) -> None:
