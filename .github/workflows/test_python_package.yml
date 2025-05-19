@@ -24,6 +24,11 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
         # Run on all the supported platforms
         os: [ubuntu-latest, windows-latest, macos-latest]
+        # The minimum Numpy version that fits (2.0.2) has to be built and the
+        # test fails
+        exclude:
+          - os: windows-latest
+            python-version: "3.13"
 
     steps:
     # Checkout the repository
