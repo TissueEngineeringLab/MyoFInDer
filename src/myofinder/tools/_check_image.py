@@ -77,8 +77,7 @@ def check_image(image_path: Path) -> Optional[ndarray]:
 
     # If it's float, casting to [0-1] and then to uint8
     elif type_ == 'float':
-        cv_img = ((cv_img - cv_img.min(initial=None)) /
-                  (cv_img.max(initial=None) - cv_img.min(initial=None))
+        cv_img = ((cv_img - cv_img.min()) / (cv_img.max() - cv_img.min())
                   * 255).astype('uint8')
 
     # If it's another format, returning None to indicate it wasn't successful
