@@ -21,12 +21,9 @@ jobs:
       fail-fast: false
       matrix:
         # Run on all the supported Python versions
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
         # Run on all the supported platforms
-        os: [ubuntu-22.04, windows-latest, macos-13]
-        exclude:
-          - os: macos-13
-            python-version: "3.8"
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
     # Checkout the repository
