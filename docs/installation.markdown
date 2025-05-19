@@ -6,15 +6,15 @@ title: Installation
 [Home page](index.markdown)
 
 As a Python module, MyoFInDer can be installed on almost any computer able to 
-run a version of Python between 3.7 and 3.10. It is in particular fully 
+run a version of Python between 3.9 and 3.13. It is in particular fully 
 supported on **Windows 8 and later**, and on **Ubuntu 18.04 and later**. 
 
 Because the installation and use as a Python module might not be 
 straightforward for every user, a very **basic Windows installer** is also 
 provided for convenience.
 
-MyoFInDer's installation takes around 2GB of disk memory on Linux and macOS, 
-and 5GB on Windows. It uses around 1GB of RAM when running, and might use up to 
+MyoFInDer's installation takes around 6GB of disk memory on Linux and macOS, 
+and 6GB on Windows. It uses around 1GB of RAM when running, and might use up to 
 100% of the CPU. For a good performance, it is advised to have at least 8GB of 
 RAM on your computer, and 4 CPU cores or more. It is also recommended not to 
 run MyoFInDer along with other CPU-intensive applications, like 
@@ -58,8 +58,8 @@ Python 3.9.7
 > used in the presented code snippets. Alternatively, a more advanced terminal 
 > program called Windows PowerShell can also be used.
 
-If Python is not installed, or if the installed version is not between 3.7 and 
-3.10 **you need to install a Python version between 3.7 and 3.10**. To do so,
+If Python is not installed, or if the installed version is not between 3.9 and 
+3.13 **you need to install a Python version between 3.9 and 3.13**. To do so,
 you have several possible options. The two most convenient ones are described 
 here.
 
@@ -286,7 +286,7 @@ Python 3.10.6
 > To open a terminal in Linux and mcOS you can simply search for the Terminal 
 > application in the application menu. On Linux, you can also type CTRL+ALT+T.
 
-If the current version of Python is not between 3.7 and 3.10, you will need to
+If the current version of Python is not between 3.9 and 3.13, you will need to
 **install another version matching the specification**. This can be done using
 [pyenv](https://github.com/pyenv/pyenv) on macOS, or 
 [other workarounds](https://hackersandslackers.com/multiple-
@@ -295,7 +295,7 @@ python-versions-ubuntu-20-04/) in Ubuntu.
 ## 2.2 \[Optional] Deploy a virtual environment
 
 *In this section, replace* `python` *with* `python3` *or* `python3.x` 
-*(7<=x<=10) if necessary.*
+*(9<=x<=13) if necessary.*
 
 It is **recommended to install MyoFInDer in a
 [virtual environment](https://docs.python.org/3/library/venv.html)** to avoid 
@@ -343,7 +343,7 @@ Where `<Path to your venv>` is the path to the created virtual environment.
 ## 2.3 Install MyoFInDer
 
 *In this section, replace* `python` *with* `python3` *or* `python3.x` 
-*(7<=x<=10) if necessary.*
+*(9<=x<=13) if necessary.*
 
 Once the correct version of Python is installed, **MyoFInDer can be installed 
 like any other package using the `pip` module** :
@@ -384,7 +384,7 @@ Or if installed in a virtual environment :
 # 3. GPU-acceleration
 
 The [TensorFlow](https://www.tensorflow.org/) library that runs the AI model 
-used by MyoFInDern supports GPU acceleration. When it is enabled, it can 
+used by MyoFInDer supports GPU acceleration. When it is enabled, it can 
 drastically improve the computation speed of the module by performing the
 calculations on the GPU rather than on the CPU. Depending on your machine, you 
 might however not be able to enable GPU acceleration.

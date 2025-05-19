@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from deepcell.applications import Mesmer
+import cellpose.models
 import numpy as np
 import numpy.ma as ma
 from pathlib import Path
@@ -22,7 +22,8 @@ class ImageSegmentation:
     def __init__(self) -> None:
         """Simply loads the Mesmer library."""
 
-        self._app = Mesmer()
+        self._app = cellpose.models.CellposeModel(diam_mean=17,
+                                                  model_type='nuclei')
 
     def __call__(self,
                  path: Path,
@@ -82,48 +83,37 @@ class ImageSegmentation:
 
         del image
 
-        # Segmentation parameters
-        radius = 2
-        maxima_threshold = 0.05
-        interior_threshold = 0.3
-        maxima_smooth = 0
-        interior_smooth = 2
-        maxima_index = 0
-        interior_index = -1
-        label_erosion = 0
-        fill_holes_threshold = 15
-        pixel_expansion = None
-        maxima_algorith = 'h_maxima'
-
-        small_objects_threshold = minimum_nucleus_diameter ** 2 * np.pi / 4
+        small_objects_threshold = int(minimum_nucleus_diameter ** 2
+                                      * np.pi / 4)
 
         # Actual nuclei detection function
-        labeled_image = self._app.predict(
-            image=np.stack((nuclei_channel,
-                            nuclei_channel), axis=-1)[np.newaxis, :],
-            batch_size=1,
-            image_mpp=None,
-            pad_mode='constant',
-            compartment='nuclear',
-            preprocess_kwargs=dict(),
-            postprocess_kwargs_whole_cell=dict(),
-            postprocess_kwargs_nuclear={
-                'radius': radius,
-                'maxima_threshold': maxima_threshold,
-                'interior_threshold': interior_threshold,
-                'maxima_smooth': maxima_smooth,
-                'interior_smooth': interior_smooth,
-                'maxima_index': maxima_index,
-                'interior_index': interior_index,
-                'label_erosion': label_erosion,
-                'small_objects_threshold': small_objects_threshold,
-                'fill_holes_threshold': fill_holes_threshold,
-                'pixel_expansion': pixel_expansion,
-                'maxima_algorith': maxima_algorith,
-            })
-
-        # Removing useless axes on the output and nuclei channel
-        labeled_image = np.squeeze(labeled_image)
+        labeled_image, *_ = self._app.eval(
+            x=np.stack((nuclei_channel,
+                        np.zeros_like(nuclei_channel)),
+                       axis=-1),
+            batch_size=8,
+            resample=None,
+            channels=None,
+            channel_axis=2,
+            z_axis=None,
+            normalize=True,
+            invert=False,
+            rescale=None,
+            diameter=None,
+            flow_threshold=0.4,
+            cellprob_threshold=0.0,
+            do_3D=False,
+            anisotropy=None,
+            flow3D_smooth=0,
+            stitch_threshold=0.0,
+            min_size=small_objects_threshold,
+            max_size_fraction=1.0,
+            niter=None,
+            augment=False,
+            tile_overlap=0.1,
+            bsize=256,
+            compute_masks=True,
+            progress=None)
 
         # Getting the fiber mask
         mask = self._get_fiber_mask(fiber_channel,

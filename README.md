@@ -30,8 +30,8 @@ population.
 Requirements
 ------------
 
-To install and run MyoFInDer, you'll need Python 3 (3.7 to 3.10), approximately 
-1GB of disk space, and preferably 8GB of memory or more. MyoFInDer runs on 
+To install and run MyoFInDer, you'll need Python 3 (3.9 to 3.13), approximately 
+6GB of disk space, and preferably 8GB of memory or more. MyoFInDer runs on 
 Windows, Linux, macOS, and potentially other OS able to run a compatible 
 version of Python.
 
@@ -39,7 +39,7 @@ The dependencies of the module are :
 
 - [Pillow](https://python-pillow.org/)
 - [opencv-python](https://pypi.org/project/opencv-python/)
-- [DeepCell](https://pypi.org/project/DeepCell/)
+- [CellPose](https://pypi.org/project/cellpose/)
 - [XlsxWriter](https://pypi.org/project/XlsxWriter/)
 - [screeninfo](https://pypi.org/project/screeninfo/)
 - [numpy](https://numpy.org/)

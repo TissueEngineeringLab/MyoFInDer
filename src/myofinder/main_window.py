@@ -2,7 +2,7 @@
 
 from tkinter import ttk, filedialog, Tk, IntVar, PhotoImage, Menu, StringVar, \
     messagebox, Checkbutton, BooleanVar
-from platform import system, release
+from platform import system
 from shutil import rmtree
 from webbrowser import open_new
 from threading import Thread, Event
@@ -25,7 +25,7 @@ from .files_table import FilesTable
 from .image_canvas import ImageCanvas
 
 # Sets a better resolution on recent Windows platforms
-if system() == "Windows" and int(release()) >= 8:
+if system() == "Windows":
     from ctypes import windll
     windll.shcore.SetProcessDpiAwareness(True)
 

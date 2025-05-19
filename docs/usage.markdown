@@ -31,7 +31,7 @@ Index of the Usage page :
 
 # 1. Starting MyoFInDer
 
-There are **two possible ways to start MyoFInDer**, depending if the 
+There are **two possible ways to start MyoFInDer**, depending on if the 
 application was installed using the Windows installer or not. This section
 re-uses names introduced on the [Installation page](installation.markdown), so 
 it is advised to first read the Installation page before this one.
@@ -49,7 +49,7 @@ applications.
 ## 1.2 From the command line
 
 *In this section, replace* `python` *with* `python3` *or* `python3.x` 
-*(7<=x<=10) if necessary.*
+*(9<=x<=13) if necessary.*
 
 > The commands below are intended for experimented users who know what they're
 > doing ! Do not try to run them unless you understand what they do ! If you 

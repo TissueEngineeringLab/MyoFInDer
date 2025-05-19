@@ -126,34 +126,6 @@
 
         <!-- Properties checking the installed Python versions -->
         <SetProperty
-            Action="SetMachinePythonExePath3.7"
-            After="AppSearch"
-            Condition="MACHINEPYTHONPATH37"
-            Id="SystemPythonExePath"
-            Sequence="both"
-            Value="[MACHINEPYTHONPATH37]" />
-        <SetProperty
-            Action="SetUserPythonExePath3.7"
-            After="AppSearch"
-            Condition="USERPYTHONPATH37"
-            Id="SystemPythonExePath"
-            Sequence="both"
-            Value="[USERPYTHONPATH37]" />
-        <SetProperty
-            Action="SetMachinePythonExePath3.8"
-            After="AppSearch"
-            Condition="MACHINEPYTHONPATH38"
-            Id="SystemPythonExePath"
-            Sequence="both"
-            Value="[MACHINEPYTHONPATH38]" />
-        <SetProperty
-            Action="SetUserPythonExePath3.8"
-            After="AppSearch"
-            Condition="USERPYTHONPATH38"
-            Id="SystemPythonExePath"
-            Sequence="both"
-            Value="[USERPYTHONPATH38]" />
-        <SetProperty
             Action="SetMachinePythonExePath3.9"
             After="AppSearch"
             Condition="MACHINEPYTHONPATH39"
@@ -181,6 +153,48 @@
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[USERPYTHONPATH310]" />
+        <SetProperty
+            Action="SetMachinePythonExePath3.11"
+            After="AppSearch"
+            Condition="MACHINEPYTHONPATH311"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[MACHINEPYTHONPATH311]" />
+        <SetProperty
+            Action="SetUserPythonExePath3.11"
+            After="AppSearch"
+            Condition="USERPYTHONPATH311"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[USERPYTHONPATH311]" />
+        <SetProperty
+            Action="SetMachinePythonExePath3.12"
+            After="AppSearch"
+            Condition="MACHINEPYTHONPATH312"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[MACHINEPYTHONPATH312]" />
+        <SetProperty
+            Action="SetUserPythonExePath3.12"
+            After="AppSearch"
+            Condition="USERPYTHONPATH312"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[USERPYTHONPATH312]" />
+        <SetProperty
+            Action="SetMachinePythonExePath3.13"
+            After="AppSearch"
+            Condition="MACHINEPYTHONPATH313"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[MACHINEPYTHONPATH313]" />
+        <SetProperty
+            Action="SetUserPythonExePath3.13"
+            After="AppSearch"
+            Condition="USERPYTHONPATH313"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[USERPYTHONPATH313]" />
 
         <!-- Property to set to the path of a wheel in order to install a local
         wheel version instead of the one distributed on PyPI -->
@@ -196,70 +210,6 @@
         <Launch
             Message="MyoFInDer requires Windows 8 or higher !"
             Condition="Installed OR VersionNT &gt; 602" />
-
-        <!-- Checking if Python 3.7 is installed at the user level -->
-        <Property
-            Admin="no"
-            ComplianceCheck="no"
-            Hidden="no"
-            Id="USERPYTHONPATH37"
-            Secure="yes" >
-            <RegistrySearch
-                    Bitness="always64"
-                    Id="UserPythonPath37"
-                    Key="Software\Python\PythonCore\3.7\InstallPath"
-                    Name="ExecutablePath"
-                    Root="HKCU"
-                    Type="raw" />
-        </Property>
-
-        <!-- Checking if Python 3.7 is installed at the machine level -->
-        <Property
-            Admin="no"
-            ComplianceCheck="no"
-            Hidden="no"
-            Id="MACHINEPYTHONPATH37"
-            Secure="yes" >
-            <RegistrySearch
-                    Bitness="always64"
-                    Id="MachinePythonPath37"
-                    Key="Software\Python\PythonCore\3.7\InstallPath"
-                    Name="ExecutablePath"
-                    Root="HKLM"
-                    Type="raw" />
-        </Property>
-
-        <!-- Checking if Python 3.8 is installed at the user level -->
-        <Property
-            Admin="no"
-            ComplianceCheck="no"
-            Hidden="no"
-            Id="USERPYTHONPATH38"
-            Secure="yes" >
-            <RegistrySearch
-                    Bitness="always64"
-                    Id="UserPythonPath38"
-                    Key="Software\Python\PythonCore\3.8\InstallPath"
-                    Name="ExecutablePath"
-                    Root="HKCU"
-                    Type="raw" />
-        </Property>
-
-        <!-- Checking if Python 3.8 is installed at the machine level -->
-        <Property
-            Admin="no"
-            ComplianceCheck="no"
-            Hidden="no"
-            Id="MACHINEPYTHONPATH38"
-            Secure="yes" >
-            <RegistrySearch
-                    Bitness="always64"
-                    Id="MachinePythonPath38"
-                    Key="Software\Python\PythonCore\3.8\InstallPath"
-                    Name="ExecutablePath"
-                    Root="HKLM"
-                    Type="raw" />
-        </Property>
 
         <!-- Checking if Python 3.9 is installed at the user level -->
         <Property
@@ -325,12 +275,110 @@
                     Type="raw" />
         </Property>
 
+        <!-- Checking if Python 3.11 is installed at the user level -->
+        <Property
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="USERPYTHONPATH311"
+            Secure="yes" >
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="UserPythonPath311"
+                    Key="Software\Python\PythonCore\3.11\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKCU"
+                    Type="raw" />
+        </Property>
+
+
+        <!-- Checking if Python 3.11 is installed at the machine level -->
+        <Property
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="MACHINEPYTHONPATH311"
+            Secure="yes" >
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="MachinePythonPath311"
+                    Key="Software\Python\PythonCore\3.11\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKLM"
+                    Type="raw" />
+        </Property>
+
+        <!-- Checking if Python 3.12 is installed at the user level -->
+        <Property
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="USERPYTHONPATH312"
+            Secure="yes" >
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="UserPythonPath312"
+                    Key="Software\Python\PythonCore\3.12\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKCU"
+                    Type="raw" />
+        </Property>
+
+        <!-- Checking if Python 3.12 is installed at the machine level -->
+        <Property
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="MACHINEPYTHONPATH312"
+            Secure="yes" >
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="MachinePythonPath312"
+                    Key="Software\Python\PythonCore\3.12\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKLM"
+                    Type="raw" />
+        </Property>
+
+        <!-- Checking if Python 3.13 is installed at the user level -->
+        <Property
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="USERPYTHONPATH313"
+            Secure="yes" >
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="UserPythonPath313"
+                    Key="Software\Python\PythonCore\3.13\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKCU"
+                    Type="raw" />
+        </Property>
+
+        <!-- Checking if Python 3.13 is installed at the machine level -->
+        <Property
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="MACHINEPYTHONPATH313"
+            Secure="yes" >
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="MachinePythonPath313"
+                    Key="Software\Python\PythonCore\3.13\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKLM"
+                    Type="raw" />
+        </Property>
+
         <!-- Condition checking that a valid version of Python is installed -->
         <Launch
-            Message="MyoFInDer requires Python 3.7, 3.8, 3.9, or 3.10 to be installed !"
-            Condition="Installed OR USERPYTHONPATH37 OR USERPYTHONPATH38 OR
-            USERPYTHONPATH39 OR USERPYTHONPATH310 OR MACHINEPYTHONPATH37 OR
-            MACHINEPYTHONPATH38 OR MACHINEPYTHONPATH39 OR MACHINEPYTHONPATH310" />
+            Message="MyoFInDer requires Python 3.9, 3.10, 3.11, 3.12, or 3.13 to be installed !"
+            Condition="Installed OR USERPYTHONPATH39 OR USERPYTHONPATH310 OR
+            USERPYTHONPATH311 OR USERPYTHONPATH312 OR USERPYTHONPATH313 OR
+            MACHINEPYTHONPATH39 OR MACHINEPYTHONPATH310 OR MACHINEPYTHONPATH311
+            OR MACHINEPYTHONPATH312 OR MACHINEPYTHONPATH313" />
 
         <!-- Property storing the location of the virtual environment -->
         <Property

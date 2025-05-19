@@ -21,12 +21,14 @@ jobs:
       fail-fast: false
       matrix:
         # Run on all the supported Python versions
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
         # Run on all the supported platforms
-        os: [ubuntu-22.04, windows-latest, macos-13]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        # The minimum Numpy version that fits (2.0.2) has to be built and the
+        # test fails
         exclude:
-          - os: macos-13
-            python-version: "3.8"
+          - os: windows-latest
+            python-version: "3.13"
 
     steps:
     # Checkout the repository
@@ -63,5 +65,4 @@ jobs:
     - name: Import MyoFInDer (macOS)
       if: runner.os == 'macOS'
       run: |
-        ln -sf /usr/local/opt/tcl-tk@8 /usr/local/opt/tcl-tk
         python -c "import myofinder;print(myofinder.__version__)"
