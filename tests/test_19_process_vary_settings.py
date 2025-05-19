@@ -8,6 +8,7 @@ from time import sleep
 from .util import (BaseTestInterfaceProcessing, mock_filedialog,
                    mock_warning_window)
 
+
 class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
 
     def testProcessVarySettings(self) -> None:

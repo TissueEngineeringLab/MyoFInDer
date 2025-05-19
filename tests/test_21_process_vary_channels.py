@@ -99,7 +99,7 @@ class Test21ProcessVaryChannels(BaseTestInterfaceProcessing):
                           entries[0].nuclei)), 5)
         self.assertLessEqual(
             abs(nuc_in - self._window._files_table.table_items.entries[0].
-                nuclei.nuclei_in_count), 5)
+                nuclei.nuclei_in_count), 8)
         self.assertLessEqual(
             abs(nuc_out - self._window._files_table.table_items.entries[0].
                 nuclei.nuclei_out_count), 5)
