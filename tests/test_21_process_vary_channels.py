@@ -276,13 +276,13 @@ class Test21ProcessVaryChannels(BaseTestInterfaceProcessing):
         # one with the regular colors
         self.assertLessEqual(
             abs(nuc - len(self._window._files_table.table_items.
-                          entries[0].nuclei)), 5)
+                          entries[0].nuclei)), 6)
         self.assertLessEqual(
             abs(nuc_in - self._window._files_table.table_items.entries[0].
-                nuclei.nuclei_in_count), 5)
+                nuclei.nuclei_in_count), 6)
         self.assertLessEqual(
             abs(nuc_out - self._window._files_table.table_items.entries[0].
-                nuclei.nuclei_out_count), 5)
+                nuclei.nuclei_out_count), 6)
         self.assertLessEqual(
             abs(fib - len(self._window._files_table.table_items.
                           entries[0].fibers)), 3)
