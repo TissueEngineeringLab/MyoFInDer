@@ -5,11 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "myofinder"
 dynamic = ["readme", "dependencies"]
-version = "1.0.10"
+version = "1.0.12"
 description = "Automatic calculation of the fusion index by AI segmentation"
 license = {file = "LICENSE"}
 keywords = ["segmentation", "fusion index", "automation", "muscle culture"]
-requires-python = ">=3.7,<3.11"
+requires-python = ">=3.9"
 authors = [{name = "Tissue Engineering Lab", email = "antoine.weisrock@kuleuven.be"}]
 maintainers = [{name = "Antoine Weisrock", email = "antoine.weisrock@gmail.com"}]
 classifiers = [
@@ -18,10 +18,11 @@ classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Natural Language :: English",
     "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Topic :: Scientific/Engineering :: Image Recognition"
