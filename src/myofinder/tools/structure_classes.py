@@ -532,6 +532,8 @@ class Settings:
                                 name='maximum_nucleus_intensity'))
     minimum_nuc_diameter: IntVar = field(
         default_factory=partial(IntVar, value=20, name='minimum_diameter'))
+    minimum_nuclei_count: IntVar = field(
+        default_factory=partial(IntVar, value=3, name='minimum_nuclei_count'))
     blue_channel_bool: BooleanVar = field(
         default_factory=partial(BooleanVar, value=True, name='blue_channel'))
     green_channel_bool: BooleanVar = field(
@@ -563,6 +565,7 @@ class Settings:
             'minimum_nucleus_intensity': self.minimum_nucleus_intensity.get(),
             'maximum_nucleus_intensity': self.maximum_nucleus_intensity.get(),
             'minimum_nuc_diameter': self.minimum_nuc_diameter.get(),
+            'minimum_nuclei_count': self.minimum_nuclei_count.get(),
             'blue_channel_bool': self.blue_channel_bool.get(),
             'green_channel_bool': self.green_channel_bool.get(),
             'red_channel_bool': self.red_channel_bool.get(),

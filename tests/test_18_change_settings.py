@@ -92,6 +92,15 @@ class Test18ChangeSettings(BaseTestInterface):
             self._window._settings_window._min_nuc_diam_slider.set(
                 int(min_nuc_diam + 1))
 
+        # Modifying the minimum nuclei count setting value
+        min_nuc_count = init_settings['minimum_nuclei_count']
+        if int(min_nuc_count - 1) > 0:
+            self._window._settings_window._count_slider.set(
+                int(min_nuc_count - 1))
+        else:
+            self._window._settings_window._count_slider.set(
+                int(min_nuc_count + 1))
+
         # Modifying the channels display settings values
         self._window._red_channel_check_button.invoke()
         self._window._green_channel_check_button.invoke()

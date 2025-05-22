@@ -225,6 +225,10 @@ class ImageCanvas(ttk.Frame):
             else:
                 return '#FFA500'
 
+        else:
+            raise ValueError(f"Got incorrect fiber color: "
+                             f"{self._settings.fiber_colour.get()}")
+
     def show_image(self, *_: Event) -> None:
         """Displays the image on the canvas.
 

@@ -4,20 +4,11 @@ from copy import deepcopy
 from pathlib import Path
 from threading import Thread
 from time import sleep
-from unittest import skipIf
-from platform import system, python_version_tuple
 
 from .util import (BaseTestInterfaceProcessing, mock_filedialog,
                    mock_warning_window)
 
-condition = ((system() == 'Windows' and int(python_version_tuple()[1]) == 9) or
-             (system() == 'Linux' and int(python_version_tuple()[1]) > 8))
 
-
-@skipIf(condition,
-        "For some reason, this test fails on some OS and Python version "
-        "combinations. It was manually checked that the settings were behaving"
-        " as expected.")
 class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
 
     def testProcessVarySettings(self) -> None:
@@ -244,6 +235,79 @@ class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
         # Checking that the correct computation output changed and the correct
         # ones were preserved
         self.assertNotEqual(
+            nuc, len(self._window._files_table.table_items.entries[0].nuclei))
+        self.assertNotEqual(
+            nuc_in, self._window._files_table.table_items.entries[0].
+            nuclei.nuclei_in_count)
+        self.assertNotEqual(
+            nuc_out, self._window._files_table.table_items.entries[0].
+            nuclei.nuclei_out_count)
+        self.assertEqual(
+            fib, len(self._window._files_table.table_items.entries[0].fibers))
+        self.assertEqual(
+            area, self._window._files_table.table_items.entries[0].fibers.area)
+
+        # Restoring the initial state of the settings
+        self._window.settings.update(init_settings)
+
+        # Invoking the creation of a settings window
+        index = self._window._settings_menu.index("Settings")
+        self._window._settings_menu.invoke(index)
+
+        # Setting the minimum fiber intensity setting to 50
+        self._window._settings_window._min_fib_int_slider.set(50)
+
+        # Closing the settings window
+        self._window._settings_window.destroy()
+
+        # Re-instantiating a Thread that will stop the processing loop later on
+        stop_thread = Thread(target=self._stop_thread)
+        # Invoking the button for starting the image processing
+        self._window._process_images_button.invoke()
+        # Starting the Threads for later stopping the processing loop
+        self._window._stop_thread = False
+        stop_thread.start()
+        # Re-starting the processing loop in the main Thread
+        self._window._process_thread()
+
+        # Setting a new standard specifically for the last test
+        nuc = len(self._window._files_table.table_items.entries[0].nuclei)
+        nuc_in = (self._window._files_table.table_items.entries[0].
+                  nuclei.nuclei_in_count)
+        nuc_out = (self._window._files_table.table_items.entries[0].
+                   nuclei.nuclei_out_count)
+        fib = len(self._window._files_table.table_items.entries[0].fibers)
+        area = self._window._files_table.table_items.entries[0].fibers.area
+
+        # Restoring the initial state of the settings
+        self._window.settings.update(init_settings)
+
+        # Invoking the creation of a settings window
+        index = self._window._settings_menu.index("Settings")
+        self._window._settings_menu.invoke(index)
+
+        # Setting the minimum nuclei count setting to the maximum
+        self._window._settings_window._count_slider.set(
+            self._window._settings_window._count_slider.cget('to'))
+        # Also setting the fiber threshold to 50, otherwise there is no effect
+        self._window._settings_window._min_fib_int_slider.set(50)
+
+        # Closing the settings window
+        self._window._settings_window.destroy()
+
+        # Re-instantiating a Thread that will stop the processing loop later on
+        stop_thread = Thread(target=self._stop_thread)
+        # Invoking the button for starting the image processing
+        self._window._process_images_button.invoke()
+        # Starting the Threads for later stopping the processing loop
+        self._window._stop_thread = False
+        stop_thread.start()
+        # Re-starting the processing loop in the main Thread
+        self._window._process_thread()
+
+        # Checking that the correct computation output changed and the correct
+        # ones were preserved
+        self.assertEqual(
             nuc, len(self._window._files_table.table_items.entries[0].nuclei))
         self.assertNotEqual(
             nuc_in, self._window._files_table.table_items.entries[0].
