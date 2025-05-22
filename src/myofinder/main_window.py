@@ -13,7 +13,7 @@ from functools import partial, wraps
 from pathlib import Path
 from typing import Callable, Optional
 import logging
-from pkg_resources import resource_filename
+import importlib.resources as resources
 
 from .tools import Settings
 from .tools import SavePopup
@@ -84,8 +84,9 @@ class MainWindow(Tk):
 
         # Sets the application icon
         self.log("Setting the application icon")
-        icon = PhotoImage(file=resource_filename(
-            'myofinder', 'app_images/project_icon.png'))
+        ref = resources.files('myofinder') / 'app_images' / 'project_icon.png'
+        with resources.as_file(ref) as path:
+            icon = PhotoImage(file=str(path))
         self.iconphoto(False, icon)  # Without it the icon is buggy in Windows
         self.iconphoto(True, icon)
 

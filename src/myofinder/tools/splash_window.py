@@ -4,7 +4,7 @@ from tkinter import Tk, Canvas, TclError
 from PIL import ImageTk, Image
 from screeninfo import get_monitors
 from time import sleep
-from pkg_resources import resource_filename
+import importlib.resources as resources
 
 
 class SplashWindow(Tk):
@@ -24,8 +24,10 @@ class SplashWindow(Tk):
             pass
         self.grab_set()
 
-        self._image = Image.open(resource_filename(
-            'myofinder', 'app_images/splash_background.png'))
+        ref = (resources.files('myofinder') / 'app_images'
+               / 'splash_background.png')
+        with resources.as_file(ref) as path:
+            self._image = Image.open(str(path))
 
     def resize_image(self) -> None:
         """Centers the window on the monitor currently in use."""
