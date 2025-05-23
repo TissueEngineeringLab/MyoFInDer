@@ -5,6 +5,20 @@ The MyoFInDer Python package aims to provide an open-source graphical interface
 for automatic calculation of the fusion index in muscle cell cultures, based on 
 fluorescence microscopy images.
 
+> [!IMPORTANT]
+> MyoFInDer is currently in maintenance-only development phase. This means that
+> reported bugs will be fixed, minor changes will be brought to support new
+> Python versions if possible, but no major improvements or updates should be 
+> expected. User requests for new features could still be addressed, depending
+> on how large they are.
+
+> [!WARNING]
+> MyoFInDer version 1.1.0 now uses [CellPose](https://www.cellpose.org/) for 
+> nuclei segmentation instead of [DeepCell](https://www.deepcell.org/). This is
+> a major breaking change. Differences are to be expected in the results 
+> obtained with version 1.1.0 and earlier ones, even with similar processing
+> parameters.
+
 Presentation
 ------------
 
@@ -61,6 +75,17 @@ Windows users who don't feel comfortable with command-line operations.
 A more detailed description of the installation procedure can be found in the 
 [installation section](https://tissueengineeringlab.github.io/MyoFInDer/installation.html)
 of the documentation.
+
+Citing MyoFInDer
+----------------
+
+If MyoFInDer has been of help in your research, please reference it in your 
+academic publications by citing the following article:
+
+- Weisrock A., Wüst R., Olenic M. et al., *MyoFInDer: An AI-Based Tool for 
+Myotube Fusion Index Determination*, Tissue Eng. Part A (30), 19-20, 2024, 
+DOI: 10.1089/ten.TEA.2024.0049. 
+([link to Weisrock et al.](https://www.liebertpub.com/doi/10.1089/ten.tea.2024.0049))
 
 Documentation
 -------------

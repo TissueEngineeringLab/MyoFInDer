@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "myofinder"
 dynamic = ["readme", "dependencies"]
-version = "1.1.0"
+version = "1.1.0.post1"
 description = "Automatic calculation of the fusion index by AI segmentation"
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
@@ -14,7 +14,7 @@ requires-python = ">=3.9"
 authors = [{name = "Tissue Engineering Lab", email = "antoine.weisrock@kuleuven.be"}]
 maintainers = [{name = "Antoine Weisrock", email = "antoine.weisrock@gmail.com"}]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
     "Natural Language :: English",
     "Operating System :: OS Independent",

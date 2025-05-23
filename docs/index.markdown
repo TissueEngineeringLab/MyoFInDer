@@ -21,6 +21,20 @@ On this documentation website, you can find information about the :
 - [Usage](usage.markdown)
 - [Troubleshooting](troubleshooting.markdown)
 
+> [!IMPORTANT]
+> MyoFInDer is currently in maintenance-only development phase. This means that
+> reported bugs will be fixed, minor changes will be brought to support new
+> Python versions if possible, but no major improvements or updates should be 
+> expected. User requests for new features could still be addressed, depending
+> on how large they are.
+
+> [!WARNING]
+> MyoFInDer version 1.1.0 now uses [CellPose](https://www.cellpose.org/) for 
+> nuclei segmentation instead of [DeepCell](https://www.deepcell.org/). This is
+> a major breaking change. Differences are to be expected in the results 
+> obtained with version 1.1.0 and earlier ones, even with similar processing
+> parameters.
+
 # About
 
 This module is **free and open-source**, hosted and distributed on 
@@ -30,3 +44,28 @@ GPL-3.0 license. It was developed at the
 the [KU Leuven KULAK](https://kulak.kuleuven.be/) university. **Contributions,
 bug reports or simple questions** are welcome in the dedicated sections of the
 GitHub page.
+
+# Citing
+
+If MyoFInDer has been of help in your research, please reference it in your 
+academic publications by citing the following article:
+
+- Weisrock A., Wüst R., Olenic M. et al., *MyoFInDer: An AI-Based Tool for 
+Myotube Fusion Index Determination*, Tissue Eng. Part A (30), 19-20, 2024, 
+DOI: 10.1089/ten.TEA.2024.0049. 
+([link to Weisrock et al.](https://www.liebertpub.com/doi/10.1089/ten.tea.2024.0049))
+
+Here is the BibTex code for referencing the article:
+
+```bibtex
+@article{Weisrock2024,
+         author = {Weisrock, Antoine and W\"{u}st, Rebecca and Olenic, Maria and Lecomte-Grosbras, Pauline and Thorrez, Lieven},
+         title = {MyoFInDer: An AI-Based Tool for Myotube Fusion Index Determination},
+         journal = {Tissue Engineering Part A},
+         volume = {30},
+         number = {19-20},
+         pages = {652-661},
+         year = {2024},
+         doi = {10.1089/ten.tea.2024.0049},
+}
+```
