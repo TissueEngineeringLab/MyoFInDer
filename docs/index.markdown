@@ -44,3 +44,28 @@ GPL-3.0 license. It was developed at the
 the [KU Leuven KULAK](https://kulak.kuleuven.be/) university. **Contributions,
 bug reports or simple questions** are welcome in the dedicated sections of the
 GitHub page.
+
+# Citing
+
+If MyoFInDer has been of help in your research, please reference it in your 
+academic publications by citing the following article:
+
+- Weisrock A., Wüst R., Olenic M. et al., *MyoFInDer: An AI-Based Tool for 
+Myotube Fusion Index Determination*, Tissue Eng. Part A (30), 19-20, 2024, 
+DOI: 10.1089/ten.TEA.2024.0049. 
+([link to Weisrock et al.](https://www.liebertpub.com/doi/10.1089/ten.tea.2024.0049))
+
+Here is the BibTex code for referencing the article:
+
+```bibtex
+@article{doi:10.1089/ten.tea.2024.0049,
+         author = {Weisrock, Antoine and W\"{u}st, Rebecca and Olenic, Maria and Lecomte-Grosbras, Pauline and Thorrez, Lieven},
+         title = {MyoFInDer: An AI-Based Tool for Myotube Fusion Index Determination},
+         journal = {Tissue Engineering Part A},
+         volume = {30},
+         number = {19-20},
+         pages = {652-661},
+         year = {2024},
+         doi = {10.1089/ten.tea.2024.0049},
+}
+```
