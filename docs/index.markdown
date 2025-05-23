@@ -58,7 +58,7 @@ DOI: 10.1089/ten.TEA.2024.0049.
 Here is the BibTex code for referencing the article:
 
 ```bibtex
-@article{doi:10.1089/ten.tea.2024.0049,
+@article{Weisrock2024,
          author = {Weisrock, Antoine and W\"{u}st, Rebecca and Olenic, Maria and Lecomte-Grosbras, Pauline and Thorrez, Lieven},
          title = {MyoFInDer: An AI-Based Tool for Myotube Fusion Index Determination},
          journal = {Tissue Engineering Part A},
