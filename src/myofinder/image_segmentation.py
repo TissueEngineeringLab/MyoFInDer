@@ -185,6 +185,10 @@ class ImageSegmentation:
                                                cv2.CHAIN_APPROX_SIMPLE)
         hierarchy = np.squeeze(hierarchy).tolist()
 
+        # If the hierarchy only contains one object, it is cast to int
+        if isinstance(hierarchy, int):
+            hierarchy = [hierarchy]
+
         # Define thresholds for filling up the inside holes
         thresh_nuc, _ = cv2.threshold(nuclei_channel, 0, 255, cv2.THRESH_OTSU)
         med_excl = np.median(nuclei_channel[processed > 0])
@@ -250,6 +254,10 @@ class ImageSegmentation:
                                                cv2.RETR_CCOMP,
                                                cv2.CHAIN_APPROX_SIMPLE)
         hierarchy = np.squeeze(hierarchy).tolist()
+
+        # If the hierarchy only contains one object, it is cast to int
+        if isinstance(hierarchy, int):
+            hierarchy = [hierarchy]
 
         # Group the contours so that the holes are with their parents
         grouped = defaultdict(list)
