@@ -111,7 +111,7 @@ class ImageSegmentation:
             niter=None,
             augment=False,
             tile_overlap=0.1,
-            bsize=256,
+            bsize=224,
             compute_masks=True,
             progress=None)
 
