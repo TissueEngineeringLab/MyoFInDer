@@ -88,7 +88,8 @@ class ImageSegmentation:
 
         # Actual nuclei detection function
         labeled_image, *_ = self._app.eval(
-            x=np.stack((nuclei_channel,
+            x=np.stack(((nuclei_channel - nuclei_channel.min()) /
+                        (nuclei_channel.max() - nuclei_channel.min()),
                         np.zeros_like(nuclei_channel)),
                        axis=-1),
             batch_size=8,
@@ -96,7 +97,7 @@ class ImageSegmentation:
             channels=None,
             channel_axis=2,
             z_axis=None,
-            normalize=True,
+            normalize=False,
             invert=False,
             rescale=None,
             diameter=None,
