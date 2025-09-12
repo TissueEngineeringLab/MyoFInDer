@@ -88,7 +88,9 @@ class ImageSegmentation:
 
         # Actual nuclei detection function
         labeled_image, *_ = self._app.eval(
-            x=np.stack((nuclei_channel,
+            # Normalize here instead of letting eval do it
+            x=np.stack(((nuclei_channel - nuclei_channel.min()) /
+                        (nuclei_channel.max() - nuclei_channel.min()),
                         np.zeros_like(nuclei_channel)),
                        axis=-1),
             batch_size=8,
@@ -96,7 +98,7 @@ class ImageSegmentation:
             channels=None,
             channel_axis=2,
             z_axis=None,
-            normalize=True,
+            normalize=False,
             invert=False,
             rescale=None,
             diameter=None,
@@ -111,7 +113,7 @@ class ImageSegmentation:
             niter=None,
             augment=False,
             tile_overlap=0.1,
-            bsize=256,
+            bsize=224,
             compute_masks=True,
             progress=None)
 
