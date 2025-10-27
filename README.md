@@ -44,7 +44,7 @@ population.
 Requirements
 ------------
 
-To install and run MyoFInDer, you'll need Python 3 (3.9 to 3.13), approximately 
+To install and run MyoFInDer, you'll need Python 3 (3.10 to 3.14), approximately 
 6GB of disk space, and preferably 8GB of memory or more. MyoFInDer runs on 
 Windows, Linux, macOS, and potentially other OS able to run a compatible 
 version of Python.

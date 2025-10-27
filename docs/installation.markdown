@@ -6,7 +6,7 @@ title: Installation
 [Home page](index.markdown)
 
 As a Python module, MyoFInDer can be installed on almost any computer able to 
-run a version of Python between 3.9 and 3.13. It is in particular fully 
+run a version of Python between 3.10 and 3.14. It is in particular fully 
 supported on **Windows 8 and later**, and on **Ubuntu 18.04 and later**. 
 
 Because the installation and use as a Python module might not be 
@@ -50,7 +50,7 @@ operable program or batch file.
 Otherwise, you get a message displaying the installed version of Python :
 ```console
 C:\Users\User>python --version
-Python 3.9.7
+Python 3.10.1
 ```
 
 > To open a terminal on Windows, you can search for the program called Command 
@@ -58,8 +58,8 @@ Python 3.9.7
 > used in the presented code snippets. Alternatively, a more advanced terminal 
 > program called Windows PowerShell can also be used.
 
-If Python is not installed, or if the installed version is not between 3.9 and 
-3.13 **you need to install a Python version between 3.9 and 3.13**. To do so,
+If Python is not installed, or if the installed version is not between 3.10 and 
+3.14 **you need to install a Python version between 3.10 and 3.14**. To do so,
 you have several possible options. The two most convenient ones are described 
 here.
 
@@ -286,7 +286,7 @@ Python 3.10.6
 > To open a terminal in Linux and mcOS you can simply search for the Terminal 
 > application in the application menu. On Linux, you can also type CTRL+ALT+T.
 
-If the current version of Python is not between 3.9 and 3.13, you will need to
+If the current version of Python is not between 3.10 and 3.14, you will need to
 **install another version matching the specification**. This can be done using
 [pyenv](https://github.com/pyenv/pyenv) on macOS, or 
 [other workarounds](https://hackersandslackers.com/multiple-
