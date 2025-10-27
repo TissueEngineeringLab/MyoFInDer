@@ -46,7 +46,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      # Set up Python 3.13
+      # Set up Python 3.14
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
