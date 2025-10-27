@@ -1,11 +1,12 @@
 # coding: utf-8
 
 from dataclasses import dataclass, field
-from typing import Optional, List, Any, Tuple, Iterator, Union, Callable, Dict
+from collections.abc import Iterator, Callable
+from typing import Any
 from tkinter.ttk import Button, Separator, Label
 from functools import partial
-from tkinter import StringVar, IntVar, BooleanVar, Checkbutton, PhotoImage, \
-    Frame, Event, EventType
+from tkinter import (StringVar, IntVar, BooleanVar, Checkbutton, PhotoImage,
+                     Frame, Event, EventType)
 from pathlib import Path
 from platform import system
 import logging
@@ -17,7 +18,7 @@ class Nucleus:
 
     x_pos: float
     y_pos: float
-    tk_obj: Optional[int]
+    tk_obj: int | None
     color: str
 
     def __eq__(self, other: Any) -> bool:
@@ -33,15 +34,15 @@ class Nucleus:
 class Fiber:
     """Class holding the data associated with a single fiber."""
 
-    polygon: Optional[int]
-    position: List[Tuple[float, float]] = field(default_factory=list)
+    polygon: int | None
+    position: list[tuple[float, float]] = field(default_factory=list)
 
 
 @dataclass
 class Nuclei:
     """Class for managing the data of all the nuclei in one image."""
 
-    nuclei: List[Nucleus] = field(default_factory=list)
+    nuclei: list[Nucleus] = field(default_factory=list)
 
     def append(self, nuc: Nucleus) -> None:
         """Adds a nucleus to the list of nuclei."""
@@ -89,7 +90,7 @@ class Fibers:
     """Class for managing the data of all the fibers in one image."""
 
     area: float = field(default=0)
-    fibers: List[Fiber] = field(default_factory=list)
+    fibers: list[Fiber] = field(default_factory=list)
 
     def append(self, fib: Fiber) -> None:
         """Adds a fiber to the list of fibers."""
@@ -321,10 +322,10 @@ class GraphicalElement(Frame):
 class TableEntry:
     """Class holding all the information associated with one image."""
 
-    path: Union[Path, str]
+    path: Path | str
     nuclei: Nuclei
     fibers: Fibers
-    graph_elt: Optional[GraphicalElement] = None
+    graph_elt: GraphicalElement | None = None
 
     @property
     def save_version(self):
@@ -345,8 +346,8 @@ class TableItems:
     rest of the project.
     """
 
-    entries: List[TableEntry] = field(default_factory=list)
-    current_index: Optional[int] = None
+    entries: list[TableEntry] = field(default_factory=list)
+    current_index: int | None = None
 
     def __getitem__(self, item: Path) -> TableEntry:
         """Returns the TableEntry object whose path corresponds to the given
@@ -377,14 +378,14 @@ class TableItems:
         return len(self.entries)
 
     @property
-    def file_names(self) -> List[Path]:
+    def file_names(self) -> list[Path]:
         """Returns a list of all the paths of the stored TableEntry
         objects."""
 
         return [entry.path for entry in self]
 
     @property
-    def current_entry(self) -> Optional[TableEntry]:
+    def current_entry(self) -> TableEntry | None:
         """Returns the TableEntry instance corresponding to the currently
         displayed image."""
 
@@ -394,7 +395,7 @@ class TableItems:
         return self[self.selected]
 
     @property
-    def selected(self) -> Optional[Path]:
+    def selected(self) -> Path | None:
         """Returns the path of the TableEntry instance corresponding to the
         currently displayed image."""
 
@@ -457,11 +458,11 @@ class SelectionBox:
     """Class holding the data associated with the selection box of the image
     canvas."""
 
-    x_start: Optional[int] = None
-    y_start: Optional[int] = None
-    x_end: Optional[int] = None
-    y_end: Optional[int] = None
-    tk_obj: Optional[int] = None
+    x_start: int | None = None
+    y_start: int | None = None
+    x_end: int | None = None
+    y_end: int | None = None
+    tk_obj: int | None = None
 
     def __bool__(self) -> bool:
         """Returns True if all four corners of the selection box have been
@@ -545,7 +546,7 @@ class Settings:
     show_fibers: BooleanVar = field(
         default_factory=partial(BooleanVar, value=False, name='show_fibers'))
 
-    _logger: Optional[logging.Logger] = None
+    _logger: logging.Logger | None = None
 
     def __post_init__(self) -> None:
         """This method defines a logger for this class to be able to log
@@ -553,7 +554,7 @@ class Settings:
 
         self._logger = logging.getLogger("MyoFInDer.FilesTable")
 
-    def get_all(self) -> Dict[str, Any]:
+    def get_all(self) -> dict[str, Any]:
         """Returns a dict containing all the settings and their values."""
 
         return {
@@ -572,7 +573,7 @@ class Settings:
             'show_nuclei': self.show_nuclei.get(),
             'show_fibers': self.show_fibers.get()}
 
-    def update(self, settings: Dict[str, Any]) -> None:
+    def update(self, settings: dict[str, Any]) -> None:
         """Updates the values of the settings based on the provided dictionary.
 
         If a key is provided that is not a valid setting, ignores it and

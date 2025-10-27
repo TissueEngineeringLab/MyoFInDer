@@ -1,14 +1,13 @@
 # coding: utf-8
 
 from pathlib import Path
-from cv2 import imread, cvtColor, IMREAD_ANYCOLOR, IMREAD_GRAYSCALE, \
-    IMREAD_COLOR, COLOR_BGR2RGB
+from cv2 import (imread, cvtColor, IMREAD_ANYCOLOR, IMREAD_GRAYSCALE,
+                 IMREAD_COLOR, COLOR_BGR2RGB)
 from numpy import zeros, stack, concatenate, ndarray
 from re import findall
-from typing import Optional
 
 
-def check_image(image_path: Path) -> Optional[ndarray]:
+def check_image(image_path: Path) -> ndarray | None:
     """Function making sure that the loaded image has 3 channels and is 8-bits.
 
     It ignores the alpha channel if any, and can handle all the usual dtypes.
