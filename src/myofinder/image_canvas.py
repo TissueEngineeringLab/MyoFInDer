@@ -6,7 +6,6 @@ from platform import system
 from functools import partial
 from copy import deepcopy
 from pathlib import Path
-from typing import Tuple, Optional, List
 import logging
 
 from .tools import Nucleus, Nuclei, Fibers, check_image, SelectionBox
@@ -34,15 +33,15 @@ class ImageCanvas(ttk.Frame):
 
         self.log("Setting the images canvas's variables")
 
-        self._image: Optional[Image] = None
-        self._image_path: Optional[Path] = None
+        self._image: Image | None = None
+        self._image_path: Path | None = None
         self._img_scale: float = 1.0
         self._can_scale: float = 1.0
         self._delta: float = 1.3
         self._current_zoom: int = 0
         self._nuclei: Nuclei = Nuclei()
         self._fibers: Fibers = Fibers()
-        self._image_id: Optional[int] = None
+        self._image_id: int | None = None
         self._selection_box: SelectionBox = SelectionBox()
 
     def log(self, msg: str) -> None:
@@ -393,7 +392,7 @@ class ImageCanvas(ttk.Frame):
             x - radius, y - radius, x + radius, y + radius,
             fill=color, outline='#fff', width=0)
 
-    def _draw_fiber(self, positions: List[Tuple[float,
+    def _draw_fiber(self, positions: list[tuple[float,
                                                 float]]) -> int:
         """Draws a single fiber on the canvas.
 
@@ -684,7 +683,7 @@ class ImageCanvas(ttk.Frame):
                     if nuc is not None:
                         self._delete_nucleus(nuc)
 
-    def _find_closest_nucleus(self, x: float, y: float) -> Optional[Nucleus]:
+    def _find_closest_nucleus(self, x: float, y: float) -> Nucleus | None:
         """Searches for a close nucleus among the existing nuclei.
 
         Args:
@@ -858,7 +857,7 @@ class ImageCanvas(ttk.Frame):
 
     def _zoom(self,
               event: Event,
-              delta: Optional[int] = None,
+              delta: int | None = None,
               mouse: bool = True) -> None:
         """Zooms in or out of the image.
 

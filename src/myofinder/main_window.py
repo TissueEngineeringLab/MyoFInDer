@@ -1,7 +1,7 @@
 # coding: utf-8
 
-from tkinter import ttk, filedialog, Tk, IntVar, PhotoImage, Menu, StringVar, \
-    messagebox, Checkbutton, BooleanVar
+from tkinter import (ttk, filedialog, Tk, IntVar, PhotoImage, Menu, StringVar,
+                     messagebox, Checkbutton, BooleanVar)
 from platform import system
 from shutil import rmtree
 from webbrowser import open_new
@@ -11,7 +11,7 @@ from time import sleep
 from pickle import load, dump
 from functools import partial, wraps
 from pathlib import Path
-from typing import Callable, Optional
+from collections.abc import Callable
 import logging
 import importlib.resources as resources
 
@@ -53,7 +53,7 @@ class MainWindow(Tk):
     It manages all the buttons, menus, events, and the secondary windows.
     """
 
-    def __init__(self, app_folder: Optional[Path]) -> None:
+    def __init__(self, app_folder: Path | None) -> None:
         """Creates the splash window, then the main window, sets the layout and
         the callbacks.
 
@@ -185,7 +185,7 @@ class MainWindow(Tk):
         self.log("Setting the main windows's variables")
 
         self.settings = Settings()
-        self._settings_window: Optional[SettingsWindow] = None
+        self._settings_window: SettingsWindow | None = None
 
         # Variables used when there's a conflict in the choice of colors for
         # the fibers and nuclei
@@ -207,7 +207,7 @@ class MainWindow(Tk):
         self._thread = Thread(target=self._process_thread)
         self._thread.start()
 
-        self._current_project: Optional[Path] = None  # Path to current project
+        self._current_project: Path | None = None  # Path to current project
 
     def _set_traces(self) -> None:
         """Sets the callbacks triggered upon modification of the settings."""
@@ -487,7 +487,7 @@ class MainWindow(Tk):
                                             "where to save the project !")
             return
 
-        saving_popup: Optional[SavePopup] = None
+        saving_popup: SavePopup | None = None
         try:
             # Displays a popup indicating the project is being saved
             saving_popup = SavePopup(self, directory)
@@ -649,7 +649,7 @@ class MainWindow(Tk):
         return True
 
     def _save_button_pressed(self,
-                             _: Optional[Event] = None,
+                             _: Event | None = None,
                              force_save_as: bool = False) -> bool:
         """Method called when a save action is triggered by the user or when
         CTRL+S is hit.

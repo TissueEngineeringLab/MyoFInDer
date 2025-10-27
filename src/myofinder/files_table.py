@@ -6,15 +6,14 @@ from shutil import copyfile, rmtree
 from cv2 import polylines, ellipse, imwrite, cvtColor, COLOR_RGB2BGR
 from pathlib import Path
 from platform import system
-from typing import List, Tuple
 from copy import deepcopy
 from functools import partial
 from pickle import dump, load
 from numpy import ndarray, array
 import logging
 
-from .tools import Nucleus, Fiber, Nuclei, Fibers, GraphicalElement, \
-    check_image, TableItems, TableEntry
+from .tools import (Nucleus, Fiber, Nuclei, Fibers, GraphicalElement,
+                    check_image, TableItems, TableEntry)
 
 
 class FilesTable(ttk.Frame):
@@ -165,7 +164,7 @@ class FilesTable(ttk.Frame):
                 nuc.color = 'out' if nuc.color == 'in' else 'in'
         self._update_data(self.table_items.current_entry)
 
-    def add_images(self, filenames: List[Path]) -> None:
+    def add_images(self, filenames: list[Path]) -> None:
         """Adds images to the current frame.
 
         The new images are added under the existing list of images.
@@ -209,9 +208,9 @@ class FilesTable(ttk.Frame):
 
     def input_processed_data(
             self,
-            nuclei_negative_positions: List[Tuple[float, float]],
-            nuclei_positive_positions: List[Tuple[float, float]],
-            fiber_contours: Tuple[ndarray],
+            nuclei_negative_positions: list[tuple[float, float]],
+            nuclei_positive_positions: list[tuple[float, float]],
+            fiber_contours: tuple[ndarray],
             area: float,
             file: Path) -> None:
         """Adds the nuclei and fibers positions to the frame after they've been
@@ -288,13 +287,13 @@ class FilesTable(ttk.Frame):
                    in self.table_items)
 
     @property
-    def checked_files(self) -> List[Path]:
+    def checked_files(self) -> list[Path]:
         """Returns the paths to the files whose checkboxes are checked."""
 
         return [entry.path for entry in self.table_items
                 if entry.graph_elt.button_var.get()]
 
-    def delete_image(self, to_delete: Tuple[Path, ...]) -> None:
+    def delete_image(self, to_delete: tuple[Path, ...]) -> None:
         """Removes images from the canvas, and discards all the associated
         data.
 

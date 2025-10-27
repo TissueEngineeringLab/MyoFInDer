@@ -9,7 +9,6 @@ from sys import stdout, exit
 from pathlib import Path
 import argparse
 from platform import system
-from typing import Optional
 
 
 def main():
@@ -41,7 +40,7 @@ def main():
     # Retrieving the command-line arguments
     log: bool = args.nolog
     test: bool = args.test
-    app_folder: Optional[Path]
+    app_folder: Path | None
     if args.app_folder is None:
         app_folder = None
     else:

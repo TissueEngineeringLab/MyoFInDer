@@ -5,7 +5,7 @@ import numpy as np
 import numpy.ma as ma
 from pathlib import Path
 import cv2
-from typing import List, Tuple, Any
+from typing import Any
 from collections import defaultdict
 
 from .tools import check_image
@@ -35,9 +35,9 @@ class ImageSegmentation:
                  maximum_nucleus_intensity: int,
                  minimum_nucleus_diameter: int,
                  minimum_nuclei_count: int
-                 ) -> Tuple[Path, List[Tuple[np.ndarray, np.ndarray]],
-                            List[Tuple[np.ndarray, np.ndarray]],
-                            Tuple[Any, ...], float]:
+                 ) -> tuple[Path, list[tuple[np.ndarray, np.ndarray]],
+                            list[tuple[np.ndarray, np.ndarray]],
+                            tuple[Any, ...], float]:
         """Computes the nuclei positions and optionally the fibers positions.
 
         Also returns whether the nuclei are inside or outside the fibers.
@@ -224,8 +224,8 @@ class ImageSegmentation:
                               minimum_nucleus_intensity: int,
                               maximum_nucleus_intensity: int,
                               minimum_nuclei_count: int
-                              ) -> Tuple[List[Tuple[np.ndarray, np.ndarray]],
-                                         List[Tuple[np.ndarray, np.ndarray]]]:
+                              ) -> tuple[list[tuple[np.ndarray, np.ndarray]],
+                                         list[tuple[np.ndarray, np.ndarray]]]:
         """Computes the center of the nuclei and determines whether they're
         positive or not.
 
