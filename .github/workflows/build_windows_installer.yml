@@ -24,7 +24,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       # Compile the sources into executable files
       - name: Build Main Executable
         run: gcc '${{ github.workspace }}\src\wix\src\myofinder.cpp' -lstdc++ -lshlwapi  -static -static-libgcc -static-libstdc++ -o '${{ github.workspace }}\bin\myofinder.exe'
@@ -45,12 +45,12 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       # Set up Python 3.13
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.13'
+          python-version: '3.14'
       # Builds the wheel for the latest version
       - name: Build Wheel
         run: |
@@ -71,10 +71,10 @@ jobs:
     needs: compile-executable
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       # Gets the compiled executables from a previous job
       - name: Download Executables
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: myofinder_binaries
           path: '${{ github.workspace }}\bin'
@@ -83,8 +83,8 @@ jobs:
       - name: Install WiX
         shell: cmd
         run: |
-          dotnet tool install --global wix --version 4.0.5
-          wix extension add --global WixToolset.UTIL.wixext/4.0.5
+          dotnet tool install --global wix --version 4.0.6
+          wix extension add --global WixToolset.UTIL.wixext/4.0.6
       # Generates the .msi file using WiX
       - name: Generate MSI
         shell: cmd
@@ -105,17 +105,17 @@ jobs:
     needs: [build-installer, build-wheel]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       # Gets the generated .msi installer from a previous job
       - name: Download MSI
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: myofinder_msi
           path: '${{ github.workspace }}\bin'
           merge-multiple: 'true'
       # Gets the built wheel from a previous job
       - name: Download Wheel
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: myofinder_wheel
           path: '${{ github.workspace }}\dist'
@@ -156,12 +156,12 @@ jobs:
     if: contains(fromJSON('["push", "workflow_dispatch"]'), github.event_name)
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           token: ${{ secrets.PAT }}
       # Gets the generated .msi installer from a previous job
       - name: Download MSI
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: myofinder_msi
           path: '${{ github.workspace }}\bin'
