@@ -190,6 +190,10 @@ class ImageSegmentation:
         # If the hierarchy only contains one object, it is cast to int
         if isinstance(hierarchy, int):
             hierarchy = [hierarchy]
+        if (isinstance(hierarchy, list)
+            and len(hierarchy) > 0
+            and isinstance(hierarchy[0], int)):
+            hierarchy = [hierarchy]
 
         # Define thresholds for filling up the inside holes
         thresh_nuc, _ = cv2.threshold(nuclei_channel, 0, 255, cv2.THRESH_OTSU)
@@ -259,6 +263,10 @@ class ImageSegmentation:
 
         # If the hierarchy only contains one object, it is cast to int
         if isinstance(hierarchy, int):
+            hierarchy = [hierarchy]
+        if (isinstance(hierarchy, list)
+            and len(hierarchy) > 0
+            and isinstance(hierarchy[0], int)):
             hierarchy = [hierarchy]
 
         # Group the contours so that the holes are with their parents
