@@ -1021,6 +1021,10 @@ class MainWindow(Tk):
         self._previous_fiber_colour.set(self.settings.fiber_colour.get())
 
         # Finally, save and redraw the nuclei and fibers
+        self._image_canvas.delete_nuclei()
+        self._image_canvas.delete_fibers()
+        self._image_canvas.draw_nuclei()
+        self._image_canvas.draw_fibers()
         self._image_canvas.set_indicators()
 
     def _invert_checkboxes(self) -> None:
