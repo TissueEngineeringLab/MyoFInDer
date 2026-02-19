@@ -206,9 +206,9 @@ class FilesTable(ttk.Frame):
 
     def input_processed_data(
             self,
-            nuclei_negative_positions: list[tuple[float, float]],
-            nuclei_positive_positions: list[tuple[float, float]],
-            fiber_contours: tuple[ndarray],
+            nuclei_negative_positions: list[tuple[ndarray, ndarray]],
+            nuclei_positive_positions: list[tuple[ndarray, ndarray]],
+            fiber_contours: tuple[ndarray, ...],
             area: float,
             file: Path) -> None:
         """Adds the nuclei and fibers positions to the frame after they've been
