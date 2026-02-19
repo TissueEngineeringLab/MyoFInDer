@@ -59,26 +59,30 @@ class ImageCanvas(ttk.Frame):
         """Redraws the nuclei and/or fibers after the user changed the elements
         to display."""
 
-        # Deletes all the elements in the canvas
-        self._delete_nuclei()
-        self._delete_fibers()
-
-        # Draw the nuclei
+        # Show or hide the nuclei
         if self._settings.show_nuclei.get():
-            self.log(f"Drawing all the {len(self._nuclei)} nuclei on the "
+            self.log(f"Showing all the {len(self._nuclei)} nuclei on the "
                      f"canvas")
             for nuc in self._nuclei:
-                nuc.tk_obj = self._draw_nucleus(
-                    nuc.x_pos, nuc.y_pos,
-                    self.nuc_col_in if nuc.color == 'in'
-                    else self.nuc_col_out)
+                self._canvas.itemconfigure(nuc.tk_obj, state="normal")
+        else:
+            self.log(f"Showing all the {len(self._nuclei)} nuclei on the "
+                     f"canvas")
+            for nuc in self._nuclei:
+                self._canvas.itemconfigure(nuc.tk_obj, state="hidden")
 
-        # Draw the fibers
-        if self._settings.show_fibers.get():
-            self.log(f"Drawing all the {len(self._fibers)} fiber contours on "
-                     f"the canvas")
-            for fiber in self._fibers:
-                fiber.polygon = self._draw_fiber(fiber.position)
+        # Show or hide the fibers
+        if self._fib_overlay_idx is not None:
+            if self._settings.show_fibers.get():
+                self.log(f"Showing all the {len(self._fibers)} fiber contours "
+                         f"on the canvas")
+                self._canvas.itemconfigure(self._fib_overlay_idx,
+                                           state="normal")
+            else:
+                self.log(f"Hiding all the {len(self._fibers)} fiber contours "
+                         f"on the canvas")
+                self._canvas.itemconfigure(self._fib_overlay_idx,
+                                           state="hidden")
 
     def load_image(self,
                    path: Path,
@@ -102,8 +106,6 @@ class ImageCanvas(ttk.Frame):
 
             # First, reset the canvas
             self.reset()
-            self._delete_nuclei()
-            self._delete_fibers()
 
             # Then, load and display the image
             self._image_path = path
@@ -114,24 +116,45 @@ class ImageCanvas(ttk.Frame):
             self._nuclei = deepcopy(nuclei)
 
             # Drawing the nuclei
-            if self._settings.show_nuclei.get():
-                self.log(f"Drawing all the {len(self._nuclei)} nuclei on the "
-                         f"canvas")
-                for nuc in self._nuclei:
-                    nuc.tk_obj = self._draw_nucleus(
-                        nuc.x_pos, nuc.y_pos,
-                        self.nuc_col_in if nuc.color == 'in'
-                        else self.nuc_col_out)
+            self.log(f"Drawing all the {len(self._nuclei)} nuclei on the "
+                     f"canvas in hidden mode")
+            for nuc in self._nuclei:
+                nuc.tk_obj = self._draw_nucleus(
+                    nuc.x_pos, nuc.y_pos,
+                    self.nuc_col_in if nuc.color == 'in'
+                    else self.nuc_col_out, 'hidden')
 
             # Deep copy to have independent objects
             self._fibers = deepcopy(fibers)
 
-            # Drawing the fibers
-            if self._settings.show_fibers.get():
-                self.log(f"Drawing all the {len(self._fibers)} fiber contours "
-                         f"on the canvas")
-                for fib in self._fibers:
-                    fib.polygon = self._draw_fiber(fib.position)
+            self.log(f"Drawing all the {len(self._fibers)} fiber contours "
+                     f"on a separate overlay")
+
+            # Draw the fibers on an independent overlay whatever happens
+            self._draw_fibers_overlay()
+
+            # Get scale factor to adjust overlay to current size
+            scaled_x = int(self._image.width * self._img_scale)
+            scaled_y = int(self._image.height * self._img_scale)
+
+            # Create the overlay image object
+            overlay = self._fib_overlay.resize((scaled_x, scaled_y))
+            overlay_tk = ImageTk.PhotoImage(overlay)
+
+            # Delete the old overlay image to avoid memory leak
+            if self._fib_overlay_idx is not None:
+                self._canvas.delete(self._fib_overlay_idx)
+
+            # Add the new overlay image to the canvas
+            self._fib_overlay_idx = self._canvas.create_image(
+                0, 0, anchor="nw", image=overlay_tk, state='hidden')
+
+            # Store reference to keep overlay alive and raise on image
+            self._fib_overlay_tk = overlay_tk
+            self._canvas.tag_raise(self._fib_overlay_idx)
+
+            # Show or hide the fibers depending on the state of the indicators
+            self.set_indicators()
 
         # Informing the user that the image cannot be loaded
         else:
