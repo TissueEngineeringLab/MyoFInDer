@@ -30,8 +30,7 @@ class Test13IndicatorsDisplay(BaseTestInterfaceProcessing):
         # present on the image canvas
         self.assertTrue(not any(nuc.tk_obj is not None for nuc
                                 in self._window._image_canvas._nuclei))
-        self.assertTrue(not any(fib.polygon is not None for fib
-                                in self._window._image_canvas._fibers))
+        self.assertIsNone(self._window._image_canvas._fib_overlay_tk)
 
         # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
@@ -53,11 +52,9 @@ class Test13IndicatorsDisplay(BaseTestInterfaceProcessing):
             self.assertTrue(not any(nuc.tk_obj is not None for nuc
                                     in self._window._image_canvas._nuclei))
         if display_fib:
-            self.assertTrue(all(fib.polygon is not None for fib
-                                in self._window._image_canvas._fibers))
+            self.assertIsNotNone(self._window._image_canvas._fib_overlay_tk)
         else:
-            self.assertTrue(not any(fib.polygon is not None for fib
-                                    in self._window._image_canvas._fibers))
+            self.assertIsNone(self._window._image_canvas._fib_overlay_tk)
 
         self._window._show_nuclei_check_button.invoke()
         self._window._show_fibers_check_button.invoke()
@@ -69,8 +66,6 @@ class Test13IndicatorsDisplay(BaseTestInterfaceProcessing):
             self.assertTrue(all(nuc.tk_obj is not None for nuc
                                 in self._window._image_canvas._nuclei))
         if display_fib:
-            self.assertTrue(not any(fib.polygon is not None for fib
-                                    in self._window._image_canvas._fibers))
+            self.assertIsNone(self._window._image_canvas._fib_overlay_tk)
         else:
-            self.assertTrue(all(fib.polygon is not None for fib
-                                in self._window._image_canvas._fibers))
+            self.assertIsNotNone(self._window._image_canvas._fib_overlay_tk)

@@ -11,7 +11,7 @@ from .util import (BaseTestInterfaceProcessing, mock_filedialog,
 class Test12StopProcessImages(BaseTestInterfaceProcessing):
 
     def _stop_processing(self) -> None:
-        """This method sets the _stop_event flag while the processing loop is
+        """This method sets the _stop_processing_event flag while the processing loop is
         running.
 
         It emulates a click on the "Stop Processing" button in the interface,
@@ -19,7 +19,7 @@ class Test12StopProcessImages(BaseTestInterfaceProcessing):
         """
 
         sleep(1)
-        self._window._stop_event.set()
+        self._window._stop_processing_event.set()
 
     def testStopProcessImages(self) -> None:
         """This test checks that the image processing can be successfully

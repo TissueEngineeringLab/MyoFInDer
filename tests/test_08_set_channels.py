@@ -26,7 +26,7 @@ class Test08SetChannels(BaseTestInterface):
         init_b = self._window.settings.blue_channel_bool.get()
 
         # Reading the RGB value of the pixel in position (0, 0)
-        r, g, b = (self._window._image_canvas._canvas.image_tk.
+        r, g, b = (self._window._image_canvas._image_tk.
                    _PhotoImage__photo.get(0, 0))
 
         # Checking that the RGB values are consistent with the state of the
@@ -41,7 +41,7 @@ class Test08SetChannels(BaseTestInterface):
         self._window._blue_channel_check_button.invoke()
 
         # Reading the new RGB value of the pixel in position (0, 0)
-        r, g, b = (self._window._image_canvas._canvas.image_tk.
+        r, g, b = (self._window._image_canvas._image_tk.
                    _PhotoImage__photo.get(0, 0))
 
         # Reading the new values of the checkboxes driving the display of the

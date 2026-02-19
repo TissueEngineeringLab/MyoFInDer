@@ -88,6 +88,6 @@ class BaseTestInterfaceProcessing(BaseTestInterface):
         """
 
         sleep(5)
-        while not self._window._queue.empty():
+        while not self._window._thread_queue.empty():
             sleep(1)
         self._window._stop_thread = True
