@@ -88,8 +88,6 @@ class FilesTable(ttk.Frame):
         for entry in self.table_items:
             for nucleus in entry.nuclei:
                 nucleus.tk_obj = None
-            for fiber in entry.fibers:
-                fiber.polygon = None
 
         # Redrawing the canvas
         if self.table_items:
@@ -242,7 +240,7 @@ class FilesTable(ttk.Frame):
             if len(contour.shape) < 2:
                 continue
             contour = list(map(tuple, contour))
-            self.table_items[file].fibers.append(Fiber(None, contour))
+            self.table_items[file].fibers.append(Fiber(contour))
 
         # Updates the display
         self._update_data(self.table_items[file])

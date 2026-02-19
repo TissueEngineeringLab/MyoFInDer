@@ -1,12 +1,13 @@
 # coding: utf-8
 
 from tkinter import Canvas, ttk, Event, messagebox
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageDraw, ImageColor
 from platform import system
 from functools import partial
 from copy import deepcopy
 from pathlib import Path
 import logging
+from typing import Literal
 
 from .tools import Nucleus, Nuclei, Fibers, check_image, SelectionBox
 
@@ -33,7 +34,7 @@ class ImageCanvas(ttk.Frame):
 
         self.log("Setting the images canvas's variables")
 
-        self._image: Image | None = None
+        self._image: Image.Image | None = None
         self._image_path: Path | None = None
         self._img_scale: float = 1.0
         self._can_scale: float = 1.0
@@ -43,6 +44,11 @@ class ImageCanvas(ttk.Frame):
         self._fibers: Fibers = Fibers()
         self._image_id: int | None = None
         self._selection_box: SelectionBox = SelectionBox()
+
+        # Objects used for the display of the fiber overlay
+        self._fib_overlay: Image.Image | None = None
+        self._fib_overlay_tk: ImageTk.PhotoImage | None = None
+        self._fib_overlay_idx: int | None = None
 
     def log(self, msg: str) -> None:
         """Wrapper for reducing the verbosity of logging."""
@@ -260,8 +266,8 @@ class ImageCanvas(ttk.Frame):
 
             # Moving the image to the top left corner if it doesn't fill the
             # canvas
-            if scaled_x < self._canvas.winfo_width() or \
-                    scaled_y < self._canvas.winfo_height():
+            if (scaled_x < self._canvas.winfo_width() or
+                scaled_y < self._canvas.winfo_height()):
                 self._canvas.xview_moveto(0),
                 self._canvas.yview_moveto(0)
 
@@ -285,10 +291,14 @@ class ImageCanvas(ttk.Frame):
 
         self.log("Deleting all the fibers on the canvas")
 
-        for fiber in self._fibers:
-            if fiber.polygon is not None:
-                self._canvas.delete(fiber.polygon)
-                fiber.polygon = None
+        # Delete the overlay object
+        if self._fib_overlay_idx is not None:
+            self._canvas.delete(self._fib_overlay_idx)
+
+        # Reset the overlay helper objects
+        self._fib_overlay_idx = None
+        self._fib_overlay = None
+        self._fib_overlay_tk = None
 
     def _set_layout(self) -> None:
         """Creates the frame, canvas and scrollbar objects, places them and
@@ -366,7 +376,8 @@ class ImageCanvas(ttk.Frame):
     def _draw_nucleus(self,
                       unscaled_x: float,
                       unscaled_y: float,
-                      color: str) -> int:
+                      color: str,
+                      state: Literal['normal', 'hidden']) -> int:
         """Draws a single nucleus on the canvas.
 
         Args:
@@ -375,6 +386,7 @@ class ImageCanvas(ttk.Frame):
             unscaled_y: The y position of the nucleus on the raw image, in
                 pixels.
             color: The color of the nucleus.
+            state: Whether the nucleus should be displayed right away or not.
 
         Returns:
             The index tkinter attributed to the nucleus it just drew.
@@ -390,35 +402,36 @@ class ImageCanvas(ttk.Frame):
         # Actually drawing the nucleus
         return self._canvas.create_oval(
             x - radius, y - radius, x + radius, y + radius,
-            fill=color, outline='#fff', width=0)
+            fill=color, outline='#fff', width=0, state=state)
 
-    def _draw_fiber(self, positions: list[tuple[float,
-                                                float]]) -> int:
-        """Draws a single fiber on the canvas.
+    def _draw_fibers_overlay(self) -> None:
+        """Creates a transparent overlay on which the outline of the detected
+        fibers is displayed.
 
-        Args:
-            positions: List of all the points making together the polygon that
-                represents the fiber.
-
-        Returns:
-            The index tkinter attributed to the polygon it just drew.
+        This overlay will then be displayed on top of the main image if the
+        user enables the fiber indicator.
         """
 
-        # Adjusting the width to the scale
+        # Nothing to do if no image is selected
+        if self._image is None:
+            self._fib_overlay = None
+            return
+
+        # Draw an empty overlay with the same dimension as the image
+        overlay = Image.new("RGBA", (self._image.width, self._image.height),
+                            (0, 0, 0, 0))
+        draw = ImageDraw.Draw(overlay)
+
+        # Parameters driving fiber aspect
+        color = (*ImageColor.getrgb(self.fib_color), 255)
         line_width = max(int(3 * self._can_scale), 1)
 
-        # Adjusting the positions to the scale
-        positions = [(self._img_scale * x, self._img_scale * y)
-                     for x, y in positions]
+        # Actually draw fibers in the overlay
+        for fib in self._fibers:
+            draw.line(fib.position + [fib.position[0]],
+                      fill=color, width=line_width)
 
-        # Actually drawing the fiber
-        positions = [val for pos in positions for val in pos]
-        polygon = self._canvas.create_polygon(*positions,
-                                              width=line_width,
-                                              outline=self.fib_color,
-                                              fill='')
-
-        return polygon
+        self._fib_overlay = overlay
 
     def _draw_box(self) -> int:
         """Draws the selection box for either inverting the nuclei or deleting
@@ -747,7 +760,8 @@ class ImageCanvas(ttk.Frame):
         # Creating the nucleus and displaying it
         new_nuc = Nucleus(abs_x, abs_y,
                           self._draw_nucleus(abs_x, abs_y,
-                                             self.nuc_col_out),
+                                             self.nuc_col_out,
+                                             'normal'),
                           'out')
 
         self.log(f"Added nucleus at position ({abs_x}, {abs_y})")

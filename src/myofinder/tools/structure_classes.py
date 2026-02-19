@@ -34,7 +34,6 @@ class Nucleus:
 class Fiber:
     """Class holding the data associated with a single fiber."""
 
-    polygon: int | None
     position: list[tuple[float, float]] = field(default_factory=list)
 
 
