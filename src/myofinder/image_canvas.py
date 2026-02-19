@@ -542,6 +542,10 @@ class ImageCanvas(ttk.Frame):
         if self._image is None:
             return
 
+        # Do nothing if the nuclei are not being displayed
+        if not self._settings.show_nuclei.get():
+            return
+
         # The coordinates of the click on the unscaled image
         abs_x = self._canvas.canvasx(event.x) / self._img_scale
         abs_y = self._canvas.canvasy(event.y) / self._img_scale
