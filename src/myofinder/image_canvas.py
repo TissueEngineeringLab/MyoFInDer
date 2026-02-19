@@ -71,18 +71,21 @@ class ImageCanvas(ttk.Frame):
             for nuc in self._nuclei:
                 self._canvas.itemconfigure(nuc.tk_obj, state="hidden")
 
+        # Nothing more to do if there's no fiber overlay
+        if self._fib_overlay_idx is None:
+            return
+
         # Show or hide the fibers
-        if self._fib_overlay_idx is not None:
-            if self._settings.show_fibers.get():
-                self.log(f"Showing all the {len(self._fibers)} fiber contours "
-                         f"on the canvas")
-                self._canvas.itemconfigure(self._fib_overlay_idx,
-                                           state="normal")
-            else:
-                self.log(f"Hiding all the {len(self._fibers)} fiber contours "
-                         f"on the canvas")
-                self._canvas.itemconfigure(self._fib_overlay_idx,
-                                           state="hidden")
+        if self._settings.show_fibers.get():
+            self.log(f"Showing all the {len(self._fibers)} fiber contours "
+                     f"on the canvas")
+            self._canvas.itemconfigure(self._fib_overlay_idx,
+                                       state="normal")
+        else:
+            self.log(f"Hiding all the {len(self._fibers)} fiber contours "
+                     f"on the canvas")
+            self._canvas.itemconfigure(self._fib_overlay_idx,
+                                       state="hidden")
 
     def load_image(self,
                    path: Path,
@@ -102,67 +105,65 @@ class ImageCanvas(ttk.Frame):
 
         # First, checking that the image can be loaded
         # Otherwise, all data would be lost !
-        if check_image(path)[0] is not None:
-
-            # First, reset the canvas
-            self.reset()
-
-            # Then, load and display the image
-            self._image_path = path
-            self._set_image()
-            self.show_image()
-
-            # Deep copy to have independent objects
-            self._nuclei = deepcopy(nuclei)
-
-            # Drawing the nuclei
-            self.log(f"Drawing all the {len(self._nuclei)} nuclei on the "
-                     f"canvas in hidden mode")
-            for nuc in self._nuclei:
-                nuc.tk_obj = self._draw_nucleus(
-                    nuc.x_pos, nuc.y_pos,
-                    self.nuc_col_in if nuc.color == 'in'
-                    else self.nuc_col_out, 'hidden')
-
-            # Deep copy to have independent objects
-            self._fibers = deepcopy(fibers)
-
-            self.log(f"Drawing all the {len(self._fibers)} fiber contours "
-                     f"on a separate overlay")
-
-            # Draw the fibers on an independent overlay whatever happens
-            self._draw_fibers_overlay()
-
-            # Get scale factor to adjust overlay to current size
-            scaled_x = int(self._image.width * self._img_scale)
-            scaled_y = int(self._image.height * self._img_scale)
-
-            # Create the overlay image object
-            overlay = self._fib_overlay.resize((scaled_x, scaled_y))
-            overlay_tk = ImageTk.PhotoImage(overlay)
-
-            # Delete the old overlay image to avoid memory leak
-            if self._fib_overlay_idx is not None:
-                self._canvas.delete(self._fib_overlay_idx)
-
-            # Add the new overlay image to the canvas
-            self._fib_overlay_idx = self._canvas.create_image(
-                0, 0, anchor="nw", image=overlay_tk, state='hidden')
-
-            # Store reference to keep overlay alive and raise on image
-            self._fib_overlay_tk = overlay_tk
-            self._canvas.tag_raise(self._fib_overlay_idx)
-
-            # Show or hide the fibers depending on the state of the indicators
-            self.set_indicators()
-
-        # Informing the user that the image cannot be loaded
-        else:
+        if check_image(path)[0] is None:
             messagebox.showerror(f'Error while loading the image !',
                                  f'Check that the image at '
                                  f'{path} still exists and '
                                  f'that it is accessible.')
             self.log(f"Could not load image {path}, aborting")
+            return
+
+        # First, reset the canvas
+        self.reset()
+
+        # Then, load and display the image
+        self._image_path = path
+        self._set_image()
+        self.show_image()
+
+        # Deep copy to have independent objects
+        self._nuclei = deepcopy(nuclei)
+
+        # Drawing the nuclei
+        self.log(f"Drawing all the {len(self._nuclei)} nuclei on the "
+                 f"canvas in hidden mode")
+        for nuc in self._nuclei:
+            nuc.tk_obj = self._draw_nucleus(
+                nuc.x_pos, nuc.y_pos,
+                self.nuc_col_in if nuc.color == 'in'
+                else self.nuc_col_out, 'hidden')
+
+        # Deep copy to have independent objects
+        self._fibers = deepcopy(fibers)
+
+        self.log(f"Drawing all the {len(self._fibers)} fiber contours "
+                 f"on a separate overlay")
+
+        # Draw the fibers on an independent overlay whatever happens
+        self._draw_fibers_overlay()
+
+        # Get scale factor to adjust overlay to current size
+        scaled_x = int(self._image.width * self._img_scale)
+        scaled_y = int(self._image.height * self._img_scale)
+
+        # Create the overlay image object
+        overlay = self._fib_overlay.resize((scaled_x, scaled_y))
+        overlay_tk = ImageTk.PhotoImage(overlay)
+
+        # Delete the old overlay image to avoid memory leak
+        if self._fib_overlay_idx is not None:
+            self._canvas.delete(self._fib_overlay_idx)
+
+        # Add the new overlay image to the canvas
+        self._fib_overlay_idx = self._canvas.create_image(
+            0, 0, anchor="nw", image=overlay_tk, state='hidden')
+
+        # Store reference to keep overlay alive and raise on image
+        self._fib_overlay_tk = overlay_tk
+        self._canvas.tag_raise(self._fib_overlay_idx)
+
+        # Show or hide the fibers depending on the state of the indicators
+        self.set_indicators()
 
     def reset(self) -> None:
         """Resets every object in the canvas: the image, the nuclei and the
@@ -264,38 +265,38 @@ class ImageCanvas(ttk.Frame):
             *_: Ignores the event in case the command was issued by one.
         """
 
-        if self._image is not None:
-
-            self.log(f"Displaying the image {self._image_path}")
-
-            # Keeping only the channels the user wants
-            multiplier = (self._settings.red_channel_bool.get(), 0, 0, 0,
-                          0, self._settings.green_channel_bool.get(), 0, 0,
-                          0, 0, self._settings.blue_channel_bool.get(), 0)
-            image = self._image.convert("RGB", multiplier)
-
-            # Resizing the image to the canvas size
-            scaled_x = int(image.width * self._img_scale)
-            scaled_y = int(image.height * self._img_scale)
-            image = image.resize((scaled_x, scaled_y))
-
-            # Actually displaying the image in the canvas
-            image_tk = ImageTk.PhotoImage(image)
-            self._image_id = self._canvas.create_image(0, 0, anchor='nw',
-                                                       image=image_tk)
-            self._canvas.lower(self._image_id)
-            self._canvas.image_tk = image_tk
-            self._canvas.configure(scrollregion=(0, 0, scaled_x, scaled_y))
-
-            # Moving the image to the top left corner if it doesn't fill the
-            # canvas
-            if (scaled_x < self._canvas.winfo_width() or
-                scaled_y < self._canvas.winfo_height()):
-                self._canvas.xview_moveto(0),
-                self._canvas.yview_moveto(0)
-
-        else:
+        # Making sure an image is available for display
+        if self._image is None:
             self.log("Show image called but no image was set, aborting")
+            return
+
+        self.log(f"Displaying the image {self._image_path}")
+
+        # Keeping only the channels the user wants
+        multiplier = (self._settings.red_channel_bool.get(), 0, 0, 0,
+                      0, self._settings.green_channel_bool.get(), 0, 0,
+                      0, 0, self._settings.blue_channel_bool.get(), 0)
+        image = self._image.convert("RGB", multiplier)
+
+        # Resizing the image to the canvas size
+        scaled_x = int(image.width * self._img_scale)
+        scaled_y = int(image.height * self._img_scale)
+        image = image.resize((scaled_x, scaled_y))
+
+        # Actually displaying the image in the canvas
+        image_tk = ImageTk.PhotoImage(image)
+        self._image_id = self._canvas.create_image(0, 0, anchor='nw',
+                                                   image=image_tk)
+        self._canvas.lower(self._image_id)
+        self._canvas.image_tk = image_tk
+        self._canvas.configure(scrollregion=(0, 0, scaled_x, scaled_y))
+
+        # Moving the image to the top left corner if it doesn't fill the
+        # canvas
+        if (scaled_x < self._canvas.winfo_width() or
+            scaled_y < self._canvas.winfo_height()):
+            self._canvas.xview_moveto(0),
+            self._canvas.yview_moveto(0)
     
     def _delete_nuclei(self) -> None:
         """Removes all nuclei from the canvas, but doesn't delete the nuclei
@@ -844,41 +845,40 @@ class ImageCanvas(ttk.Frame):
         """Simply loads an image and resizes it to the current size of the
         canvas."""
 
-        if self._image_path:
-
-            self.log(f"Loading image {self._image_path}")
-
-            # Loading the image
-            cv_img = check_image(self._image_path)
-            # Handling the case when the image cannot be loaded
-            if cv_img is None:
-                messagebox.showerror(f'Error while loading the image !',
-                                     f'Check that the image at '
-                                     f'{self._image_path} still exists and '
-                                     f'that it is accessible.')
-                self.log(f"ERROR ! Could not load image {self._image_path}")
-                return
-
-            self._image = Image.fromarray(cv_img)
-
-            # Getting the different parameters of interest
-            can_width = self._canvas.winfo_width()
-            can_height = self._canvas.winfo_height()
-            can_ratio = can_width / can_height
-            img_ratio = self._image.width / self._image.height
-
-            # Calculating the new image width
-            if img_ratio >= can_ratio:
-                resize_width = can_width
-            else:
-                resize_width = int(can_height * img_ratio)
-
-            # Deducing the new image scale
-            self._img_scale = resize_width / self._image.width
-
-        else:
+        if not self._image_path:
             self.log("Image loading requested but no file was selected, "
                      "ignoring")
+            return
+
+        self.log(f"Loading image {self._image_path}")
+
+        # Loading the image
+        cv_img = check_image(self._image_path)
+        # Handling the case when the image cannot be loaded
+        if cv_img is None:
+            messagebox.showerror(f'Error while loading the image !',
+                                 f'Check that the image at '
+                                 f'{self._image_path} still exists and '
+                                 f'that it is accessible.')
+            self.log(f"ERROR ! Could not load image {self._image_path}")
+            return
+
+        self._image = Image.fromarray(cv_img)
+
+        # Getting the different parameters of interest
+        can_width = self._canvas.winfo_width()
+        can_height = self._canvas.winfo_height()
+        can_ratio = can_width / can_height
+        img_ratio = self._image.width / self._image.height
+
+        # Calculating the new image width
+        if img_ratio >= can_ratio:
+            resize_width = can_width
+        else:
+            resize_width = int(can_height * img_ratio)
+
+        # Deducing the new image scale
+        self._img_scale = resize_width / self._image.width
 
     def _arrows(self, event: Event) -> None:
         """Scrolls the image upon pressing on the arrow keys.
