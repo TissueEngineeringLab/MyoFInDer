@@ -42,6 +42,7 @@ class ImageCanvas(ttk.Frame):
         self._current_zoom: int = 0
         self._nuclei: Nuclei = Nuclei()
         self._fibers: Fibers = Fibers()
+        self._image_tk: ImageTk.PhotoImage | None = None
         self._image_id: int | None = None
         self._selection_box: SelectionBox = SelectionBox()
 
@@ -160,6 +161,7 @@ class ImageCanvas(ttk.Frame):
         if self._image_id is not None:
             self._canvas.delete(self._image_id)
         self._image_id = None
+        self._image_tk = None
 
         # Resetting the selection box
         self._selection_box = SelectionBox()
@@ -253,12 +255,16 @@ class ImageCanvas(ttk.Frame):
         scaled_y = int(image.height * self._img_scale)
         image = image.resize((scaled_x, scaled_y))
 
+        # Delete previous image on canvas before creating new one
+        if self._image_id is not None:
+            self._canvas.delete(self._image_id)
+
         # Actually displaying the image in the canvas
         image_tk = ImageTk.PhotoImage(image)
         self._image_id = self._canvas.create_image(0, 0, anchor='nw',
                                                    image=image_tk)
         self._canvas.lower(self._image_id)
-        self._canvas.image_tk = image_tk
+        self._image_tk = image_tk
         self._canvas.configure(scrollregion=(0, 0, scaled_x, scaled_y))
 
         # Moving the image to the top left corner if it doesn't fill the
