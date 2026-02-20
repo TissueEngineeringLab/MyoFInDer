@@ -10,6 +10,28 @@ from tkinter import (StringVar, IntVar, BooleanVar, Checkbutton, PhotoImage,
 from pathlib import Path
 from platform import system
 import logging
+import numpy as np
+
+
+@dataclass
+class ProcessError:
+    """Class containing the path to a file that caused an Exception in the
+    processing thread, to be passed to the UI thread."""
+
+    file: Path
+    exc: Exception
+
+
+@dataclass
+class ProcessResult:
+    """Class containing the information to pass from the processing thread to
+    the UI thread after an image has been processed."""
+
+    nuclei_out: list[tuple[np.ndarray, np.ndarray]]
+    nuclei_in: list[tuple[np.ndarray, np.ndarray]]
+    fiber_contours: tuple[np.ndarray, ...]
+    area: float
+    file: Path
 
 
 @dataclass
@@ -34,7 +56,6 @@ class Nucleus:
 class Fiber:
     """Class holding the data associated with a single fiber."""
 
-    polygon: int | None
     position: list[tuple[float, float]] = field(default_factory=list)
 
 

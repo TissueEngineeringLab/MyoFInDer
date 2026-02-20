@@ -10,7 +10,7 @@ from collections import defaultdict
 
 from .tools import check_image
 
-# Table for converting color strings to channels, assuming BGR images
+# Table for converting color strings to channels, assuming RGB images
 numpy_color_to_int = {"red": 0,
                       "green": 1,
                       "blue": 2}
@@ -86,13 +86,21 @@ class ImageSegmentation:
         small_objects_threshold = int(minimum_nucleus_diameter ** 2
                                       * np.pi / 4)
 
+        # Image to pass to CellPose
+        if nuclei_channel.max() > nuclei_channel.min():
+            x = np.stack(((nuclei_channel - nuclei_channel.min()) /
+                          (nuclei_channel.max() - nuclei_channel.min()),
+                          np.zeros_like(nuclei_channel)),
+                         axis=-1)
+        else:
+            x = np.stack((np.full_like(nuclei_channel, 1.0),
+                          np.zeros_like(nuclei_channel)),
+                         axis=-1)
+
         # Actual nuclei detection function
         labeled_image, *_ = self._app.eval(
             # Normalize here instead of letting eval do it
-            x=np.stack(((nuclei_channel - nuclei_channel.min()) /
-                        (nuclei_channel.max() - nuclei_channel.min()),
-                        np.zeros_like(nuclei_channel)),
-                       axis=-1),
+            x=x,
             batch_size=8,
             resample=None,
             channels=None,
@@ -163,7 +171,7 @@ class ImageSegmentation:
         """
 
         # Apply a Gaussian filter to smoothen the fiber signal
-        dim = int(min(fiber_channel.shape) / 50) // 2 * 2 - 1
+        dim = max(int(min(fiber_channel.shape) / 50) // 2 * 2 - 1, 1)
         fiber_channel = cv2.GaussianBlur(fiber_channel, (dim, dim), 0)
 
         # First, apply a base threshold
@@ -185,6 +193,10 @@ class ImageSegmentation:
         # Find contours and hierarchy of the holes inside the fibers
         contours, hierarchy = cv2.findContours(processed, cv2.RETR_TREE,
                                                cv2.CHAIN_APPROX_SIMPLE)
+
+        if hierarchy is None:
+            return np.zeros_like(processed, dtype=np.bool)
+
         hierarchy = np.squeeze(hierarchy).tolist()
 
         # If the hierarchy only contains one object, it is cast to int
@@ -259,6 +271,10 @@ class ImageSegmentation:
         contours, hierarchy = cv2.findContours(mask.astype(np.uint8),
                                                cv2.RETR_CCOMP,
                                                cv2.CHAIN_APPROX_SIMPLE)
+
+        if hierarchy is None:
+            return nuclei_out_fiber, nuclei_in_fiber
+
         hierarchy = np.squeeze(hierarchy).tolist()
 
         # If the hierarchy only contains one object, it is cast to int

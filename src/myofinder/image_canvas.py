@@ -1,12 +1,13 @@
 # coding: utf-8
 
 from tkinter import Canvas, ttk, Event, messagebox
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageDraw, ImageColor
 from platform import system
 from functools import partial
 from copy import deepcopy
 from pathlib import Path
 import logging
+from typing import Literal
 
 from .tools import Nucleus, Nuclei, Fibers, check_image, SelectionBox
 
@@ -33,7 +34,7 @@ class ImageCanvas(ttk.Frame):
 
         self.log("Setting the images canvas's variables")
 
-        self._image: Image | None = None
+        self._image: Image.Image | None = None
         self._image_path: Path | None = None
         self._img_scale: float = 1.0
         self._can_scale: float = 1.0
@@ -41,8 +42,13 @@ class ImageCanvas(ttk.Frame):
         self._current_zoom: int = 0
         self._nuclei: Nuclei = Nuclei()
         self._fibers: Fibers = Fibers()
+        self._image_tk: ImageTk.PhotoImage | None = None
         self._image_id: int | None = None
         self._selection_box: SelectionBox = SelectionBox()
+
+        # Objects used for the display of the fiber overlay
+        self._fib_overlay_tk: ImageTk.PhotoImage | None = None
+        self._fib_overlay_idx: int | None = None
 
     def log(self, msg: str) -> None:
         """Wrapper for reducing the verbosity of logging."""
@@ -53,26 +59,33 @@ class ImageCanvas(ttk.Frame):
         """Redraws the nuclei and/or fibers after the user changed the elements
         to display."""
 
-        # Deletes all the elements in the canvas
-        self._delete_nuclei()
-        self._delete_fibers()
-
-        # Draw the nuclei
+        # Show or hide the nuclei
         if self._settings.show_nuclei.get():
-            self.log(f"Drawing all the {len(self._nuclei)} nuclei on the "
+            self.log(f"Showing all the {len(self._nuclei)} nuclei on the "
                      f"canvas")
             for nuc in self._nuclei:
-                nuc.tk_obj = self._draw_nucleus(
-                    nuc.x_pos, nuc.y_pos,
-                    self.nuc_col_in if nuc.color == 'in'
-                    else self.nuc_col_out)
+                self._canvas.itemconfigure(nuc.tk_obj, state="normal")
+        else:
+            self.log(f"Showing all the {len(self._nuclei)} nuclei on the "
+                     f"canvas")
+            for nuc in self._nuclei:
+                self._canvas.itemconfigure(nuc.tk_obj, state="hidden")
 
-        # Draw the fibers
+        # Nothing more to do if there's no fiber overlay
+        if self._fib_overlay_idx is None:
+            return
+
+        # Show or hide the fibers
         if self._settings.show_fibers.get():
-            self.log(f"Drawing all the {len(self._fibers)} fiber contours on "
-                     f"the canvas")
-            for fiber in self._fibers:
-                fiber.polygon = self._draw_fiber(fiber.position)
+            self.log(f"Showing all the {len(self._fibers)} fiber contours "
+                     f"on the canvas")
+            self._canvas.itemconfigure(self._fib_overlay_idx,
+                                       state="normal")
+        else:
+            self.log(f"Hiding all the {len(self._fibers)} fiber contours "
+                     f"on the canvas")
+            self._canvas.itemconfigure(self._fib_overlay_idx,
+                                       state="hidden")
 
     def load_image(self,
                    path: Path,
@@ -92,48 +105,36 @@ class ImageCanvas(ttk.Frame):
 
         # First, checking that the image can be loaded
         # Otherwise, all data would be lost !
-        if check_image(path)[0] is not None:
-
-            # First, reset the canvas
-            self.reset()
-            self._delete_nuclei()
-            self._delete_fibers()
-
-            # Then, load and display the image
-            self._image_path = path
-            self._set_image()
-            self.show_image()
-
-            # Deep copy to have independent objects
-            self._nuclei = deepcopy(nuclei)
-
-            # Drawing the nuclei
-            if self._settings.show_nuclei.get():
-                self.log(f"Drawing all the {len(self._nuclei)} nuclei on the "
-                         f"canvas")
-                for nuc in self._nuclei:
-                    nuc.tk_obj = self._draw_nucleus(
-                        nuc.x_pos, nuc.y_pos,
-                        self.nuc_col_in if nuc.color == 'in'
-                        else self.nuc_col_out)
-
-            # Deep copy to have independent objects
-            self._fibers = deepcopy(fibers)
-
-            # Drawing the fibers
-            if self._settings.show_fibers.get():
-                self.log(f"Drawing all the {len(self._fibers)} fiber contours "
-                         f"on the canvas")
-                for fib in self._fibers:
-                    fib.polygon = self._draw_fiber(fib.position)
-
-        # Informing the user that the image cannot be loaded
-        else:
+        if check_image(path)[0] is None:
             messagebox.showerror(f'Error while loading the image !',
                                  f'Check that the image at '
                                  f'{path} still exists and '
                                  f'that it is accessible.')
             self.log(f"Could not load image {path}, aborting")
+            return
+
+        # First, reset the canvas
+        self.reset()
+
+        # Then, load and display the image
+        self._image_path = path
+        self._set_image()
+        self.show_image()
+
+        # Deep copy to have independent objects
+        self._nuclei = deepcopy(nuclei)
+
+        # Drawing the nuclei
+        self.draw_nuclei()
+
+        # Deep copy to have independent objects
+        self._fibers = deepcopy(fibers)
+
+        # Drawing the fibers
+        self.draw_fibers()
+
+        # Show or hide the fibers depending on the state of the indicators
+        self.set_indicators()
 
     def reset(self) -> None:
         """Resets every object in the canvas: the image, the nuclei and the
@@ -149,8 +150,8 @@ class ImageCanvas(ttk.Frame):
         self._current_zoom = 0
 
         # Removing the fibers and nuclei from the canvas
-        self._delete_nuclei()
-        self._delete_fibers()
+        self.delete_nuclei()
+        self.delete_fibers()
 
         # Resetting the fibers and nuclei objects
         self._nuclei = Nuclei()
@@ -160,6 +161,7 @@ class ImageCanvas(ttk.Frame):
         if self._image_id is not None:
             self._canvas.delete(self._image_id)
         self._image_id = None
+        self._image_tk = None
 
         # Resetting the selection box
         self._selection_box = SelectionBox()
@@ -235,40 +237,44 @@ class ImageCanvas(ttk.Frame):
             *_: Ignores the event in case the command was issued by one.
         """
 
-        if self._image is not None:
-
-            self.log(f"Displaying the image {self._image_path}")
-
-            # Keeping only the channels the user wants
-            multiplier = (self._settings.red_channel_bool.get(), 0, 0, 0,
-                          0, self._settings.green_channel_bool.get(), 0, 0,
-                          0, 0, self._settings.blue_channel_bool.get(), 0)
-            image = self._image.convert("RGB", multiplier)
-
-            # Resizing the image to the canvas size
-            scaled_x = int(image.width * self._img_scale)
-            scaled_y = int(image.height * self._img_scale)
-            image = image.resize((scaled_x, scaled_y))
-
-            # Actually displaying the image in the canvas
-            image_tk = ImageTk.PhotoImage(image)
-            self._image_id = self._canvas.create_image(0, 0, anchor='nw',
-                                                       image=image_tk)
-            self._canvas.lower(self._image_id)
-            self._canvas.image_tk = image_tk
-            self._canvas.configure(scrollregion=(0, 0, scaled_x, scaled_y))
-
-            # Moving the image to the top left corner if it doesn't fill the
-            # canvas
-            if scaled_x < self._canvas.winfo_width() or \
-                    scaled_y < self._canvas.winfo_height():
-                self._canvas.xview_moveto(0),
-                self._canvas.yview_moveto(0)
-
-        else:
+        # Making sure an image is available for display
+        if self._image is None:
             self.log("Show image called but no image was set, aborting")
+            return
+
+        self.log(f"Displaying the image {self._image_path}")
+
+        # Keeping only the channels the user wants
+        multiplier = (self._settings.red_channel_bool.get(), 0, 0, 0,
+                      0, self._settings.green_channel_bool.get(), 0, 0,
+                      0, 0, self._settings.blue_channel_bool.get(), 0)
+        image = self._image.convert("RGB", multiplier)
+
+        # Resizing the image to the canvas size
+        scaled_x = int(image.width * self._img_scale)
+        scaled_y = int(image.height * self._img_scale)
+        image = image.resize((scaled_x, scaled_y))
+
+        # Delete previous image on canvas before creating new one
+        if self._image_id is not None:
+            self._canvas.delete(self._image_id)
+
+        # Actually displaying the image in the canvas
+        image_tk = ImageTk.PhotoImage(image)
+        self._image_id = self._canvas.create_image(0, 0, anchor='nw',
+                                                   image=image_tk)
+        self._canvas.lower(self._image_id)
+        self._image_tk = image_tk
+        self._canvas.configure(scrollregion=(0, 0, scaled_x, scaled_y))
+
+        # Moving the image to the top left corner if it doesn't fill the
+        # canvas
+        if (scaled_x < self._canvas.winfo_width() or
+            scaled_y < self._canvas.winfo_height()):
+            self._canvas.xview_moveto(0),
+            self._canvas.yview_moveto(0)
     
-    def _delete_nuclei(self) -> None:
+    def delete_nuclei(self) -> None:
         """Removes all nuclei from the canvas, but doesn't delete the nuclei
         objects."""
 
@@ -279,16 +285,78 @@ class ImageCanvas(ttk.Frame):
                 self._canvas.delete(nuc.tk_obj)
                 nuc.tk_obj = None
 
-    def _delete_fibers(self) -> None:
+    def delete_fibers(self) -> None:
         """Removes all fibers from the canvas, but doesn't delete the fibers
          objects."""
 
         self.log("Deleting all the fibers on the canvas")
 
-        for fiber in self._fibers:
-            if fiber.polygon is not None:
-                self._canvas.delete(fiber.polygon)
-                fiber.polygon = None
+        # Delete the overlay object
+        if self._fib_overlay_idx is not None:
+            self._canvas.delete(self._fib_overlay_idx)
+
+        # Reset the overlay helper objects
+        self._fib_overlay_idx = None
+        self._fib_overlay_tk = None
+
+    def draw_nuclei(self) -> None:
+        """Draws all the nuclei on the canvas, in hidden mode."""
+
+        self.log(f"Drawing all the {len(self._nuclei)} nuclei on the "
+                 f"canvas in hidden mode")
+        for nuc in self._nuclei:
+            nuc.tk_obj = self._draw_nucleus(
+                nuc.x_pos, nuc.y_pos,
+                self.nuc_col_in if nuc.color == 'in'
+                else self.nuc_col_out, 'hidden')
+
+    def draw_fibers(self) -> None:
+        """Creates a transparent overlay on which the outline of the detected
+        fibers is displayed, and adds it to the canvas in hidden mode.
+
+        This overlay will then be displayed on top of the main image if the
+        user enables the fiber indicator.
+        """
+
+        if self._image is None:
+            return
+
+        self.log(f"Drawing all the {len(self._fibers)} fiber contours "
+                 f"on a separate overlay")
+
+        # Draw an empty overlay with the same dimension as the image
+        overlay = Image.new("RGBA", (self._image.width, self._image.height),
+                            (0, 0, 0, 0))
+        draw = ImageDraw.Draw(overlay)
+
+        # Parameters driving fiber aspect
+        color = (*ImageColor.getrgb(self.fib_color), 255)
+        line_width = max(int(3 * self._can_scale), 1)
+
+        # Actually draw fibers in the overlay
+        for fib in self._fibers:
+            draw.line(fib.position + [fib.position[0]],
+                      fill=color, width=line_width)
+
+        # Get scale factor to adjust overlay to current size
+        scaled_x = int(self._image.width * self._img_scale)
+        scaled_y = int(self._image.height * self._img_scale)
+
+        # Create the overlay image object
+        overlay = overlay.resize((scaled_x, scaled_y))
+        overlay_tk = ImageTk.PhotoImage(overlay)
+
+        # Delete the old overlay image to avoid memory leak
+        if self._fib_overlay_idx is not None:
+            self._canvas.delete(self._fib_overlay_idx)
+
+        # Add the new overlay image to the canvas
+        self._fib_overlay_idx = self._canvas.create_image(
+            0, 0, anchor="nw", image=overlay_tk, state='hidden')
+
+        # Store reference to keep overlay alive and raise on image
+        self._fib_overlay_tk = overlay_tk
+        self._canvas.tag_raise(self._fib_overlay_idx)
 
     def _set_layout(self) -> None:
         """Creates the frame, canvas and scrollbar objects, places them and
@@ -366,7 +434,8 @@ class ImageCanvas(ttk.Frame):
     def _draw_nucleus(self,
                       unscaled_x: float,
                       unscaled_y: float,
-                      color: str) -> int:
+                      color: str,
+                      state: Literal['normal', 'hidden']) -> int:
         """Draws a single nucleus on the canvas.
 
         Args:
@@ -375,6 +444,7 @@ class ImageCanvas(ttk.Frame):
             unscaled_y: The y position of the nucleus on the raw image, in
                 pixels.
             color: The color of the nucleus.
+            state: Whether the nucleus should be displayed right away or not.
 
         Returns:
             The index tkinter attributed to the nucleus it just drew.
@@ -390,35 +460,7 @@ class ImageCanvas(ttk.Frame):
         # Actually drawing the nucleus
         return self._canvas.create_oval(
             x - radius, y - radius, x + radius, y + radius,
-            fill=color, outline='#fff', width=0)
-
-    def _draw_fiber(self, positions: list[tuple[float,
-                                                float]]) -> int:
-        """Draws a single fiber on the canvas.
-
-        Args:
-            positions: List of all the points making together the polygon that
-                represents the fiber.
-
-        Returns:
-            The index tkinter attributed to the polygon it just drew.
-        """
-
-        # Adjusting the width to the scale
-        line_width = max(int(3 * self._can_scale), 1)
-
-        # Adjusting the positions to the scale
-        positions = [(self._img_scale * x, self._img_scale * y)
-                     for x, y in positions]
-
-        # Actually drawing the fiber
-        positions = [val for pos in positions for val in pos]
-        polygon = self._canvas.create_polygon(*positions,
-                                              width=line_width,
-                                              outline=self.fib_color,
-                                              fill='')
-
-        return polygon
+            fill=color, outline='#fff', width=0, state=state)
 
     def _draw_box(self) -> int:
         """Draws the selection box for either inverting the nuclei or deleting
@@ -447,18 +489,20 @@ class ImageCanvas(ttk.Frame):
         """
 
         # Do nothing if there's no image displayed
-        if self._image is not None:
+        if self._image is None:
+            return
 
-            # The coordinates of the click on the unscaled image
-            abs_x = self._canvas.canvasx(event.x) / self._img_scale
-            abs_y = self._canvas.canvasy(event.y) / self._img_scale
+        # The coordinates of the click on the unscaled image
+        abs_x = self._canvas.canvasx(event.x) / self._img_scale
+        abs_y = self._canvas.canvasy(event.y) / self._img_scale
 
-            # Do something only if the click is inside the image
-            if abs_x < self._image.width and abs_y < self._image.height:
+        # Do something only if the click is inside the image
+        if abs_x >= self._image.width or abs_y >= self._image.height:
+            return
 
-                # Saving the position of the click
-                self._selection_box.x_start = abs_x
-                self._selection_box.y_start = abs_y
+        # Saving the position of the click
+        self._selection_box.x_start = abs_x
+        self._selection_box.y_start = abs_y
 
     def _motion(self, event: Event) -> None:
         """Binding method for a mouse motion event while either the left or
@@ -473,31 +517,33 @@ class ImageCanvas(ttk.Frame):
 
         # Do nothing if there's no image displayed
         # Also nothing if the selection box wasn't initialized on first click
-        if self._image is not None and self._selection_box.started:
+        if self._image is None or not self._selection_box.started:
+            return
 
-            # The coordinates of the event on the unscaled image
-            abs_x = self._canvas.canvasx(event.x) / self._img_scale
-            abs_y = self._canvas.canvasy(event.y) / self._img_scale
+        # The coordinates of the event on the unscaled image
+        abs_x = self._canvas.canvasx(event.x) / self._img_scale
+        abs_y = self._canvas.canvasy(event.y) / self._img_scale
 
-            # Do something only if the event is inside the image
-            if abs_x < self._image.width and abs_y < self._image.height:
+        # Do something only if the event is inside the image
+        if abs_x >= self._image.width or abs_y >= self._image.height:
+            return
 
-                # Saving the end position of the selection box
-                self._selection_box.x_end = abs_x
-                self._selection_box.y_end = abs_y
+        # Saving the end position of the selection box
+        self._selection_box.x_end = abs_x
+        self._selection_box.y_end = abs_y
 
-                # Drawing the selection box if it is not already displayed
-                if self._selection_box.tk_obj is None:
-                    self._selection_box.tk_obj = self._draw_box()
+        # Drawing the selection box if it is not already displayed
+        if self._selection_box.tk_obj is None:
+            self._selection_box.tk_obj = self._draw_box()
 
-                # Otherwise just updating the displayed selection box
-                else:
-                    self._canvas.coords(
-                        self._selection_box.tk_obj,
-                        (self._selection_box.x_start * self._img_scale,
-                         self._selection_box.y_start * self._img_scale,
-                         self._selection_box.x_end * self._img_scale,
-                         self._selection_box.y_end * self._img_scale))
+        # Otherwise just updating the displayed selection box
+        else:
+            self._canvas.coords(
+                self._selection_box.tk_obj,
+                (self._selection_box.x_start * self._img_scale,
+                 self._selection_box.y_start * self._img_scale,
+                 self._selection_box.x_end * self._img_scale,
+                 self._selection_box.y_end * self._img_scale))
 
     def _left_release(self, event: Event) -> None:
         """Binding method for a left mouse button release event.
@@ -511,8 +557,8 @@ class ImageCanvas(ttk.Frame):
         """
 
         # Selection box is only considered if it exists and if it's big enough
-        if self._selection_box and \
-                self._selection_box.area * self._img_scale ** 2 > 25:
+        if (self._selection_box and
+            self._selection_box.area * self._img_scale ** 2 > 25):
             self._left_release_box(event)
         # Otherwise the event is treated as a sole click
         else:
@@ -535,27 +581,32 @@ class ImageCanvas(ttk.Frame):
         """
 
         # Do nothing if there's no image displayed
-        if self._image is not None:
+        if self._image is None:
+            return
 
-            # The coordinates of the click on the unscaled image
-            abs_x = self._canvas.canvasx(event.x) / self._img_scale
-            abs_y = self._canvas.canvasy(event.y) / self._img_scale
+        # Do nothing if the nuclei are not being displayed
+        if not self._settings.show_nuclei.get():
+            return
 
-            # Update coordinates only if the click is inside the image
-            if abs_x < self._image.width and abs_y < self._image.height:
-                self._selection_box.x_end = abs_x
-                self._selection_box.y_end = abs_y
+        # The coordinates of the click on the unscaled image
+        abs_x = self._canvas.canvasx(event.x) / self._img_scale
+        abs_y = self._canvas.canvasy(event.y) / self._img_scale
 
-            self.log(f"Inversion box drawn from ("
-                     f"{self._selection_box.x_start}, "
-                     f"{self._selection_box.y_start}) to ("
-                     f"{self._selection_box.x_end}, "
-                     f"{self._selection_box.y_end})")
+        # Update coordinates only if the click is inside the image
+        if abs_x < self._image.width and abs_y < self._image.height:
+            self._selection_box.x_end = abs_x
+            self._selection_box.y_end = abs_y
 
-            # Inverting all the nuclei found inside the selection box
-            for nuc in self._nuclei:
-                if self._selection_box.is_inside(nuc.x_pos, nuc.y_pos):
-                    self._invert_nucleus(nuc)
+        self.log(f"Inversion box drawn from ("
+                 f"{self._selection_box.x_start}, "
+                 f"{self._selection_box.y_start}) to ("
+                 f"{self._selection_box.x_end}, "
+                 f"{self._selection_box.y_end})")
+
+        # Inverting all the nuclei found inside the selection box
+        for nuc in self._nuclei:
+            if self._selection_box.is_inside(nuc.x_pos, nuc.y_pos):
+                self._invert_nucleus(nuc)
 
     def _left_release_nucleus(self, event: Event) -> None:
         """Upon left click, either adds a new nucleus or a fiber, or switches
@@ -566,28 +617,31 @@ class ImageCanvas(ttk.Frame):
         """
 
         # Do nothing if there's no image displayed
-        if self._image is not None:
+        if self._image is None:
+            return
 
-            # The coordinates of the click on the unscaled image
-            abs_x = self._canvas.canvasx(event.x) / self._img_scale
-            abs_y = self._canvas.canvasy(event.y) / self._img_scale
+        # Do nothing if the nuclei are not being displayed
+        if not self._settings.show_nuclei.get():
+            return
 
-            # Do something only if the event is inside the image
-            if abs_x < self._image.width and abs_y < self._image.height:
+        # The coordinates of the click on the unscaled image
+        abs_x = self._canvas.canvasx(event.x) / self._img_scale
+        abs_y = self._canvas.canvasy(event.y) / self._img_scale
 
-                # Do nothing if the nuclei are not being displayed
-                if self._settings.show_nuclei.get():
+        # Do something only if the event is inside the image
+        if abs_x >= self._image.width or abs_y >= self._image.height:
+            return
 
-                    # Trying to find a close nucleus
-                    nuc = self._find_closest_nucleus(abs_x, abs_y)
+        # Trying to find a close nucleus
+        nuc = self._find_closest_nucleus(abs_x, abs_y)
 
-                    # One close nucleus found, inverting it colour
-                    if nuc is not None:
-                        self._invert_nucleus(nuc)
+        # One close nucleus found, inverting it color
+        if nuc is not None:
+            self._invert_nucleus(nuc)
 
-                    # No close nucleus found, adding a new one
-                    else:
-                        self._add_nucleus(abs_x, abs_y)
+        # No close nucleus found, adding a new one
+        else:
+            self._add_nucleus(abs_x, abs_y)
 
     def _right_release(self, event: Event) -> None:
         """Binding method for a right mouse button release event.
@@ -601,8 +655,8 @@ class ImageCanvas(ttk.Frame):
         """
 
         # Selection box is only considered if it exists and if it's big enough
-        if self._selection_box and \
-                self._selection_box.area * self._img_scale ** 2 > 25:
+        if (self._selection_box and
+            self._selection_box.area * self._img_scale ** 2 > 25):
             self._right_release_box(event)
         # Otherwise the event is treated as a sole click
         else:
@@ -625,31 +679,36 @@ class ImageCanvas(ttk.Frame):
         """
 
         # Do nothing if there's no image displayed
-        if self._image is not None:
+        if self._image is None:
+            return
 
-            # The coordinates of the click on the unscaled image
-            abs_x = self._canvas.canvasx(event.x) / self._img_scale
-            abs_y = self._canvas.canvasy(event.y) / self._img_scale
+        # Do nothing if the nuclei are not being displayed
+        if not self._settings.show_nuclei.get():
+            return
 
-            # Update coordinates only if the click is inside the image
-            if abs_x < self._image.width and abs_y < self._image.height:
-                self._selection_box.x_end = abs_x
-                self._selection_box.y_end = abs_y
+        # The coordinates of the click on the unscaled image
+        abs_x = self._canvas.canvasx(event.x) / self._img_scale
+        abs_y = self._canvas.canvasy(event.y) / self._img_scale
 
-            self.log(f"Deletion box drawn from ("
-                     f"{self._selection_box.x_start}, "
-                     f"{self._selection_box.y_start}) to ("
-                     f"{self._selection_box.x_end}, "
-                     f"{self._selection_box.y_end})")
+        # Update coordinates only if the click is inside the image
+        if abs_x < self._image.width and abs_y < self._image.height:
+            self._selection_box.x_end = abs_x
+            self._selection_box.y_end = abs_y
 
-            to_delete = list()
-            # Detecting all the nuclei to delete
-            for nuc in self._nuclei:
-                if self._selection_box.is_inside(nuc.x_pos, nuc.y_pos):
-                    to_delete.append(nuc)
-            # Actually deleting the detected nuclei
-            for nuc in to_delete:
-                self._delete_nucleus(nuc)
+        self.log(f"Deletion box drawn from ("
+                 f"{self._selection_box.x_start}, "
+                 f"{self._selection_box.y_start}) to ("
+                 f"{self._selection_box.x_end}, "
+                 f"{self._selection_box.y_end})")
+
+        to_delete = list()
+        # Detecting all the nuclei to delete
+        for nuc in self._nuclei:
+            if self._selection_box.is_inside(nuc.x_pos, nuc.y_pos):
+                to_delete.append(nuc)
+        # Actually deleting the detected nuclei
+        for nuc in to_delete:
+            self._delete_nucleus(nuc)
 
     def _right_release_nucleus(self, event: Event) -> None:
         """Method called when the user releases the right mouse button but did
@@ -664,24 +723,27 @@ class ImageCanvas(ttk.Frame):
         """
 
         # Do nothing if there's no image displayed
-        if self._image is not None:
+        if self._image is None:
+            return
 
-            # The coordinates of the click on the unscaled image
-            abs_x = self._canvas.canvasx(event.x) / self._img_scale
-            abs_y = self._canvas.canvasy(event.y) / self._img_scale
+        # Do nothing if the nuclei are not being displayed
+        if not self._settings.show_nuclei.get():
+            return
 
-            # Do something only if the click is inside the image
-            if abs_x < self._image.width and abs_y < self._image.height:
+        # The coordinates of the click on the unscaled image
+        abs_x = self._canvas.canvasx(event.x) / self._img_scale
+        abs_y = self._canvas.canvasy(event.y) / self._img_scale
 
-                # Do nothing if the nuclei are not being displayed
-                if self._settings.show_nuclei.get():
+        # Do something only if the click is inside the image
+        if abs_x >= self._image.width or abs_y >= self._image.height:
+            return
 
-                    # Trying to find a close nucleus
-                    nuc = self._find_closest_nucleus(abs_x, abs_y)
+        # Trying to find a close nucleus
+        nuc = self._find_closest_nucleus(abs_x, abs_y)
 
-                    # One close nucleus found, deleting it
-                    if nuc is not None:
-                        self._delete_nucleus(nuc)
+        # One close nucleus found, deleting it
+        if nuc is not None:
+            self._delete_nucleus(nuc)
 
     def _find_closest_nucleus(self, x: float, y: float) -> Nucleus | None:
         """Searches for a close nucleus among the existing nuclei.
@@ -727,7 +789,8 @@ class ImageCanvas(ttk.Frame):
         # Creating the nucleus and displaying it
         new_nuc = Nucleus(abs_x, abs_y,
                           self._draw_nucleus(abs_x, abs_y,
-                                             self.nuc_col_out),
+                                             self.nuc_col_out,
+                                             'normal'),
                           'out')
 
         self.log(f"Added nucleus at position ({abs_x}, {abs_y})")
@@ -787,41 +850,40 @@ class ImageCanvas(ttk.Frame):
         """Simply loads an image and resizes it to the current size of the
         canvas."""
 
-        if self._image_path:
-
-            self.log(f"Loading image {self._image_path}")
-
-            # Loading the image
-            cv_img = check_image(self._image_path)
-            # Handling the case when the image cannot be loaded
-            if cv_img is None:
-                messagebox.showerror(f'Error while loading the image !',
-                                     f'Check that the image at '
-                                     f'{self._image_path} still exists and '
-                                     f'that it is accessible.')
-                self.log(f"ERROR ! Could not load image {self._image_path}")
-                return
-
-            self._image = Image.fromarray(cv_img)
-
-            # Getting the different parameters of interest
-            can_width = self._canvas.winfo_width()
-            can_height = self._canvas.winfo_height()
-            can_ratio = can_width / can_height
-            img_ratio = self._image.width / self._image.height
-
-            # Calculating the new image width
-            if img_ratio >= can_ratio:
-                resize_width = can_width
-            else:
-                resize_width = int(can_height * img_ratio)
-
-            # Deducing the new image scale
-            self._img_scale = resize_width / self._image.width
-
-        else:
+        if not self._image_path:
             self.log("Image loading requested but no file was selected, "
                      "ignoring")
+            return
+
+        self.log(f"Loading image {self._image_path}")
+
+        # Loading the image
+        cv_img = check_image(self._image_path)
+        # Handling the case when the image cannot be loaded
+        if cv_img is None:
+            messagebox.showerror(f'Error while loading the image !',
+                                 f'Check that the image at '
+                                 f'{self._image_path} still exists and '
+                                 f'that it is accessible.')
+            self.log(f"ERROR ! Could not load image {self._image_path}")
+            return
+
+        self._image = Image.fromarray(cv_img)
+
+        # Getting the different parameters of interest
+        can_width = self._canvas.winfo_width()
+        can_height = self._canvas.winfo_height()
+        can_ratio = can_width / can_height
+        img_ratio = self._image.width / self._image.height
+
+        # Calculating the new image width
+        if img_ratio >= can_ratio:
+            resize_width = can_width
+        else:
+            resize_width = int(can_height * img_ratio)
+
+        # Deducing the new image scale
+        self._img_scale = resize_width / self._image.width
 
     def _arrows(self, event: Event) -> None:
         """Scrolls the image upon pressing on the arrow keys.
@@ -869,60 +931,61 @@ class ImageCanvas(ttk.Frame):
                 corner of the image.
         """
 
-        if self._image is not None:
+        if self._image is None:
+            return
 
-            # Linux mousewheel events do not hold information about the delta,
-            # so we need to set it manually
-            if delta is None:
-                if system() == "Linux":
-                    delta = 1 if event.num == 4 else -1
-                else:
-                    delta = int(event.delta / abs(event.delta))
+        # Linux mousewheel events do not hold information about the delta,
+        # so we need to set it manually
+        if delta is None:
+            if system() == "Linux":
+                delta = 1 if event.num == 4 else -1
+            else:
+                delta = int(event.delta / abs(event.delta))
 
-            scale = 1.0
-            # Setting the point where to zoom on the image
-            x_can = self._canvas.canvasx(event.x) if mouse else 0
-            y_can = self._canvas.canvasy(event.y) if mouse else 0
+        scale = 1.0
+        # Setting the point where to zoom on the image
+        x_can = self._canvas.canvasx(event.x) if mouse else 0
+        y_can = self._canvas.canvasy(event.y) if mouse else 0
 
-            # Zooming out
-            if delta < 0:
-                # Limit to 4 zooms out
-                if self._current_zoom < -4:
-                    return
+        # Zooming out
+        if delta < 0:
+            # Limit to 4 zooms out
+            if self._current_zoom < -4:
+                return
 
-                # Setting the new image and canvas scales
-                self._img_scale /= self._delta
-                self._can_scale /= self._delta
-                scale /= self._delta
-                self._current_zoom -= 1
+            # Setting the new image and canvas scales
+            self._img_scale /= self._delta
+            self._can_scale /= self._delta
+            scale /= self._delta
+            self._current_zoom -= 1
 
-                # Scrolling the canvas to keep the mouse on the same point
-                self._canvas.xview_scroll(int((1 / self._delta - 1) * x_can),
-                                          "units")
-                self._canvas.yview_scroll(int((1 / self._delta - 1) * y_can),
-                                          "units")
+            # Scrolling the canvas to keep the mouse on the same point
+            self._canvas.xview_scroll(int((1 / self._delta - 1) * x_can),
+                                      "units")
+            self._canvas.yview_scroll(int((1 / self._delta - 1) * y_can),
+                                      "units")
 
-            # Zooming in
-            elif delta > 0:
-                # Limit to 4 zooms in
-                if self._current_zoom > 4:
-                    return
+        # Zooming in
+        elif delta > 0:
+            # Limit to 4 zooms in
+            if self._current_zoom > 4:
+                return
 
-                # Setting the new image and canvas scales
-                self._img_scale *= self._delta
-                self._can_scale *= self._delta
-                scale *= self._delta
-                self._current_zoom += 1
+            # Setting the new image and canvas scales
+            self._img_scale *= self._delta
+            self._can_scale *= self._delta
+            scale *= self._delta
+            self._current_zoom += 1
 
-            # Rescaling the canvas
-            self._canvas.scale('all', 0, 0, scale, scale)
-            # Updating the image
-            self.show_image()
+        # Rescaling the canvas
+        self._canvas.scale('all', 0, 0, scale, scale)
+        # Updating the image
+        self.show_image()
 
-            # Scrolling the canvas to keep the mouse on the same point in case
-            # we were zooming in and the image is bigger than the canvas
-            if delta > 0 and self._current_zoom > 0:
-                self._canvas.xview_scroll(int((self._delta - 1) * x_can),
-                                          "units")
-                self._canvas.yview_scroll(int((self._delta - 1) * y_can),
-                                          "units")
+        # Scrolling the canvas to keep the mouse on the same point in case
+        # we were zooming in and the image is bigger than the canvas
+        if delta > 0 and self._current_zoom > 0:
+            self._canvas.xview_scroll(int((self._delta - 1) * x_can),
+                                      "units")
+            self._canvas.yview_scroll(int((self._delta - 1) * y_can),
+                                      "units")

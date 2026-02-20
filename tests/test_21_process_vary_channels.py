@@ -48,6 +48,8 @@ class Test21ProcessVaryChannels(BaseTestInterfaceProcessing):
         stop_thread.start()
         # Re-starting the processing loop in the main Thread
         self._window._process_thread()
+        self._window._handle_ui_queue()
+        self._window._handle_ui_queue()
 
         # Reading the processing output to later compare it with other runs
         nuc = len(self._window._files_table.table_items.entries[0].nuclei)
@@ -91,6 +93,8 @@ class Test21ProcessVaryChannels(BaseTestInterfaceProcessing):
         stop_thread.start()
         # Re-starting the processing loop in the main Thread
         self._window._process_thread()
+        self._window._handle_ui_queue()
+        self._window._handle_ui_queue()
 
         # Checking that the output of the processing is reasonably close to the
         # one with the regular colors
@@ -136,6 +140,8 @@ class Test21ProcessVaryChannels(BaseTestInterfaceProcessing):
         stop_thread.start()
         # Re-starting the processing loop in the main Thread
         self._window._process_thread()
+        self._window._handle_ui_queue()
+        self._window._handle_ui_queue()
 
         # Checking that the output of the processing is reasonably close to the
         # one with the regular colors
@@ -181,6 +187,8 @@ class Test21ProcessVaryChannels(BaseTestInterfaceProcessing):
         stop_thread.start()
         # Re-starting the processing loop in the main Thread
         self._window._process_thread()
+        self._window._handle_ui_queue()
+        self._window._handle_ui_queue()
 
         # Checking that the output of the processing is reasonably close to the
         # one with the regular colors
@@ -226,6 +234,8 @@ class Test21ProcessVaryChannels(BaseTestInterfaceProcessing):
         stop_thread.start()
         # Re-starting the processing loop in the main Thread
         self._window._process_thread()
+        self._window._handle_ui_queue()
+        self._window._handle_ui_queue()
 
         # Checking that the output of the processing is reasonably close to the
         # one with the regular colors
@@ -271,6 +281,8 @@ class Test21ProcessVaryChannels(BaseTestInterfaceProcessing):
         stop_thread.start()
         # Re-starting the processing loop in the main Thread
         self._window._process_thread()
+        self._window._handle_ui_queue()
+        self._window._handle_ui_queue()
 
         # Checking that the output of the processing is reasonably close to the
         # one with the regular colors

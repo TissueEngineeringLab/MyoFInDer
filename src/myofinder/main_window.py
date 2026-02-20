@@ -14,13 +14,11 @@ from pathlib import Path
 from collections.abc import Callable
 import logging
 import importlib.resources as resources
+from time import time
 
-from .tools import Settings
-from .tools import SavePopup
-from .tools import WarningWindow
-from .tools import SettingsWindow
-from .tools import SplashWindow
-from .tools import check_project_name
+from .tools import (Settings, SavePopup, WarningWindow, SettingsWindow,
+                    SplashWindow, check_project_name, ProcessError,
+                    ProcessResult)
 from .files_table import FilesTable
 from .image_canvas import ImageCanvas
 
@@ -167,7 +165,6 @@ class MainWindow(Tk):
 
         self.log("Requesting the processing thread to finish")
         self._stop_thread = True
-        sleep(0.5)
         self.log("Waiting for the processing thread to finish")
         self._thread.join(timeout=1)
 
@@ -175,6 +172,9 @@ class MainWindow(Tk):
             self.log("ERROR! The processing thread is still alive !")
         else:
             self.log("The processing thread terminated as excepted")
+
+        if self._ui_after_idx is not None:
+            self.after_cancel(self._ui_after_idx)
 
         self.log("Destroying the main window")
         self.destroy()
@@ -201,10 +201,11 @@ class MainWindow(Tk):
         self._processed_images_count = IntVar(value=0)
         self._img_to_process_count = 0
         self._stop_thread = False
-        self._stop_event = Event()
-        self._stop_event.set()
-        self._queue = Queue(maxsize=0)
+        self._stop_processing_event = Event()
+        self._thread_queue = Queue(maxsize=0)
+        self._ui_queue = Queue(maxsize=0)
         self._thread = Thread(target=self._process_thread)
+        self._ui_after_idx: str | None = None
         self._thread.start()
 
         self._current_project: Path | None = None  # Path to current project
@@ -598,7 +599,7 @@ class MainWindow(Tk):
         self.log("Checking if it is necessary to create a warning window")
 
         # Case when the user tries to exit while computations are running
-        if not self._queue.empty():
+        if not self._thread_queue.empty():
             self.log("Processing queue not empty")
             ret = messagebox.askyesno(
                 'Hold on !',
@@ -748,58 +749,38 @@ class MainWindow(Tk):
         # Re-enabling the file table close buttons
         self._files_table.enable_buttons(True)
 
-    def _stop_processing(self, force: bool = True) -> None:
-        """Empties the queue of images waiting for processing, and waits for
-        the already started computation to end.
+    def _stop_processing(self) -> None:
+        """This method is called when the user clicks on the Stop Processing
+        button of the GUI.
 
-        This method is called when the user clicks on the Stop Processing
-        button of the GUI. It is also called regularly by the processing thread
-        so that the GUI gets back to normal operation mode once the last image
-        has been processed.
-
-        Args:
-            force: If False, means that this method is called from the
-                processing thread and won't have any effect unless the last
-                image was just computed. If True, it is called by the user and
-                will have effect.
+        It puts the GUI in a state where it's waiting for the last computation
+        to finish.
         """
 
-        # If called from the thread and there are images left to process, abort
-        if not force and not self._queue.empty():
-            return
-
-        # If called from the thread but GUI already back to normal, abort
-        if not force and self._stop_event.is_set():
-            return
-
-        # Sends a stop signal to the processing thread
+        # Send a stop signal to the processing thread
         self.log("End of processing requested, setting the stop event")
-        self._stop_event.set()
+        self._stop_processing_event.set()
 
-        # Wait for the job queue to be empty and then resets the GUI
-        if force:
-            self._processing_label['text'] = "Stopping"
-            self._process_images_button["state"] = 'disabled'
-            i = 1
-            while not self._queue.empty():
-                self.log("Processing queue not empty, waiting for the thread "
-                         "to stop processing")
-                self.update()
-                # Indicating the user how many processes are left
-                self._processing_label[
-                    'text'] = f"Stopping {'.' * (i % 4)}{' ' * (4 - i % 4)}" \
-                              f"(waiting for the current computation to " \
-                              f"finish)"
-                i += 1
-                sleep(0.5)
+        # Puts the UI in a state where it's waiting for the last job to finish
+        self._process_images_button["state"] = 'disabled'
+        t = int(time())
+        self._processing_label[
+            'text'] = f"Stopping {'.' * (t % 4)}{' ' * (4 - t % 4)}" \
+                      f"(waiting for the current computation to " \
+                      f"finish)"
+
+    def _done_processing(self) -> None:
+        """"""
 
         # Cleaning up the buttons and variables related to processing
         self.log("Cleaning up the processing-related objects")
+        self._stop_processing_event.clear()
         self._processed_images_count.set(0)
         self._img_to_process_count = 0
         self._process_images_button["state"] = 'enabled'
         self._process_images_button['text'] = "Process Images"
-        self._process_images_button.configure(command=self._process_images)
+        self._process_images_button.configure(
+            command=self._process_images)
         self._processing_label['text'] = ""
 
         # Putting the interface back into normal operation state
@@ -835,11 +816,23 @@ class MainWindow(Tk):
         self._disable_buttons()
         self.update()
 
+        # Reset all communication objects
+        self._stop_processing_event.clear()
+        while True:
+            try:
+                self._thread_queue.get_nowait()
+            except Empty:
+                break
+        while True:
+            try:
+                self._ui_queue.get_nowait()
+            except Empty:
+                break
+
         # Sending the jobs to the processing thread
-        self._stop_event.clear()
         self.log("Sending the jobs to the processing thread")
         for file in file_names:
-            self._queue.put_nowait(
+            self._thread_queue.put_nowait(
                 (file,
                  self.settings.nuclei_colour.get(),
                  self.settings.fiber_colour.get(),
@@ -850,14 +843,20 @@ class MainWindow(Tk):
                  self.settings.minimum_nuc_diameter.get(),
                  self.settings.minimum_nuclei_count.get()))
 
+        # Add a sentinel at the end of the queue
+        self._thread_queue.put_nowait(None)
+
+        # Start loop handling results or errors
+        self._ui_after_idx = self.after(33, self._handle_ui_queue)
+
     def _process_thread(self) -> None:
         """Main loop of the thread in charge of processing the images.
 
-        Discards all the received jobs when the stop event is set.
-        Otherwise, handles sequentially all the received jobs until the job
-        queue is exhausted or until told to stop.
-        Also periodically calls stop_processing so that the interface is rest
-        after the last job in the queue was handled.
+        Discards all the received jobs when the stop event is set. Otherwise,
+        handles sequentially all the received jobs until the job queue is
+        exhausted or until told to stop.
+        Also, signals when done so that the interface is reset after the last
+        job in the queue was handled.
         """
 
         self.log("Starting the processing thread")
@@ -866,34 +865,50 @@ class MainWindow(Tk):
         while not self._stop_thread:
 
             # If the stop_event is set, we just have to discard all the jobs
-            if self._stop_event.is_set():
-                while not self._queue.empty():
-                    self.log("Emptying the processing queue after the stop "
-                             "event was set")
+            if self._stop_processing_event.is_set():
+                while True:
                     try:
-                        self._queue.get_nowait()
+                        job = self._thread_queue.get(block=True, timeout=0.5)
+                        self.log("Emptying the processing queue after the "
+                                 "stop event was set")
+                        if job is None:
+                            self.log("Processing queue empty, signaling to UI "
+                                     "thread")
+                            self._ui_queue.put_nowait('Done')
+                            break
+
+                    # Shouldn't happen but here as a safety
                     except Empty:
-                        pass
+                        self.log("Processing queue empty, signaling to UI "
+                                 "thread")
+                        self._ui_queue.put_nowait('Done')
+                        break
 
-                sleep(1)
-
-            # Case when there are jobs to handle
-            elif not self._queue.empty():
+            else:
                 # Acquiring the next job in the queue
                 try:
-                    job = self._queue.get_nowait()
+                    job = self._thread_queue.get(block=True, timeout=0.5)
+
+                    # Signal that all images have been processed
+                    if job is None:
+                        self.log("Processing queue empty, signaling to UI "
+                                 "thread")
+                        self._ui_queue.put_nowait('Done')
+                        continue
+
                     (path, nuclei_color, fiber_color, minimum_fiber_intensity,
                      maximum_fiber_intensity, minimum_nucleus_intensity,
                      maximum_nucleus_intensity, minimum_nucleus_diameter,
                      minimum_nuclei_count) = job
                     self.log(f"Processing thread received job: "
                              f"{', '.join(map(str, job))}")
+
+                # Shouldn't happen but here as a safety
                 except Empty:
-                    sleep(1)
                     continue
 
                 # Not processing if the user wants to stop the computation
-                if self._stop_event.is_set():
+                if self._stop_processing_event.is_set():
                     self.log("Stop event was set, aborting processing")
                     continue
 
@@ -916,38 +931,72 @@ class MainWindow(Tk):
                              f"area: {area}")
 
                     # Not updating if the user wants to stop the computation
-                    if self._stop_event.is_set():
+                    if self._stop_processing_event.is_set():
+                        self.log("Stop event was set, aborting processing")
                         continue
 
-                    # Updating the image data with the result of the processing
-                    self.log("Passing precessed data to the files table")
-                    self._files_table.input_processed_data(nuclei_out,
-                                                           nuclei_in,
-                                                           fiber_contours,
-                                                           area, file)
+                    # Passing the result of the processing to the UI thread
+                    self.log("Passing precessed data to the UI thread")
+                    self._ui_queue.put_nowait(ProcessResult(
+                        nuclei_out, nuclei_in, fiber_contours, area, file))
 
                 # Displaying any error in an error window
                 except (Exception,) as exc:
-                    messagebox.showerror("Error !",
-                                         f"An error occurred while processing "
-                                         f"the images !\nError : {exc}")
                     self._logger.exception("Exception caught wile processing "
                                            "image", exc_info=exc)
-
-                # Updating the processed images count
-                finally:
-                    self._processed_images_count.set(
-                        self._processed_images_count.get() + 1)
-
-            # To lazily get the GUI back to normal once all the jobs are
-            # completed
-            else:
-                self.log("Processing queue empty, requesting to stop the "
-                         "processing")
-                self._stop_processing(force=False)
-                sleep(1)
+                    self._ui_queue.put_nowait(ProcessError(path, exc))
 
         self.log("Processing thread finished")
+
+    def _handle_ui_queue(self) -> None:
+        """Regularly polls the UI queue and handles the messages from the
+        processing thread."""
+
+        if self._stop_processing_event.is_set():
+            t = int(time())
+            self._processing_label[
+                'text'] = f"Stopping {'.' * (t % 4)}{' ' * (4 - t % 4)}" \
+                          f"(waiting for the current computation to " \
+                          f"finish)"
+
+        # Acquire the next element in the queue
+        try:
+            res = self._ui_queue.get_nowait()
+            self.log(f"Got message from the processing thread")
+        except Empty:
+            res = None
+
+        # If it's a result, process it
+        if (isinstance(res, ProcessResult)
+            and not self._stop_processing_event.is_set()):
+            self.log(f"Message was a result")
+            self._processed_images_count.set(
+                self._processed_images_count.get() + 1)
+            self._files_table.input_processed_data(res.nuclei_out,
+                                                   res.nuclei_in,
+                                                   res.fiber_contours,
+                                                   res.area,
+                                                   res.file)
+        # If it's an error, display it
+        elif (isinstance(res, ProcessError)
+            and not self._stop_processing_event.is_set()):
+            self.log(f"Message was an error")
+            self._processed_images_count.set(
+                self._processed_images_count.get() + 1)
+            messagebox.showerror("Error !",
+                                 f"An error occurred while processing "
+                                 f"the image {res.file} !\nError : {res.exc}")
+
+        # Handle the case when the processing thread signals it's done
+        elif isinstance(res, str) and res == 'Done':
+            self.log("Processing thread signaled itself as done, stopping UI "
+                     "queue loop")
+            self._stop_processing_event.clear()
+            self._done_processing()
+            return
+
+        # Re-schedule the ui queue handling if necessary
+        self._ui_after_idx = self.after(33, self._handle_ui_queue)
 
     def _update_processed_images(self, _, __, ___) -> None:
         """Updates the display of the processed images count."""
@@ -1021,6 +1070,10 @@ class MainWindow(Tk):
         self._previous_fiber_colour.set(self.settings.fiber_colour.get())
 
         # Finally, save and redraw the nuclei and fibers
+        self._image_canvas.delete_nuclei()
+        self._image_canvas.delete_fibers()
+        self._image_canvas.draw_nuclei()
+        self._image_canvas.draw_fibers()
         self._image_canvas.set_indicators()
 
     def _invert_checkboxes(self) -> None:

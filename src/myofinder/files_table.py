@@ -88,8 +88,6 @@ class FilesTable(ttk.Frame):
         for entry in self.table_items:
             for nucleus in entry.nuclei:
                 nucleus.tk_obj = None
-            for fiber in entry.fibers:
-                fiber.polygon = None
 
         # Redrawing the canvas
         if self.table_items:
@@ -208,9 +206,9 @@ class FilesTable(ttk.Frame):
 
     def input_processed_data(
             self,
-            nuclei_negative_positions: list[tuple[float, float]],
-            nuclei_positive_positions: list[tuple[float, float]],
-            fiber_contours: tuple[ndarray],
+            nuclei_negative_positions: list[tuple[ndarray, ndarray]],
+            nuclei_positive_positions: list[tuple[ndarray, ndarray]],
+            fiber_contours: tuple[ndarray, ...],
             area: float,
             file: Path) -> None:
         """Adds the nuclei and fibers positions to the frame after they've been
@@ -242,7 +240,7 @@ class FilesTable(ttk.Frame):
             if len(contour.shape) < 2:
                 continue
             contour = list(map(tuple, contour))
-            self.table_items[file].fibers.append(Fiber(None, contour))
+            self.table_items[file].fibers.append(Fiber(contour))
 
         # Updates the display
         self._update_data(self.table_items[file])

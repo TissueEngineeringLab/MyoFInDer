@@ -20,8 +20,8 @@ class Test06ZoomInOut(BaseTestInterface):
 
         # Reading the scale and dimension of the image before any interaction
         scale_0 = self._window._image_canvas._img_scale
-        width_0 = self._window._image_canvas._canvas.image_tk.width()
-        height_0 = self._window._image_canvas._canvas.image_tk.height()
+        width_0 = self._window._image_canvas._image_tk.width()
+        height_0 = self._window._image_canvas._image_tk.height()
 
         # Checking that the displayed image is by default not zoomed in or out
         self.assertEqual(self._window._image_canvas._can_scale, 1.0)
@@ -42,10 +42,10 @@ class Test06ZoomInOut(BaseTestInterface):
         self.assertEqual(self._window._image_canvas._can_scale,
                          self._window._image_canvas._delta)
         self.assertEqual(self._window._image_canvas._current_zoom, 1)
-        self.assertGreater(self._window._image_canvas._canvas.image_tk.width(),
+        self.assertGreater(self._window._image_canvas._image_tk.width(),
                            width_0)
         self.assertGreater(
-            self._window._image_canvas._canvas.image_tk.height(), height_0)
+            self._window._image_canvas._image_tk.height(), height_0)
 
         # Generating five zoom-in events with the mousewheel
         for _ in range(5):
@@ -63,10 +63,10 @@ class Test06ZoomInOut(BaseTestInterface):
         self.assertAlmostEqual(self._window._image_canvas._can_scale,
                                self._window._image_canvas._delta ** 5)
         self.assertEqual(self._window._image_canvas._current_zoom, 5)
-        self.assertGreater(self._window._image_canvas._canvas.image_tk.width(),
+        self.assertGreater(self._window._image_canvas._image_tk.width(),
                            width_0)
         self.assertGreater(
-            self._window._image_canvas._canvas.image_tk.height(), height_0)
+            self._window._image_canvas._image_tk.height(), height_0)
 
         # Generating 11 zoom-out events with the mousewheel
         for _ in range(11):
@@ -84,7 +84,7 @@ class Test06ZoomInOut(BaseTestInterface):
         self.assertAlmostEqual(self._window._image_canvas._can_scale,
                                self._window._image_canvas._delta ** -5)
         self.assertEqual(self._window._image_canvas._current_zoom, -5)
-        self.assertLess(self._window._image_canvas._canvas.image_tk.width(),
+        self.assertLess(self._window._image_canvas._image_tk.width(),
                         width_0)
-        self.assertLess(self._window._image_canvas._canvas.image_tk.height(),
+        self.assertLess(self._window._image_canvas._image_tk.height(),
                         height_0)

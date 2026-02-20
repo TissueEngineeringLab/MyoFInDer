@@ -26,12 +26,12 @@ class Test13IndicatorsDisplay(BaseTestInterfaceProcessing):
         # Instantiating a Thread that will stop the processing loop later on
         stop_thread = Thread(target=self._stop_thread)
 
-        # Checking that no Tkinter objects representing nuclei or fibers are
-        # present on the image canvas
+        # Checking that no Tkinter objects representing nuclei are present on
+        # the image canvas
         self.assertTrue(not any(nuc.tk_obj is not None for nuc
                                 in self._window._image_canvas._nuclei))
-        self.assertTrue(not any(fib.polygon is not None for fib
-                                in self._window._image_canvas._fibers))
+        # The fiber overlay should be present whatever happens though
+        self.assertIsNotNone(self._window._image_canvas._fib_overlay_tk)
 
         # Invoking the button for starting the image processing
         self._window._process_images_button.invoke()
@@ -42,35 +42,51 @@ class Test13IndicatorsDisplay(BaseTestInterfaceProcessing):
         # Starting the processing loop in the main Thread rather than in a
         # separate one
         self._window._process_thread()
+        self._window._handle_ui_queue()
+        self._window._handle_ui_queue()
 
         display_nuc = self._window.settings.show_nuclei.get()
         display_fib = self._window.settings.show_fibers.get()
 
+        self.assertTrue(all(nuc.tk_obj is not None for nuc
+                            in self._window._image_canvas._nuclei))
         if display_nuc:
-            self.assertTrue(all(nuc.tk_obj is not None for nuc
-                                in self._window._image_canvas._nuclei))
+            self.assertTrue(all(self._window._image_canvas._canvas.itemcget(
+                nuc.tk_obj, "state") == 'normal' for nuc
+                in self._window._image_canvas._nuclei))
         else:
-            self.assertTrue(not any(nuc.tk_obj is not None for nuc
-                                    in self._window._image_canvas._nuclei))
+            self.assertTrue(all(self._window._image_canvas._canvas.itemcget(
+                nuc.tk_obj, "state") == 'hidden' for nuc
+                in self._window._image_canvas._nuclei))
+
+        self.assertIsNotNone(self._window._image_canvas._fib_overlay_tk)
         if display_fib:
-            self.assertTrue(all(fib.polygon is not None for fib
-                                in self._window._image_canvas._fibers))
+            self.assertEqual(self._window._image_canvas._canvas.itemcget(
+                self._window._image_canvas._fib_overlay_idx, "state"),
+                'normal')
         else:
-            self.assertTrue(not any(fib.polygon is not None for fib
-                                    in self._window._image_canvas._fibers))
+            self.assertEqual(self._window._image_canvas._canvas.itemcget(
+                self._window._image_canvas._fib_overlay_idx, "state"),
+                'hidden')
 
         self._window._show_nuclei_check_button.invoke()
         self._window._show_fibers_check_button.invoke()
 
         if display_nuc:
-            self.assertTrue(not any(nuc.tk_obj is not None for nuc
-                                    in self._window._image_canvas._nuclei))
+            self.assertTrue(all(self._window._image_canvas._canvas.itemcget(
+                nuc.tk_obj, "state") == 'hidden' for nuc
+                in self._window._image_canvas._nuclei))
         else:
-            self.assertTrue(all(nuc.tk_obj is not None for nuc
-                                in self._window._image_canvas._nuclei))
+            self.assertTrue(all(self._window._image_canvas._canvas.itemcget(
+                nuc.tk_obj, "state") == 'normal' for nuc
+                in self._window._image_canvas._nuclei))
+
+        self.assertIsNotNone(self._window._image_canvas._fib_overlay_tk)
         if display_fib:
-            self.assertTrue(not any(fib.polygon is not None for fib
-                                    in self._window._image_canvas._fibers))
+            self.assertEqual(self._window._image_canvas._canvas.itemcget(
+                self._window._image_canvas._fib_overlay_idx, "state"),
+                'hidden')
         else:
-            self.assertTrue(all(fib.polygon is not None for fib
-                                in self._window._image_canvas._fibers))
+            self.assertEqual(self._window._image_canvas._canvas.itemcget(
+                self._window._image_canvas._fib_overlay_idx, "state"),
+                'normal')
