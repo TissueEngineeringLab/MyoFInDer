@@ -173,6 +173,9 @@ class MainWindow(Tk):
         else:
             self.log("The processing thread terminated as excepted")
 
+        if self._ui_after_idx is not None:
+            self.after_cancel(self._ui_after_idx)
+
         self.log("Destroying the main window")
         self.destroy()
 
@@ -202,6 +205,7 @@ class MainWindow(Tk):
         self._thread_queue = Queue(maxsize=0)
         self._ui_queue = Queue(maxsize=0)
         self._thread = Thread(target=self._process_thread)
+        self._ui_after_idx: str | None = None
         self._thread.start()
 
         self._current_project: Path | None = None  # Path to current project
@@ -843,7 +847,7 @@ class MainWindow(Tk):
         self._thread_queue.put_nowait(None)
 
         # Start loop handling results or errors
-        self.after(33, self._handle_ui_queue)
+        self._ui_after_idx = self.after(33, self._handle_ui_queue)
 
     def _process_thread(self) -> None:
         """Main loop of the thread in charge of processing the images.
@@ -992,7 +996,7 @@ class MainWindow(Tk):
             return
 
         # Re-schedule the ui queue handling if necessary
-        self.after(33, self._handle_ui_queue)
+        self._ui_after_idx = self.after(33, self._handle_ui_queue)
 
     def _update_processed_images(self, _, __, ___) -> None:
         """Updates the display of the processed images count."""
