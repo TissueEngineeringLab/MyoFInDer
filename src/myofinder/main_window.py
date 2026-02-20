@@ -165,7 +165,6 @@ class MainWindow(Tk):
 
         self.log("Requesting the processing thread to finish")
         self._stop_thread = True
-        sleep(0.5)
         self.log("Waiting for the processing thread to finish")
         self._thread.join(timeout=1)
 
