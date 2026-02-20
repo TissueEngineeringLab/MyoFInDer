@@ -42,6 +42,8 @@ class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
         # Starting the processing loop in the main Thread rather than in a
         # separate one
         self._window._process_thread()
+        self._window._handle_ui_queue()
+        self._window._handle_ui_queue()
 
         # Recording the result of the first computation for later comparing it
         nuc = len(self._window._files_table.table_items.entries[0].nuclei)
@@ -75,6 +77,8 @@ class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
         stop_thread.start()
         # Re-starting the processing loop in the main Thread
         self._window._process_thread()
+        self._window._handle_ui_queue()
+        self._window._handle_ui_queue()
 
         # Checking that the correct computation output changed and the correct
         # ones were preserved
@@ -114,6 +118,8 @@ class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
         stop_thread.start()
         # Re-starting the processing loop in the main Thread
         self._window._process_thread()
+        self._window._handle_ui_queue()
+        self._window._handle_ui_queue()
 
         # Checking that the correct computation output changed and the correct
         # ones were preserved
@@ -153,6 +159,8 @@ class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
         stop_thread.start()
         # Re-starting the processing loop in the main Thread
         self._window._process_thread()
+        self._window._handle_ui_queue()
+        self._window._handle_ui_queue()
 
         # Checking that the correct computation output changed and the correct
         # ones were preserved
@@ -192,6 +200,8 @@ class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
         stop_thread.start()
         # Re-starting the processing loop in the main Thread
         self._window._process_thread()
+        self._window._handle_ui_queue()
+        self._window._handle_ui_queue()
 
         # Checking that the correct computation output changed and the correct
         # ones were preserved
@@ -231,6 +241,8 @@ class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
         stop_thread.start()
         # Re-starting the processing loop in the main Thread
         self._window._process_thread()
+        self._window._handle_ui_queue()
+        self._window._handle_ui_queue()
 
         # Checking that the correct computation output changed and the correct
         # ones were preserved
@@ -269,6 +281,8 @@ class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
         stop_thread.start()
         # Re-starting the processing loop in the main Thread
         self._window._process_thread()
+        self._window._handle_ui_queue()
+        self._window._handle_ui_queue()
 
         # Setting a new standard specifically for the last test
         nuc = len(self._window._files_table.table_items.entries[0].nuclei)
@@ -304,6 +318,8 @@ class Test19ProcessVarySettings(BaseTestInterfaceProcessing):
         stop_thread.start()
         # Re-starting the processing loop in the main Thread
         self._window._process_thread()
+        self._window._handle_ui_queue()
+        self._window._handle_ui_queue()
 
         # Checking that the correct computation output changed and the correct
         # ones were preserved

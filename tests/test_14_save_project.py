@@ -40,6 +40,8 @@ class Test14SaveProject(BaseTestInterfaceProcessing):
         # Starting the processing loop in the main Thread rather than in a
         # separate one
         self._window._process_thread()
+        self._window._handle_ui_queue()
+        self._window._handle_ui_queue()
 
         # Triggering a save action using the "Save" button
         self._window._save_button.invoke()

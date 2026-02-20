@@ -62,6 +62,9 @@ class Test11ProcessImages(BaseTestInterfaceProcessing):
         # Starting the processing loop in the main Thread rather than in a
         # separate one
         self._window._process_thread()
+        self._window._handle_ui_queue()
+        self._window._handle_ui_queue()
+        self._window._handle_ui_queue()
 
         # Checking that both positive and negative nuclei have been detected on
         # the image canvas
