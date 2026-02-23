@@ -418,11 +418,27 @@
             SourceFile=".\..\..\bin\rollback_install.exe"
             SuppressModularization="no" />
 
+        <!-- Build the command line for the rollback custom action -->
+        <SetProperty
+            Action="SetUninstallPythonModuleData"
+            Before="UninstallPythonModule"
+            Id="UninstallPythonModule"
+            Sequence="execute"
+            Value="&quot;[INSTALLDIR]venv&quot;" />
+
+        <!-- Build the command line for the installation custom action -->
+        <SetProperty
+            Action="SetInstallPythonModuleData"
+            Before="InstallPythonModule"
+            Id="InstallPythonModule"
+            Sequence="execute"
+            Value="&quot;[SystemPythonExePath]&quot; &quot;[INSTALLDIR]venv&quot; &quot;[INSTALLDIR]venv\Scripts\python.exe&quot; &quot;[TESTINSTALL]&quot;" />
+
         <!-- Embedding the virtual environment installer into a custom action -->
         <CustomAction
             BinaryRef="PythonModuleInstaller"
             Execute="deferred"
-            ExeCommand="&quot;[SystemPythonExePath]&quot; &quot;[INSTALLDIR]venv&quot; &quot;[INSTALLDIR]venv\Scripts\python.exe&quot; &quot;[TESTINSTALL]&quot;"
+            ExeCommand="[InstallPythonModule]"
             Id="InstallPythonModule"
             Impersonate="yes"
             PatchUninstall="no"
@@ -432,7 +448,7 @@
         <CustomAction
             BinaryRef="PythonModuleUninstaller"
             Execute="rollback"
-            ExeCommand="&quot;[INSTALLDIR]venv&quot;"
+            ExeCommand="[UninstallPythonModule]"
             Id="UninstallPythonModule"
             Impersonate="yes"
             PatchUninstall="no"
@@ -476,22 +492,21 @@
                 Id="CustomUI" />
         </UI>
 
-        <!-- Adding the custom executable installer to the install sequence -->
+        <!-- Add the custom executable installer and uninstaller to the install
+        sequence -->
         <InstallExecuteSequence>
-            <Custom
-                Action="InstallPythonModule"
-                After="UninstallPythonModule"
-                Condition="not Installed"
-                Overridable="no" />
-        </InstallExecuteSequence>
-
-        <!-- Adding the custom executable uninstaller to the install sequence -->
-        <InstallExecuteSequence>
+            <!-- Rollback custom action must precede the install custom action
+            it rolls back -->
             <Custom
                 Action="UninstallPythonModule"
-                After="PublishProduct"
-                Condition="not Installed"
-                Overridable="no" />
+                Before="InstallPythonModule"
+                Condition="NOT Installed" />
+
+            <!-- Run install after files are written, but before InstallFinalize -->
+            <Custom
+                Action="InstallPythonModule"
+                After="InstallFiles"
+                Condition="NOT Installed" />
         </InstallExecuteSequence>
 
         <!-- Referencing the Desktop Folder where a shortcut will be added -->
