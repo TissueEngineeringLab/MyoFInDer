@@ -140,6 +140,30 @@ jobs:
              "${{ github.workspace }}\log.txt").ExitCode -ne 0)
              {exit 1} else
              {Write-Output "::notice ::{MSI Installation succeeded}"}
+      # Gather the log files in a common folder
+      - name: Collect Installer Logs
+        if: always()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\installer_logs" | Out-Null
+          if (Test-Path "${{ github.workspace }}\log.txt") {
+            Copy-Item "${{ github.workspace }}\log.txt" "${{ github.workspace }}\installer_logs\msi_log.txt" -Force
+          }
+
+          $src = Join-Path $env:TEMP "MyoFInDer"
+          if (Test-Path $src) {
+            Copy-Item "$src\*" "${{ github.workspace }}\installer_logs\" -Recurse -Force
+          } else {
+            Write-Output "::notice ::No $env:TEMP\MyoFInDer directory found (custom actions may not have run)."
+          }
+      # Upload the logs so that they are accessible after the workflow runs
+      - name: Upload Installer Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer_logs
+          path: '${{ github.workspace }}\installer_logs\**'
+          if-no-files-found: warn
       # If the workflow is manually started, show some debug information
       - name: Show Debug Info
         if: contains(fromJSON('["workflow_dispatch"]'), github.event_name)
