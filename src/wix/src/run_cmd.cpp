@@ -1,40 +1,54 @@
 #include <windows.h>
 #include <iostream>
+#include <string>
+#include <vector>
 
-/* Function running a terminal command in a new Process. In addition to the
-command to execute, a flag driving the way the command is run has to be given.
-It returns the exit code of the command.
+/* Run a command with CreateProcess.
+Returns the process exit code, or 1 if the process could not be started.
 */
-int run_cmd(char* command, int flag){
+int run_cmd(const std::string& command, DWORD creation_flags) {
 
     // Objects to pass to the CreateProcess function
-    PROCESS_INFORMATION ProcessInfo;
-    STARTUPINFO StartupInfo;
-    DWORD exit_code;
-    ZeroMemory(&StartupInfo, sizeof(StartupInfo));
-    StartupInfo.cb = sizeof StartupInfo;
+    PROCESS_INFORMATION processInfo;
+    STARTUPINFOA startupInfo;
+    DWORD exit_code = 0;
+    ZeroMemory(&startupInfo, sizeof(startupInfo));
+    ZeroMemory(&processInfo, sizeof(processInfo));
+    startupInfo.cb = sizeof(startupInfo);
 
     std::cout << "Trying to run command: " << command << "\n\n";
 
-    // Starting the new Process in charge of running the command
-    int ret = CreateProcess(NULL, command, NULL, NULL, FALSE, flag, NULL,
-                            NULL, &StartupInfo, &ProcessInfo);
+    // Create a mutable command line buffer
+    std::vector<char> cmdline(command.begin(), command.end());
+    cmdline.push_back('\0');
 
-    // In case the Process is successfully started, it returns a non-zero value
-    if (ret){
-        DWORD timeout = (flag == CREATE_NEW_CONSOLE) ? 0 : INFINITE;
-        WaitForSingleObject(ProcessInfo.hProcess, timeout);
-        GetExitCodeProcess(ProcessInfo.hProcess, &exit_code);
-        CloseHandle(ProcessInfo.hThread);
-        CloseHandle(ProcessInfo.hProcess);
-    }
+    // Start the new Process in charge of running the command
+    BOOL ok = CreateProcessA(
+        NULL,
+        cmdline.data(),
+        NULL, NULL,
+        FALSE,
+        creation_flags,
+        NULL,
+        NULL,
+        &startupInfo,
+        &processInfo
+    );
+
     // If the Process fails to start, it returns 0
-    else {
-        std::cout << "Could not run command \"" + (std::string) command + "\", failed with error code " + std::to_string(GetLastError()) + "\n\n";
-        // Returning 1 to signal that the Process failed to start
+    if (!ok) {
+        std::cout << "Could not run command \"" << command
+                  << "\", failed with error code " << GetLastError() << "\n\n";
         return 1;
     }
 
-    // Returning the exit code of the Process
-    return (int) exit_code;
+    // In case the Process is successfully started, it returns a non-zero value
+    DWORD timeout = (creation_flags == CREATE_NEW_CONSOLE) ? 0 : INFINITE;
+    WaitForSingleObject(processInfo.hProcess, timeout);
+    GetExitCodeProcess(processInfo.hProcess, &exit_code);
+    CloseHandle(processInfo.hThread);
+    CloseHandle(processInfo.hProcess);
+
+    // Return the exit code of the Process
+    return (int)exit_code;
 }
