@@ -37,7 +37,7 @@ int main(int argc, char* argv[]){
     // Create venv
     log << "[1/3] Creating virtual environment...\n";
     std::string venv_cmd = "\"" + system_python_exe + "\" -m venv \"" + venv_path + "\"";
-    int rc = run_cmd(venv_cmd, 0);
+    int rc = run_cmd(venv_cmd, 0, venv_path);
     log << "Exit code: " << rc << "\n\n";
     if (rc != 0) {
         log << "ERROR: venv creation failed.\n";
@@ -49,7 +49,7 @@ int main(int argc, char* argv[]){
     std::string deps_cmd =
         "\"" + venv_python_path + "\" -m pip install --upgrade pip wheel build setuptools"
         " --log \"" + pip_log + "\"";
-    rc = run_cmd(deps_cmd, 0);
+    rc = run_cmd(deps_cmd, 0, venv_path);
     log << "Exit code: " << rc << "\n";
     log << "pip log: " << pip_log << "\n\n";
     if (rc != 0) {
@@ -63,7 +63,7 @@ int main(int argc, char* argv[]){
         "\"" + venv_python_path + "\" -m pip install \"" + to_install + "\""
         " --log \"" + pip_log + "\""
         " --report \"" + pip_report + "\"";
-    rc = run_cmd(install_cmd, 0);
+    rc = run_cmd(install_cmd, 0, venv_path);
     log << "Exit code: " << rc << "\n";
     log << "pip report: " << pip_report << "\n\n";
     if (rc != 0) {

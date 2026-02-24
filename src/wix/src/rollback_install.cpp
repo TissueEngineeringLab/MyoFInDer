@@ -26,7 +26,7 @@ int main(int argc, char* argv[]){
     // Try to delete the virtual environment files using the rmdir command
     std::string delete_venv_cmd =
         "cmd.exe /C if exist \"" + venv_path + "\" rmdir /s /q \"" + venv_path + "\"";
-    int rc = run_cmd(delete_venv_cmd, 0);
+    int rc = run_cmd(delete_venv_cmd, 0, "");
 
     log << "Exit code: " << rc << "\n";
     if (rc != 0) {

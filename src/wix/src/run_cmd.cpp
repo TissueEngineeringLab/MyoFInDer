@@ -6,36 +6,39 @@
 /* Run a command with CreateProcess.
 Returns the process exit code, or 1 if the process could not be started.
 */
-int run_cmd(const std::string& command, DWORD creation_flags) {
+int run_cmd(const std::string& command,
+            DWORD creation_flags,
+            const std::string& current_dir) {
 
     // Objects to pass to the CreateProcess function
     PROCESS_INFORMATION processInfo;
     STARTUPINFOA startupInfo;
     DWORD exit_code = 0;
     ZeroMemory(&startupInfo, sizeof(startupInfo));
-    ZeroMemory(&processInfo, sizeof(processInfo));
     startupInfo.cb = sizeof(startupInfo);
+    ZeroMemory(&processInfo, sizeof(processInfo));
 
     std::cout << "Trying to run command: " << command << "\n\n";
 
-    // Create a mutable command line buffer
+    // Create a writeable command line buffer
     std::vector<char> cmdline(command.begin(), command.end());
     cmdline.push_back('\0');
 
     // Start the new Process in charge of running the command
+    LPCSTR cwd = current_dir.empty() ? NULL : current_dir.c_str();
     BOOL ok = CreateProcessA(
         NULL,
         cmdline.data(),
-        NULL, NULL,
+        NULL,
+        NULL,
         FALSE,
         creation_flags,
         NULL,
-        NULL,
+        cwd,
         &startupInfo,
         &processInfo
     );
 
-    // If the Process fails to start, it returns 0
     if (!ok) {
         std::cout << "Could not run command \"" << command
                   << "\", failed with error code " << GetLastError() << "\n\n";
@@ -49,6 +52,5 @@ int run_cmd(const std::string& command, DWORD creation_flags) {
     CloseHandle(processInfo.hThread);
     CloseHandle(processInfo.hProcess);
 
-    // Return the exit code of the Process
-    return (int)exit_code;
+    return static_cast<int>(exit_code);
 }

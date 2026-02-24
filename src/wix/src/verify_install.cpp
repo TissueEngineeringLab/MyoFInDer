@@ -22,15 +22,15 @@ int main(int argc, char* argv[]) {
 
     // Check that enough arguments were provided
     if (argc < 3) {
-        log << "ERROR: Not enough arguments. Expected: <venv_python_path> <install_dir>\n";
+        log << "ERROR: Not enough arguments. Expected: <venv_python_path> <venv_root>\n";
         return 2;
     }
 
     std::string venv_python_path = argv[1];
-    std::string install_dir = argv[2];
+    std::string venv_root = argv[2];
 
     log << "Venv python: \"" << venv_python_path << "\"\n";
-    log << "Install dir: \"" << install_dir << "\"\n\n";
+    log << "Install dir: \"" << venv_root << "\"\n\n";
 
     // Check that the Python venv exists
     log << "[1/3] Checking venv python exists...\n";
@@ -43,8 +43,8 @@ int main(int argc, char* argv[]) {
     // Import myofinder
     log << "[2/3] Verifying `import myofinder`...\n";
     std::string import_cmd =
-        "\"" + venv_python_path + "\" -c \"import myofinder,sys; sys.exit(0)\"";
-    int rc = run_cmd(import_cmd, 0);
+        "\"" + venv_python_path + "\" -c \"import myofinder\"";
+    int rc = run_cmd(import_cmd, 0, venv_root);
     log << "Exit code: " << rc << "\n\n";
     if (rc != 0) {
         log << "ERROR: `import myofinder` failed.\n";
@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
     log << "[3/3] Verifying `python -m myofinder --help`...\n";
     std::string help_cmd =
         "\"" + venv_python_path + "\" -m myofinder --help";
-    rc = run_cmd(help_cmd, 0);
+    rc = run_cmd(help_cmd, 0, venv_root);
     log << "Exit code: " << rc << "\n\n";
     if (rc != 0) {
         log << "ERROR: `python -m myofinder --help` failed.\n";
