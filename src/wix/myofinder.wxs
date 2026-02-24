@@ -418,6 +418,13 @@
             SourceFile=".\..\..\bin\rollback_install.exe"
             SuppressModularization="no" />
 
+        <!-- Executable file checking that the MyoFInDer Python environment was
+        successfully installed -->
+        <Binary
+            Id="PythonModuleVerifier"
+            SourceFile=".\..\..\bin\verify_install.exe"
+            SuppressModularization="no" />
+
         <!-- Build the command line for the rollback custom action -->
         <SetProperty
             Action="SetUninstallPythonModuleData"
@@ -433,6 +440,14 @@
             Id="InstallPythonModule"
             Sequence="execute"
             Value="&quot;[SystemPythonExePath]&quot; &quot;[INSTALLDIR]venv&quot; &quot;[INSTALLDIR]venv\Scripts\python.exe&quot; &quot;[TESTINSTALL]&quot;" />
+
+        <!-- Build the command line for the environment check custom action -->
+        <SetProperty
+            Action="SetVerifyPythonModuleData"
+            Before="VerifyPythonModule"
+            Id="VerifyPythonModule"
+            Sequence="execute"
+            Value="&quot;[INSTALLDIR]venv\Scripts\python.exe&quot; &quot;[INSTALLDIR]&quot;" />
 
         <!-- Embedding the virtual environment installer into a custom action -->
         <CustomAction
@@ -463,6 +478,15 @@
             Impersonate="yes"
             PatchUninstall="no"
             Return="check" />
+
+        <!-- Embedding the Python environment checker into a custom action -->
+        <CustomAction
+            Id="VerifyPythonModule"
+            BinaryRef="PythonModuleVerifier"
+            Execute="deferred"
+            Impersonate="yes"
+            Return="check"
+            ExeCommand="[VerifyPythonModule]" />
 
         <!-- Variables driving the appearance of the installer window -->
         <Binary
@@ -506,6 +530,12 @@
             <Custom
                 Action="InstallPythonModule"
                 After="InstallFiles"
+                Condition="NOT Installed" />
+
+            <!-- Run environment check after installing the Python module -->
+            <Custom
+                Action="VerifyPythonModule"
+                After="InstallPythonModule"
                 Condition="NOT Installed" />
         </InstallExecuteSequence>
 

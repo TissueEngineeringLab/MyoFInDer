@@ -149,7 +149,9 @@ of MyoFInDer's website to get assistance."
                     RightToLeft="no"
                     Sunken="no"
                     TabSkip="no"
-                    Text="Logs were written to: [TempFolder]MyoFInDer\install_venv.log and [TempFolder]MyoFInDer\pip.log. Please attach them when reporting this issue."
+                    Text="Logs were written to: [TempFolder]MyoFInDer\install_venv.log,
+[TempFolder]MyoFInDer\verify_install.log and [TempFolder]MyoFInDer\pip.log.
+Please attach them when reporting this issue."
                     Transparent="no"
                     Type="Text"
                     Width="288"
