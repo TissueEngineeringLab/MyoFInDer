@@ -24,8 +24,13 @@ int run_cmd(const std::string& command,
     std::vector<char> cmdline(command.begin(), command.end());
     cmdline.push_back('\0');
 
+    // Handle empty current working directory
+    LPCSTR cwd = NULL;
+    if (!current_dir.empty() && dir_exists(current_dir)) {
+        cwd = current_dir.c_str();
+    }
+
     // Start the new Process in charge of running the command
-    LPCSTR cwd = current_dir.empty() ? NULL : current_dir.c_str();
     BOOL ok = CreateProcessA(
         NULL,
         cmdline.data(),

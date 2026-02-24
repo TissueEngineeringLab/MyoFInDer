@@ -37,7 +37,7 @@ int main(int argc, char* argv[]){
     // Create venv
     log << "[1/3] Creating virtual environment...\n";
     std::string venv_cmd = "\"" + system_python_exe + "\" -m venv \"" + venv_path + "\"";
-    int rc = run_cmd(venv_cmd, 0, venv_path);
+    int rc = run_cmd(venv_cmd, 0, "");
     log << "Exit code: " << rc << "\n\n";
     if (rc != 0) {
         log << "ERROR: venv creation failed.\n";
