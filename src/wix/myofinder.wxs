@@ -126,13 +126,6 @@
 
         <!-- Properties checking the installed Python versions -->
         <SetProperty
-            Action="SetMachinePythonExePath3.12"
-            After="AppSearch"
-            Condition="MACHINEPYTHONPATH312 AND SystemPythonExePath=&quot;&quot;"
-            Id="SystemPythonExePath"
-            Sequence="both"
-            Value="[MACHINEPYTHONPATH312]" />
-        <SetProperty
             Action="SetMachinePythonExePath3.9"
             After="AppSearch"
             Condition="MACHINEPYTHONPATH39"
