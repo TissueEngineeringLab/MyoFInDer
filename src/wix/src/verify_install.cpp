@@ -42,23 +42,41 @@ int main(int argc, char* argv[]) {
 
     // Import myofinder
     log << "[2/3] Verifying `import myofinder`...\n";
+    std::string import_out = strip_extension(log.path()) + "_import.log";
+    log << "Capturing stdout/stderr to: " << import_out << "\n";
+
+    // Command that redirects logs to a separate file
     std::string import_cmd =
-        "\"" + venv_python_path + "\" -c \"import myofinder\"";
+        "cmd.exe /C \"\""
+        + venv_python_path
+        + "\" -X faulthandler -c \"import myofinder\" > \""
+        + import_out
+        + "\" 2>&1\"";
+
     int rc = run_cmd(import_cmd, 0, venv_root);
     log << "Exit code: " << rc << "\n\n";
     if (rc != 0) {
-        log << "ERROR: `import myofinder` failed.\n";
+        log << "ERROR: `import myofinder` failed. See: " << import_out << "\n";
         return 20;
     }
 
     // Verify module entrypoint at least responds
     log << "[3/3] Verifying `python -m myofinder --help`...\n";
+    std::string help_out = strip_extension(log.path()) + "_help.log";
+    log << "Capturing stdout/stderr to: " << help_out << "\n";
+
+    // Command that redirects logs to a separate file
     std::string help_cmd =
-        "\"" + venv_python_path + "\" -m myofinder --help";
+        "cmd.exe /C \"\""
+        + venv_python_path
+        + "\" -X faulthandler -m myofinder --help > \""
+        + help_out
+        + "\" 2>&1\"";
+
     rc = run_cmd(help_cmd, 0, venv_root);
     log << "Exit code: " << rc << "\n\n";
     if (rc != 0) {
-        log << "ERROR: `python -m myofinder --help` failed.\n";
+        log << "ERROR: `python -m myofinder --help` failed. See: " << help_out << "\n";
         return 30;
     }
 
