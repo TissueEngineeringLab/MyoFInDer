@@ -13,6 +13,15 @@ static int file_exists(const std::string& path) {
     return (attrs & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
 }
 
+// Helper function to remove the last extension from a path
+static std::string strip_extension(const std::string& path) {
+    const size_t slash = path.find_last_of("\\/");
+    const size_t dot = path.find_last_of('.');
+    if (dot == std::string::npos) return path;
+    if (slash != std::string::npos && dot < slash) return path; // dot is in a directory name
+    return path.substr(0, dot);
+}
+
 int main(int argc, char* argv[]) {
 
     // Create a logger for the install verification checks
