@@ -3,6 +3,12 @@
 #include <string>
 #include <vector>
 
+// Helper function to check if a directory exists
+static bool dir_exists(const std::string& path) {
+    DWORD attrs = GetFileAttributesA(path.c_str());
+    return (attrs != INVALID_FILE_ATTRIBUTES) && (attrs & FILE_ATTRIBUTE_DIRECTORY);
+}
+
 /* Run a command with CreateProcess.
 Returns the process exit code, or 1 if the process could not be started.
 */
