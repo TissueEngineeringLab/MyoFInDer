@@ -32,6 +32,8 @@ jobs:
         run: gcc '${{ github.workspace }}\src\wix\src\install_venv.cpp' -lstdc++ -lshlwapi  -static -static-libgcc -static-libstdc++ -o '${{ github.workspace }}\bin\install_venv.exe'
       - name: Build Venv Uninstaller
         run: gcc '${{ github.workspace }}\src\wix\src\rollback_install.cpp' -lstdc++ -lshlwapi  -static -static-libgcc -static-libstdc++ -o '${{ github.workspace }}\bin\rollback_install.exe'
+      - name: Build Install Verifier
+        run: gcc '${{ github.workspace }}\src\wix\src\verify_install.cpp' -lstdc++ -lshlwapi -static -static-libgcc -static-libstdc++ -o '${{ github.workspace }}\bin\verify_install.exe'
       # Upload the compiled files, so that they can be used by other jobs later
       - name: Upload Executable Files
         uses: actions/upload-artifact@v4
@@ -46,11 +48,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      # Set up Python 3.14
+      # Set up Python 3.12
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.14'
+          python-version: '3.12'
       # Builds the wheel for the latest version
       - name: Build Wheel
         run: |
@@ -135,11 +137,36 @@ jobs:
         run: If ((Start-Process msiexec -Wait -PassThru -ArgumentList "/I",
              "${{ github.workspace }}\bin\myofinder.msi",
              "TESTINSTALL=${{ env.WHEEL_NAME }}",
+             "FORCEPYTHON=312",
              "/qn",
              "/l*vx",
              "${{ github.workspace }}\log.txt").ExitCode -ne 0)
              {exit 1} else
              {Write-Output "::notice ::{MSI Installation succeeded}"}
+      # Gather the log files in a common folder
+      - name: Collect Installer Logs
+        if: always()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "${{ github.workspace }}\installer_logs" | Out-Null
+          if (Test-Path "${{ github.workspace }}\log.txt") {
+            Copy-Item "${{ github.workspace }}\log.txt" "${{ github.workspace }}\installer_logs\msi_log.txt" -Force
+          }
+
+          $src = Join-Path $env:TEMP "MyoFInDer"
+          if (Test-Path $src) {
+            Copy-Item "$src\*" "${{ github.workspace }}\installer_logs\" -Recurse -Force
+          } else {
+            Write-Output "::notice ::No $env:TEMP\MyoFInDer directory found (custom actions may not have run)."
+          }
+      # Upload the logs so that they are accessible after the workflow runs
+      - name: Upload Installer Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer_logs
+          path: '${{ github.workspace }}\installer_logs\**'
+          if-no-files-found: warn
       # If the workflow is manually started, show some debug information
       - name: Show Debug Info
         if: contains(fromJSON('["workflow_dispatch"]'), github.event_name)

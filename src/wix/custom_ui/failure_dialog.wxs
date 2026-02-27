@@ -133,6 +133,29 @@ of MyoFInDer's website to get assistance."
                     X="190"
                     Y="180" />
 
+                <!-- Text explaining where to find logs -->
+                <Control
+                    Cancel="no"
+                    Default="no"
+                    Disabled="no"
+                    FormatSize="no"
+                    Height="55"
+                    Hidden="no"
+                    Id="LogInfo"
+                    LeftScroll="no"
+                    NoPrefix="yes"
+                    NoWrap="no"
+                    RightAligned="no"
+                    RightToLeft="no"
+                    Sunken="no"
+                    TabSkip="no"
+                    Text="Logs were written to: [TempFolder]MyoFInDer. Please attach them when reporting this issue."
+                    Transparent="no"
+                    Type="Text"
+                    Width="288"
+                    X="190"
+                    Y="205" />
+
                 <!-- Button for cancelling the installation - disabled -->
                 <Control
                     Bitmap="no"

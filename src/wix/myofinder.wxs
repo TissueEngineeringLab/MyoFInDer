@@ -124,77 +124,92 @@
             Sequence="both"
             Value="true" />
 
+        <!-- Property used to force a given Python version -->
+        <Property
+            Id="FORCEPYTHON"
+            Secure="yes" />
+
         <!-- Properties checking the installed Python versions -->
         <SetProperty
             Action="SetMachinePythonExePath3.9"
             After="AppSearch"
-            Condition="MACHINEPYTHONPATH39"
+            Condition="(NOT FORCEPYTHON AND MACHINEPYTHONPATH39) OR (FORCEPYTHON=&quot;39&quot; AND MACHINEPYTHONPATH39)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[MACHINEPYTHONPATH39]" />
         <SetProperty
             Action="SetUserPythonExePath3.9"
             After="AppSearch"
-            Condition="USERPYTHONPATH39"
+            Condition="(NOT FORCEPYTHON AND USERPYTHONPATH39) OR (FORCEPYTHON=&quot;39&quot; AND USERPYTHONPATH39)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[USERPYTHONPATH39]" />
         <SetProperty
             Action="SetMachinePythonExePath3.10"
             After="AppSearch"
-            Condition="MACHINEPYTHONPATH310"
+            Condition="(NOT FORCEPYTHON AND MACHINEPYTHONPATH310) OR (FORCEPYTHON=&quot;310&quot; AND MACHINEPYTHONPATH310)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[MACHINEPYTHONPATH310]" />
         <SetProperty
             Action="SetUserPythonExePath3.10"
             After="AppSearch"
-            Condition="USERPYTHONPATH310"
+            Condition="(NOT FORCEPYTHON AND USERPYTHONPATH310) OR (FORCEPYTHON=&quot;310&quot; AND USERPYTHONPATH310)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[USERPYTHONPATH310]" />
         <SetProperty
             Action="SetMachinePythonExePath3.11"
             After="AppSearch"
-            Condition="MACHINEPYTHONPATH311"
+            Condition="(NOT FORCEPYTHON AND MACHINEPYTHONPATH311) OR (FORCEPYTHON=&quot;311&quot; AND MACHINEPYTHONPATH311)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[MACHINEPYTHONPATH311]" />
         <SetProperty
             Action="SetUserPythonExePath3.11"
             After="AppSearch"
-            Condition="USERPYTHONPATH311"
+            Condition="(NOT FORCEPYTHON AND USERPYTHONPATH311) OR (FORCEPYTHON=&quot;311&quot; AND USERPYTHONPATH311)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[USERPYTHONPATH311]" />
         <SetProperty
             Action="SetMachinePythonExePath3.12"
             After="AppSearch"
-            Condition="MACHINEPYTHONPATH312"
+            Condition="(NOT FORCEPYTHON AND MACHINEPYTHONPATH312) OR (FORCEPYTHON=&quot;312&quot; AND MACHINEPYTHONPATH312)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[MACHINEPYTHONPATH312]" />
         <SetProperty
             Action="SetUserPythonExePath3.12"
             After="AppSearch"
-            Condition="USERPYTHONPATH312"
+            Condition="(NOT FORCEPYTHON AND USERPYTHONPATH312) OR (FORCEPYTHON=&quot;312&quot; AND USERPYTHONPATH312)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[USERPYTHONPATH312]" />
         <SetProperty
             Action="SetMachinePythonExePath3.13"
             After="AppSearch"
-            Condition="MACHINEPYTHONPATH313"
+            Condition="(NOT FORCEPYTHON AND MACHINEPYTHONPATH313) OR (FORCEPYTHON=&quot;313&quot; AND MACHINEPYTHONPATH313)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[MACHINEPYTHONPATH313]" />
         <SetProperty
             Action="SetUserPythonExePath3.13"
             After="AppSearch"
-            Condition="USERPYTHONPATH313"
+            Condition="(NOT FORCEPYTHON AND USERPYTHONPATH313) OR (FORCEPYTHON=&quot;313&quot; AND USERPYTHONPATH313)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[USERPYTHONPATH313]" />
+
+        <!-- Double-check that the forced version of Python was found -->
+        <Launch
+            Message="FORCEPYTHON was set but the requested Python was not found. Use FORCEPYTHON=39|310|311|312|313."
+            Condition="NOT FORCEPYTHON OR
+(FORCEPYTHON=&quot;39&quot;  AND (USERPYTHONPATH39 OR MACHINEPYTHONPATH39)) OR
+(FORCEPYTHON=&quot;310&quot; AND (USERPYTHONPATH310 OR MACHINEPYTHONPATH310)) OR
+(FORCEPYTHON=&quot;311&quot; AND (USERPYTHONPATH311 OR MACHINEPYTHONPATH311)) OR
+(FORCEPYTHON=&quot;312&quot; AND (USERPYTHONPATH312 OR MACHINEPYTHONPATH312)) OR
+(FORCEPYTHON=&quot;313&quot; AND (USERPYTHONPATH313 OR MACHINEPYTHONPATH313))" />
 
         <!-- Property to set to the path of a wheel in order to install a local
         wheel version instead of the one distributed on PyPI -->
@@ -418,11 +433,42 @@
             SourceFile=".\..\..\bin\rollback_install.exe"
             SuppressModularization="no" />
 
+        <!-- Executable file checking that the MyoFInDer Python environment was
+        successfully installed -->
+        <Binary
+            Id="PythonModuleVerifier"
+            SourceFile=".\..\..\bin\verify_install.exe"
+            SuppressModularization="no" />
+
+        <!-- Build the command line for the rollback custom action -->
+        <SetProperty
+            Action="SetUninstallPythonModuleData"
+            Before="UninstallPythonModule"
+            Id="UninstallPythonModule"
+            Sequence="execute"
+            Value="&quot;[INSTALLDIR]venv&quot;" />
+
+        <!-- Build the command line for the installation custom action -->
+        <SetProperty
+            Action="SetInstallPythonModuleData"
+            Before="InstallPythonModule"
+            Id="InstallPythonModule"
+            Sequence="execute"
+            Value="&quot;[SystemPythonExePath]&quot; &quot;[INSTALLDIR]venv&quot; &quot;[INSTALLDIR]venv\Scripts\python.exe&quot; &quot;[TESTINSTALL]&quot;" />
+
+        <!-- Build the command line for the environment check custom action -->
+        <SetProperty
+            Action="SetVerifyPythonModuleData"
+            Before="VerifyPythonModule"
+            Id="VerifyPythonModule"
+            Sequence="execute"
+            Value="&quot;[INSTALLDIR]venv\Scripts\python.exe&quot; &quot;[INSTALLDIR]venv&quot;" />
+
         <!-- Embedding the virtual environment installer into a custom action -->
         <CustomAction
             BinaryRef="PythonModuleInstaller"
             Execute="deferred"
-            ExeCommand="&quot;[SystemPythonExePath]&quot; &quot;[INSTALLDIR]venv&quot; &quot;[INSTALLDIR]venv\Scripts\python.exe&quot; &quot;[TESTINSTALL]&quot;"
+            ExeCommand="[InstallPythonModule]"
             Id="InstallPythonModule"
             Impersonate="yes"
             PatchUninstall="no"
@@ -432,7 +478,7 @@
         <CustomAction
             BinaryRef="PythonModuleUninstaller"
             Execute="rollback"
-            ExeCommand="&quot;[INSTALLDIR]venv&quot;"
+            ExeCommand="[UninstallPythonModule]"
             Id="UninstallPythonModule"
             Impersonate="yes"
             PatchUninstall="no"
@@ -447,6 +493,15 @@
             Impersonate="yes"
             PatchUninstall="no"
             Return="check" />
+
+        <!-- Embedding the Python environment checker into a custom action -->
+        <CustomAction
+            Id="VerifyPythonModule"
+            BinaryRef="PythonModuleVerifier"
+            Execute="deferred"
+            Impersonate="yes"
+            Return="check"
+            ExeCommand="[VerifyPythonModule]" />
 
         <!-- Variables driving the appearance of the installer window -->
         <Binary
@@ -476,22 +531,27 @@
                 Id="CustomUI" />
         </UI>
 
-        <!-- Adding the custom executable installer to the install sequence -->
+        <!-- Add the custom executable installer and uninstaller to the install
+        sequence -->
         <InstallExecuteSequence>
-            <Custom
-                Action="InstallPythonModule"
-                After="UninstallPythonModule"
-                Condition="not Installed"
-                Overridable="no" />
-        </InstallExecuteSequence>
-
-        <!-- Adding the custom executable uninstaller to the install sequence -->
-        <InstallExecuteSequence>
+            <!-- Rollback custom action must precede the install custom action
+            it rolls back -->
             <Custom
                 Action="UninstallPythonModule"
-                After="PublishProduct"
-                Condition="not Installed"
-                Overridable="no" />
+                Before="InstallPythonModule"
+                Condition="NOT Installed" />
+
+            <!-- Run install after files are written, but before InstallFinalize -->
+            <Custom
+                Action="InstallPythonModule"
+                After="InstallFiles"
+                Condition="NOT Installed" />
+
+            <!-- Run environment check after installing the Python module -->
+            <Custom
+                Action="VerifyPythonModule"
+                After="InstallPythonModule"
+                Condition="NOT Installed" />
         </InstallExecuteSequence>
 
         <!-- Referencing the Desktop Folder where a shortcut will be added -->
