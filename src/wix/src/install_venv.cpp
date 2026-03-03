@@ -67,7 +67,7 @@ int main(int argc, char* argv[]){
           "print('executable:', sys.executable); "
           "print('version_info:', tuple(sys.version_info[:3])); "
           "print('bitness:', platform.architecture()[0]); "
-          "ok = ((3,9) <= tuple(sys.version_info[:2]) <= (3,13)); "
+          "ok = ((3,10) <= tuple(sys.version_info[:2]) <= (3,14)); "
           "ok = ok and (platform.architecture()[0] == '64bit'); "
           "sys.exit(0 if ok else 3)"
         "\" > \""

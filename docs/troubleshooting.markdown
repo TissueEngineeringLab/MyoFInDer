@@ -68,7 +68,7 @@ include the following information:
 
 - **The installer says Python is missing or no compatible version is found**
 
-  MyoFInDer requires Python 3.9, 3.10, 3.11, 2.12 or 3.13 to be installed. In
+  MyoFInDer requires Python 3.10, 3.11, 3.12, 3.13 or 3.14 to be installed. In
   addition, installing the version provided on the official *python.org* 
   website is strongly recommended, instead for example of Python versions
   distributed in the Microsoft Store.
