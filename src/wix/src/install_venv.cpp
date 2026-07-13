@@ -48,9 +48,10 @@ int main(int argc, char* argv[]){
     std::string py_pre_check_out = log_dir + "python_pre_check.log";
     std::string pip_bootstrap_out = log_dir + "pip_bootstrap_stdout.log";
     std::string pip_install_out = log_dir + "pip_install_stdout.log";
+    std::string pip_numpy_out = log_dir + "pip_numpy_stdout.log";
 
     // Run Python viability checks
-    log << "[0/3] Run Python pre-check...\n";
+    log << "[0/4] Run Python pre-check...\n";
 
     // Check that the selected executable exists
     if (!file_exists(system_python_exe)) {
@@ -79,7 +80,7 @@ int main(int argc, char* argv[]){
     log << "Pre-check output: " << py_pre_check_out << "\n\n";
 
     // Create venv
-    log << "[1/3] Creating virtual environment...\n";
+    log << "[1/4] Creating virtual environment...\n";
     std::string venv_cmd = "\"" + system_python_exe + "\" -m venv \"" + venv_path + "\"";
     rc = run_cmd(venv_cmd, 0, "");
     log << "Exit code: " << rc << "\n\n";
@@ -89,7 +90,7 @@ int main(int argc, char* argv[]){
     }
 
     // Upgrade pip tooling
-    log << "[2/3] Installing/upgrading pip tooling...\n";
+    log << "[2/4] Installing/upgrading pip tooling...\n";
     std::string deps_cmd =
         "cmd.exe /S /C \"\""
         + venv_python_path +
@@ -111,7 +112,7 @@ int main(int argc, char* argv[]){
     }
 
     // Install MyoFInDer
-    log << "[3/3] Installing/upgrading MyoFInDer...\n";
+    log << "[3/4] Installing/upgrading MyoFInDer...\n";
     std::string install_cmd =
         "cmd.exe /S /C \"\""
         + venv_python_path +
@@ -134,6 +135,28 @@ int main(int argc, char* argv[]){
     if (rc != 0) {
         log << "ERROR: myofinder install failed.\n";
         return 30;
+    }
+
+    // Override restrictive NumPy dependency in cellpose
+    log << "[4/4] Installing/upgrading NumPy compatibility override...\n";
+    std::string numpy_cmd =
+        "cmd.exe /S /C \"\""
+        + venv_python_path +
+        "\" -m pip install --disable-pip-version-check --no-input --progress-bar off "
+        "--upgrade --no-deps \"numpy==2.1.3\" "
+        "--log \""
+        + pip_log +
+        "\" > \""
+        + pip_numpy_out +
+        "\" 2>&1\"";
+
+    rc = run_cmd(numpy_cmd, 0, venv_path);
+    log << "Exit code: " << rc << "\n";
+    log << "pip log: " << pip_log << "\n";
+    log << "pip stdout/stderr: " << pip_numpy_out << "\n\n";
+    if (rc != 0) {
+        log << "ERROR: numpy compatibility override failed.\n";
+        return 40;
     }
 
     log << "SUCCESS: install_venv finished OK.\n";
