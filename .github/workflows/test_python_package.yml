@@ -36,18 +36,6 @@ jobs:
             requirements_file: requirements/requirements-313.txt
           - python-version: "3.14"
             requirements_file: requirements/requirements-314.txt
-        # Tests fail because some dependencies have to be built
-        exclude:
-          - os: windows-latest
-            python-version: "3.13"
-          - os: windows-latest
-            python-version: "3.14"
-          - os: ubuntu-latest
-            python-version: "3.14"
-          - os: macos-latest
-            python-version: "3.13"
-          - os: macos-latest
-            python-version: "3.14"
 
     steps:
     # Checkout the repository
