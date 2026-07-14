@@ -64,6 +64,7 @@
                 <ComponentRef Id="MainExecutable" />
                 <ComponentRef Id="ProgramMenuDir" />
                 <ComponentRef Id="RegistryValues" />
+                <ComponentRef Id="RequirementsFiles" />
             </Feature>
 
             <!-- Optionally, the user can disable the LICENSE and README file installation -->
@@ -128,6 +129,9 @@
         <Property
             Id="FORCEPYTHON"
             Secure="yes" />
+        <Property
+            Id="PYTHONREQUIREMENTSFILE"
+            Secure="yes" />
 
         <!-- Properties checking the installed Python versions -->
         <SetProperty
@@ -139,67 +143,104 @@
             Value="[MACHINEPYTHONPATH310]" />
         <SetProperty
             Action="SetUserPythonExePath3.10"
-            After="AppSearch"
+            After="SetMachinePythonExePath3.10"
             Condition="(NOT FORCEPYTHON AND USERPYTHONPATH310) OR (FORCEPYTHON=&quot;310&quot; AND USERPYTHONPATH310)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[USERPYTHONPATH310]" />
         <SetProperty
             Action="SetMachinePythonExePath3.11"
-            After="AppSearch"
+            After="SetUserPythonExePath3.10"
             Condition="(NOT FORCEPYTHON AND MACHINEPYTHONPATH311) OR (FORCEPYTHON=&quot;311&quot; AND MACHINEPYTHONPATH311)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[MACHINEPYTHONPATH311]" />
         <SetProperty
             Action="SetUserPythonExePath3.11"
-            After="AppSearch"
+            After="SetMachinePythonExePath3.11"
             Condition="(NOT FORCEPYTHON AND USERPYTHONPATH311) OR (FORCEPYTHON=&quot;311&quot; AND USERPYTHONPATH311)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[USERPYTHONPATH311]" />
         <SetProperty
             Action="SetMachinePythonExePath3.12"
-            After="AppSearch"
+            After="SetUserPythonExePath3.11"
             Condition="(NOT FORCEPYTHON AND MACHINEPYTHONPATH312) OR (FORCEPYTHON=&quot;312&quot; AND MACHINEPYTHONPATH312)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[MACHINEPYTHONPATH312]" />
         <SetProperty
             Action="SetUserPythonExePath3.12"
-            After="AppSearch"
+            After="SetMachinePythonExePath3.12"
             Condition="(NOT FORCEPYTHON AND USERPYTHONPATH312) OR (FORCEPYTHON=&quot;312&quot; AND USERPYTHONPATH312)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[USERPYTHONPATH312]" />
         <SetProperty
             Action="SetMachinePythonExePath3.13"
-            After="AppSearch"
+            After="SetUserPythonExePath3.12"
             Condition="(NOT FORCEPYTHON AND MACHINEPYTHONPATH313) OR (FORCEPYTHON=&quot;313&quot; AND MACHINEPYTHONPATH313)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[MACHINEPYTHONPATH313]" />
         <SetProperty
             Action="SetUserPythonExePath3.13"
-            After="AppSearch"
+            After="SetMachinePythonExePath3.13"
             Condition="(NOT FORCEPYTHON AND USERPYTHONPATH313) OR (FORCEPYTHON=&quot;313&quot; AND USERPYTHONPATH313)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[USERPYTHONPATH313]" />
         <SetProperty
             Action="SetMachinePythonExePath3.14"
-            After="AppSearch"
+            After="SetUserPythonExePath3.13"
             Condition="(NOT FORCEPYTHON AND MACHINEPYTHONPATH314) OR (FORCEPYTHON=&quot;314&quot; AND MACHINEPYTHONPATH314)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[MACHINEPYTHONPATH314]" />
         <SetProperty
             Action="SetUserPythonExePath3.14"
-            After="AppSearch"
+            After="SetMachinePythonExePath3.14"
             Condition="(NOT FORCEPYTHON AND USERPYTHONPATH314) OR (FORCEPYTHON=&quot;314&quot; AND USERPYTHONPATH314)"
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[USERPYTHONPATH314]" />
+
+        <!-- Select the requirements file matching the detected Python version -->
+        <SetProperty
+            Action="SetPythonRequirementsFile3.10"
+            After="CostFinalize"
+            Condition="(NOT FORCEPYTHON AND (USERPYTHONPATH310 OR MACHINEPYTHONPATH310)) OR (FORCEPYTHON=&quot;310&quot; AND (USERPYTHONPATH310 OR MACHINEPYTHONPATH310))"
+            Id="PYTHONREQUIREMENTSFILE"
+            Sequence="both"
+            Value="[#Requirements310]" />
+        <SetProperty
+            Action="SetPythonRequirementsFile3.11"
+            After="SetPythonRequirementsFile3.10"
+            Condition="(NOT FORCEPYTHON AND (USERPYTHONPATH311 OR MACHINEPYTHONPATH311)) OR (FORCEPYTHON=&quot;311&quot; AND (USERPYTHONPATH311 OR MACHINEPYTHONPATH311))"
+            Id="PYTHONREQUIREMENTSFILE"
+            Sequence="both"
+            Value="[#Requirements311]" />
+        <SetProperty
+            Action="SetPythonRequirementsFile3.12"
+            After="SetPythonRequirementsFile3.11"
+            Condition="(NOT FORCEPYTHON AND (USERPYTHONPATH312 OR MACHINEPYTHONPATH312)) OR (FORCEPYTHON=&quot;312&quot; AND (USERPYTHONPATH312 OR MACHINEPYTHONPATH312))"
+            Id="PYTHONREQUIREMENTSFILE"
+            Sequence="both"
+            Value="[#Requirements312]" />
+        <SetProperty
+            Action="SetPythonRequirementsFile3.13"
+            After="SetPythonRequirementsFile3.12"
+            Condition="(NOT FORCEPYTHON AND (USERPYTHONPATH313 OR MACHINEPYTHONPATH313)) OR (FORCEPYTHON=&quot;313&quot; AND (USERPYTHONPATH313 OR MACHINEPYTHONPATH313))"
+            Id="PYTHONREQUIREMENTSFILE"
+            Sequence="both"
+            Value="[#Requirements313]" />
+        <SetProperty
+            Action="SetPythonRequirementsFile3.14"
+            After="SetPythonRequirementsFile3.13"
+            Condition="(NOT FORCEPYTHON AND (USERPYTHONPATH314 OR MACHINEPYTHONPATH314)) OR (FORCEPYTHON=&quot;314&quot; AND (USERPYTHONPATH314 OR MACHINEPYTHONPATH314))"
+            Id="PYTHONREQUIREMENTSFILE"
+            Sequence="both"
+            Value="[#Requirements314]" />
 
         <!-- Double-check that the forced version of Python was found -->
         <Launch
@@ -454,7 +495,7 @@
             Before="InstallPythonModule"
             Id="InstallPythonModule"
             Sequence="execute"
-            Value="&quot;[SystemPythonExePath]&quot; &quot;[INSTALLDIR]venv&quot; &quot;[INSTALLDIR]venv\Scripts\python.exe&quot; &quot;[TESTINSTALL]&quot;" />
+            Value="&quot;[SystemPythonExePath]&quot; &quot;[INSTALLDIR]venv&quot; &quot;[INSTALLDIR]venv\Scripts\python.exe&quot; &quot;[TESTINSTALL]&quot; &quot;[PYTHONREQUIREMENTSFILE]&quot;" />
 
         <!-- Build the command line for the environment check custom action -->
         <SetProperty
@@ -618,6 +659,43 @@
                         Property="VENVPATH" />
 
                 </Component>
+
+                <Directory
+                    Id="REQUIREMENTSDIR"
+                    Name="requirements">
+
+                    <!-- Component containing the Python dependency requirement files -->
+                    <Component
+                        Id="RequirementsFiles"
+                        Guid="9765B62F-3E47-4241-B852-D81979685967">
+                        <File
+                            Id="Requirements310"
+                            Name="requirements-310.txt"
+                            DiskId="1"
+                            Source=".\..\..\requirements\requirements-310.txt"
+                            KeyPath="yes" />
+                        <File
+                            Id="Requirements311"
+                            Name="requirements-311.txt"
+                            DiskId="1"
+                            Source=".\..\..\requirements\requirements-311.txt" />
+                        <File
+                            Id="Requirements312"
+                            Name="requirements-312.txt"
+                            DiskId="1"
+                            Source=".\..\..\requirements\requirements-312.txt" />
+                        <File
+                            Id="Requirements313"
+                            Name="requirements-313.txt"
+                            DiskId="1"
+                            Source=".\..\..\requirements\requirements-313.txt" />
+                        <File
+                            Id="Requirements314"
+                            Name="requirements-314.txt"
+                            DiskId="1"
+                            Source=".\..\..\requirements\requirements-314.txt" />
+                    </Component>
+                </Directory>
 
                 <!-- Component containing the registry keys -->
                 <Component

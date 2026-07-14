@@ -2,7 +2,6 @@
 #include <windows.h>
 
 #include <iostream>
-#include <fstream>
 #include <sstream>
 #include <string>
 #include <initializer_list>
@@ -26,8 +25,8 @@ int main(int argc, char* argv[]){
     log << "Log file: " << log.path() << "\n";
 
     // Check that enough arguments were provided
-    if (argc < 5) {
-        log << "ERROR: Not enough arguments (expected 4).\n";
+    if (argc < 6) {
+        log << "ERROR: Not enough arguments (expected 5).\n";
         return 2;
     }
 
@@ -35,11 +34,13 @@ int main(int argc, char* argv[]){
     std::string venv_path = argv[2];
     std::string venv_python_path = argv[3];
     std::string to_install = argv[4];
+    std::string requirements_file = argv[5];
 
     log << "System Python path: \"" << system_python_exe << "\"\n";
     log << "Virtual environment path: \"" << venv_path << "\"\n";
     log << "Venv Python path: \"" << venv_python_path << "\"\n";
-    log << "Package to install: \"" << to_install << "\"\n\n";
+    log << "Package to install: \"" << to_install << "\"\n";
+    log << "Requirements file: \"" << requirements_file << "\"\n\n";
 
     // Put pip logs alongside MyoFInDer log
     std::string log_dir = log.path().substr(0, log.path().find_last_of("\\/") + 1);
@@ -47,8 +48,8 @@ int main(int argc, char* argv[]){
     std::string pip_report = log_dir + "pip_report.json";
     std::string py_pre_check_out = log_dir + "python_pre_check.log";
     std::string pip_bootstrap_out = log_dir + "pip_bootstrap_stdout.log";
+    std::string pip_requirements_out = log_dir + "pip_requirements_stdout.log";
     std::string pip_install_out = log_dir + "pip_install_stdout.log";
-    std::string pip_numpy_out = log_dir + "pip_numpy_stdout.log";
 
     // Run Python viability checks
     log << "[0/4] Run Python pre-check...\n";
@@ -78,6 +79,11 @@ int main(int argc, char* argv[]){
     int rc = run_cmd(pre_check_cmd, 0, "");
     log << "Exit code: " << rc << "\n";
     log << "Pre-check output: " << py_pre_check_out << "\n\n";
+
+    if (!file_exists(requirements_file)) {
+        log << "ERROR: Requirements file does not exist: " << requirements_file << "\n";
+        return 6;
+    }
 
     // Create venv
     log << "[1/4] Creating virtual environment...\n";
@@ -111,12 +117,36 @@ int main(int argc, char* argv[]){
         return 20;
     }
 
-    // Install MyoFInDer
-    log << "[3/4] Installing/upgrading MyoFInDer...\n";
+    // Install MyoFInDer dependencies
+    log << "[3/4] Installing/upgrading MyoFInDer dependencies...\n";
+    std::string requirements_cmd =
+        "cmd.exe /S /C \"\""
+        + venv_python_path +
+        "\" -m pip install --disable-pip-version-check --no-input --progress-bar off "
+        "--no-deps --requirement \""
+        + requirements_file +
+        "\" --log \""
+        + pip_log +
+        "\" > \""
+        + pip_requirements_out +
+        "\" 2>&1\"";
+
+    rc = run_cmd(requirements_cmd, 0, venv_path);
+    log << "Exit code: " << rc << "\n";
+    log << "pip log: " << pip_log << "\n";
+    log << "pip stdout/stderr: " << pip_requirements_out << "\n\n";
+    if (rc != 0) {
+        log << "ERROR: myofinder dependency install failed.\n";
+        return 30;
+    }
+
+    // Install MyoFInDer without resolving dependencies again
+    log << "[4/4] Installing/upgrading MyoFInDer...\n";
     std::string install_cmd =
         "cmd.exe /S /C \"\""
         + venv_python_path +
         "\" -m pip install --disable-pip-version-check --no-input --progress-bar off "
+        "--no-deps "
         "\""
         + to_install +
         "\" --log \""
@@ -134,28 +164,6 @@ int main(int argc, char* argv[]){
     log << "pip stdout/stderr: " << pip_install_out << "\n\n";
     if (rc != 0) {
         log << "ERROR: myofinder install failed.\n";
-        return 30;
-    }
-
-    // Override restrictive NumPy dependency in cellpose
-    log << "[4/4] Installing/upgrading NumPy compatibility override...\n";
-    std::string numpy_cmd =
-        "cmd.exe /S /C \"\""
-        + venv_python_path +
-        "\" -m pip install --disable-pip-version-check --no-input --progress-bar off "
-        "--upgrade --no-deps \"numpy==2.1.3\" "
-        "--log \""
-        + pip_log +
-        "\" > \""
-        + pip_numpy_out +
-        "\" 2>&1\"";
-
-    rc = run_cmd(numpy_cmd, 0, venv_path);
-    log << "Exit code: " << rc << "\n";
-    log << "pip log: " << pip_log << "\n";
-    log << "pip stdout/stderr: " << pip_numpy_out << "\n\n";
-    if (rc != 0) {
-        log << "ERROR: numpy compatibility override failed.\n";
         return 40;
     }
 
