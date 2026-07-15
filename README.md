@@ -58,6 +58,10 @@ The dependencies of the module are :
 - [screeninfo](https://pypi.org/project/screeninfo/)
 - [numpy](https://numpy.org/)
 
+For each supported platform, architecture, and Python version, a requirements
+file can be found in the `requirements` folder of this repository. MyoFInDer is
+tested using these specific sets of dependencies.
+
 Installation
 ------------
 
@@ -71,6 +75,10 @@ python -m pip install myofinder
 Note that in the `bin` folder of this repository, a very basic `.msi` Windows
 installer allows automatically installing the module and its dependencies for
 Windows users who don't feel comfortable with command-line operations.
+
+Also, the simple `pip install` command is likely to fail on Python versions
+more recent than 3.12. In this case, installing the recommended requirements
+file first and then `myofinder` with the `--no-deps` option is recommended.
 
 A more detailed description of the installation procedure can be found in the 
 [installation section](https://tissueengineeringlab.github.io/MyoFInDer/installation.html)
