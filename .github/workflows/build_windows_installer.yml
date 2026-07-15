@@ -101,10 +101,25 @@ jobs:
           path: '${{ github.workspace }}\bin\*.msi'
           if-no-files-found: error
 
-  # Pushes the installer and the executable to the main branch
+  # Tests the generated installer
   test-installer:
     runs-on: windows-latest
     needs: [build-installer, build-wheel]
+    strategy:
+      fail-fast: false
+      matrix:
+        # Test on all supported Python versions
+        include:
+          - python-version: "3.10"
+            force_python: "310"
+          - python-version: "3.11"
+            force_python: "311"
+          - python-version: "3.12"
+            force_python: "312"
+          - python-version: "3.13"
+            force_python: "313"
+          - python-version: "3.14"
+            force_python: "314"
     steps:
       - name: Checkout
         uses: actions/checkout@v5
