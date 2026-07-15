@@ -64,7 +64,7 @@
                 <ComponentRef Id="MainExecutable" />
                 <ComponentRef Id="ProgramMenuDir" />
                 <ComponentRef Id="RegistryValues" />
-                <ComponentRef Id="RequirementsFiles" />
+                <ComponentRef Id="WindowsRequirementsFiles" />
             </Feature>
 
             <!-- Optionally, the user can disable the LICENSE and README file installation -->
@@ -212,35 +212,35 @@
             Condition="(NOT FORCEPYTHON AND (USERPYTHONPATH310 OR MACHINEPYTHONPATH310)) OR (FORCEPYTHON=&quot;310&quot; AND (USERPYTHONPATH310 OR MACHINEPYTHONPATH310))"
             Id="PYTHONREQUIREMENTSFILE"
             Sequence="both"
-            Value="[#Requirements310]" />
+            Value="[#Requirements310Windows]" />
         <SetProperty
             Action="SetPythonRequirementsFile3.11"
             After="SetPythonRequirementsFile3.10"
             Condition="(NOT FORCEPYTHON AND (USERPYTHONPATH311 OR MACHINEPYTHONPATH311)) OR (FORCEPYTHON=&quot;311&quot; AND (USERPYTHONPATH311 OR MACHINEPYTHONPATH311))"
             Id="PYTHONREQUIREMENTSFILE"
             Sequence="both"
-            Value="[#Requirements311]" />
+            Value="[#Requirements311Windows]" />
         <SetProperty
             Action="SetPythonRequirementsFile3.12"
             After="SetPythonRequirementsFile3.11"
             Condition="(NOT FORCEPYTHON AND (USERPYTHONPATH312 OR MACHINEPYTHONPATH312)) OR (FORCEPYTHON=&quot;312&quot; AND (USERPYTHONPATH312 OR MACHINEPYTHONPATH312))"
             Id="PYTHONREQUIREMENTSFILE"
             Sequence="both"
-            Value="[#Requirements312]" />
+            Value="[#Requirements312Windows]" />
         <SetProperty
             Action="SetPythonRequirementsFile3.13"
             After="SetPythonRequirementsFile3.12"
             Condition="(NOT FORCEPYTHON AND (USERPYTHONPATH313 OR MACHINEPYTHONPATH313)) OR (FORCEPYTHON=&quot;313&quot; AND (USERPYTHONPATH313 OR MACHINEPYTHONPATH313))"
             Id="PYTHONREQUIREMENTSFILE"
             Sequence="both"
-            Value="[#Requirements313]" />
+            Value="[#Requirements313Windows]" />
         <SetProperty
             Action="SetPythonRequirementsFile3.14"
             After="SetPythonRequirementsFile3.13"
             Condition="(NOT FORCEPYTHON AND (USERPYTHONPATH314 OR MACHINEPYTHONPATH314)) OR (FORCEPYTHON=&quot;314&quot; AND (USERPYTHONPATH314 OR MACHINEPYTHONPATH314))"
             Id="PYTHONREQUIREMENTSFILE"
             Sequence="both"
-            Value="[#Requirements314]" />
+            Value="[#Requirements314Windows]" />
 
         <!-- Double-check that the forced version of Python was found -->
         <Launch
@@ -664,36 +664,36 @@
                     Id="REQUIREMENTSDIR"
                     Name="requirements">
 
-                    <!-- Component containing the Python dependency requirement files -->
+                    <!-- Component containing the Windows Python dependency requirement files -->
                     <Component
-                        Id="RequirementsFiles"
+                        Id="WindowsRequirementsFiles"
                         Guid="9765B62F-3E47-4241-B852-D81979685967">
                         <File
-                            Id="Requirements310"
-                            Name="requirements-310.txt"
+                            Id="Requirements310Windows"
+                            Name="requirements-310-windows.txt"
                             DiskId="1"
-                            Source=".\..\..\requirements\requirements-310.txt"
+                            Source=".\..\..\requirements\requirements-310-windows.txt"
                             KeyPath="yes" />
                         <File
-                            Id="Requirements311"
-                            Name="requirements-311.txt"
+                            Id="Requirements311Windows"
+                            Name="requirements-311-windows.txt"
                             DiskId="1"
-                            Source=".\..\..\requirements\requirements-311.txt" />
+                            Source=".\..\..\requirements\requirements-311-windows.txt" />
                         <File
-                            Id="Requirements312"
-                            Name="requirements-312.txt"
+                            Id="Requirements312Windows"
+                            Name="requirements-312-windows.txt"
                             DiskId="1"
-                            Source=".\..\..\requirements\requirements-312.txt" />
+                            Source=".\..\..\requirements\requirements-312-windows.txt" />
                         <File
-                            Id="Requirements313"
-                            Name="requirements-313.txt"
+                            Id="Requirements313Windows"
+                            Name="requirements-313-windows.txt"
                             DiskId="1"
-                            Source=".\..\..\requirements\requirements-313.txt" />
+                            Source=".\..\..\requirements\requirements-313-windows.txt" />
                         <File
-                            Id="Requirements314"
-                            Name="requirements-314.txt"
+                            Id="Requirements314Windows"
+                            Name="requirements-314-windows.txt"
                             DiskId="1"
-                            Source=".\..\..\requirements\requirements-314.txt" />
+                            Source=".\..\..\requirements\requirements-314-windows.txt" />
                     </Component>
                 </Directory>
 
