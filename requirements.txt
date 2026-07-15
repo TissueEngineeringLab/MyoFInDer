@@ -1,6 +1,0 @@
-Pillow
-opencv-python-headless
-cellpose==3.1.1.2
-XlsxWriter>=3.0.0
-screeninfo>=0.7
-numpy
