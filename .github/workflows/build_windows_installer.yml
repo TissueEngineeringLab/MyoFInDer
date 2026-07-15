@@ -123,6 +123,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+      # Install the Python version that the MSI will be forced to use
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      # Register setup-python's interpreter where the MSI registry search expects it
+      - name: Register Python ${{ matrix.python-version }}
+        shell: pwsh
+        run: |
+          $pythonExe = (Get-Command python).Source
+          $registryKey = "HKCU:\Software\Python\PythonCore\${{ matrix.python-version }}\InstallPath"
+
+          New-Item -Path $registryKey -Force | Out-Null
+          New-ItemProperty -Path $registryKey -Name "ExecutablePath" -Value $pythonExe -PropertyType String -Force | Out-Null
+
+          python -c "import platform, sys; print('executable:', sys.executable); print('version_info:', tuple(sys.version_info[:3])); print('bitness:', platform.architecture()[0])"
       # Gets the generated .msi installer from a previous job
       - name: Download MSI
         uses: actions/download-artifact@v5
