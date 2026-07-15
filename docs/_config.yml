@@ -26,7 +26,7 @@ description: >- # this means to ignore newlines until "baseurl:"
   links for users requesting additional support.
 baseurl: "/MyoFInDer" # the subpath of your site, e.g. /blog
 url: "https://tissueengineeringlab.github.io" # the base hostname & protocol for your site, e.g. http://example.com
-github_username:  WeisLeDocto
+github_username: WeisLeDocto
 show_downloads: false
 verbose: true
 
