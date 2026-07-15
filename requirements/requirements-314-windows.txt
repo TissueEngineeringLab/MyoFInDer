@@ -12,7 +12,7 @@ mpmath==1.3.0
 natsort==8.4.0
 networkx==3.6.1
 numba==0.66.0
-numpy==2.3.5
+numpy==2.4.6
 opencv-python-headless==5.0.0.93
 pillow==12.3.0
 roifile==2026.2.10
