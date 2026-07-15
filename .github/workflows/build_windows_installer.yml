@@ -163,12 +163,12 @@ jobs:
         run: echo "WHEEL_NAME=$(echo '${{ github.workspace }}\dist\')$(ls '${{ github.workspace }}\dist' | grep \.whl$ | head -n 1)" >> $GITHUB_ENV
       # Execute the .msi installer to check that it operates as expected
       # Also, record the logs to a log file
-      - name: Run Installer
+      - name: Run Installer with Python ${{ matrix.python-version }}
         shell: pwsh
         run: If ((Start-Process msiexec -Wait -PassThru -ArgumentList "/I",
              "${{ github.workspace }}\bin\myofinder.msi",
              "TESTINSTALL=${{ env.WHEEL_NAME }}",
-             "FORCEPYTHON=312",
+             "FORCEPYTHON=${{ matrix.force_python }}",
              "/qn",
              "/l*vx",
              "${{ github.workspace }}\log.txt").ExitCode -ne 0)
@@ -195,7 +195,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: installer_logs
+          name: installer_logs_py${{ matrix.force_python }}
           path: '${{ github.workspace }}\installer_logs\**'
           if-no-files-found: warn
       # If the workflow is manually started, show some debug information
