@@ -20,22 +20,62 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Run on all the supported Python versions
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
-        # Run on all the supported platforms
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        # Requirements are pinned per Python version
+        # Requirements are pinned per Python version and platform
         include:
           - python-version: "3.10"
-            requirements_file: requirements/requirements-310.txt
+            os: ubuntu-latest
+            requirements_file: requirements/requirements-310-linux.txt
+          - python-version: "3.10"
+            os: windows-latest
+            requirements_file: requirements/requirements-310-windows.txt
+          - python-version: "3.10"
+            os: macos-15
+            requirements_file: requirements/requirements-310-macos_arm.txt
+          - python-version: "3.10"
+            os: macos-15-intel
+            requirements_file: requirements/requirements-310-macos_x64.txt
           - python-version: "3.11"
-            requirements_file: requirements/requirements-311.txt
+            os: ubuntu-latest
+            requirements_file: requirements/requirements-311-linux.txt
+          - python-version: "3.11"
+            os: windows-latest
+            requirements_file: requirements/requirements-311-windows.txt
+          - python-version: "3.11"
+            os: macos-15
+            requirements_file: requirements/requirements-311-macos_arm.txt
+          - python-version: "3.11"
+            os: macos-15-intel
+            requirements_file: requirements/requirements-311-macos_x64.txt
           - python-version: "3.12"
-            requirements_file: requirements/requirements-312.txt
+            os: ubuntu-latest
+            requirements_file: requirements/requirements-312-linux.txt
+          - python-version: "3.12"
+            os: windows-latest
+            requirements_file: requirements/requirements-312-windows.txt
+          - python-version: "3.12"
+            os: macos-15
+            requirements_file: requirements/requirements-312-macos_arm.txt
+          - python-version: "3.12"
+            os: macos-15-intel
+            requirements_file: requirements/requirements-312-macos_x64.txt
           - python-version: "3.13"
-            requirements_file: requirements/requirements-313.txt
+            os: ubuntu-latest
+            requirements_file: requirements/requirements-313-linux.txt
+          - python-version: "3.13"
+            os: windows-latest
+            requirements_file: requirements/requirements-313-windows.txt
+          - python-version: "3.13"
+            os: macos-latest
+            requirements_file: requirements/requirements-313-macos_arm.txt
           - python-version: "3.14"
-            requirements_file: requirements/requirements-314.txt
+            os: ubuntu-latest
+            requirements_file: requirements/requirements-314-linux.txt
+          - python-version: "3.14"
+            os: windows-latest
+            requirements_file: requirements/requirements-314-windows.txt
+          - python-version: "3.14"
+            os: macos-latest
+            requirements_file: requirements/requirements-314-macos_arm.txt
 
     steps:
     # Checkout the repository
