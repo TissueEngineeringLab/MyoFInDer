@@ -101,13 +101,44 @@ jobs:
           path: '${{ github.workspace }}\bin\*.msi'
           if-no-files-found: error
 
-  # Pushes the installer and the executable to the main branch
+  # Tests the generated installer
   test-installer:
     runs-on: windows-latest
     needs: [build-installer, build-wheel]
+    strategy:
+      fail-fast: false
+      matrix:
+        # Test on all supported Python versions
+        include:
+          - python-version: "3.10"
+            force_python: "310"
+          - python-version: "3.11"
+            force_python: "311"
+          - python-version: "3.12"
+            force_python: "312"
+          - python-version: "3.13"
+            force_python: "313"
+          - python-version: "3.14"
+            force_python: "314"
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+      # Install the Python version that the MSI will be forced to use
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      # Register setup-python's interpreter where the MSI registry search expects it
+      - name: Register Python ${{ matrix.python-version }}
+        shell: pwsh
+        run: |
+          $pythonExe = (Get-Command python).Source
+          $registryKey = "HKCU:\Software\Python\PythonCore\${{ matrix.python-version }}\InstallPath"
+
+          New-Item -Path $registryKey -Force | Out-Null
+          New-ItemProperty -Path $registryKey -Name "ExecutablePath" -Value $pythonExe -PropertyType String -Force | Out-Null
+
+          python -c "import platform, sys; print('executable:', sys.executable); print('version_info:', tuple(sys.version_info[:3])); print('bitness:', platform.architecture()[0])"
       # Gets the generated .msi installer from a previous job
       - name: Download MSI
         uses: actions/download-artifact@v5
@@ -132,12 +163,12 @@ jobs:
         run: echo "WHEEL_NAME=$(echo '${{ github.workspace }}\dist\')$(ls '${{ github.workspace }}\dist' | grep \.whl$ | head -n 1)" >> $GITHUB_ENV
       # Execute the .msi installer to check that it operates as expected
       # Also, record the logs to a log file
-      - name: Run Installer
+      - name: Run Installer with Python ${{ matrix.python-version }}
         shell: pwsh
         run: If ((Start-Process msiexec -Wait -PassThru -ArgumentList "/I",
              "${{ github.workspace }}\bin\myofinder.msi",
              "TESTINSTALL=${{ env.WHEEL_NAME }}",
-             "FORCEPYTHON=312",
+             "FORCEPYTHON=${{ matrix.force_python }}",
              "/qn",
              "/l*vx",
              "${{ github.workspace }}\log.txt").ExitCode -ne 0)
@@ -164,7 +195,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: installer_logs
+          name: installer_logs_py${{ matrix.force_python }}
           path: '${{ github.workspace }}\installer_logs\**'
           if-no-files-found: warn
       # If the workflow is manually started, show some debug information

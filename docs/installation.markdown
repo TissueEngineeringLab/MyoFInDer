@@ -252,6 +252,29 @@ Or if installed in a virtual environment :
 1.0.0
 ```
 
+It is possible for the installation to fail on Python 3.13 and Python 3.14, 
+because the version of Numpy resolved automatically by `pip` needs to be built
+instead of just installed. In that case, you can run the following steps
+instead of the regular ones. They will override the normal dependency 
+resolution from `pip`.
+
+First, download the correct requirements file for your specific Python version 
+from the [GitHub repository](https://github.com/TissueEngineeringLab/MyoFInDer/tree/main/requirements).
+Then, install the dependencies spearately (here for Python 3.10 and provided
+that the command is run at the location where the requirements file was 
+downloaded, adjust accordingly for your specific case):
+
+```console
+C:\Users\User>python -m pip install --no-deps --requirement requirements-310.txt
+```
+
+Then, once the dependencies are installed, simply install MyoFInDer without 
+resolving dependencies:
+
+```console
+C:\Users\User>python -m pip install --no-deps myofinder
+```
+
 # 2. On Linux and macOS
 
 On Linux and macOS, **MyoFInDer can only be installed as a Python module using 
