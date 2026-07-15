@@ -21,9 +21,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v6
       - name: Build With Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
@@ -32,8 +32,7 @@ jobs:
       # Upload only if started manually
       - name: Upload Artifact
         if: contains(fromJSON('["workflow_dispatch"]'), github.event_name)
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           name: docs_folder
           path: ./docs/_site
-          if-no-files-found: error
