@@ -48,11 +48,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-      # Set up Python 3.12
+      # Build with the oldest supported Python version
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: '3.11'
       # Builds the wheel for the latest version
       - name: Build Wheel
         run: |
@@ -110,8 +110,6 @@ jobs:
       matrix:
         # Test on all supported Python versions
         include:
-          - python-version: "3.10"
-            force_python: "310"
           - python-version: "3.11"
             force_python: "311"
           - python-version: "3.12"
@@ -120,6 +118,8 @@ jobs:
             force_python: "313"
           - python-version: "3.14"
             force_python: "314"
+          - python-version: "3.15"
+            force_python: "315"
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -128,6 +128,12 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
+      # fill-voids currently builds from source on Python 3.15
+      - name: Activate Windows C++ Build Tools
+        if: matrix.python-version == '3.15'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
       # Register setup-python's interpreter where the MSI registry search expects it
       - name: Register Python ${{ matrix.python-version }}
         shell: pwsh

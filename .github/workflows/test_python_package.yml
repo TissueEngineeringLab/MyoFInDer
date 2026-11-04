@@ -22,18 +22,6 @@ jobs:
       matrix:
         # Requirements are pinned per Python version and platform
         include:
-          - python-version: "3.10"
-            os: ubuntu-latest
-            requirements_file: requirements/requirements-310-linux.txt
-          - python-version: "3.10"
-            os: windows-latest
-            requirements_file: requirements/requirements-310-windows.txt
-          - python-version: "3.10"
-            os: macos-15
-            requirements_file: requirements/requirements-310-macos_arm.txt
-          - python-version: "3.10"
-            os: macos-15-intel
-            requirements_file: requirements/requirements-310-macos_x64.txt
           - python-version: "3.11"
             os: ubuntu-latest
             requirements_file: requirements/requirements-311-linux.txt
@@ -76,6 +64,15 @@ jobs:
           - python-version: "3.14"
             os: macos-latest
             requirements_file: requirements/requirements-314-macos_arm.txt
+          - python-version: "3.15"
+            os: ubuntu-latest
+            requirements_file: requirements/requirements-315-linux.txt
+          - python-version: "3.15"
+            os: windows-latest
+            requirements_file: requirements/requirements-315-windows.txt
+          - python-version: "3.15"
+            os: macos-latest
+            requirements_file: requirements/requirements-315-macos_arm.txt
 
     steps:
     # Checkout the repository
@@ -89,6 +86,12 @@ jobs:
     # Install the build dependencies
     - name: Install Build Dependencies
       run: python -m pip install --upgrade pip wheel build setuptools
+    # fill-voids currently builds from source on Python 3.15
+    - name: Activate Windows C++ Build Tools
+      if: runner.os == 'Windows' && matrix.python-version == '3.15'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
     # Install the MyoFInDer Python dependencies
     - name: Install MyoFInDer Dependencies
       run: python -m pip install --no-deps --requirement ${{ matrix.requirements_file }}
