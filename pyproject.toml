@@ -17,7 +17,7 @@ dependencies = ["Pillow",
                 "XlsxWriter>=3.0.0",
                 "screeninfo>=0.7",
                 "numpy"]
-authors = [{name = "Tissue Engineering Lab", email = "antoine.weisrock@kuleuven.be"}]
+authors = [{name = "Tissue Engineering Lab", email = "antoine.weisrock@gmail.com"}]
 maintainers = [{name = "Antoine Weisrock", email = "antoine.weisrock@gmail.com"}]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
