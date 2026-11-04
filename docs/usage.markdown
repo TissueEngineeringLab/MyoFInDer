@@ -49,7 +49,7 @@ applications.
 ## 1.2 From the command line
 
 *In this section, replace* `python` *with* `python3` *or* `python3.x` 
-*(9<=x<=13) if necessary.*
+*(11<=x<=15) if necessary.*
 
 > The commands below are intended for experimented users who know what they're
 > doing ! Do not try to run them unless you understand what they do ! If you 

@@ -68,10 +68,21 @@ include the following information:
 
 - **The installer says Python is missing or no compatible version is found**
 
-  MyoFInDer requires Python 3.10, 3.11, 3.12, 3.13 or 3.14 to be installed. In
-  addition, installing the version provided on the official *python.org* 
-  website is strongly recommended, instead for example of Python versions
-  distributed in the Microsoft Store.
+  MyoFInDer requires a standard 64-bit Python 3.11, 3.12, 3.13, 3.14 or 3.15
+  installation. Install Python using an official *python.org* installer or the
+  Python install manager.
+
+- **Installation fails with a NumPy dependency conflict**
+
+  On Python 3.13 to 3.15, install the matching requirements file and MyoFInDer
+  with `--no-deps` for both commands, as described in the
+  [installation instructions](installation.markdown).
+
+- **Installation cannot find a wheel for `fill-voids`, or its build fails**
+
+  The Python 3.15 installation builds `fill-voids` from source. Install
+  Microsoft C++ Build Tools on Windows, a C++ compiler on Linux, or Xcode
+  Command Line Tools on macOS, then retry the pinned installation.
 
 # Common problems at runtime
 
