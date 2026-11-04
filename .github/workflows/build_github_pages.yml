@@ -24,11 +24,17 @@ jobs:
         uses: actions/checkout@v7
       - name: Setup Pages
         uses: actions/configure-pages@v6
-      - name: Build With Jekyll
-        uses: actions/jekyll-build-pages@v1
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          source: ./docs
-          destination: ./docs/_site
+          ruby-version: '3.3'
+          working-directory: docs
+          bundler-cache: true
+      - name: Build With Jekyll
+        working-directory: docs
+        env:
+          JEKYLL_ENV: production
+        run: bundle exec jekyll build --trace
       # Upload only if started manually
       - name: Upload Artifact
         if: contains(fromJSON('["workflow_dispatch"]'), github.event_name)
