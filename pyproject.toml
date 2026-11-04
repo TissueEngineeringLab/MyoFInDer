@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "myofinder"
-version = "1.2.3"
+dynamic = ["version"]
 description = "Automatic calculation of the fusion index by AI segmentation"
 readme = {file = "README.md", content-type = "text/markdown"}
 license = "GPL-3.0-or-later"
@@ -45,6 +45,9 @@ Download = "https://pypi.org/project/myofinder/#files"
 [tool.setuptools]
 package-dir = {"" = "src"}
 include-package-data = false
+
+[tool.setuptools.dynamic]
+version = {attr = "myofinder.__version__.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
