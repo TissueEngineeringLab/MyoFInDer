@@ -22,18 +22,6 @@ jobs:
       matrix:
         # Requirements are pinned per Python version and platform
         include:
-          - python-version: "3.10"
-            os: ubuntu-latest
-            requirements_file: requirements/requirements-310-linux.txt
-          - python-version: "3.10"
-            os: windows-latest
-            requirements_file: requirements/requirements-310-windows.txt
-          - python-version: "3.10"
-            os: macos-15
-            requirements_file: requirements/requirements-310-macos_arm.txt
-          - python-version: "3.10"
-            os: macos-15-intel
-            requirements_file: requirements/requirements-310-macos_x64.txt
           - python-version: "3.11"
             os: ubuntu-latest
             requirements_file: requirements/requirements-311-linux.txt
@@ -76,6 +64,15 @@ jobs:
           - python-version: "3.14"
             os: macos-latest
             requirements_file: requirements/requirements-314-macos_arm.txt
+          - python-version: "3.15"
+            os: ubuntu-latest
+            requirements_file: requirements/requirements-315-linux.txt
+          - python-version: "3.15"
+            os: windows-latest
+            requirements_file: requirements/requirements-315-windows.txt
+          - python-version: "3.15"
+            os: macos-latest
+            requirements_file: requirements/requirements-315-macos_arm.txt
 
     steps:
     # Checkout the repository
@@ -83,12 +80,18 @@ jobs:
       uses: actions/checkout@v7
     # Set up the correct version of Python
     - name: Set up Python ${{ matrix.python-version }} on ${{ matrix.os }}
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ matrix.python-version }}
     # Install the build dependencies
     - name: Install Build Dependencies
       run: python -m pip install --upgrade pip wheel build setuptools
+    # fill-voids currently builds from source on Python 3.15
+    - name: Activate Windows C++ Build Tools
+      if: runner.os == 'Windows' && matrix.python-version == '3.15'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
     # Install the MyoFInDer Python dependencies
     - name: Install MyoFInDer Dependencies
       run: python -m pip install --no-deps --requirement ${{ matrix.requirements_file }}
@@ -102,16 +105,16 @@ jobs:
       run: |
         $Env:MYOFINDER_GITHUB_ACTION = 1
         python -m unittest -v tests
-      # On Linux, the Xvfb virtual X server can be used
-      # Therefore, it is possible to run the automated test suite
-    - name: Import MyoFInDer (Linux)
+    # On Linux, wait for the virtual X server before running the GUI tests
+    - name: Install Virtual Display (Linux)
       if: runner.os == 'Linux'
-      run: |
-        export DISPLAY=:99
-        export MYOFINDER_GITHUB_ACTION=:1
-        Xvfb :99 -screen 0 1920x1080x24 & python -m unittest -v tests
-    # On macOS, it is not possible to set up a virtual graphical environment
-    # Therefore, no automated tests can be run on macOS
+      run: sudo apt-get update && sudo apt-get install --yes xvfb xauth
+    - name: Test MyoFInDer (Linux)
+      if: runner.os == 'Linux'
+      env:
+        MYOFINDER_GITHUB_ACTION: '1'
+      run: xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python -m unittest -v tests
+    # GUI tests are not configured on macOS; verify that the package imports
     - name: Import MyoFInDer (macOS)
       if: runner.os == 'macOS'
       run: |

@@ -113,7 +113,7 @@ class SplashWindow(Tk):
         from ..image_segmentation import ImageSegmentation
 
         # Load the image segmentation and update the display
-        canvas.itemconfig(label, text="Initializing Mesmer...")
+        canvas.itemconfig(label, text="Initializing Cellpose...")
         self.update()
         segmentation = ImageSegmentation()
 

@@ -48,11 +48,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-      # Set up Python 3.12
+      # Build with the oldest supported Python version
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
-          python-version: '3.12'
+          python-version: '3.11'
       # Builds the wheel for the latest version
       - name: Build Wheel
         run: |
@@ -71,6 +71,8 @@ jobs:
   build-installer:
     runs-on: windows-latest
     needs: compile-executable
+    env:
+      WIX_VERSION: '5.0.2'
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -81,12 +83,15 @@ jobs:
           name: myofinder_binaries
           path: '${{ github.workspace }}\bin'
           merge-multiple: 'true'
-      # Installs WiX
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
       - name: Install WiX
         shell: cmd
         run: |
-          dotnet tool install --global wix --version 4.0.6
-          wix extension add --global WixToolset.UTIL.wixext/4.0.6
+          dotnet tool install --global wix --version %WIX_VERSION% --allow-roll-forward
+          wix extension add --global WixToolset.UTIL.wixext/%WIX_VERSION%
       # Generates the .msi file using WiX
       - name: Generate MSI
         shell: cmd
@@ -110,8 +115,6 @@ jobs:
       matrix:
         # Test on all supported Python versions
         include:
-          - python-version: "3.10"
-            force_python: "310"
           - python-version: "3.11"
             force_python: "311"
           - python-version: "3.12"
@@ -120,14 +123,22 @@ jobs:
             force_python: "313"
           - python-version: "3.14"
             force_python: "314"
+          - python-version: "3.15"
+            force_python: "315"
     steps:
       - name: Checkout
         uses: actions/checkout@v7
       # Install the Python version that the MSI will be forced to use
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
+      # fill-voids currently builds from source on Python 3.15
+      - name: Activate Windows C++ Build Tools
+        if: matrix.python-version == '3.15'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
       # Register setup-python's interpreter where the MSI registry search expects it
       - name: Register Python ${{ matrix.python-version }}
         shell: pwsh
@@ -157,10 +168,15 @@ jobs:
       - name: Create Installation Folder
         shell: pwsh
         run: mkdir "$env:localappdata\MyoFInDer"
-      # Getting the name of the wheel, cannot do it in the Windows shell
+      # Require exactly one wheel from the build job
       - name: Get Wheel Name
-        shell: bash
-        run: echo "WHEEL_NAME=$(echo '${{ github.workspace }}\dist\')$(ls '${{ github.workspace }}\dist' | grep \.whl$ | head -n 1)" >> $GITHUB_ENV
+        shell: pwsh
+        run: |
+          $wheels = @(Get-ChildItem -Path "${{ github.workspace }}\dist\*.whl")
+          if ($wheels.Count -ne 1) {
+            throw "Expected one wheel, found $($wheels.Count)"
+          }
+          "WHEEL_NAME=$($wheels[0].FullName)" >> $env:GITHUB_ENV
       # Execute the .msi installer to check that it operates as expected
       # Also, record the logs to a log file
       - name: Run Installer with Python ${{ matrix.python-version }}

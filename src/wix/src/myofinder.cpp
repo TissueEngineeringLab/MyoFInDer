@@ -57,7 +57,8 @@ int main(int argc, char* argv[]){
         std::cout << "Starting MyoFInDer.\n\n";
     }
     // No new console in test mode, so that GitHub Actions can display the log
-    run_cmd((char*) myofinder_cmd.data(), test ? 0 : CREATE_NEW_CONSOLE, install_dir);
+    const int exit_code = run_cmd(myofinder_cmd, test ? 0 : CREATE_NEW_CONSOLE, install_dir);
 
-    return 0;
+    // Test mode waits for Python, so propagate failures to the installer CI
+    return test ? exit_code : 0;
 }

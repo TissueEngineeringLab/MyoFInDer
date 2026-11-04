@@ -5,9 +5,11 @@ title: Installation
 
 [Home page](index.markdown)
 
-As a Python module, MyoFInDer can be installed on almost any computer able to 
-run a version of Python between 3.10 and 3.14. It is in particular fully 
-supported on **Windows 8 and later**, and on **Ubuntu 18.04 and later**. 
+MyoFInDer supports **standard 64-bit CPython 3.11 to 3.15** on Windows x64,
+Linux x64, and macOS ARM. Intel macOS is supported with Python 3.11 and 3.12.
+Your operating system must also meet the requirements of the selected Python
+version and its dependencies. In particular, Python 3.15 requires
+[Windows 10 or newer](https://docs.python.org/3.15/using/windows.html#supported-windows-versions).
 
 Because the installation and use as a Python module might not be 
 straightforward for every user, a very **basic Windows installer** is also 
@@ -31,6 +33,7 @@ Index of the Installation page :
    1. [Check your Python version](#21-check-your-python-version)
    2. [[Optional] Deploy a virtual environment](#22-optional-deploy-a-virtual-environment)
    3. [Install MyoFInDer](#23-install-myofinder)
+   4. [Pinned installation for Python 3.13 to 3.15](#24-pinned-installation-for-python-313-to-315)
 3. [GPU acceleration](#3-gpu-acceleration)
 
 # 1. On Windows
@@ -50,7 +53,7 @@ operable program or batch file.
 Otherwise, you get a message displaying the installed version of Python :
 ```console
 C:\Users\User>python --version
-Python 3.10.1
+Python 3.15.2
 ```
 
 > To open a terminal on Windows, you can search for the program called Command 
@@ -58,8 +61,8 @@ Python 3.10.1
 > used in the presented code snippets. Alternatively, a more advanced terminal 
 > program called Windows PowerShell can also be used.
 
-If Python is not installed, or if the installed version is not between 3.10 and 
-3.14 **you need to install a Python version between 3.10 and 3.14**. To do so,
+If Python is not installed, or if the installed version is not between 3.11 and
+3.15, **install a Python version between 3.11 and 3.15**. To do so,
 you have several possible options. The two most convenient ones are described 
 here.
 
@@ -67,25 +70,27 @@ here.
 
 **On Python's [website](https://www.python.org/downloads/windows/) you can find 
 .exe Windows installers for a number of Python versions**. Select the one you 
-want (preferably a stable release), download the installer, run it, and follow
-the instructions of the installation wizard. Make sure to check the 
+want, choosing the standard **64-bit x86-64** build. Download the installer,
+run it, and follow the installation wizard. Make sure to check the
 *Add python.exe to PATH* checkbox.
 
 Once Python is installed, you can **double-check the installation** by running 
 again `python --version`.
 
-### 1.1.2 Install Python from the Microsoft Store (not recommended)
+### 1.1.2 Install Python with the Python install manager
 
-**All the maintained versions of Python are available for installation in the 
-Microsoft Store** application. This is the easiest way to install Python on a 
-Windows machine, provided that your administrator does not restrict the 
-software catalogue of the Microsoft Store.
+The official [Python install manager](https://docs.python.org/3.15/using/windows.html#python-install-manager)
+is available from *python.org* and the Microsoft Store. Once installed, use it
+to install a supported runtime, for example Python 3.15 on Windows x64:
 
-Simply search for the Microsoft Store application, start it, search for Python,
-and install the desired version.
+```console
+C:\Users\User>py install 3.15
+C:\Users\User>py -3.15 --version
+Python 3.15.2
+```
 
-Once Python is installed, you can **double-check the installation** by running 
-again `python --version`.
+When several Python versions are installed, use `py -3.15` in place of
+`python` in the commands below to select Python 3.15 explicitly.
 
 > Some users have reported that MyoFInDer might not install with Python 
 > obtained from the Microsoft Store. The previous installation method should 
@@ -224,7 +229,9 @@ Where `<Path to your venv>` is the path to the created virtual environment.
 > or get in touch with the maintainer.
 
 Once the correct version of Python is installed, MyoFInDer can be installed 
-using the `pip` module :
+using the `pip` module. **On Python 3.13 to 3.15, go directly to the
+[pinned installation](#143-pinned-installation-for-python-313-to-315).**
+The commands in this section are for Python 3.11 and 3.12:
 
 ```console
 C:\Users\User>python -m pip install myofinder
@@ -242,30 +249,28 @@ installed** by running :
 
 ```console
 C:\Users\User>python -c "import myofinder; print(myofinder.__version__)"
-1.0.0
+1.2.3
 ```
 
 Or if installed in a virtual environment :
 
 ```console
 (venv) C:\Users\User>python -c "import myofinder; print(myofinder.__version__)"
-1.0.0
+1.2.3
 ```
 
-It is possible for the installation to fail on Python 3.13 and Python 3.14, 
-because the version of Numpy resolved automatically by `pip` needs to be built
-instead of just installed. In that case, you can run the following steps
-instead of the regular ones. They will override the normal dependency 
-resolution from `pip`.
+### 1.4.3 Pinned installation for Python 3.13 to 3.15
 
-First, download the correct requirements file for your specific Python version 
+**For Python 3.13 to 3.15, use the pinned installation below.**
+
+First, download the requirements file matching your Python version and platform
 from the [GitHub repository](https://github.com/TissueEngineeringLab/MyoFInDer/tree/main/requirements).
-Then, install the dependencies spearately (here for Python 3.10 and provided
-that the command is run at the location where the requirements file was 
-downloaded, adjust accordingly for your specific case):
+For Python 3.15 on Windows x64, use `requirements-315-windows.txt` and run 
+these commands from the folder containing the downloaded file:
 
 ```console
-C:\Users\User>python -m pip install --no-deps --requirement requirements-310.txt
+C:\Users\User>python -m pip install --upgrade pip
+C:\Users\User>python -m pip install --no-deps --requirement requirements-315-windows.txt
 ```
 
 Then, once the dependencies are installed, simply install MyoFInDer without 
@@ -296,20 +301,20 @@ can check the current version of Python as follows :
 
 ```console
 user@machine:~$ python --version
-Python 3.10.6
+Python 3.15.2
 ```
 
 Or, in cases where both Python 2 and 3 are installed :
 
 ```console
 user@machine:~$ python3 --version
-Python 3.10.6
+Python 3.15.2
 ```
 
 > To open a terminal in Linux and mcOS you can simply search for the Terminal 
 > application in the application menu. On Linux, you can also type CTRL+ALT+T.
 
-If the current version of Python is not between 3.10 and 3.14, you will need to
+If the current version of Python is not between 3.11 and 3.15, you will need to
 **install another version matching the specification**. This can be done using
 [pyenv](https://github.com/pyenv/pyenv) on macOS, or 
 [other workarounds](https://hackersandslackers.com/multiple-
@@ -318,7 +323,7 @@ python-versions-ubuntu-20-04/) in Ubuntu.
 ## 2.2 \[Optional] Deploy a virtual environment
 
 *In this section, replace* `python` *with* `python3` *or* `python3.x` 
-*(9<=x<=13) if necessary.*
+*(11<=x<=15) if necessary.*
 
 It is **recommended to install MyoFInDer in a
 [virtual environment](https://docs.python.org/3/library/venv.html)** to avoid 
@@ -366,10 +371,12 @@ Where `<Path to your venv>` is the path to the created virtual environment.
 ## 2.3 Install MyoFInDer
 
 *In this section, replace* `python` *with* `python3` *or* `python3.x` 
-*(9<=x<=13) if necessary.*
+*(11<=x<=15) if necessary.*
 
 Once the correct version of Python is installed, **MyoFInDer can be installed 
-like any other package using the `pip` module** :
+using the `pip` module**. On Python 3.13 to 3.15, go directly to the
+[pinned installation](#24-pinned-installation-for-python-313-to-315).
+The commands in this section are for Python 3.11 and 3.12:
 
 ```console
 user@machine:~$ python -m pip install myofinder
@@ -390,36 +397,55 @@ installed** by running :
 
 ```console
 user@machine:~$ python -c "import myofinder; print(myofinder.__version__)"
-1.0.0
+1.2.3
 ```
 
 Or if installed in a virtual environment :
 
 ```console
 (venv) user@machine:~$ python -c "import myofinder; print(myofinder.__version__)"
-1.0.0
+1.2.3
 ```
 
 > Note that tkinter might not be distributed by default with Python, you might
 > have to install it manually. On Ubuntu, that can be done by calling
-> `sudo apt install python3-tk`.
+> `sudo apt install python3-tk` for the system Python. For a separately 
+> installed Python version, install its matching Tk package instead.
+
+## 2.4 Pinned installation for Python 3.13 to 3.15
+
+On Python 3.13 to 3.15, use a requirements file to install the complete tested
+dependency set, bypassing Cellpose's older NumPy constraint. Download the file
+matching your Python version and architecture from the
+[requirements folder](https://github.com/TissueEngineeringLab/MyoFInDer/tree/main/requirements).
+
+For Python 3.15 on Linux x64, run:
+
+```console
+python -m pip install --upgrade pip
+python -m pip install --no-deps --requirement requirements-315-linux.txt
+python -m pip install --no-deps myofinder
+```
+
+On macOS ARM, use `requirements-315-macos_arm.txt` in the second command.
+Intel macOS requirements are available for Python 3.11 and 3.12 only.
+
+Python 3.15 currently builds `fill-voids` from source. On Linux, install a C++
+compiler and the development headers matching your Python interpreter. For
+Ubuntu's system Python these are provided by `build-essential` and
+`python3-dev`. On macOS, install Xcode Command Line Tools with
+`xcode-select --install`. Pip installs the declared Cython and NumPy build
+dependencies in an isolated environment.
 
 # 3. GPU-acceleration
 
-The [TensorFlow](https://www.tensorflow.org/) library that runs the AI model 
-used by MyoFInDer supports GPU acceleration. When it is enabled, it can 
-drastically improve the computation speed of the module by performing the
-calculations on the GPU rather than on the CPU. Depending on your machine, you 
-might however not be able to enable GPU acceleration.
+MyoFInDer uses Cellpose with PyTorch for nuclei segmentation. The application
+currently initializes Cellpose with its default CPU configuration. Installing
+CUDA drivers does not by itself enable GPU processing in MyoFInDer.
 
-The first requirement is to have a machine equipped with an Nvidia graphic 
-card. If that's the case, you then need to install the right CUDA drivers for
-your OS and GPU model. The available drivers can be downloaded 
-[here](https://developer.nvidia.com/cuda-downloads). Finally, you need to 
-install the cuDNN library, again with the correct version for your OS and 
-platform. An installation guide for cuDNN can be found 
-[here](https://docs.nvidia.com/deeplearning/cudnn/install-guide/). Once this is 
-done, GPU acceleration should be automatically enabled when processing images
-with MyoFInDer.
+The pinned requirements and Python 3.15 compatibility checks validate CPU
+execution. GPU execution has not been validated. See the
+[Cellpose model documentation](https://github.com/MouseLand/cellpose/blob/v3.1.1.2/cellpose/models.py)
+for the upstream GPU options.
 
 [Home page](index.markdown)

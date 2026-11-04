@@ -48,9 +48,9 @@ class BaseTestInterface(unittest.TestCase):
         self._exit = False
 
         # All files are recorded inside a temporary directory so that they're
-        # automatically deleted when the tests end
+        # automatically deleted even if the rest of setUp fails
         self._dir = TemporaryDirectory()
-        self._dir.__enter__()
+        self.enterContext(self._dir)
 
         # Instantiating the main window of MyoFInDer
         self._window = MainWindow(Path(self._dir.name))
@@ -58,18 +58,13 @@ class BaseTestInterface(unittest.TestCase):
     def tearDown(self) -> None:
         """Method called after each test end.
 
-        Closes the main window if not already closed, and cleans up the
-        temporary directory of the test.
+        Closes the main window if not already closed. Registered cleanups
+        remove the temporary directory afterward.
         """
 
         # Closing the main window if not already done during the test
         if not self._exit:
             self._window.safe_destroy()
-
-        # Cleaning up the files recorded in the temporary directory
-        if self._dir is not None:
-            self._dir.__exit__(None, None, None)
-            self._dir.cleanup()
 
 
 class BaseTestInterfaceProcessing(BaseTestInterface):

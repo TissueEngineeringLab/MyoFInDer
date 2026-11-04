@@ -20,7 +20,7 @@ class ImageSegmentation:
     """Class for processing images, detecting fibers and nuclei."""
 
     def __init__(self) -> None:
-        """Simply loads the Mesmer library."""
+        """Load the Cellpose nuclei segmentation model."""
 
         self._app = cellpose.models.CellposeModel(diam_mean=17,
                                                   model_type='nuclei')

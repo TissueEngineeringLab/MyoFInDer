@@ -481,6 +481,7 @@ class MainWindow(Tk):
 
         # If an exception is raised, catching and displaying it
         except (Exception,) as exc:
+            exc.add_note(f"While creating the project directory: {directory}")
             self._logger.exception(
                 f"Exception caught while creating the directory where to "
                 f"save the project !", exc_info=exc)
@@ -515,6 +516,7 @@ class MainWindow(Tk):
 
         # If an exception is raised, catching it and displaying
         except (Exception,) as exc:
+            exc.add_note(f"While saving the project to: {directory}")
             self._logger.exception(
                 f"Exception caught while saving the project !", exc_info=exc)
             messagebox.showerror("Error !", "Could not save the project !")
@@ -942,6 +944,7 @@ class MainWindow(Tk):
 
                 # Displaying any error in an error window
                 except (Exception,) as exc:
+                    exc.add_note(f"While processing image: {path}")
                     self._logger.exception("Exception caught wile processing "
                                            "image", exc_info=exc)
                     self._ui_queue.put_nowait(ProcessError(path, exc))

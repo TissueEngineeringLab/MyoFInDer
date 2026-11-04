@@ -13,11 +13,9 @@ fluorescence microscopy images.
 > on how large they are.
 
 > [!WARNING]
-> MyoFInDer version 1.1.0 now uses [CellPose](https://www.cellpose.org/) for 
-> nuclei segmentation instead of [DeepCell](https://www.deepcell.org/). This is
-> a major breaking change. Differences are to be expected in the results 
-> obtained with version 1.1.0 and earlier ones, even with similar processing
-> parameters.
+> Since version 1.1.0, MyoFInDer uses [Cellpose](https://www.cellpose.org/) for
+> nuclei segmentation instead of DeepCell. Results may differ from versions
+> before 1.1.0, even with similar processing parameters.
 
 Presentation
 ------------
@@ -44,7 +42,7 @@ population.
 Requirements
 ------------
 
-To install and run MyoFInDer, you'll need Python 3 (3.10 to 3.14), approximately 
+To install and run MyoFInDer, you'll need Python 3 (3.11 to 3.15), approximately
 6GB of disk space, and preferably 8GB of memory or more. MyoFInDer runs on 
 Windows, Linux, macOS, and potentially other OS able to run a compatible 
 version of Python.
@@ -52,8 +50,8 @@ version of Python.
 The dependencies of the module are :
 
 - [Pillow](https://python-pillow.org/)
-- [opencv-python](https://pypi.org/project/opencv-python/)
-- [CellPose](https://pypi.org/project/cellpose/)
+- [opencv-python-headless](https://pypi.org/project/opencv-python-headless/)
+- [Cellpose](https://pypi.org/project/cellpose/) (3.1.1.2)
 - [XlsxWriter](https://pypi.org/project/XlsxWriter/)
 - [screeninfo](https://pypi.org/project/screeninfo/)
 - [numpy](https://numpy.org/)
@@ -65,8 +63,8 @@ tested using these specific sets of dependencies.
 Installation
 ------------
 
-MyoFInDer is distributed on PyPI, and can thus be installed using the `pip` 
-module of Python :
+MyoFInDer is distributed on PyPI. On Python 3.11 and 3.12, install it with
+Python's `pip` module:
 
 ```console
 python -m pip install myofinder
@@ -76,9 +74,19 @@ Note that in the `bin` folder of this repository, a very basic `.msi` Windows
 installer allows automatically installing the module and its dependencies for
 Windows users who don't feel comfortable with command-line operations.
 
-Also, the simple `pip install` command is likely to fail on Python versions
-more recent than 3.12. In this case, installing the recommended requirements
-file first and then `myofinder` with the `--no-deps` option is recommended.
+For Python 3.13 to 3.15, install the matching requirements file first, then
+install MyoFInDer, using `--no-deps` for both commands. For example, after
+downloading `requirements-315-windows.txt` for Python 3.15 on Windows:
+
+```console
+python -m pip install --upgrade pip
+python -m pip install --no-deps --requirement requirements-315-windows.txt
+python -m pip install --no-deps myofinder
+```
+
+On Python 3.15, `fill-voids` builds from source, so a C++ compiler is required:
+Microsoft C++ Build Tools on Windows, a C++ toolchain on Linux, or Xcode 
+Command Line Tools on macOS.
 
 A more detailed description of the installation procedure can be found in the 
 [installation section](https://tissueengineeringlab.github.io/MyoFInDer/installation.html)
