@@ -29,11 +29,9 @@ On this documentation website, you can find information about the :
 > on how large they are.
 
 > [!WARNING]
-> MyoFInDer version 1.1.0 now uses [CellPose](https://www.cellpose.org/) for 
-> nuclei segmentation instead of [DeepCell](https://www.deepcell.org/). This is
-> a major breaking change. Differences are to be expected in the results 
-> obtained with version 1.1.0 and earlier ones, even with similar processing
-> parameters.
+> Since version 1.1.0, MyoFInDer uses [Cellpose](https://www.cellpose.org/) for
+> nuclei segmentation instead of DeepCell. Results may differ from versions
+> before 1.1.0, even with similar processing parameters.
 
 # About
 

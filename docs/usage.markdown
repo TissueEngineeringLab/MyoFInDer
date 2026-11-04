@@ -118,16 +118,13 @@ subsection :
 ## 1.3 Startup window and console
 
 Once MyoFInDer is running, **a console should first appear** with log 
-messages displaying in it. If started from the command-line, this console is 
-already open and is the one you typed your commands in. This console simply 
-displays the log messages, which may be useful for tracking errors. **The first
-time you start MyoFInDer, many messages will be prompted in the console !** 
-That is because MyoFInDer needs to finish its installation, and will download
-a number of dependencies. This step can take up to several minutes, depending
-on the speed of your internet connection and on the performance of your 
-computer. The displayed messages should look similar to:
-
-<img src="./pip_install.png" width="1000" title="Installation in console">
+messages displaying in it. If started from the command-line, this console is
+already open and is the one you typed your commands in. This console displays
+the log messages, which may be useful for tracking errors. **The first time you
+start MyoFInDer, Cellpose may download its nuclei model.** An internet 
+connection is required for this download, which can take several minutes. 
+Python dependencies are installed during installation, before starting the 
+application.
 
 Shortly after the console, **a Splash window should also appear** while the 
 module is loading. It can take up to 30s for the application to open, and even 
@@ -352,7 +349,7 @@ impact on the behavior of MyoFInDer.
 
 ## 4.1 Command-line options
 
-Two command-line options are available when starting MyoFInDer from the
+Three command-line options are available when starting MyoFInDer from the
 console. 
 
 The first one allows to **disable logging**, by adding the `-n` or 
@@ -371,9 +368,10 @@ read and store the application files, such as the log file or settings file.
 
 The log messages are, if possible, recorded to an application folder whose 
 location depends on the OS. On Linux and macOS, the application folder is 
-located in `/home/<user>/.MyoFInDer`. On Windows, the application folder
-is located in `C:\Users\<user>\AppData\Local\MyoFInDer`. This application 
-folder normally contains the log messages for the last run of the application, 
-as well as a `settings.pickle` file containing the last used settings.
+located in `~/.MyoFInDer`, where `~` is your home directory. On Windows, the
+application folder is located in `C:\Users\<user>\AppData\Local\MyoFInDer`. 
+This application folder normally contains the log messages for the last run of 
+the application, as well as a `settings.pickle` file containing the last used 
+settings.
 
 [Home page](index.markdown)

@@ -249,14 +249,14 @@ installed** by running :
 
 ```console
 C:\Users\User>python -c "import myofinder; print(myofinder.__version__)"
-1.0.0
+1.2.3
 ```
 
 Or if installed in a virtual environment :
 
 ```console
 (venv) C:\Users\User>python -c "import myofinder; print(myofinder.__version__)"
-1.0.0
+1.2.3
 ```
 
 ### 1.4.3 Pinned installation for Python 3.13 to 3.15
@@ -397,14 +397,14 @@ installed** by running :
 
 ```console
 user@machine:~$ python -c "import myofinder; print(myofinder.__version__)"
-1.0.0
+1.2.3
 ```
 
 Or if installed in a virtual environment :
 
 ```console
 (venv) user@machine:~$ python -c "import myofinder; print(myofinder.__version__)"
-1.0.0
+1.2.3
 ```
 
 > Note that tkinter might not be distributed by default with Python, you might

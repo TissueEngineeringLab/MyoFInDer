@@ -13,11 +13,9 @@ fluorescence microscopy images.
 > on how large they are.
 
 > [!WARNING]
-> MyoFInDer version 1.1.0 now uses [CellPose](https://www.cellpose.org/) for 
-> nuclei segmentation instead of [DeepCell](https://www.deepcell.org/). This is
-> a major breaking change. Differences are to be expected in the results 
-> obtained with version 1.1.0 and earlier ones, even with similar processing
-> parameters.
+> Since version 1.1.0, MyoFInDer uses [Cellpose](https://www.cellpose.org/) for
+> nuclei segmentation instead of DeepCell. Results may differ from versions
+> before 1.1.0, even with similar processing parameters.
 
 Presentation
 ------------
@@ -52,8 +50,8 @@ version of Python.
 The dependencies of the module are :
 
 - [Pillow](https://python-pillow.org/)
-- [opencv-python](https://pypi.org/project/opencv-python/)
-- [CellPose](https://pypi.org/project/cellpose/)
+- [opencv-python-headless](https://pypi.org/project/opencv-python-headless/)
+- [Cellpose](https://pypi.org/project/cellpose/) (3.1.1.2)
 - [XlsxWriter](https://pypi.org/project/XlsxWriter/)
 - [screeninfo](https://pypi.org/project/screeninfo/)
 - [numpy](https://numpy.org/)

@@ -53,7 +53,7 @@ include the following information:
   the `pip install` logs as displayed in the terminal.
 - If the bug occurs at runtime, please attach the log file that can be found 
   following the instructions in section 
-  [Retrieving the log messages](usage.markdown/#42-retrieving-the-log-messages).
+  [Retrieving the log messages](usage.markdown#42-retrieving-the-log-messages).
 
 # Installation problems
 
