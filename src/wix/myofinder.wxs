@@ -1,4 +1,4 @@
-﻿<!-- This file contains the configuration for building the myofinder.msi installer using WiX 4.0.3 -->
+﻿<!-- This file contains the configuration for building the myofinder.msi installer using the WiX Toolset -->
 
 <Wix
     xmlns="http://wixtoolset.org/schemas/v4/wxs"
