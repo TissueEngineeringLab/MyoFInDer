@@ -103,7 +103,7 @@
                     TabSkip="no"
                     Text="Something went wrong, and MyoFInDer couldn't be
 installed on your computer! Please make sure that you have installed a
-compatible version of Python and of the C++ build tools. Your system should have
+standard 64-bit Python 3.11 to 3.15 and the C++ build tools. Your system should have
 been rolled back to its previous state and should not have been modified."
                     Transparent="no"
                     Type="Text"

@@ -135,22 +135,8 @@
 
         <!-- Properties checking the installed Python versions -->
         <SetProperty
-            Action="SetMachinePythonExePath3.10"
-            After="AppSearch"
-            Condition="(NOT FORCEPYTHON AND MACHINEPYTHONPATH310) OR (FORCEPYTHON=&quot;310&quot; AND MACHINEPYTHONPATH310)"
-            Id="SystemPythonExePath"
-            Sequence="both"
-            Value="[MACHINEPYTHONPATH310]" />
-        <SetProperty
-            Action="SetUserPythonExePath3.10"
-            After="SetMachinePythonExePath3.10"
-            Condition="(NOT FORCEPYTHON AND USERPYTHONPATH310) OR (FORCEPYTHON=&quot;310&quot; AND USERPYTHONPATH310)"
-            Id="SystemPythonExePath"
-            Sequence="both"
-            Value="[USERPYTHONPATH310]" />
-        <SetProperty
             Action="SetMachinePythonExePath3.11"
-            After="SetUserPythonExePath3.10"
+            After="AppSearch"
             Condition="(NOT FORCEPYTHON AND MACHINEPYTHONPATH311) OR (FORCEPYTHON=&quot;311&quot; AND MACHINEPYTHONPATH311)"
             Id="SystemPythonExePath"
             Sequence="both"
@@ -204,18 +190,25 @@
             Id="SystemPythonExePath"
             Sequence="both"
             Value="[USERPYTHONPATH314]" />
+         <SetProperty
+            Action="SetMachinePythonExePath3.15"
+            After="SetUserPythonExePath3.14"
+            Condition="(NOT FORCEPYTHON AND MACHINEPYTHONPATH315) OR (FORCEPYTHON=&quot;315&quot; AND MACHINEPYTHONPATH315)"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[MACHINEPYTHONPATH315]" />
+        <SetProperty
+            Action="SetUserPythonExePath3.15"
+            After="SetMachinePythonExePath3.15"
+            Condition="(NOT FORCEPYTHON AND USERPYTHONPATH315) OR (FORCEPYTHON=&quot;315&quot; AND USERPYTHONPATH315)"
+            Id="SystemPythonExePath"
+            Sequence="both"
+            Value="[USERPYTHONPATH315]" />
 
         <!-- Select the requirements file matching the detected Python version -->
         <SetProperty
-            Action="SetPythonRequirementsFile3.10"
-            After="CostFinalize"
-            Condition="(NOT FORCEPYTHON AND (USERPYTHONPATH310 OR MACHINEPYTHONPATH310)) OR (FORCEPYTHON=&quot;310&quot; AND (USERPYTHONPATH310 OR MACHINEPYTHONPATH310))"
-            Id="PYTHONREQUIREMENTSFILE"
-            Sequence="both"
-            Value="[#Requirements310Windows]" />
-        <SetProperty
             Action="SetPythonRequirementsFile3.11"
-            After="SetPythonRequirementsFile3.10"
+            After="CostFinalize"
             Condition="(NOT FORCEPYTHON AND (USERPYTHONPATH311 OR MACHINEPYTHONPATH311)) OR (FORCEPYTHON=&quot;311&quot; AND (USERPYTHONPATH311 OR MACHINEPYTHONPATH311))"
             Id="PYTHONREQUIREMENTSFILE"
             Sequence="both"
@@ -241,16 +234,23 @@
             Id="PYTHONREQUIREMENTSFILE"
             Sequence="both"
             Value="[#Requirements314Windows]" />
+        <SetProperty
+            Action="SetPythonRequirementsFile3.15"
+            After="SetPythonRequirementsFile3.14"
+            Condition="(NOT FORCEPYTHON AND (USERPYTHONPATH315 OR MACHINEPYTHONPATH315)) OR (FORCEPYTHON=&quot;315&quot; AND (USERPYTHONPATH315 OR MACHINEPYTHONPATH315))"
+            Id="PYTHONREQUIREMENTSFILE"
+            Sequence="both"
+            Value="[#Requirements315Windows]" />
 
         <!-- Double-check that the forced version of Python was found -->
         <Launch
-            Message="FORCEPYTHON was set but the requested Python was not found. Use FORCEPYTHON=310|311|312|313|314."
+            Message="FORCEPYTHON was set but the requested Python was not found. Use FORCEPYTHON=311|312|313|314|315."
             Condition="NOT FORCEPYTHON OR
-(FORCEPYTHON=&quot;310&quot; AND (USERPYTHONPATH310 OR MACHINEPYTHONPATH310)) OR
 (FORCEPYTHON=&quot;311&quot; AND (USERPYTHONPATH311 OR MACHINEPYTHONPATH311)) OR
 (FORCEPYTHON=&quot;312&quot; AND (USERPYTHONPATH312 OR MACHINEPYTHONPATH312)) OR
 (FORCEPYTHON=&quot;313&quot; AND (USERPYTHONPATH313 OR MACHINEPYTHONPATH313)) OR
-(FORCEPYTHON=&quot;314&quot; AND (USERPYTHONPATH314 OR MACHINEPYTHONPATH314))" />
+(FORCEPYTHON=&quot;314&quot; AND (USERPYTHONPATH314 OR MACHINEPYTHONPATH314)) OR
+(FORCEPYTHON=&quot;315&quot; AND (USERPYTHONPATH315 OR MACHINEPYTHONPATH315))" />
 
         <!-- Property to set to the path of a wheel in order to install a local
         wheel version instead of the one distributed on PyPI -->
@@ -264,40 +264,8 @@
 
         <!-- Condition checking the current version of Windows -->
         <Launch
-            Message="MyoFInDer requires Windows 8 or higher !"
+            Message="MyoFInDer requires Windows 8.1 or higher !"
             Condition="Installed OR VersionNT &gt; 602" />
-
-        <!-- Checking if Python 3.10 is installed at the user level -->
-        <Property
-            Admin="no"
-            ComplianceCheck="no"
-            Hidden="no"
-            Id="USERPYTHONPATH310"
-            Secure="yes" >
-            <RegistrySearch
-                    Bitness="always64"
-                    Id="UserPythonPath310"
-                    Key="Software\Python\PythonCore\3.10\InstallPath"
-                    Name="ExecutablePath"
-                    Root="HKCU"
-                    Type="raw" />
-        </Property>
-
-        <!-- Checking if Python 3.10 is installed at the machine level -->
-        <Property
-            Admin="no"
-            ComplianceCheck="no"
-            Hidden="no"
-            Id="MACHINEPYTHONPATH310"
-            Secure="yes" >
-            <RegistrySearch
-                    Bitness="always64"
-                    Id="MachinePythonPath310"
-                    Key="Software\Python\PythonCore\3.10\InstallPath"
-                    Name="ExecutablePath"
-                    Root="HKLM"
-                    Type="raw" />
-        </Property>
 
         <!-- Checking if Python 3.11 is installed at the user level -->
         <Property
@@ -428,13 +396,45 @@
                     Type="raw" />
         </Property>
 
+        <!-- Checking if Python 3.15 is installed at the user level -->
+        <Property
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="USERPYTHONPATH315"
+            Secure="yes" >
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="UserPythonPath315"
+                    Key="Software\Python\PythonCore\3.15\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKCU"
+                    Type="raw" />
+        </Property>
+
+        <!-- Checking if Python 3.15 is installed at the machine level -->
+        <Property
+            Admin="no"
+            ComplianceCheck="no"
+            Hidden="no"
+            Id="MACHINEPYTHONPATH315"
+            Secure="yes" >
+            <RegistrySearch
+                    Bitness="always64"
+                    Id="MachinePythonPath315"
+                    Key="Software\Python\PythonCore\3.15\InstallPath"
+                    Name="ExecutablePath"
+                    Root="HKLM"
+                    Type="raw" />
+        </Property>
+
         <!-- Condition checking that a valid version of Python is installed -->
         <Launch
-            Message="MyoFInDer requires Python 3.10, 3.11, 3.12, 3.13 or 3.14 to be installed !"
-            Condition="Installed OR USERPYTHONPATH310 OR USERPYTHONPATH311 OR
-            USERPYTHONPATH312 OR USERPYTHONPATH313 OR USERPYTHONPATH314 OR
-            MACHINEPYTHONPATH310 OR MACHINEPYTHONPATH311 OR MACHINEPYTHONPATH312
-            OR MACHINEPYTHONPATH313 OR MACHINEPYTHONPATH314" />
+            Message="MyoFInDer requires a standard 64-bit Python 3.11, 3.12, 3.13, 3.14 or 3.15 installation !"
+            Condition="Installed OR USERPYTHONPATH311 OR USERPYTHONPATH312 OR
+            USERPYTHONPATH313 OR USERPYTHONPATH314 OR USERPYTHONPATH315 OR
+            MACHINEPYTHONPATH311 OR MACHINEPYTHONPATH312 OR MACHINEPYTHONPATH313
+            OR MACHINEPYTHONPATH314 OR MACHINEPYTHONPATH315" />
 
         <!-- Property storing the location of the virtual environment -->
         <Property
@@ -667,18 +667,13 @@
                     <!-- Component containing the Windows Python dependency requirement files -->
                     <Component
                         Id="WindowsRequirementsFiles"
-                        Guid="9765B62F-3E47-4241-B852-D81979685967">
-                        <File
-                            Id="Requirements310Windows"
-                            Name="requirements-310-windows.txt"
-                            DiskId="1"
-                            Source=".\..\..\requirements\requirements-310-windows.txt"
-                            KeyPath="yes" />
+                        Guid="78D57552-BFB7-468F-8D65-91C128B03E3F">
                         <File
                             Id="Requirements311Windows"
                             Name="requirements-311-windows.txt"
                             DiskId="1"
-                            Source=".\..\..\requirements\requirements-311-windows.txt" />
+                            Source=".\..\..\requirements\requirements-311-windows.txt"
+                            KeyPath="yes" />
                         <File
                             Id="Requirements312Windows"
                             Name="requirements-312-windows.txt"
@@ -694,6 +689,11 @@
                             Name="requirements-314-windows.txt"
                             DiskId="1"
                             Source=".\..\..\requirements\requirements-314-windows.txt" />
+                        <File
+                            Id="Requirements315Windows"
+                            Name="requirements-315-windows.txt"
+                            DiskId="1"
+                            Source=".\..\..\requirements\requirements-315-windows.txt" />
                     </Component>
                 </Directory>
 

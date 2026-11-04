@@ -120,7 +120,7 @@
                     Sunken="no"
                     TabSkip="no"
                     Text="This installer will handle the installation of MyoFInDer on your machine.
-It requires that you first install a compatible version of Python and Windows C++ build tools.
+It requires standard 64-bit Python 3.11 to 3.15 and Windows C++ build tools.
 It also requires a working internet connection. Note that the complete installation process
 can last up to several minutes."
                     Transparent="no"

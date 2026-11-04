@@ -69,7 +69,7 @@ int main(int argc, char* argv[]){
           "print('executable:', sys.executable); "
           "print('version_info:', tuple(sys.version_info[:3])); "
           "print('bitness:', platform.architecture()[0]); "
-          "ok = ((3,10) <= tuple(sys.version_info[:2]) <= (3,14)); "
+          "ok = ((3,11) <= tuple(sys.version_info[:2]) <= (3,15)); "
           "ok = ok and (platform.architecture()[0] == '64bit'); "
           "sys.exit(0 if ok else 3)"
         "\" > \""
@@ -79,6 +79,10 @@ int main(int argc, char* argv[]){
     int rc = run_cmd(pre_check_cmd, 0, "");
     log << "Exit code: " << rc << "\n";
     log << "Pre-check output: " << py_pre_check_out << "\n\n";
+    if (rc != 0) {
+        log << "ERROR: Python pre-check failed. A 64-bit Python version from 3.11 to 3.15 is required.\n";
+        return 3;
+    }
 
     if (!file_exists(requirements_file)) {
         log << "ERROR: Requirements file does not exist: " << requirements_file << "\n";
