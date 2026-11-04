@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "myofinder"
-version = "1.2.2"
+version = "1.2.3"
 description = "Automatic calculation of the fusion index by AI segmentation"
 readme = {file = "README.md", content-type = "text/markdown"}
 license = "GPL-3.0-or-later"
